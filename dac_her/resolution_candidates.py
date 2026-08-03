@@ -1,0 +1,543 @@
+from __future__ import annotations
+
+import csv
+import hashlib
+import json
+import re
+import unicodedata
+from collections import defaultdict
+from dataclasses import asdict, dataclass
+from difflib import SequenceMatcher
+from pathlib import Path
+from typing import Any, Iterable, Mapping, Sequence
+
+import networkx as nx
+
+
+RESOLVABLE_NODE_TYPES: frozenset[str] = frozenset({
+    "Paper", "Catalyst", "CatalystModel", "Metal", "Support",
+    "CoordinationMotif", "SynthesisMethod", "Precursor", "Reaction",
+    "ReactionStep", "Intermediate", "Material", "Experiment", "Calculation",
+})
+CLAIM_NODE_TYPES: frozenset[str] = frozenset({"ObservationClaim", "MechanismClaim"})
+AUTO_MERGE_TYPES: frozenset[str] = frozenset({"Metal", "Reaction"})
+
+_ELEMENT_NAMES = {
+    "platinum": "pt", "ruthenium": "ru", "tungsten": "w",
+    "molybdenum": "mo", "iron": "fe", "cobalt": "co", "nickel": "ni",
+    "copper": "cu", "palladium": "pd", "iridium": "ir", "rhodium": "rh",
+    "manganese": "mn", "zinc": "zn", "gold": "au", "silver": "ag",
+    "tin": "sn", "vanadium": "v", "chromium": "cr", "titanium": "ti",
+    "niobium": "nb", "tantalum": "ta", "molybdenum": "mo",
+}
+_METAL_SYMBOLS = frozenset(_ELEMENT_NAMES.values())
+_REACTION_ALIASES = {
+    "her": "hydrogen_evolution_reaction",
+    "hydrogen evolution": "hydrogen_evolution_reaction",
+    "hydrogen evolution reaction": "hydrogen_evolution_reaction",
+    "oer": "oxygen_evolution_reaction",
+    "oxygen evolution reaction": "oxygen_evolution_reaction",
+    "orr": "oxygen_reduction_reaction",
+    "oxygen reduction reaction": "oxygen_reduction_reaction",
+    "co2rr": "carbon_dioxide_reduction_reaction",
+    "co2 reduction reaction": "carbon_dioxide_reduction_reaction",
+    "nrr": "nitrogen_reduction_reaction",
+    "nitrogen reduction reaction": "nitrogen_reduction_reaction",
+}
+_STATE_RE = re.compile(r"\b(?:[a-z]{1,2}\()?\d+h\)?\b", re.I)
+
+
+def normalize_scientific_text(value: Any) -> str:
+    text = unicodedata.normalize("NFKC", str(value or ""))
+    text = text.replace("−", "-").replace("–", "-").replace("—", "-")
+    text = text.lower().strip()
+    for name, symbol in _ELEMENT_NAMES.items():
+        text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
+    replacements = {
+        "hydrogen evolution reaction": "her",
+        "oxygen evolution reaction": "oer",
+        "oxygen reduction reaction": "orr",
+        "nitrogen doped": "n doped",
+        "n-doped": "n doped",
+        "dual atoms": "dual atom",
+        "single atoms": "single atom",
+        "dimers": "dimer",
+        "nanotubes": "nanotube",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"[^a-z0-9+.%\s]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def normalized_tokens(value: Any) -> frozenset[str]:
+    return frozenset(normalize_scientific_text(value).split())
+
+
+def _jaccard(left: Iterable[Any], right: Iterable[Any]) -> float:
+    a, b = set(left), set(right)
+    if not a and not b:
+        return 1.0
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def _stable_id(kind: str, left_id: str, right_id: str) -> str:
+    left, right = sorted((str(left_id), str(right_id)))
+    digest = hashlib.sha256(f"{kind}|{left}|{right}".encode()).hexdigest()[:20]
+    return f"resolution:{kind}:{digest}"
+
+
+def _node_label(graph: nx.Graph, node_id: str) -> str:
+    data = graph.nodes[node_id]
+    return str(data.get("label") or data.get("statement") or data.get("metric") or node_id)
+
+
+def _node_type(graph: nx.Graph, node_id: str) -> str:
+    return str(graph.nodes[node_id].get("type", ""))
+
+
+def _component_index(graph: nx.Graph) -> dict[str, int]:
+    components = (
+        nx.weakly_connected_components(graph)
+        if graph.is_directed() else nx.connected_components(graph)
+    )
+    ordered = sorted(components, key=lambda item: (-len(item), tuple(sorted(map(str, item)))))
+    return {
+        str(node_id): index
+        for index, component in enumerate(ordered, start=1)
+        for node_id in component
+    }
+
+
+def _incident(graph: nx.Graph, node_id: str):
+    if graph.is_directed():
+        for source, _, data in graph.in_edges(node_id, data=True):
+            yield "in", str(source), data
+        for _, target, data in graph.out_edges(node_id, data=True):
+            yield "out", str(target), data
+    else:
+        for source, target, data in graph.edges(node_id, data=True):
+            neighbor = target if str(source) == node_id else source
+            yield "undirected", str(neighbor), data
+
+
+def _chunk_ids(graph: nx.Graph, node_id: str) -> tuple[str, ...]:
+    return tuple(sorted({
+        str(data.get("chunk_id"))
+        for _, _, data in _incident(graph, node_id)
+        if data.get("chunk_id")
+    }))
+
+
+def _neighborhood_signature(graph: nx.Graph, node_id: str) -> frozenset[str]:
+    rows: set[str] = set()
+    for direction, neighbor, data in _incident(graph, node_id):
+        rows.add("|".join((
+            direction,
+            str(data.get("relation", "")),
+            _node_type(graph, neighbor),
+            normalize_scientific_text(_node_label(graph, neighbor)),
+        )))
+    return frozenset(rows)
+
+
+def _metals(value: Any) -> frozenset[str]:
+    tokens = normalized_tokens(value)
+    found = {token for token in tokens if token in _METAL_SYMBOLS}
+    # compact formulas such as W1Mo1 or PtRu
+    compact = re.sub(r"[^a-z]", "", normalize_scientific_text(value))
+    for symbol in sorted(_METAL_SYMBOLS, key=len, reverse=True):
+        if symbol in compact:
+            found.add(symbol)
+    return frozenset(found)
+
+
+def _state_tokens(value: Any) -> frozenset[str]:
+    return frozenset(match.lower() for match in _STATE_RE.findall(str(value or "")))
+
+
+def _reaction_signature(label: str) -> str:
+    normalized = normalize_scientific_text(label)
+    return _REACTION_ALIASES.get(normalized, normalized.replace(" ", "_"))
+
+
+def _type_signature(graph: nx.Graph, node_id: str) -> tuple[Any, ...]:
+    data = graph.nodes[node_id]
+    node_type = _node_type(graph, node_id)
+    label = _node_label(graph, node_id)
+    if node_type == "Metal":
+        metals = _metals(label)
+        return (node_type, tuple(sorted(metals)) or (normalize_scientific_text(label),))
+    if node_type == "Reaction":
+        return (node_type, _reaction_signature(label))
+    if node_type in {"Catalyst", "CatalystModel"}:
+        tokens = normalized_tokens(label)
+        nuclearity = (
+            "dual_atom" if {"dual", "atom"} <= tokens or "dimer" in tokens
+            else "single_atom" if {"single", "atom"} <= tokens
+            else "nanoparticle" if "nanoparticle" in tokens
+            else "unspecified"
+        )
+        support_tokens = tuple(sorted(tokens & {
+            "graphene", "nanotube", "ncnt", "carbon", "nitrogen", "doped", "ng"
+        }))
+        return (
+            node_type,
+            tuple(sorted(_metals(label))),
+            nuclearity,
+            support_tokens,
+            tuple(sorted(_state_tokens(label))),
+        )
+    if node_type == "Measurement":
+        return (
+            node_type,
+            str(data.get("metric_id") or normalize_scientific_text(data.get("metric"))),
+            str(data.get("subject_id", "")),
+            str(data.get("value_numeric", "")),
+            normalize_scientific_text(data.get("value_text")),
+            normalize_scientific_text(data.get("unit")),
+            str(data.get("conditions_json", "[]")),
+        )
+    return (node_type, normalize_scientific_text(label))
+
+
+def _hard_conflicts(graph: nx.Graph, left_id: str, right_id: str) -> tuple[str, ...]:
+    left_type, right_type = _node_type(graph, left_id), _node_type(graph, right_id)
+    conflicts: list[str] = []
+    if left_type != right_type:
+        conflicts.append("different node types")
+        return tuple(conflicts)
+    left_label, right_label = _node_label(graph, left_id), _node_label(graph, right_id)
+    if left_type in {"Catalyst", "CatalystModel", "Metal"}:
+        left_metals, right_metals = _metals(left_label), _metals(right_label)
+        if left_metals and right_metals and left_metals != right_metals:
+            conflicts.append("conflicting metal compositions")
+    if left_type in {"CatalystModel", "Intermediate"}:
+        left_states, right_states = _state_tokens(left_label), _state_tokens(right_label)
+        if left_states and right_states and left_states != right_states:
+            conflicts.append("conflicting adsorbate/coverage states")
+    if left_type == "Measurement":
+        left, right = graph.nodes[left_id], graph.nodes[right_id]
+        if str(left.get("metric_id", "")) != str(right.get("metric_id", "")):
+            conflicts.append("different metric IDs")
+        if str(left.get("subject_id", "")) != str(right.get("subject_id", "")):
+            conflicts.append("different measurement subjects")
+        if str(left.get("value_numeric", "")) != str(right.get("value_numeric", "")):
+            conflicts.append("different numeric values")
+        if normalize_scientific_text(left.get("value_text")) != normalize_scientific_text(right.get("value_text")):
+            conflicts.append("different textual values")
+        if normalize_scientific_text(left.get("unit")) != normalize_scientific_text(right.get("unit")):
+            conflicts.append("different units")
+    return tuple(conflicts)
+
+
+@dataclass(frozen=True)
+class ResolutionCandidate:
+    candidate_id: str
+    candidate_kind: str
+    left_id: str
+    right_id: str
+    node_type: str
+    left_label: str
+    right_label: str
+    left_component: int
+    right_component: int
+    signature_equal: bool
+    label_similarity: float
+    token_jaccard: float
+    neighborhood_similarity: float
+    total_score: float
+    recommendation: str
+    merge_safety: str
+    auto_approve: bool
+    reasons: tuple[str, ...]
+    conflicts: tuple[str, ...]
+    left_degree: int
+    right_degree: int
+    left_chunk_ids: tuple[str, ...]
+    right_chunk_ids: tuple[str, ...]
+
+    def to_row(self) -> dict[str, Any]:
+        row = asdict(self)
+        for key in ("reasons", "conflicts", "left_chunk_ids", "right_chunk_ids"):
+            row[f"{key}_json"] = json.dumps(list(row.pop(key)), ensure_ascii=False)
+        return row
+
+
+@dataclass(frozen=True)
+class CandidateSummary:
+    total_candidates: int
+    exact_entity_candidates: int
+    fuzzy_cross_component_candidates: int
+    fuzzy_intra_component_candidates: int
+    measurement_duplicate_candidates: int
+    auto_approved_candidates: int
+    weak_components: int
+    nodes: int
+    edges: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def _candidate(
+    graph: nx.Graph,
+    *,
+    left_id: str,
+    right_id: str,
+    kind: str,
+    component_index: Mapping[str, int],
+) -> ResolutionCandidate | None:
+    conflicts = _hard_conflicts(graph, left_id, right_id)
+    if conflicts:
+        return None
+    left_label, right_label = _node_label(graph, left_id), _node_label(graph, right_id)
+    signature_equal = _type_signature(graph, left_id) == _type_signature(graph, right_id)
+    label_similarity = SequenceMatcher(
+        None, normalize_scientific_text(left_label), normalize_scientific_text(right_label)
+    ).ratio()
+    token_jaccard = _jaccard(normalized_tokens(left_label), normalized_tokens(right_label))
+    neighborhood_similarity = _jaccard(
+        _neighborhood_signature(graph, left_id), _neighborhood_signature(graph, right_id)
+    )
+    total_score = min(1.0, (
+        0.42 * label_similarity
+        + 0.28 * token_jaccard
+        + 0.20 * neighborhood_similarity
+        + 0.10 * float(signature_equal)
+    ))
+    node_type = _node_type(graph, left_id)
+    auto_approve = bool(
+        node_type in AUTO_MERGE_TYPES
+        and signature_equal
+        and label_similarity >= 0.80
+    )
+    recommendation = "same_entity" if auto_approve else "needs_review"
+    merge_safety = "safe_exact_registry_entity" if auto_approve else "review_required"
+    reasons = []
+    if signature_equal:
+        reasons.append("type-specific structured signatures match")
+    if component_index[left_id] != component_index[right_id]:
+        reasons.append("nodes occur in different weak components")
+    if label_similarity >= 0.8:
+        reasons.append("high normalized label similarity")
+    if neighborhood_similarity >= 0.5:
+        reasons.append("compatible graph neighborhoods")
+    return ResolutionCandidate(
+        candidate_id=_stable_id(kind, left_id, right_id),
+        candidate_kind=kind,
+        left_id=left_id,
+        right_id=right_id,
+        node_type=node_type,
+        left_label=left_label,
+        right_label=right_label,
+        left_component=component_index[left_id],
+        right_component=component_index[right_id],
+        signature_equal=signature_equal,
+        label_similarity=round(label_similarity, 6),
+        token_jaccard=round(token_jaccard, 6),
+        neighborhood_similarity=round(neighborhood_similarity, 6),
+        total_score=round(total_score, 6),
+        recommendation=recommendation,
+        merge_safety=merge_safety,
+        auto_approve=auto_approve,
+        reasons=tuple(reasons),
+        conflicts=conflicts,
+        left_degree=int(graph.degree(left_id)),
+        right_degree=int(graph.degree(right_id)),
+        left_chunk_ids=_chunk_ids(graph, left_id),
+        right_chunk_ids=_chunk_ids(graph, right_id),
+    )
+
+
+def generate_resolution_candidates(
+    graph: nx.Graph,
+    *,
+    fuzzy_minimum_score: float = 0.72,
+    measurement_minimum_score: float = 0.90,
+) -> tuple[list[ResolutionCandidate], CandidateSummary]:
+    components = _component_index(graph)
+    nodes_by_type: dict[str, list[str]] = defaultdict(list)
+    for node_id, data in graph.nodes(data=True):
+        nodes_by_type[str(data.get("type", ""))].append(str(node_id))
+
+    candidates: dict[str, ResolutionCandidate] = {}
+    exact_count = fuzzy_cross = fuzzy_intra = measurement_count = 0
+
+    for node_type, node_ids in nodes_by_type.items():
+        if node_type in CLAIM_NODE_TYPES or node_type == "MeasurementGroup":
+            continue
+        for index, left_id in enumerate(sorted(node_ids)):
+            for right_id in sorted(node_ids)[index + 1:]:
+                signature_equal = _type_signature(graph, left_id) == _type_signature(graph, right_id)
+                kind = "measurement_duplicate" if node_type == "Measurement" else (
+                    "exact_entity" if signature_equal else "fuzzy_entity"
+                )
+                candidate = _candidate(
+                    graph,
+                    left_id=left_id,
+                    right_id=right_id,
+                    kind=kind,
+                    component_index=components,
+                )
+                if candidate is None:
+                    continue
+                threshold = measurement_minimum_score if node_type == "Measurement" else fuzzy_minimum_score
+                if not signature_equal and candidate.total_score < threshold:
+                    continue
+                if node_type == "Measurement" and candidate.total_score < measurement_minimum_score:
+                    continue
+                candidates[candidate.candidate_id] = candidate
+                if node_type == "Measurement":
+                    measurement_count += 1
+                elif signature_equal:
+                    exact_count += 1
+                elif candidate.left_component != candidate.right_component:
+                    fuzzy_cross += 1
+                else:
+                    fuzzy_intra += 1
+
+    ordered = sorted(
+        candidates.values(),
+        key=lambda item: (
+            not item.auto_approve,
+            -item.total_score,
+            item.node_type,
+            item.left_id,
+            item.right_id,
+        ),
+    )
+    return ordered, CandidateSummary(
+        total_candidates=len(ordered),
+        exact_entity_candidates=exact_count,
+        fuzzy_cross_component_candidates=fuzzy_cross,
+        fuzzy_intra_component_candidates=fuzzy_intra,
+        measurement_duplicate_candidates=measurement_count,
+        auto_approved_candidates=sum(item.auto_approve for item in ordered),
+        weak_components=len(set(components.values())),
+        nodes=graph.number_of_nodes(),
+        edges=graph.number_of_edges(),
+    )
+
+
+def write_candidates_csv(path: str | Path, candidates: Sequence[ResolutionCandidate]) -> Path:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = [candidate.to_row() for candidate in candidates]
+    fieldnames = list(rows[0]) if rows else ["candidate_id"]
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    return path
+
+
+def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
+    path = Path(path)
+    if not path.exists():
+        return []
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            value = json.loads(line)
+            if not isinstance(value, dict):
+                raise ValueError(f"JSONL record must be an object: {path}")
+            records.append(value)
+    return records
+
+
+def sync_decisions_jsonl(
+    path: str | Path,
+    candidates: Sequence[ResolutionCandidate],
+) -> tuple[Path, dict[str, int]]:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existing = {str(item.get("candidate_id")): item for item in read_jsonl(path)}
+    records: list[dict[str, Any]] = []
+    preserved = created = auto_approved = 0
+    for candidate in candidates:
+        base = candidate.to_row()
+        prior = existing.get(candidate.candidate_id)
+        if prior is not None:
+            for key in (
+                "decision", "approved", "canonical_id", "reviewer",
+                "reviewed_at", "notes",
+            ):
+                if key in prior:
+                    base[key] = prior[key]
+            preserved += 1
+        else:
+            base.update({
+                "decision": "same_entity" if candidate.auto_approve else "unreviewed",
+                "approved": bool(candidate.auto_approve),
+                "canonical_id": candidate.left_id if candidate.auto_approve else None,
+                "reviewer": "automatic_registry_rule" if candidate.auto_approve else None,
+                "reviewed_at": None,
+                "notes": None,
+            })
+            created += 1
+            auto_approved += int(candidate.auto_approve)
+        records.append(base)
+    path.write_text(
+        "".join(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n" for record in records),
+        encoding="utf-8",
+    )
+    return path, {
+        "preserved": preserved,
+        "created": created,
+        "auto_approved": auto_approved,
+        "removed_stale": max(0, len(existing) - preserved),
+    }
+
+
+def _duplicate_label_counts(graph: nx.Graph) -> dict[str, int]:
+    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for node_id, data in graph.nodes(data=True):
+        groups[(str(data.get("type", "")), normalize_scientific_text(_node_label(graph, str(node_id))))].append(str(node_id))
+    return {
+        "groups": sum(len(items) > 1 for items in groups.values()),
+        "measurement_groups": sum(key[0] == "Measurement" and len(items) > 1 for key, items in groups.items()),
+    }
+
+
+def _graph_summary(graph: nx.Graph) -> dict[str, Any]:
+    components = list(nx.weakly_connected_components(graph)) if graph.is_directed() else list(nx.connected_components(graph))
+    return {
+        "nodes": graph.number_of_nodes(),
+        "edges": graph.number_of_edges(),
+        "components": len(components),
+        "largest_component_sizes": sorted((len(item) for item in components), reverse=True)[:10],
+        "duplicate_normalized_labels": _duplicate_label_counts(graph),
+    }
+
+
+def build_raw_canonical_report(
+    *, raw_graph: nx.Graph, canonical_graph: nx.Graph,
+    candidate_summary: Mapping[str, Any], resolution_summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    raw, canonical = _graph_summary(raw_graph), _graph_summary(canonical_graph)
+    return {
+        "raw": raw,
+        "canonical": canonical,
+        "difference": {
+            "nodes_merged_or_dropped": raw["nodes"] - canonical["nodes"],
+            "edge_difference": raw["edges"] - canonical["edges"],
+        },
+        "candidate_summary": dict(candidate_summary),
+        "resolution_summary": dict(resolution_summary),
+    }
+
+
+def format_raw_canonical_report(report: Mapping[str, Any]) -> str:
+    raw, canonical = report["raw"], report["canonical"]
+    return "\n".join([
+        "Paper-level resolution report",
+        f"Raw nodes/edges: {raw['nodes']}/{raw['edges']}",
+        f"Canonical nodes/edges: {canonical['nodes']}/{canonical['edges']}",
+        f"Components: {raw['components']} -> {canonical['components']}",
+        f"Nodes merged/dropped: {report['difference']['nodes_merged_or_dropped']}",
+        f"Resolution: {json.dumps(report['resolution_summary'], ensure_ascii=False)}",
+    ]) + "\n"

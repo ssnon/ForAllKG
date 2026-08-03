@@ -1,1 +1,5 @@
 Notebooks/GRAPHDATA_OUTPUT_MATERIALPROPERTIES/pfas_and_domain_knowledge_graph.graphml
+.env
+data_dac/
+os.environ[OPENROUTER_EXTRACT_MODEL]
+tests/

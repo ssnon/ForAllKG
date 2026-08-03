@@ -1,0 +1,90 @@
+version: '2026-08-03'
+metrics:
+  overpotential:
+    label: Overpotential
+    canonical_unit: mV
+    aliases: [eta, η, HER overpotential]
+  overpotential_at_10_ma_cm2:
+    label: Overpotential at 10 mA cm^-2
+    canonical_unit: mV
+    aliases: [eta10, η10, overpotential at 10 mA cm-2]
+  tafel_slope:
+    label: Tafel slope
+    canonical_unit: mV dec^-1
+    aliases: [Tafel slopes]
+  exchange_current_density:
+    label: Exchange current density
+    canonical_unit: mA cm^-2
+    aliases: [j0, exchange current]
+  charge_transfer_resistance:
+    label: Charge-transfer resistance
+    canonical_unit: ohm
+    aliases: [Rct, charge transfer resistance]
+  double_layer_capacitance:
+    label: Double-layer capacitance
+    canonical_unit: mF cm^-2
+    aliases: [Cdl, double layer capacitance]
+  electrochemically_active_surface_area:
+    label: Electrochemically active surface area
+    canonical_unit: cm^2
+    aliases: [ECSA]
+  ecsa_normalized_current_density:
+    label: ECSA-normalized current density
+    canonical_unit: mA cm^-2
+    aliases: [specific current density]
+  turnover_frequency:
+    label: Turnover frequency
+    canonical_unit: s^-1
+    aliases: [TOF]
+  mass_activity:
+    label: Mass activity
+    canonical_unit: A mg^-1
+    aliases: [HER mass activity]
+  specific_activity:
+    label: Specific activity
+    canonical_unit: mA cm^-2
+    aliases: [specific HER activity]
+  activity_retention:
+    label: Activity retention
+    canonical_unit: '%'
+    aliases: [retention, activity remaining]
+  activity_loss:
+    label: Activity loss
+    canonical_unit: '%'
+    aliases: [HER activity loss]
+  potential_drop:
+    label: Potential drop
+    canonical_unit: mV
+    aliases: [potential increase, voltage drop]
+  adsorption_energy:
+    label: Adsorption energy
+    canonical_unit: eV
+    aliases: [binding energy, Eads]
+  hydrogen_adsorption_free_energy:
+    label: Hydrogen adsorption free energy
+    canonical_unit: eV
+    aliases: [Delta G H, ΔG_H, Gibbs free energy of H adsorption]
+  bond_distance:
+    label: Bond distance
+    canonical_unit: angstrom
+    aliases: [bond length, interatomic distance]
+  exafs_radial_peak_position:
+    label: FT-EXAFS radial peak position
+    canonical_unit: angstrom
+    aliases: [FT peak position, radial peak]
+  fitted_scattering_path_length:
+    label: Fitted scattering-path length
+    canonical_unit: angstrom
+    aliases: [EXAFS fitted distance, R-space fitted path length]
+  coordination_number:
+    label: Coordination number
+    canonical_unit: null
+    aliases: [CN]
+  bader_charge:
+    label: Bader charge
+    canonical_unit: e
+    aliases: [charge transfer, Bader electron transfer]
+  integrated_cohp:
+    label: Integrated crystal orbital Hamilton population
+    canonical_unit: eV
+    aliases: [ICOHP, pCOHP integral]

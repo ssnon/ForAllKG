@@ -1,0 +1,38 @@
+version: 2
+
+papers:
+  Yang2020_O-coordinated:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_2/Kiwook_2
+        markdown_file: Kiwook_2.md
+        metadata_file: Kiwook_2_meta.json
+
+        selection:
+          mode: sections
+          headings:
+            - "## RESULTS"
+            - "## DISCUSSION"
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_2/Kiwook_2_SI1
+        markdown_file: Kiwook_2_SI1.md
+        metadata_file: Kiwook_2_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+    resolution_file: null

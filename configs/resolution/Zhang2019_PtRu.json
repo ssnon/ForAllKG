@@ -1,0 +1,16 @@
+{
+  "aliases": {
+    "metal_Pt": "metal_pt",
+    "metal_Ru": "metal_ru",
+    "reaction_HER": "reaction_her",
+    "paper_Zhang2019_PtRu": "paper_zhang2019_ptru",
+    "cat_PtRu_dimers_NCNTs": "cat_ptru_dimers",
+    "cat_PtC": "cat_ptc",
+    "support_NCNT": "support_ncnt",
+    "model_PtRu_N_graphene": "model_pt_ru"
+  },
+  "drop_node_ids": [
+    "claim_dimer_activity",
+    "claim_dimer_stability"
+  ]
+}
