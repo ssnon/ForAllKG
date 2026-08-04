@@ -109,10 +109,45 @@ def append_manifest(path: Path, record: dict[str, Any]) -> None:
         file.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def write_source_chunk(
+    source_chunk_dir: Path,
+    chunk: ChunkSpec,
+) -> Path:
+    """Persist the exact source leaf used by strict and bridge extraction."""
+    source_chunk_dir.mkdir(parents=True, exist_ok=True)
+    safe_chunk_id = chunk.chunk_id.replace(":", "__")
+    path = source_chunk_dir / f"{safe_chunk_id}.json"
+    payload = {
+        "paper_id": chunk.paper_id,
+        "chunk_id": chunk.chunk_id,
+        "document_id": chunk.document_id,
+        "document_role": chunk.document_role,
+        "section": chunk.section,
+        "chunk_index": chunk.index,
+        "split_depth": chunk.split_depth,
+        "page_ids": list(chunk.page_ids),
+        "asset_ids": list(chunk.asset_ids),
+        "asset_paths": list(chunk.asset_paths),
+        "asset_locators": list(chunk.asset_locators),
+        "left_context": chunk.left_context,
+        "core_text": chunk.core_text,
+        "right_context": chunk.right_context,
+    }
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return path
+
+
 def record_active_chunk(
     active: dict[str, dict[str, Any]],
     record: dict[str, Any],
+    *,
+    chunk: ChunkSpec,
+    source_chunk_dir: Path,
 ) -> None:
+    source_path = write_source_chunk(source_chunk_dir, chunk)
     active[str(record["chunk_id"])] = {
         "paper_id": record["paper_id"],
         "chunk_id": record["chunk_id"],
@@ -125,6 +160,7 @@ def record_active_chunk(
         "split_depth": record["split_depth"],
         "status": record["status"],
         "output_path": record["output_path"],
+        "source_path": str(source_path),
         "source_tokens_estimated": record.get("source_tokens_estimated"),
         "node_count": record.get("node_count"),
         "edge_count": record.get("edge_count"),
@@ -209,11 +245,18 @@ def main() -> None:
     run_id = str(run_metadata["run_id"])
     run_dir = run_directory(PROJECT_ROOT, paper.paper_id, run_id)
     chunk_output_dir = run_dir / "chunks"
+    source_chunk_dir = run_dir / "source_chunks"
     debug_dir = run_dir / "debug"
     documents_dir = run_dir / "documents"
     manifest_path = run_dir / "manifest.jsonl"
 
-    for directory in (run_dir, chunk_output_dir, debug_dir, documents_dir):
+    for directory in (
+        run_dir,
+        chunk_output_dir,
+        source_chunk_dir,
+        debug_dir,
+        documents_dir,
+    ):
         directory.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text("", encoding="utf-8")
     write_json(run_dir / "run.json", run_metadata)
@@ -483,7 +526,12 @@ def main() -> None:
 
                 if status == "success":
                     success_count += 1
-                    record_active_chunk(active_chunks, record)
+                    record_active_chunk(
+                        active_chunks,
+                        record,
+                        chunk=chunk,
+                        source_chunk_dir=source_chunk_dir,
+                    )
                     utilization = record.get("utilization")
                     print(
                         "[SUCCESS]",
@@ -503,7 +551,12 @@ def main() -> None:
                     )
                 elif status == "skipped":
                     skipped_count += 1
-                    record_active_chunk(active_chunks, record)
+                    record_active_chunk(
+                        active_chunks,
+                        record,
+                        chunk=chunk,
+                        source_chunk_dir=source_chunk_dir,
+                    )
                     print("[SKIPPED]", chunk.chunk_id, flush=True)
                 elif status == "truncated":
                     if chunk.split_depth >= policy.max_split_depth:
@@ -608,6 +661,7 @@ def main() -> None:
             for item in active_chunks.values()
         ),
         "chunk_output_dir": str(chunk_output_dir),
+        "source_chunk_dir": str(source_chunk_dir),
         "manifest_path": str(manifest_path),
         "active_chunks_path": str(run_dir / "active_chunks.json"),
     }
