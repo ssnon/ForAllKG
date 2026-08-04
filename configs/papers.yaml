@@ -1,7 +1,39 @@
 version: 2
 
 papers:
-  Yang2020_O-coordinated:
+  Kiwook_1:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_1/Kiwook_1
+        markdown_file: Kiwook_1.md
+        metadata_file: Kiwook_1_meta.json
+
+        selection:
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_1/Kiwook_1_SI1
+        markdown_file: Kiwook_1_SI1.md
+        metadata_file: Kiwook_1_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+    resolution_file: null
+
+  Kiwook_2:
     enabled: true
 
     documents:
@@ -12,10 +44,6 @@ papers:
         metadata_file: Kiwook_2_meta.json
 
         selection:
-          mode: sections
-          headings:
-            - "## RESULTS"
-            - "## DISCUSSION"
 
         figure_processing:
           mode: caption_first
@@ -48,9 +76,6 @@ papers:
         metadata_file: Kiwook_3_meta.json
 
         selection:
-          mode: sections
-          headings:
-            - "### 3. Results and Discussion"
 
         figure_processing:
           mode: caption_first
