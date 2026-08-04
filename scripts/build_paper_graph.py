@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
+import json
 import shutil
 from pathlib import Path
 
@@ -8,6 +11,14 @@ import networkx as nx
 
 from dac_her.config import get_paper_config
 from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
+from dac_her.locator_index import load_locator_index
+from dac_her.provenance_backfill import (
+    backfill_edge_asset_provenance,
+    refresh_run_asset_manifest,
+)
+from dac_her.semantic_repairs import repair_model_of_targets
+from dac_her.graph_normalization import normalize_networkx_metric_vocabularies
+from dac_her.node_references import remap_node_reference_attributes
 from dac_her.paper_graph_postprocess import (
     canonicalize_paper_graph,
     load_resolution_plan,
@@ -21,6 +32,10 @@ from dac_her.resolution_candidates import (
     write_candidates_csv,
 )
 from dac_her.claim_overlap import write_claim_overlap_audit
+from dac_her.semantic_roles import (
+    SemanticRoleAdjustment,
+    normalize_measurement_subject_roles,
+)
 from dac_her.run_state import (
     paper_output_root,
     read_json,
@@ -29,6 +44,7 @@ from dac_her.run_state import (
 )
 from dac_her.schemas import KnowledgeGraph
 from dac_her.validation import validate_graph_provenance
+from dac_her.vocab_registry import load_default_registries
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -67,35 +83,285 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _collision_safe_node_id(
+    *,
+    chunk_id: str,
+    local_node_id: str,
+    node_type: str,
+) -> str:
+    """Create a deterministic mention ID for a cross-chunk type collision.
+
+    LLM node IDs are local identifiers, not globally trusted canonical IDs.
+    If two chunks reuse the same local ID for different semantic types, both
+    mentions must survive so that the paper-level resolver can review them.
+    """
+    digest = hashlib.sha256(
+        f"{chunk_id}|{local_node_id}|{node_type}".encode("utf-8")
+    ).hexdigest()[:12]
+    safe_type = "".join(
+        character.lower() if character.isalnum() else "_"
+        for character in (node_type or "unknown")
+    ).strip("_") or "unknown"
+    return f"{local_node_id}__mention_{safe_type}_{digest}"
+
+
 def merge_chunk_graph(
     merged: nx.MultiDiGraph,
     chunk_graph: nx.MultiDiGraph,
     *,
     chunk_id: str,
-) -> None:
-    for node_id, node_data in chunk_graph.nodes(data=True):
-        node_id = str(node_id)
-        if node_id in merged:
-            merged.nodes[node_id].update(
+) -> list[dict[str, str]]:
+    """Merge one chunk graph without stale embedded node references.
+
+    LLM IDs are local mentions. Type collisions are namespaced, and every
+    edge endpoint plus foreign-key-like node attribute is remapped through the
+    same deterministic node_id_map.
+    """
+    node_id_map: dict[str, str] = {}
+    collisions: list[dict[str, str]] = []
+
+    # First pass: decide all target IDs before inserting any nodes. This is
+    # required because a Measurement can refer to a subject that appears later
+    # in the chunk node order.
+    for raw_node_id, node_data in chunk_graph.nodes(data=True):
+        local_node_id = str(raw_node_id)
+        incoming_type = str(dict(node_data).get("type", ""))
+        target_node_id = local_node_id
+
+        if local_node_id in merged:
+            existing_type = str(merged.nodes[local_node_id].get("type", ""))
+            if (
+                existing_type
+                and incoming_type
+                and existing_type != incoming_type
+            ):
+                target_node_id = _collision_safe_node_id(
+                    chunk_id=chunk_id,
+                    local_node_id=local_node_id,
+                    node_type=incoming_type,
+                )
+                suffix = 1
+                base_target = target_node_id
+                while target_node_id in merged or target_node_id in node_id_map.values():
+                    target_node_id = f"{base_target}_{suffix}"
+                    suffix += 1
+                collisions.append({
+                    "chunk_id": chunk_id,
+                    "local_node_id": local_node_id,
+                    "existing_node_id": local_node_id,
+                    "existing_type": existing_type,
+                    "preserved_node_id": target_node_id,
+                    "incoming_type": incoming_type,
+                    "action": "preserved_as_chunk_scoped_mention",
+                })
+
+        node_id_map[local_node_id] = target_node_id
+
+    # Second pass: remap embedded references such as Measurement.subject_id
+    # and MeasurementGroup member IDs before adding/merging the nodes.
+    collision_by_local = {
+        row["local_node_id"]: row
+        for row in collisions
+    }
+    for raw_node_id, node_data in chunk_graph.nodes(data=True):
+        local_node_id = str(raw_node_id)
+        target_node_id = node_id_map[local_node_id]
+        incoming = remap_node_reference_attributes(
+            dict(node_data),
+            node_id_map,
+        )
+
+        collision = collision_by_local.get(local_node_id)
+        if collision is not None:
+            incoming["source_local_id"] = local_node_id
+            incoming["source_chunk_id"] = chunk_id
+            incoming["id_collision_with"] = local_node_id
+            incoming["id_collision_types_json"] = json.dumps(
+                {
+                    "existing_type": collision["existing_type"],
+                    "incoming_type": collision["incoming_type"],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            merged.add_node(target_node_id, **incoming)
+        elif target_node_id in merged:
+            merged.nodes[target_node_id].update(
                 merge_node_attributes(
-                    dict(merged.nodes[node_id]),
-                    dict(node_data),
+                    dict(merged.nodes[target_node_id]),
+                    incoming,
                 )
             )
         else:
-            merged.add_node(node_id, **dict(node_data))
+            merged.add_node(target_node_id, **incoming)
 
     for source, target, local_key, edge_data in chunk_graph.edges(
         keys=True,
         data=True,
     ):
+        source_id = node_id_map.get(str(source), str(source))
+        target_id = node_id_map.get(str(target), str(target))
         global_key = f"{chunk_id}:{local_key}"
         merged.add_edge(
-            str(source),
-            str(target),
+            source_id,
+            target_id,
             key=global_key,
             **dict(edge_data),
         )
+
+    return collisions
+
+def write_id_collision_report(
+    run_dir: Path,
+    collisions: list[dict[str, str]],
+) -> None:
+    report = {
+        "collision_count": len(collisions),
+        "policy": (
+            "Same local node ID with different types is preserved as a "
+            "chunk-scoped mention; no type coercion or automatic merge."
+        ),
+        "collisions": collisions,
+    }
+    write_json(run_dir / "id_collision_report.json", report)
+
+    csv_path = run_dir / "id_collisions.csv"
+    fieldnames = [
+        "chunk_id",
+        "local_node_id",
+        "existing_node_id",
+        "existing_type",
+        "preserved_node_id",
+        "incoming_type",
+        "action",
+    ]
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(collisions)
+
+
+
+def write_semantic_role_report(
+    run_dir: Path,
+    adjustments: list[SemanticRoleAdjustment],
+) -> None:
+    rows = [adjustment.to_dict() for adjustment in adjustments]
+    write_json(
+        run_dir / "semantic_role_report.json",
+        {
+            "adjustment_count": len(rows),
+            "policy": (
+                "Material/Support mentions are inferred as Catalyst only when "
+                "EVALUATED_IN and MEASURED_FOR/HAS_MEASUREMENT structure "
+                "jointly establishes a catalytic role."
+            ),
+            "adjustments": rows,
+        },
+    )
+    path = run_dir / "semantic_role_adjustments.csv"
+    fieldnames = [
+        "chunk_id",
+        "source_node_id",
+        "original_type",
+        "resolved_type",
+        "action",
+        "role_node_id",
+        "measurement_ids",
+        "experiment_ids",
+        "reason",
+    ]
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({
+                **row,
+                "measurement_ids": json.dumps(
+                    row.get("measurement_ids", []), ensure_ascii=False
+                ),
+                "experiment_ids": json.dumps(
+                    row.get("experiment_ids", []), ensure_ascii=False
+                ),
+            })
+
+
+def write_metric_normalization_report(
+    run_dir: Path,
+    issues: list[object],
+) -> None:
+    rows = [
+        issue.to_dict()
+        for issue in issues
+        if hasattr(issue, "to_dict")
+    ]
+    write_json(
+        run_dir / "metric_normalization_report.json",
+        {
+            "change_count": len(rows),
+            "changes": rows,
+        },
+    )
+    path = run_dir / "metric_normalization.csv"
+    fieldnames = [
+        "node_id",
+        "vocabulary",
+        "raw_id",
+        "raw_label",
+        "normalized_id",
+        "status",
+        "parameters",
+        "matched_pattern",
+    ]
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({
+                **row,
+                "parameters": json.dumps(
+                    row.get("parameters") or {}, ensure_ascii=False
+                ),
+            })
+
+def write_generic_rows_report(
+    *,
+    run_dir: Path,
+    stem: str,
+    rows: list[dict[str, object]],
+    summary_extra: dict[str, object] | None = None,
+) -> None:
+    write_json(
+        run_dir / f"{stem}.json",
+        {
+            "count": len(rows),
+            "rows": rows,
+            **(summary_extra or {}),
+        },
+    )
+    path = run_dir / f"{stem}.csv"
+    fieldnames: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
+    if not fieldnames:
+        path.write_text("", encoding="utf-8")
+        return
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({
+                key: (
+                    json.dumps(value, ensure_ascii=False, sort_keys=True)
+                    if isinstance(value, (dict, list, tuple))
+                    else value
+                )
+                for key, value in row.items()
+            })
 
 
 def resolve_decisions_path(
@@ -160,6 +426,11 @@ def main() -> None:
     if not isinstance(chunk_records, list) or not chunk_records:
         raise RuntimeError("No active chunks are available for graph building.")
 
+    refreshed_assets = refresh_run_asset_manifest(
+        paper=paper,
+        run_dir=run_dir,
+    )
+
     merged = nx.MultiDiGraph(
         paper_id=paper.paper_id,
         run_id=str(run_metadata["run_id"]),
@@ -169,6 +440,8 @@ def main() -> None:
 
     loaded_chunks = 0
     loaded_chunk_ids: list[str] = []
+    id_collisions: list[dict[str, str]] = []
+    semantic_role_adjustments: list[SemanticRoleAdjustment] = []
 
     for record in chunk_records:
         if not isinstance(record, dict):
@@ -193,9 +466,73 @@ def main() -> None:
         )
 
         chunk_graph = knowledge_graph_to_networkx(result)
-        merge_chunk_graph(merged, chunk_graph, chunk_id=result.chunk_id)
+        chunk_graph, chunk_role_adjustments = (
+            normalize_measurement_subject_roles(
+                chunk_graph,
+                chunk_id=result.chunk_id,
+            )
+        )
+        semantic_role_adjustments.extend(chunk_role_adjustments)
+        id_collisions.extend(
+            merge_chunk_graph(
+                merged,
+                chunk_graph,
+                chunk_id=result.chunk_id,
+            )
+        )
         loaded_chunks += 1
         loaded_chunk_ids.append(result.chunk_id)
+
+    write_id_collision_report(run_dir, id_collisions)
+    write_semantic_role_report(run_dir, semantic_role_adjustments)
+    if id_collisions:
+        print(
+            f"[NODE-ID COLLISIONS] {len(id_collisions)} collision(s) "
+            f"preserved; see {run_dir / 'id_collisions.csv'}"
+        )
+    if semantic_role_adjustments:
+        print(
+            f"[SEMANTIC ROLES] {len(semantic_role_adjustments)} "
+            f"adjustment(s); see {run_dir / 'semantic_role_adjustments.csv'}"
+        )
+
+    _, metric_registry = load_default_registries(PROJECT_ROOT)
+    metric_normalization_issues = normalize_networkx_metric_vocabularies(
+        merged,
+        metric_registry=metric_registry,
+    )
+    write_metric_normalization_report(
+        run_dir,
+        metric_normalization_issues,
+    )
+    if metric_normalization_issues:
+        print(
+            f"[METRIC NORMALIZATION] {len(metric_normalization_issues)} "
+            f"change(s); see {run_dir / 'metric_normalization.csv'}"
+        )
+
+    locator_index_records = load_locator_index(run_dir / "locator_index.json")
+    provenance_backfills = backfill_edge_asset_provenance(
+        merged,
+        assets=refreshed_assets.values(),
+        locator_index=locator_index_records,
+    )
+    write_generic_rows_report(
+        run_dir=run_dir,
+        stem="asset_provenance_backfill",
+        rows=provenance_backfills,
+        summary_extra={
+            "policy": (
+                "Backfill by Figure/Scheme/Table locator index, then caption/page "
+                "fallback. Tables may use Markdown block provenance without pixels."
+            )
+        },
+    )
+    if provenance_backfills:
+        print(
+            f"[ASSET PROVENANCE BACKFILL] {len(provenance_backfills)} "
+            f"pointer update(s); see {run_dir / 'asset_provenance_backfill.csv'}"
+        )
 
     raw_graphml_path = run_dir / "raw_merged.graphml"
     save_graphml(merged, raw_graphml_path)
@@ -232,6 +569,24 @@ def main() -> None:
         aliases=resolution_plan.aliases,
         drop_node_ids=resolution_plan.drop_node_ids,
     )
+    model_of_repairs = repair_model_of_targets(canonical)
+    write_generic_rows_report(
+        run_dir=run_dir,
+        stem="semantic_edge_repairs",
+        rows=model_of_repairs,
+        summary_extra={
+            "policy": (
+                "MODEL_OF is retargeted only when the current target has a "
+                "composition mismatch and exactly one Catalyst matches the "
+                "CatalystModel composition signature."
+            )
+        },
+    )
+    if model_of_repairs:
+        print(
+            f"[SEMANTIC EDGE REPAIR] {len(model_of_repairs)} MODEL_OF "
+            f"retarget(s); see {run_dir / 'semantic_edge_repairs.csv'}"
+        )
     canonical.graph["graph_stage"] = "canonical"
     canonical.graph["resolution_file"] = (
         str(decisions_path) if decisions_path is not None else ""
@@ -317,8 +672,8 @@ def main() -> None:
         }),
         "linked_asset_ids": sorted({
             str(asset_id)
-            for record in chunk_records
-            for asset_id in record.get("asset_ids", [])
+            for _, _, edge_data in canonical.edges(data=True)
+            for asset_id in json.loads(str(edge_data.get("evidence_asset_ids_json", "[]")))
         }),
         "raw_nodes": merged.number_of_nodes(),
         "raw_edges": merged.number_of_edges(),
@@ -326,6 +681,11 @@ def main() -> None:
         "canonical_edges": canonical.number_of_edges(),
         "resolution": resolution_plan.summary(),
         "resolution_candidates": candidate_summary_payload,
+        "semantic_role_adjustments": len(semantic_role_adjustments),
+        "metric_normalization_changes": len(metric_normalization_issues),
+        "asset_provenance_backfills": len(provenance_backfills),
+        "locator_index_records": len(locator_index_records),
+        "semantic_model_of_repairs": len(model_of_repairs),
         "claim_overlap_audit": claim_audit_summary,
         "raw_graphml": str(raw_graphml_path),
         "canonical_graphml": str(canonical_graphml_path),

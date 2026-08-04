@@ -11,7 +11,18 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from dac_her.claim_overlap import write_claim_overlap_audit
+from dac_her.claim_overlap import (
+    generate_claim_overlap_candidates,
+    write_claim_overlap_audit,
+)
+from dac_her.semantic_audit import (
+    cross_document_duplicate_issues,
+    exact_duplicate_claim_detection_issues,
+    metric_semantic_issues,
+    model_of_composition_issues,
+    semantic_readiness,
+    si_figure_provenance_issues,
+)
 from dac_her.measurement_scalarization import numeric_tokens
 
 
@@ -519,13 +530,18 @@ def main() -> None:
 
     asset_manifest_path = resolve_asset_manifest(graphml_path, args.asset_manifest)
     manifest_assets: dict[str, dict[str, Any]] = {}
+    manifest_asset_records: list[dict[str, Any]] = []
     if asset_manifest_path is not None:
         try:
             manifest_payload = json.loads(asset_manifest_path.read_text(encoding="utf-8"))
-            manifest_assets = {
-                str(item.get("asset_id")): item
+            manifest_asset_records = [
+                item
                 for item in manifest_payload.get("assets", [])
                 if isinstance(item, dict) and item.get("asset_id")
+            ]
+            manifest_assets = {
+                str(item.get("asset_id")): item
+                for item in manifest_asset_records
             }
         except Exception as error:
             provenance_issues.append({
@@ -796,6 +812,26 @@ def main() -> None:
 
     direction_errors = relation_direction_errors(graph)
 
+    claim_candidates_for_semantic_gate = generate_claim_overlap_candidates(graph)
+    model_of_semantic_issues = model_of_composition_issues(graph)
+    metric_category_issues = metric_semantic_issues(graph)
+    exact_claim_detection_issues = exact_duplicate_claim_detection_issues(
+        graph,
+        claim_candidates_for_semantic_gate,
+    )
+    cross_document_duplicates = cross_document_duplicate_issues(graph)
+    si_figure_asset_issues = si_figure_provenance_issues(
+        graph,
+        manifest_assets=manifest_asset_records,
+    )
+    semantic_gate = semantic_readiness(
+        model_of_issues=model_of_semantic_issues,
+        metric_issues=metric_category_issues,
+        exact_claim_detection_issues=exact_claim_detection_issues,
+        cross_document_duplicates=cross_document_duplicates,
+        si_figure_issues=si_figure_asset_issues,
+    )
+
     sizes = component_sizes(graph)
     self_loops = list(nx.selfloop_edges(graph))
 
@@ -841,6 +877,21 @@ def main() -> None:
             "Duplicate normalized labels: "
             f"{len(duplicate_labels)}"
         ),
+        f"MODEL_OF composition issues: {len(model_of_semantic_issues)}",
+        f"Metric semantic mismatches: {len(metric_category_issues)}",
+        (
+            "Undetected exact duplicate claims: "
+            f"{len(exact_claim_detection_issues)}"
+        ),
+        (
+            "Unresolved high-confidence cross-document duplicates: "
+            f"{len(cross_document_duplicates)}"
+        ),
+        (
+            "SI figure edges missing asset pointer: "
+            f"{len(si_figure_asset_issues)}"
+        ),
+        f"Semantic gate: {semantic_gate['passes_semantic_gate']}",
         "",
         "Node type counts:",
     ]
@@ -931,6 +982,24 @@ def main() -> None:
         output_dir / "asset_evidence_edges.csv",
         asset_evidence_edges,
     )
+    write_csv(output_dir / "model_of_composition_issues.csv", model_of_semantic_issues)
+    write_csv(output_dir / "metric_semantic_issues.csv", metric_category_issues)
+    write_csv(
+        output_dir / "exact_duplicate_claim_detection_issues.csv",
+        exact_claim_detection_issues,
+    )
+    write_csv(
+        output_dir / "cross_document_duplicate_issues.csv",
+        cross_document_duplicates,
+    )
+    write_csv(
+        output_dir / "si_figure_provenance_issues.csv",
+        si_figure_asset_issues,
+    )
+    (output_dir / "semantic_readiness.json").write_text(
+        json.dumps(semantic_gate, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
 
     claim_overlap_summary = write_claim_overlap_audit(graph, output_dir / "claim_audit")
     experiment_total = max(1, node_type_counts.get("Experiment", 0))
@@ -942,6 +1011,7 @@ def main() -> None:
         "unregistered_experiment_ratio": len(unregistered_experiments) / experiment_total,
         "claim_overlap_review_candidates": claim_overlap_summary["review_required"],
         "claim_auto_merged": claim_overlap_summary["auto_merged"],
+        **semantic_gate,
         "passes_structural_gate": (
             not unlinked_measurements
             and not composite_measurements
@@ -959,6 +1029,7 @@ def main() -> None:
     print("\n".join(report_lines))
     print("Claim-overlap review candidates:", claim_overlap_summary["review_required"])
     print("Pilot structural gate:", readiness["passes_structural_gate"])
+    print("Pilot semantic gate:", readiness["passes_semantic_gate"])
 
     print("\nObservation claims:")
     for row in observation_claims[: args.show_limit]:

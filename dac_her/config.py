@@ -17,6 +17,10 @@ SelectionMode = Literal[
     "whole_document",
     "referenced_blocks",
 ]
+ReferenceScope = Literal[
+    "selected_main",
+    "whole_main",
+]
 FigureProcessingMode = Literal[
     "none",
     "caption_first",
@@ -29,6 +33,7 @@ class DocumentSelection:
     mode: SelectionMode
     headings: tuple[str, ...] = ()
     fallback: Literal["error", "whole_document", "skip"] = "error"
+    reference_scope: ReferenceScope = "selected_main"
 
 
 @dataclass(frozen=True)
@@ -142,10 +147,18 @@ def _parse_selection(
             f"{fallback!r}"
         )
 
+    reference_scope = raw.get("reference_scope", "selected_main")
+    if reference_scope not in {"selected_main", "whole_main"}:
+        raise ValueError(
+            f"Unsupported reference_scope for {paper_id}/{document_id}: "
+            f"{reference_scope!r}"
+        )
+
     return DocumentSelection(
         mode=mode,
         headings=tuple(headings),
         fallback=fallback,
+        reference_scope=reference_scope,
     )
 
 
@@ -414,6 +427,7 @@ def paper_config_fingerprint_payload(config: PaperConfig) -> dict[str, Any]:
                     "mode": document.selection.mode,
                     "headings": list(document.selection.headings),
                     "fallback": document.selection.fallback,
+                    "reference_scope": document.selection.reference_scope,
                 },
                 "figure_processing": {
                     "mode": document.figure_processing.mode,

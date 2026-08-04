@@ -4,7 +4,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import yaml
 
@@ -33,12 +33,32 @@ class VocabularyEntry:
     metadata: Mapping[str, Any]
 
 
+@dataclass(frozen=True)
+class ParameterizedVocabularyMatch:
+    entry: VocabularyEntry | None
+    parameters: Mapping[str, str]
+    matched_pattern: str | None
+    matched_text: str
+
+    @property
+    def registered(self) -> bool:
+        return self.entry is not None
+
+
 class VocabularyRegistry:
-    def __init__(self, *, kind: str, version: str, entries: Mapping[str, VocabularyEntry]):
+    def __init__(
+        self,
+        *,
+        kind: str,
+        version: str,
+        entries: Mapping[str, VocabularyEntry],
+    ):
         self.kind = kind
         self.version = version
         self.entries = dict(entries)
         alias_map: dict[str, str] = {}
+        compiled_patterns: list[tuple[str, re.Pattern[str]]] = []
+
         for entry_id, entry in self.entries.items():
             candidates = (entry_id, entry.label, *entry.aliases)
             for candidate in candidates:
@@ -50,10 +70,31 @@ class VocabularyRegistry:
                         f"{prior!r}/{entry_id!r}"
                     )
                 alias_map[key] = entry_id
+
+            raw_patterns = entry.metadata.get("match_patterns") or []
+            if not isinstance(raw_patterns, list):
+                raise ValueError(
+                    f"match_patterns must be a list for {kind}:{entry_id}"
+                )
+            for raw_pattern in raw_patterns:
+                try:
+                    compiled = re.compile(str(raw_pattern))
+                except re.error as error:
+                    raise ValueError(
+                        f"Invalid regex for {kind}:{entry_id}: {raw_pattern!r}"
+                    ) from error
+                compiled_patterns.append((entry_id, compiled))
+
         self.alias_map = alias_map
+        self.compiled_patterns = tuple(compiled_patterns)
 
     @classmethod
-    def from_yaml(cls, path: str | Path, *, root_key: str) -> "VocabularyRegistry":
+    def from_yaml(
+        cls,
+        path: str | Path,
+        *,
+        root_key: str,
+    ) -> "VocabularyRegistry":
         path = Path(path)
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
@@ -83,7 +124,11 @@ class VocabularyRegistry:
             entries=entries,
         )
 
-    def resolve(self, entry_id: str | None, label: str | None = None) -> VocabularyEntry | None:
+    def resolve(
+        self,
+        entry_id: str | None,
+        label: str | None = None,
+    ) -> VocabularyEntry | None:
         for value in (entry_id, label):
             if not value:
                 continue
@@ -93,6 +138,97 @@ class VocabularyRegistry:
             if resolved is not None:
                 return self.entries[resolved]
         return None
+
+    def resolve_parameterized(
+        self,
+        *,
+        entry_id: str | None,
+        label: str | None,
+        source_texts: Sequence[str | None] = (),
+    ) -> ParameterizedVocabularyMatch:
+        """Resolve exact aliases first, then data-driven regex patterns.
+
+        Named regex groups become structured parameters. For metrics this is
+        used to retain analyte, orbital, site, isotope, or component context
+        while keeping the metric ID generic across papers.
+        """
+        exact = self.resolve(entry_id, label)
+        texts = [
+            str(value).strip()
+            for value in (entry_id, label, *source_texts)
+            if value is not None and str(value).strip()
+        ]
+        joined = " | ".join(texts)
+
+        if exact is not None:
+            parameters: dict[str, str] = {}
+            matched_pattern: str | None = None
+            for candidate_id, pattern in self.compiled_patterns:
+                if candidate_id != exact.entry_id:
+                    continue
+                match = pattern.search(joined)
+                if match:
+                    parameters.update(
+                        {
+                            key: str(value).strip()
+                            for key, value in match.groupdict().items()
+                            if value is not None and str(value).strip()
+                        }
+                    )
+                    matched_pattern = pattern.pattern
+                    break
+            return ParameterizedVocabularyMatch(
+                entry=exact,
+                parameters=parameters,
+                matched_pattern=matched_pattern,
+                matched_text=joined,
+            )
+
+        matches: list[
+            tuple[int, int, str, re.Match[str], re.Pattern[str]]
+        ] = []
+        for candidate_id, pattern in self.compiled_patterns:
+            match = pattern.search(joined)
+            if match is None:
+                continue
+            span_length = match.end() - match.start()
+            parameter_count = sum(
+                value is not None and str(value).strip() != ""
+                for value in match.groupdict().values()
+            )
+            matches.append(
+                (
+                    parameter_count,
+                    span_length,
+                    candidate_id,
+                    match,
+                    pattern,
+                )
+            )
+
+        if not matches:
+            return ParameterizedVocabularyMatch(
+                entry=None,
+                parameters={},
+                matched_pattern=None,
+                matched_text=joined,
+            )
+
+        _, _, candidate_id, match, pattern = max(
+            matches,
+            key=lambda item: (item[0], item[1], item[2]),
+        )
+        parameters = {
+            key: str(value).strip()
+            for key, value in match.groupdict().items()
+            if value is not None and str(value).strip()
+        }
+        return ParameterizedVocabularyMatch(
+            entry=self.entries[candidate_id],
+            parameters=parameters,
+            matched_pattern=pattern.pattern,
+            matched_text=joined,
+        )
 
     def canonical_or_unregistered(
         self,
@@ -106,7 +242,11 @@ class VocabularyRegistry:
         source = label or entry_id or "unknown"
         return f"unregistered_{slugify(source)}", str(source), False
 
-    def prompt_lines(self, *, metadata_keys: tuple[str, ...] = ()) -> list[str]:
+    def prompt_lines(
+        self,
+        *,
+        metadata_keys: tuple[str, ...] = (),
+    ) -> list[str]:
         lines: list[str] = []
         for entry_id, entry in sorted(self.entries.items()):
             suffix = ""
@@ -122,7 +262,9 @@ class VocabularyRegistry:
         return lines
 
 
-def load_default_registries(project_root: str | Path) -> tuple[VocabularyRegistry, VocabularyRegistry]:
+def load_default_registries(
+    project_root: str | Path,
+) -> tuple[VocabularyRegistry, VocabularyRegistry]:
     root = Path(project_root)
     vocab_dir = root / "configs" / "vocabularies"
     experiments = VocabularyRegistry.from_yaml(

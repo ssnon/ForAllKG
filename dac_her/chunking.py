@@ -140,6 +140,8 @@ def _asset_locator(asset: AssetRecord) -> str:
 def _source_metadata(
     text: str,
     assets: Iterable[AssetRecord],
+    *,
+    section: str = "",
 ) -> tuple[
     tuple[int, ...],
     tuple[str, ...],
@@ -149,6 +151,7 @@ def _source_metadata(
 ]:
     pages = {int(match.group("page")) for match in _PAGE_RE.finditer(text)}
     linked: list[AssetRecord] = []
+    locator_haystack = f"{section}\n{text}"
 
     for asset in assets:
         locator = _asset_locator(asset)
@@ -156,7 +159,8 @@ def _source_metadata(
             asset.relative_path in text
             or asset.asset_id in text
             or asset.relative_path.rsplit("/", 1)[-1] in text
-            or (locator and re.search(re.escape(locator), text, re.IGNORECASE))
+            or (locator and re.search(re.escape(locator), locator_haystack, re.IGNORECASE))
+            or (asset.page_id is not None and asset.page_id in pages)
         ):
             linked.append(asset)
             if asset.page_id is not None:
@@ -197,6 +201,7 @@ def _filter_parent_assets(
             path in text
             or path.rsplit("/", 1)[-1] in text
             or (locator and re.search(re.escape(locator), text, re.IGNORECASE))
+            or (page is not None and page in pages)
         ):
             asset_ids.append(asset_id)
             asset_paths.append(path)
@@ -234,6 +239,7 @@ def create_chunks(
         page_ids, asset_ids, asset_paths, asset_pages, asset_locators = _source_metadata(
             core,
             assets,
+            section=section,
         )
 
         chunks.append(

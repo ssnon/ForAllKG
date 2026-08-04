@@ -44,6 +44,20 @@ def knowledge_graph_to_networkx(
                 ],
                 ensure_ascii=False,
             ),
+            metric_parameters_json=json.dumps(
+                {
+                    condition.name: (
+                        condition.value_text
+                        if condition.value_text is not None
+                        else condition.value_numeric
+                    )
+                    for condition in node.conditions
+                    if condition.name.strip().lower()
+                    in {"analyte", "orbital", "site", "component", "isotope", "phase"}
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
             description=node.description or "",
         )
 
@@ -89,6 +103,20 @@ def knowledge_graph_to_networkx(
                     for condition in node.conditions
                 ],
                 ensure_ascii=False,
+            ),
+            metric_parameters_json=json.dumps(
+                {
+                    condition.name: (
+                        condition.value_text
+                        if condition.value_text is not None
+                        else condition.value_numeric
+                    )
+                    for condition in node.conditions
+                    if condition.name.strip().lower()
+                    in {"analyte", "orbital", "site", "component", "isotope", "phase"}
+                },
+                ensure_ascii=False,
+                sort_keys=True,
             ),
             description=node.description or "",
         )

@@ -430,8 +430,10 @@ class MeasurementNode(BaseModel):
     metric_id: str = Field(
         ...,
         description=(
-            "Registry-backed metric ID. Use unregistered_<slug> when "
-            "the metric is not yet present in the registry."
+            "Registry-backed generic metric ID. Encode analyte, orbital, site, "
+            "component, or isotope as structured Condition objects rather "
+            "than creating element-specific metric IDs. Use "
+            "unregistered_<slug> only when no generic metric fits."
         ),
     )
 
@@ -519,8 +521,9 @@ class MeasurementNode(BaseModel):
     conditions: list[Condition] = Field(
         ...,
         description=(
-            "Conditions specific to this result, such as "
-            "overpotential or H coverage."
+            "Conditions and metric parameters specific to this result, such as "
+            "electrolyte, overpotential, H coverage, analyte, orbital, "
+            "site, component, or isotope."
         ),
     )
 

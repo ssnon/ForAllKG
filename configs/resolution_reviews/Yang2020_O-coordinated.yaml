@@ -1,0 +1,49 @@
+version: 2
+paper_id: Yang2020_O-coordinated
+
+same_entity_clusters:
+  - canonical_id: model_Mo2_NG
+    members: [model_Mo2_NG, model_Mo2, catalyst_model_Mo2_NG]
+    notes: Same Mo2-NG computational model across main/SI chunks.
+
+  - canonical_id: model_W2_NG
+    members: [model_W2_NG, model_W2, catalyst_model_W2_NG]
+    notes: Same W2-NG computational model across main/SI chunks.
+
+  - canonical_id: model_W1Mo1_O
+    members: [model_W1Mo1_O, model_o_coordinated_w1mo1_ng, model_o_w1mo1_ng]
+    notes: Same O-coordinated W1Mo1-NG computational model.
+
+  - canonical_id: support_NG
+    members: [support_NG, mat_NG, support_ng]
+    notes: Same nitrogen-doped graphene support across main/SI chunks.
+
+  - canonical_id: motif_W_O_Mo_O_C
+    members: [motif_W_O_Mo_O_C, motif_WOMoOC, "motif_WO MoOC", motif_w_o_mo_o_c]
+    notes: Same W-O-Mo-O-C coordination motif.
+
+  - canonical_id: motif_o_w_mo
+    members: [motif_o_w_mo, motif_O_coord_WMo]
+    notes: Same O-coordinated W-Mo heterodimer motif.
+
+  - canonical_id: cat_W1Mo1_NG
+    members: [cat_W1Mo1_NG, cat_w1mo1_ng_dac, cat_w1mo1_ng, cat_W1Mo1-NG]
+    notes: Same physical W1Mo1-NG catalyst; no state or coverage distinction.
+
+  - canonical_id: cat_Mo2_NG
+    members: [cat_Mo2_NG, cat_mo2_ng]
+    notes: Same physical Mo2-NG comparator catalyst.
+
+  - canonical_id: cat_W2_NG
+    members: [cat_W2_NG, cat_w2_ng, cat_W2-NG]
+    notes: Same physical W2-NG comparator catalyst across main/SI chunks.
+
+  - canonical_id: cat_NG
+    members: [cat_NG, cat_ng, mat_ng__mention_catalyst_6e0376eaefcc]
+    notes: Same raw-NG comparator in catalyst role; support nodes remain separate.
+
+  - canonical_id: cat_PtC
+    members: [cat_PtC, cat_ptc, cat_pt_c]
+    notes: Same commercial Pt/C benchmark catalyst.
+
+different_entity_pairs: []

@@ -22,7 +22,7 @@ class ExtractionPolicy:
 
     # Failure handling
     max_api_retries: int = 3
-    max_semantic_repairs: int = 2
+    max_semantic_repairs: int = 4
     max_split_depth: int = 3
 
     # Output utilization warnings

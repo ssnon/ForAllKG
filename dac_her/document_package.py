@@ -12,13 +12,23 @@ from dac_her.markdown import extract_markdown_section
 
 
 _SUPPLEMENTARY_REFERENCE_RE = re.compile(
-    r"\b(?:Supplementary|Supplemental|Suppl\.)\s+"
-    r"(?P<kind>Figs?\.?|Figures?|Tables?|Notes?|Methods?|Sections?)\s*"
+    r"\b(?:Supplementary|Supplemental|Suppl\.|Supporting\s+Information)\s+"
+    r"(?P<kind>Figs?\.?|Figures?|Tables?|Notes?|Methods?|Sections?|"
+    r"Schemes?|Equations?|Eqs?\.?|Videos?|Data)\s*"
     r"(?P<label>"
     r"[A-Za-z]?\d+[A-Za-z]?"
     r"(?:\s*[–—-]\s*[A-Za-z]?\d+[A-Za-z]?)?"
     r"(?:\s*(?:,|and)\s*[A-Za-z]?\d+[A-Za-z]?"
     r"(?:\s*[–—-]\s*[A-Za-z]?\d+[A-Za-z]?)?)*"
+    r")",
+    re.IGNORECASE,
+)
+_STANDALONE_S_REFERENCE_RE = re.compile(
+    r"\b(?P<kind>Figs?\.?|Figures?|Tables?|Schemes?|Equations?|Eqs?\.?)\s*"
+    r"(?P<label>S\d+[A-Za-z]?"
+    r"(?:\s*[–—-]\s*S?\d+[A-Za-z]?)?"
+    r"(?:\s*(?:,|and)\s*S?\d+[A-Za-z]?"
+    r"(?:\s*[–—-]\s*S?\d+[A-Za-z]?)?)*"
     r")",
     re.IGNORECASE,
 )
@@ -98,6 +108,14 @@ def _singular_kind(kind: str) -> str:
         return "Note"
     if normalized.startswith("method"):
         return "Method"
+    if normalized.startswith("scheme"):
+        return "Scheme"
+    if normalized.startswith("equation") or normalized.startswith("eq"):
+        return "Equation"
+    if normalized.startswith("video"):
+        return "Video"
+    if normalized.startswith("data"):
+        return "Data"
     return "Section"
 
 
@@ -111,14 +129,25 @@ def _expand_reference_labels(label: str) -> list[str]:
     expanded: list[str] = []
     for part in parts:
         range_match = re.fullmatch(
-            r"(?P<start>\d+)\s*[–—-]\s*(?P<end>\d+)",
+            r"(?P<prefix>[A-Za-z]?)"
+            r"(?P<start>\d+)\s*[–—-]\s*"
+            r"(?P<end_prefix>[A-Za-z]?)"
+            r"(?P<end>\d+)",
             part,
         )
         if range_match:
+            prefix = range_match.group("prefix")
+            end_prefix = range_match.group("end_prefix") or prefix
             start = int(range_match.group("start"))
             end = int(range_match.group("end"))
-            if start <= end and end - start <= 50:
-                expanded.extend(str(value) for value in range(start, end + 1))
+            if (
+                prefix.lower() == end_prefix.lower()
+                and start <= end
+                and end - start <= 50
+            ):
+                expanded.extend(
+                    f"{prefix}{value}" for value in range(start, end + 1)
+                )
                 continue
         expanded.append(part)
     return expanded
@@ -127,10 +156,14 @@ def _expand_reference_labels(label: str) -> list[str]:
 def extract_supplementary_references(texts: Iterable[str]) -> tuple[str, ...]:
     values: set[str] = set()
     for text in texts:
-        for match in _SUPPLEMENTARY_REFERENCE_RE.finditer(text):
-            kind = _singular_kind(match.group("kind"))
-            for label in _expand_reference_labels(match.group("label")):
-                values.add(f"Supplementary {kind} {label}")
+        for pattern in (
+            _SUPPLEMENTARY_REFERENCE_RE,
+            _STANDALONE_S_REFERENCE_RE,
+        ):
+            for match in pattern.finditer(text):
+                kind = _singular_kind(match.group("kind"))
+                for label in _expand_reference_labels(match.group("label")):
+                    values.add(f"Supplementary {kind} {label}")
     return tuple(sorted(values))
 
 
@@ -144,16 +177,22 @@ def _normalized(value: str) -> str:
 
 
 def _block_around_match(markdown: str, start: int, end: int) -> str:
-    # Prefer a Markdown heading block when the match is inside one.
+    # Prefer a Markdown heading block when the match is in the heading itself
+    # or anywhere below it. Searching only before ``start`` misses captions
+    # rendered by Marker as headings such as ``## Figure S3``.
     previous_heading = None
     previous_level = None
-    for match in _HEADING_RE.finditer(markdown, 0, start):
+    for match in _HEADING_RE.finditer(markdown):
+        if match.start() > start:
+            break
         previous_heading = match
         previous_level = len(match.group(1))
+        if match.start() <= start <= match.end():
+            break
 
     if previous_heading is not None and previous_level is not None:
         next_pattern = re.compile(rf"(?m)^#{{1,{previous_level}}}\s+.+$")
-        next_heading = next_pattern.search(markdown, end)
+        next_heading = next_pattern.search(markdown, max(end, previous_heading.end()))
         block_end = next_heading.start() if next_heading else len(markdown)
         candidate = markdown[previous_heading.start():block_end].strip()
         if len(candidate) <= 16000:
@@ -170,17 +209,36 @@ def _reference_variants(reference: str) -> tuple[str, ...]:
     normalized = _normalized(reference)
     variants = {normalized}
     match = re.fullmatch(
-        r"supplementary (?P<kind>fig|table|note|method|section) (?P<label>[a-z0-9]+)",
+        r"supplementary (?P<kind>fig|table|note|method|section|scheme|equation|video|data) "
+        r"(?P<label>[a-z0-9]+)",
         normalized,
     )
-    if match:
-        kind = match.group("kind")
-        label = match.group("label")
-        variants.add(f"supplementary {kind} {label}")
-        if label.isdigit():
-            variants.add(f"{kind} s{label}")
-            if kind == "fig":
-                variants.add(f"figure s{label}")
+    if not match:
+        return tuple(sorted(variants, key=len, reverse=True))
+
+    kind = match.group("kind")
+    label = match.group("label")
+    short_label = label[1:] if label.startswith("s") and label[1:].isdigit() else label
+    s_label = label if label.startswith("s") else f"s{label}"
+
+    long_kind = {
+        "fig": "figure",
+        "table": "table",
+        "note": "note",
+        "method": "method",
+        "section": "section",
+        "scheme": "scheme",
+        "equation": "equation",
+        "video": "video",
+        "data": "data",
+    }[kind]
+
+    for candidate_label in {label, short_label, s_label}:
+        variants.add(f"supplementary {kind} {candidate_label}")
+        variants.add(f"supplementary {long_kind} {candidate_label}")
+        variants.add(f"{kind} {candidate_label}")
+        variants.add(f"{long_kind} {candidate_label}")
+
     return tuple(sorted(variants, key=len, reverse=True))
 
 
@@ -205,10 +263,14 @@ def select_referenced_blocks(
 
         tokens = matching_variant.split()
         locator_tokens = tokens[-2:] if len(tokens) >= 2 else tokens
-        locator_parts = [
-            r"fig(?:ure)?" if token == "fig" else re.escape(token)
-            for token in locator_tokens
-        ]
+        locator_parts = []
+        for token in locator_tokens:
+            if token == "fig":
+                locator_parts.append(r"fig(?:ure)?\.?")
+            elif token == "equation":
+                locator_parts.append(r"(?:equation|eq)\.?")
+            else:
+                locator_parts.append(re.escape(token))
         locator_pattern = r"\W*".join(locator_parts)
         match = re.search(locator_pattern, markdown, re.IGNORECASE)
         if match is None:

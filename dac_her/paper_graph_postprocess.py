@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 import networkx as nx
 
+from dac_her.node_references import remap_node_reference_attributes
 from dac_her.resolution_candidates import (
     CLAIM_NODE_TYPES,
     RESOLVABLE_NODE_TYPES,
@@ -162,7 +163,7 @@ def _load_jsonl_resolution_plan(
 ) -> ResolutionPlan:
     records = read_jsonl(path)
     dsu = _DisjointSet()
-    explicit_by_pair: list[tuple[str, str, str | None]] = []
+    approved_records: list[tuple[str, str, str | None, bool]] = []
 
     approved_same_entity = 0
     stale_decisions = 0
@@ -212,20 +213,32 @@ def _load_jsonl_resolution_plan(
             if not _is_blank(canonical_id_value)
             else None
         )
-        if canonical_id is not None and canonical_id not in {left_id, right_id}:
-            raise ValueError(
-                "canonical_id must be one of left_id or right_id in Milestone "
-                f"2A decisions: {canonical_id!r}."
-            )
+        reviewer = str(record.get("reviewer", "") or "").strip()
+        automatic_choice = reviewer == "automatic_registry_rule"
 
         dsu.union(left_id, right_id)
-        explicit_by_pair.append((left_id, right_id, canonical_id))
+        approved_records.append(
+            (left_id, right_id, canonical_id, automatic_choice)
+        )
 
     groups = dsu.groups()
     explicit_by_root: dict[str, set[str]] = defaultdict(set)
-    for left_id, _, canonical_id in explicit_by_pair:
-        if canonical_id is not None:
-            explicit_by_root[dsu.find(left_id)].add(canonical_id)
+    for left_id, right_id, canonical_id, automatic_choice in approved_records:
+        if canonical_id is None or automatic_choice:
+            # Pairwise auto-approved candidates can form a transitive cluster.
+            # Their old left-node canonical hints are not cluster-level choices
+            # and must not conflict with one another. The representative is
+            # selected deterministically after the full cluster is known.
+            continue
+        root = dsu.find(left_id)
+        members = groups[root]
+        if canonical_id not in members:
+            raise ValueError(
+                "Human canonical_id choice is outside its resolution cluster: "
+                f"canonical_id={canonical_id!r}, pair=({left_id!r}, "
+                f"{right_id!r}), cluster={sorted(members)!r}."
+            )
+        explicit_by_root[root].add(canonical_id)
 
     aliases: dict[str, str] = {}
     cluster_count = 0
@@ -403,23 +416,32 @@ def canonicalize_paper_graph(
     canonical.graph.update(graph.graph)
 
     aliases_by_canonical: dict[str, set[str]] = defaultdict(set)
+    canonical_id_map = {
+        str(node_id): resolve_alias(str(node_id), aliases)
+        for node_id in graph.nodes
+        if str(node_id) not in drop_node_ids
+    }
 
     for node_id, node_data in graph.nodes(data=True):
         node_id = str(node_id)
         if node_id in drop_node_ids:
             continue
 
-        canonical_id = resolve_alias(node_id, aliases)
+        canonical_id = canonical_id_map[node_id]
         aliases_by_canonical[canonical_id].add(node_id)
+        remapped_node_data = remap_node_reference_attributes(
+            dict(node_data),
+            canonical_id_map,
+        )
 
         if canonical_id in canonical:
             merged_data = merge_node_attributes(
                 dict(canonical.nodes[canonical_id]),
-                dict(node_data),
+                remapped_node_data,
             )
             canonical.nodes[canonical_id].update(merged_data)
         else:
-            canonical.add_node(canonical_id, **dict(node_data))
+            canonical.add_node(canonical_id, **remapped_node_data)
 
     for canonical_id, member_ids in aliases_by_canonical.items():
         canonical.nodes[canonical_id]["aliases_json"] = json.dumps(

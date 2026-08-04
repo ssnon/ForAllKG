@@ -183,7 +183,7 @@ def main() -> None:
         *experiment_registry.prompt_lines(metadata_keys=("family",)),
         "",
         "REGISTERED MEASUREMENT METRICS:",
-        *metric_registry.prompt_lines(metadata_keys=("canonical_unit",)),
+        *metric_registry.prompt_lines(metadata_keys=("canonical_unit", "parameters")),
     ])
 
     policy = ExtractionPolicy()
@@ -272,25 +272,59 @@ def main() -> None:
         if document.role == "main":
             main_source_texts.extend(source.text for source in sources)
 
-    supplementary_references = extract_supplementary_references(main_source_texts)
+    si_reference_documents = [
+        document
+        for document in paper.documents
+        if document.role == "supporting_information"
+        and document.selection.mode == "referenced_blocks"
+    ]
+    use_whole_main_for_references = any(
+        document.selection.reference_scope == "whole_main"
+        for document in si_reference_documents
+    )
+    reference_texts = (
+        [
+            packages[document.document_id].markdown
+            for document in paper.documents
+            if document.role == "main"
+        ]
+        if use_whole_main_for_references
+        else main_source_texts
+    )
+    supplementary_references = extract_supplementary_references(reference_texts)
+
+    si_selection_diagnostics: list[dict[str, Any]] = []
+    for document in si_reference_documents:
+        sources = select_document_sources(
+            package=packages[document.document_id],
+            config=document,
+            supplementary_references=supplementary_references,
+        )
+        selected_sources.extend(sources)
+        si_selection_diagnostics.append({
+            "document_id": document.document_id,
+            "document_role": document.role,
+            "reference_scope": document.selection.reference_scope,
+            "fallback": document.selection.fallback,
+            "references_detected": list(supplementary_references),
+            "selected_block_count": len(sources),
+            "selected_sections": [source.section for source in sources],
+        })
+
     write_json(
         run_dir / "supplementary_references.json",
-        {"references": list(supplementary_references)},
+        {
+            "reference_scope": (
+                "whole_main" if use_whole_main_for_references
+                else "selected_main"
+            ),
+            "references": list(supplementary_references),
+        },
     )
-
-    for document in paper.documents:
-        if not (
-            document.role == "supporting_information"
-            and document.selection.mode == "referenced_blocks"
-        ):
-            continue
-        selected_sources.extend(
-            select_document_sources(
-                package=packages[document.document_id],
-                config=document,
-                supplementary_references=supplementary_references,
-            )
-        )
+    write_json(
+        run_dir / "si_selection_diagnostics.json",
+        {"documents": si_selection_diagnostics},
+    )
 
     initial_chunks: list[ChunkSpec] = []
     source_summaries: list[dict[str, Any]] = []

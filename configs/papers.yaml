@@ -36,3 +36,38 @@ papers:
           vision_assets: []
 
     resolution_file: null
+
+  Kiwook_3:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_3/Kiwook_3
+        markdown_file: Kiwook_3.md
+        metadata_file: Kiwook_3_meta.json
+
+        selection:
+          mode: sections
+          headings:
+            - "### 3. Results and Discussion"
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_3/Kiwook_3_SI1
+        markdown_file: Kiwook_3_SI1.md
+        metadata_file: Kiwook_3_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+    resolution_file: null

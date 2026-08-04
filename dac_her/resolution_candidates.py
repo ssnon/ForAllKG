@@ -449,6 +449,14 @@ def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
     return records
 
 
+
+
+def _is_automatic_decision_record(record: Mapping[str, Any]) -> bool:
+    return (
+        str(record.get("reviewer", "") or "").strip()
+        == "automatic_registry_rule"
+    )
+
 def sync_decisions_jsonl(
     path: str | Path,
     candidates: Sequence[ResolutionCandidate],
@@ -457,11 +465,14 @@ def sync_decisions_jsonl(
     path.parent.mkdir(parents=True, exist_ok=True)
     existing = {str(item.get("candidate_id")): item for item in read_jsonl(path)}
     records: list[dict[str, Any]] = []
-    preserved = created = auto_approved = 0
+    preserved = created = auto_approved = refreshed_automatic = 0
+    preserved_manual = 0
+    current_candidate_ids = {candidate.candidate_id for candidate in candidates}
     for candidate in candidates:
         base = candidate.to_row()
         prior = existing.get(candidate.candidate_id)
-        if prior is not None:
+        if prior is not None and not _is_automatic_decision_record(prior):
+            # Preserve human/unreviewed decisions exactly.
             for key in (
                 "decision", "approved", "canonical_id", "reviewer",
                 "reviewed_at", "notes",
@@ -470,17 +481,41 @@ def sync_decisions_jsonl(
                     base[key] = prior[key]
             preserved += 1
         else:
+            # Automatic pair decisions are regenerated from the current
+            # candidate. canonical_id is intentionally null: pairwise choices
+            # are not valid cluster-level representatives when candidates form
+            # a transitive component.
             base.update({
                 "decision": "same_entity" if candidate.auto_approve else "unreviewed",
                 "approved": bool(candidate.auto_approve),
-                "canonical_id": candidate.left_id if candidate.auto_approve else None,
+                "canonical_id": None,
                 "reviewer": "automatic_registry_rule" if candidate.auto_approve else None,
                 "reviewed_at": None,
                 "notes": None,
             })
-            created += 1
+            if prior is None:
+                created += 1
+            else:
+                refreshed_automatic += 1
             auto_approved += int(candidate.auto_approve)
         records.append(base)
+
+    # Preserve explicit human decisions even when a future candidate generator
+    # no longer emits the same pair. This allows reviewed transitive clusters
+    # to remain stable across vocabulary and scoring changes. Missing graph
+    # nodes are still treated as stale later by load_resolution_plan().
+    for candidate_id, prior in sorted(existing.items()):
+        if candidate_id in current_candidate_ids:
+            continue
+        if _is_automatic_decision_record(prior):
+            continue
+        decision = str(prior.get("decision", "unreviewed")).strip()
+        reviewer = str(prior.get("reviewer", "") or "").strip()
+        if not reviewer or decision == "unreviewed":
+            continue
+        records.append(prior)
+        preserved_manual += 1
+
     path.write_text(
         "".join(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n" for record in records),
         encoding="utf-8",
@@ -489,7 +524,15 @@ def sync_decisions_jsonl(
         "preserved": preserved,
         "created": created,
         "auto_approved": auto_approved,
-        "removed_stale": max(0, len(existing) - preserved),
+        "refreshed_automatic": refreshed_automatic,
+        "preserved_manual": preserved_manual,
+        "removed_stale": max(
+            0,
+            len(existing)
+            - preserved
+            - refreshed_automatic
+            - preserved_manual,
+        ),
     }
 
 
