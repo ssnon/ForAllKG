@@ -275,6 +275,61 @@ def si_figure_provenance_issues(
             })
     return rows
 
+# dac_her/semantic_audit.py
+def measurement_subject_consistency(
+    graph: nx.Graph,
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    issues: list[dict[str, Any]] = []
+    multi_provenance: list[dict[str, Any]] = []
+
+    for node_id, attrs in graph.nodes(data=True):
+        if attrs.get("type") != "Measurement":
+            continue
+
+        measurement_id = str(node_id)
+        expected_target = str(attrs.get("subject_id", ""))
+
+        raw_targets = [
+            str(target)
+            for _, target, edge_data in graph.out_edges(
+                measurement_id,
+                data=True,
+            )
+            if edge_data.get("relation") == "MEASURED_FOR"
+        ]
+
+        unique_targets = sorted(set(raw_targets))
+
+        if unique_targets != [expected_target]:
+            issues.append({
+                "id": measurement_id,
+                "subject_id": expected_target,
+                "measured_for_targets": raw_targets,
+                "unique_targets": unique_targets,
+                "issue": (
+                    "MEASURED_FOR semantic targets do not "
+                    "match Measurement.subject_id"
+                ),
+            })
+            continue
+
+        if len(raw_targets) > 1:
+            multi_provenance.append({
+                "id": measurement_id,
+                "subject_id": expected_target,
+                "parallel_edge_count": len(raw_targets),
+                "target": expected_target,
+                "issue": (
+                    "multiple provenance-bearing MEASURED_FOR "
+                    "edges share one semantic target"
+                ),
+            })
+
+    return issues, multi_provenance
+
 
 def semantic_readiness(
     *,

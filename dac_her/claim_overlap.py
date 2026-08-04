@@ -279,6 +279,29 @@ class ClaimOverlapCandidate:
     def to_row(self) -> dict[str, Any]:
         return asdict(self)
 
+@dataclass(frozen=True)
+class ClaimCluster:
+    claim_cluster_id: str
+    claim_node_type: str
+    suggested_relation: str
+    review_status: str
+    representative_claim_id: str
+    supporting_claim_ids: tuple[str, ...]
+
+    def to_row(self) -> dict[str, Any]:
+        row = asdict(self)
+        row["supporting_claim_ids_json"] = (
+            json.dumps(
+                list(
+                    row.pop(
+                        "supporting_claim_ids"
+                    )
+                ),
+                ensure_ascii=False,
+            )
+        )
+        return row
+    
 
 def generate_claim_overlap_candidates(
     graph: nx.Graph,
@@ -444,6 +467,127 @@ def generate_claim_overlap_candidates(
         key=lambda item: (-item.total_score, item.left_id, item.right_id),
     )
 
+def build_claim_clusters(
+    candidates: Sequence[
+        ClaimOverlapCandidate
+    ],
+) -> list[ClaimCluster]:
+    clusterable_relations = {
+        "EXACT_DUPLICATE",
+        "SAME_CONCLUSION_DIFFERENT_EVIDENCE",
+    }
+
+    graph = nx.Graph()
+
+    candidate_lookup: dict[
+        tuple[str, str],
+        ClaimOverlapCandidate,
+    ] = {}
+
+    for candidate in candidates:
+        if (
+            candidate.suggested_relation
+            not in clusterable_relations
+        ):
+            continue
+
+        graph.add_edge(
+            candidate.left_id,
+            candidate.right_id,
+        )
+        candidate_lookup[
+            tuple(
+                sorted(
+                    (
+                        candidate.left_id,
+                        candidate.right_id,
+                    )
+                )
+            )
+        ] = candidate
+
+    clusters: list[ClaimCluster] = []
+
+    for members_value in (
+        nx.connected_components(graph)
+    ):
+        members = tuple(
+            sorted(
+                str(value)
+                for value in members_value
+            )
+        )
+
+        if len(members) < 2:
+            continue
+
+        digest = hashlib.sha256(
+            "|".join(members).encode(
+                "utf-8"
+            )
+        ).hexdigest()[:20]
+
+        member_candidates = [
+            candidate
+            for candidate in candidates
+            if (
+                candidate.left_id in members
+                and candidate.right_id in members
+                and candidate.suggested_relation
+                in clusterable_relations
+            )
+        ]
+
+        node_types = sorted({
+            candidate.claim_node_type
+            for candidate in member_candidates
+        })
+
+        relations = {
+            candidate.suggested_relation
+            for candidate in member_candidates
+        }
+
+        suggested_relation = (
+            "EXACT_DUPLICATE"
+            if relations
+            == {"EXACT_DUPLICATE"}
+            else (
+                "SAME_CONCLUSION_DIFFERENT_EVIDENCE"
+            )
+        )
+
+        clusters.append(
+            ClaimCluster(
+                claim_cluster_id=(
+                    "claim_cluster:"
+                    + digest
+                ),
+                claim_node_type=(
+                    node_types[0]
+                    if len(node_types) == 1
+                    else "mixed"
+                ),
+                suggested_relation=(
+                    suggested_relation
+                ),
+                review_status=(
+                    "needs_review"
+                ),
+                representative_claim_id=(
+                    members[0]
+                ),
+                supporting_claim_ids=members,
+            )
+        )
+
+    return sorted(
+        clusters,
+        key=lambda item: (
+            item.claim_node_type,
+            item.representative_claim_id,
+        ),
+    )
 
 def generic_claim_rows(graph: nx.Graph) -> list[dict[str, Any]]:
     rows = []
@@ -499,7 +643,17 @@ def write_claim_overlap_audit(
         output_dir / "claim_overlap_candidates.csv",
         [item.to_row() for item in candidates],
     )
+    clusters = build_claim_clusters(
+        candidates
+    )
     write_csv(output_dir / "generic_claims.csv", generic)
+    write_csv(
+        output_dir / "claim_clusters.csv",
+        [
+            cluster.to_row()
+            for cluster in clusters
+        ],
+    )
     summary = {
         "claim_overlap_candidates": len(candidates),
         "exact_duplicates": sum(
@@ -517,6 +671,14 @@ def write_claim_overlap_audit(
         "property_aware_blocking": True,
         "contradiction_requires_shared_property": True,
         "contradiction_requires_compatible_conditions": True,
+        "claim_clusters": len(clusters),
+        "clustered_claim_nodes": len({
+            claim_id
+            for cluster in clusters
+            for claim_id
+            in cluster.supporting_claim_ids
+        }),
+        "claims_destructively_merged": 0,
     }
     (output_dir / "claim_overlap_summary.json").write_text(
         json.dumps(

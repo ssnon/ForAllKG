@@ -5,7 +5,10 @@ import unicodedata
 from typing import Any
 
 import networkx as nx
-
+from dac_her.chemistry_signatures import (
+    composition_signature,
+    metal_signature,
+)
 
 _ELEMENT_NAMES = {
     "platinum": "pt", "ruthenium": "ru", "tungsten": "w",
@@ -15,14 +18,14 @@ _ELEMENT_NAMES = {
     "tin": "sn", "vanadium": "v", "chromium": "cr", "titanium": "ti",
     "niobium": "nb", "tantalum": "ta",
 }
-_METAL_SYMBOLS = frozenset(_ELEMENT_NAMES.values())
+_METAL_SYMBOLS = frozenset(metal_signature.values())
 
 
 def normalize_scientific_text(value: Any) -> str:
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
     text = text.lower().strip()
-    for name, symbol in _ELEMENT_NAMES.items():
+    for name, symbol in metal_signature.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"[^a-z0-9+.%/\-\s]", " ", text)

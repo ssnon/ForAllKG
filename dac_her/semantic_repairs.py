@@ -6,6 +6,10 @@ from typing import Any
 
 import networkx as nx
 
+from dac_her.chemistry_signatures import (
+    composition_signature,
+    metal_signature,
+)
 
 _METAL_SYMBOLS = {
     "Li", "Be", "Na", "Mg", "Al", "K", "Ca", "Sc", "Ti", "V", "Cr",
@@ -22,29 +26,41 @@ def composition_signature(value: Any) -> tuple[tuple[str, int], ...]:
     text = str(value or "")
     counts: Counter[str] = Counter()
     for symbol, raw_count in _TOKEN_RE.findall(text):
-        if symbol not in _METAL_SYMBOLS:
+        if symbol not in metal_signature:
             continue
         counts[symbol] += int(raw_count) if raw_count else 1
     return tuple(sorted(counts.items()))
 
-
-def node_composition_signature(graph: nx.Graph, node_id: str) -> tuple[tuple[str, int], ...]:
+def node_composition_signature(
+    graph: nx.Graph,
+    node_id: str,
+) -> tuple[tuple[str, int], ...]:
     data = graph.nodes[node_id]
-    for value in (data.get("label"), node_id, data.get("description")):
-        signature = composition_signature(value)
-        if signature:
-            return signature
 
+    # 1. label 우선
+    signature = composition_signature(data.get("label"))
+    if signature:
+        return signature
+
+    # 2. 명시적인 HAS_METAL edge
     metals: Counter[str] = Counter()
-    for _, target, edge_data in graph.out_edges(node_id, data=True):
-        if str(edge_data.get("relation", "")) != "HAS_METAL":
-            continue
-        label = graph.nodes[target].get("label", target)
-        signature = composition_signature(label)
-        for symbol, count in signature:
-            metals[symbol] += count
-    return tuple(sorted(metals.items()))
 
+    for _, target, edge_data in graph.out_edges(
+        node_id,
+        data=True,
+    ):
+        if edge_data.get("relation") != "HAS_METAL":
+            continue
+
+        label = graph.nodes[target].get("label", "")
+        for symbol, count in composition_signature(label):
+            metals[symbol] += count
+
+    if metals:
+        return tuple(sorted(metals.items()))
+
+    # 3. 마지막 fallback만 description
+    return composition_signature(data.get("description"))
 
 def repair_model_of_targets(graph: nx.MultiDiGraph) -> list[dict[str, Any]]:
     """Retarget composition-incompatible MODEL_OF edges when unique and safe."""

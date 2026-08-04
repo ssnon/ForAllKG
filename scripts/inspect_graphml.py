@@ -22,6 +22,7 @@ from dac_her.semantic_audit import (
     model_of_composition_issues,
     semantic_readiness,
     si_figure_provenance_issues,
+    measurement_subject_consistency
 )
 from dac_her.measurement_scalarization import numeric_tokens
 
@@ -676,19 +677,9 @@ def main() -> None:
         if not producers:
             unlinked_measurements.append(row)
 
-    measurement_subject_issues: list[dict[str, Any]] = []
-    for row in measurements:
-        measured_for = [
-            edge for edge in outgoing_by_source[row["id"]]
-            if edge.get("relation") == "MEASURED_FOR"
-        ]
-        if len(measured_for) != 1 or str(measured_for[0].get("target", "")) != str(row.get("subject_id", "")):
-            measurement_subject_issues.append({
-                "id": row["id"],
-                "subject_id": row.get("subject_id", ""),
-                "measured_for_targets": [edge.get("target", "") for edge in measured_for],
-                "issue": "expected exactly one MEASURED_FOR edge matching subject_id",
-            })
+    measurement_subject_issues, measurement_multi_provenance = (
+        measurement_subject_consistency(graph)
+    )
 
     composite_measurements = composite_measurement_rows(measurements)
     unregistered_experiments = [
@@ -864,6 +855,10 @@ def main() -> None:
             f"{len(unlinked_measurements)}"
         ),
         f"Measurement subject issues: {len(measurement_subject_issues)}",
+        (
+            "Measurements with parallel provenance edges: "
+            f"{len(measurement_multi_provenance)}"
+        ),
         f"Composite measurements: {len(composite_measurements)}",
         f"Unregistered experiments: {len(unregistered_experiments)}",
         f"Unregistered metrics: {len(unregistered_metrics)}",
@@ -951,6 +946,7 @@ def main() -> None:
         unlinked_measurements,
     )
     write_csv(output_dir / "measurement_subject_issues.csv", measurement_subject_issues)
+    write_csv(output_dir / "measurement_multi_provenance.csv", measurement_multi_provenance)
     write_csv(output_dir / "composite_measurements.csv", composite_measurements)
     write_csv(output_dir / "unregistered_experiments.csv", unregistered_experiments)
     write_csv(output_dir / "unregistered_metrics.csv", unregistered_metrics)

@@ -13,6 +13,10 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import networkx as nx
 
+from dac_her.chemistry_signatures import (
+    composition_signature,
+    metal_signature,
+)
 
 RESOLVABLE_NODE_TYPES: frozenset[str] = frozenset({
     "Paper", "Catalyst", "CatalystModel", "Metal", "Support",
@@ -30,7 +34,7 @@ _ELEMENT_NAMES = {
     "tin": "sn", "vanadium": "v", "chromium": "cr", "titanium": "ti",
     "niobium": "nb", "tantalum": "ta", "molybdenum": "mo",
 }
-_METAL_SYMBOLS = frozenset(_ELEMENT_NAMES.values())
+_METAL_SYMBOLS = frozenset(metal_signature.values())
 _REACTION_ALIASES = {
     "her": "hydrogen_evolution_reaction",
     "hydrogen evolution": "hydrogen_evolution_reaction",
@@ -51,7 +55,7 @@ def normalize_scientific_text(value: Any) -> str:
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
     text = text.lower().strip()
-    for name, symbol in _ELEMENT_NAMES.items():
+    for name, symbol in metal_signature.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
     replacements = {
         "hydrogen evolution reaction": "her",
@@ -131,6 +135,15 @@ def _chunk_ids(graph: nx.Graph, node_id: str) -> tuple[str, ...]:
         if data.get("chunk_id")
     }))
 
+def _document_ids(
+    graph: nx.Graph,
+    node_id: str,
+) -> tuple[str, ...]:
+    return tuple(sorted({
+        str(data.get("document_id"))
+        for _, _, data in _incident(graph, node_id)
+        if data.get("document_id")
+    }))
 
 def _neighborhood_signature(graph: nx.Graph, node_id: str) -> frozenset[str]:
     rows: set[str] = set()
@@ -259,10 +272,15 @@ class ResolutionCandidate:
     right_degree: int
     left_chunk_ids: tuple[str, ...]
     right_chunk_ids: tuple[str, ...]
+    left_documents: tuple[str, ...]
+    right_documents: tuple[str, ...]
+    cross_document: bool
+    normalized_label_equal: bool
+    review_priority: str
 
     def to_row(self) -> dict[str, Any]:
         row = asdict(self)
-        for key in ("reasons", "conflicts", "left_chunk_ids", "right_chunk_ids"):
+        for key in ("reasons", "conflicts", "left_chunk_ids", "right_chunk_ids", "left_documents", "right_documents"):
             row[f"{key}_json"] = json.dumps(list(row.pop(key)), ensure_ascii=False)
         return row
 
@@ -296,8 +314,33 @@ def _candidate(
         return None
     left_label, right_label = _node_label(graph, left_id), _node_label(graph, right_id)
     signature_equal = _type_signature(graph, left_id) == _type_signature(graph, right_id)
+    normalized_left = normalize_scientific_text(
+        left_label
+    )
+    normalized_right = normalize_scientific_text(
+        right_label
+    )
+
+    normalized_label_equal = (
+        normalized_left == normalized_right
+    )
+
+    left_documents = _document_ids(
+        graph,
+        left_id,
+    )
+    right_documents = _document_ids(
+        graph,
+        right_id,
+    )
+
+    cross_document = bool(
+        left_documents
+        and right_documents
+        and set(left_documents) != set(right_documents)
+    )
     label_similarity = SequenceMatcher(
-        None, normalize_scientific_text(left_label), normalize_scientific_text(right_label)
+        None, normalized_left, normalized_right
     ).ratio()
     token_jaccard = _jaccard(normalized_tokens(left_label), normalized_tokens(right_label))
     neighborhood_similarity = _jaccard(
@@ -315,8 +358,37 @@ def _candidate(
         and signature_equal
         and label_similarity >= 0.80
     )
-    recommendation = "same_entity" if auto_approve else "needs_review"
-    merge_safety = "safe_exact_registry_entity" if auto_approve else "review_required"
+
+    high_priority_review = bool(
+        node_type
+        in {
+            "Catalyst",
+            "CatalystModel",
+            "Support",
+            "Material",
+        }
+        and normalized_label_equal
+        and signature_equal
+        and cross_document
+    )
+
+    if auto_approve:
+        recommendation = "same_entity"
+        merge_safety = "safe_exact_registry_entity"
+        review_priority = "automatic"
+
+    elif high_priority_review:
+        # 같은 entity일 가능성은 높지만,
+        # Catalyst 계열은 자동 병합하지 않는다.
+        recommendation = "same_entity"
+        merge_safety = "review_required"
+        review_priority = "high"
+
+    else:
+        recommendation = "needs_review"
+        merge_safety = "review_required"
+        review_priority = "normal"
+
     reasons = []
     if signature_equal:
         reasons.append("type-specific structured signatures match")
@@ -350,6 +422,11 @@ def _candidate(
         right_degree=int(graph.degree(right_id)),
         left_chunk_ids=_chunk_ids(graph, left_id),
         right_chunk_ids=_chunk_ids(graph, right_id),
+        left_documents=left_documents,
+        right_documents=right_documents,
+        cross_document=cross_document,
+        normalized_label_equal=normalized_label_equal,
+        review_priority=review_priority,
     )
 
 
@@ -400,16 +477,26 @@ def generate_resolution_candidates(
                 else:
                     fuzzy_intra += 1
 
+    priority_rank = {
+        "automatic": 0,
+        "high": 1,
+        "normal": 2,
+    }
+
     ordered = sorted(
         candidates.values(),
         key=lambda item: (
-            not item.auto_approve,
+            priority_rank.get(
+                item.review_priority,
+                9,
+            ),
             -item.total_score,
             item.node_type,
             item.left_id,
             item.right_id,
         ),
     )
+    
     return ordered, CandidateSummary(
         total_candidates=len(ordered),
         exact_entity_candidates=exact_count,
