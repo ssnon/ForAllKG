@@ -1,0 +1,78 @@
+{
+  "protocol_version": "1.0",
+  "campaign_name": "bridge-v2.3.3-heldout-7paper",
+  "baseline_tag": "bridge-v2.3.3-frozen-3paper",
+  "papers": [
+    "Kiwook_4",
+    "Kiwook_5",
+    "Kiwook_6",
+    "Kiwook_7",
+    "Kiwook_8",
+    "Kiwook_9",
+    "Kiwook_10"
+  ],
+  "config_path": "configs/papers.yaml",
+  "operational_retry_protocol": {
+    "strict_max_outer_passes": 5,
+    "bridge_max_outer_passes": 5,
+    "strict_backoff_seconds": [
+      0,
+      60,
+      180,
+      600,
+      1200
+    ],
+    "bridge_backoff_seconds": [
+      0,
+      60,
+      180,
+      600,
+      1200
+    ],
+    "reuse_valid_cache": true,
+    "force": false,
+    "allow_incomplete": false,
+    "change_model_between_passes": false,
+    "change_provider_between_passes": false,
+    "strict_concurrency": 2,
+    "bridge_concurrency": 4
+  },
+  "model_environment": {
+    "strict_model": "OPENROUTER_EXTRACT_MODEL",
+    "bridge_model": "OPENROUTER_BRIDGE_MODEL",
+    "provider": "OPENROUTER_PROVIDER"
+  },
+  "selection_preflight": {
+    "run_preview": true,
+    "configured_si_with_zero_selected_sources": "warn"
+  },
+  "resolution_protocol": {
+    "mode": "automatic_registry_rule_only",
+    "reject_preexisting_manual_decisions": true,
+    "manual_review_during_held_out": false
+  },
+  "projection_modes": [
+    "evidence",
+    "mechanism",
+    "exploratory"
+  ],
+  "frozen_rules": {
+    "allow_prompt_tuning": false,
+    "allow_schema_tuning": false,
+    "allow_model_or_provider_change": false,
+    "allow_relation_policy_tuning": false,
+    "allow_repair_policy_tuning": false,
+    "allow_candidate_partition_tuning": false,
+    "allow_projection_policy_tuning": false,
+    "allow_failed_chunk_exclusion": false
+  },
+  "protected_paths": [
+    "dac_her",
+    "scripts/extract_paper.py",
+    "scripts/build_paper_graph.py",
+    "scripts/extract_bridge_graph.py",
+    "scripts/build_graphagents_projection.py",
+    "scripts/inspect_graphml.py",
+    "scripts/preview_document_selection.py"
+  ]
+}

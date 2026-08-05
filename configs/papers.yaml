@@ -1,4 +1,4 @@
-version: 2
+version: 3
 
 papers:
   Kiwook_1:
@@ -11,7 +11,7 @@ papers:
         markdown_file: Kiwook_1.md
         metadata_file: Kiwook_1_meta.json
 
-        selection:
+        mode: whole_document
 
         figure_processing:
           mode: caption_first
@@ -43,7 +43,7 @@ papers:
         markdown_file: Kiwook_2.md
         metadata_file: Kiwook_2_meta.json
 
-        selection:
+        mode: whole_document
 
         figure_processing:
           mode: caption_first
@@ -75,7 +75,7 @@ papers:
         markdown_file: Kiwook_3.md
         metadata_file: Kiwook_3_meta.json
 
-        selection:
+        mode: whole_document
 
         figure_processing:
           mode: caption_first
@@ -96,3 +96,157 @@ papers:
           vision_assets: []
 
     resolution_file: null
+
+  Kiwook_4:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_4/Kiwook_4
+        markdown_file: Kiwook_4.md
+        metadata_file: Kiwook_4_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_4/Kiwook_4_SI1
+        markdown_file: Kiwook_4_SI1.md
+        metadata_file: Kiwook_4_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_5:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_5/Kiwook_5
+        markdown_file: Kiwook_5.md
+        metadata_file: Kiwook_5_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_6:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_6/Kiwook_6
+        markdown_file: Kiwook_6.md
+        metadata_file: Kiwook_6_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_6/Kiwook_6_SI1
+        markdown_file: Kiwook_6_SI1.md
+        metadata_file: Kiwook_6_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_7:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_7/Kiwook_7
+        markdown_file: Kiwook_7.md
+        metadata_file: Kiwook_7_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+      - document_id: si1
+        role: supporting_information
+        package_dir: data_dac/markdown/Kiwook_7/Kiwook_7_SI1
+        markdown_file: Kiwook_7_SI1.md
+        metadata_file: Kiwook_7_SI1_meta.json
+
+        selection:
+          mode: referenced_blocks
+          fallback: skip
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_8:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_8/Kiwook_8
+        markdown_file: Kiwook_8.md
+        metadata_file: Kiwook_8_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_9:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_9/Kiwook_9
+        markdown_file: Kiwook_9.md
+        metadata_file: Kiwook_9_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
+
+  Kiwook_10:
+    enabled: true
+
+    documents:
+      - document_id: main
+        role: main
+        package_dir: data_dac/markdown/Kiwook_10/Kiwook_10
+        markdown_file: Kiwook_10.md
+        metadata_file: Kiwook_10_meta.json
+
+        mode: whole_document
+
+        figure_processing:
+          mode: caption_first
+          vision_assets: []
