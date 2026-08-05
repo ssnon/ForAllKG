@@ -1,0 +1,2801 @@
+{
+  "all_paper_statuses": {
+    "Kiwook_10": "complete",
+    "Kiwook_4": "complete",
+    "Kiwook_5": "complete",
+    "Kiwook_6": "complete",
+    "Kiwook_7": "complete",
+    "Kiwook_8": "complete",
+    "Kiwook_9": "complete"
+  },
+  "baseline": {
+    "commit": "33e7cb290edf89ce41425cdcdc5887d99c59078b",
+    "tag": "bridge-v2.3.3-frozen-3paper"
+  },
+  "campaign_id": "bridge-v2.3.3-heldout-dryrun",
+  "campaign_name": "bridge-v2.3.3-heldout-7paper",
+  "config_path": "configs/papers.yaml",
+  "config_sha256": "5850b8a3d5ec59e210ed7a30f847a13a08c4dadb81dcaf3c822a355cf9fbfa98",
+  "created_at_utc": "2026-08-05T13:57:09.250401+00:00",
+  "dry_run": true,
+  "finished_at_utc": "2026-08-05T13:57:11.788129+00:00",
+  "git": {
+    "branch": "main",
+    "head_commit": "948440ca5d5966f954ec2f991660222071d2e1ce"
+  },
+  "papers": {
+    "Kiwook_10": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:11.786501+00:00",
+      "paper_id": "Kiwook_10",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_10",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.776900+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/bridge_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.775594+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.776904+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_10"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.774328+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/canonical_graph_audit_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.772858+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.774333+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_10",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.771356+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/canonical_graph_build_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.769890+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.771361+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_10",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.779501+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/projection_evidence_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.778193+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.779504+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_10",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.785075+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/projection_exploratory_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.783437+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.785081+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_10",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_10/Kiwook_10.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.782144+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/projection_mechanism_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.780832+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.782147+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_10",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:11.761957+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 12,
+                "linked_asset_count": 12,
+                "linked_asset_ids": [
+                  "Kiwook_10:main:asset:0852a574998fe7ac",
+                  "Kiwook_10:main:asset:1c8d50723ee13d1b",
+                  "Kiwook_10:main:asset:559016aa7d826320",
+                  "Kiwook_10:main:asset:7f64eda4528d8750",
+                  "Kiwook_10:main:asset:9062d77869e4a9d9",
+                  "Kiwook_10:main:asset:a7a8eaa7b483833f",
+                  "Kiwook_10:main:asset:b79ab01648c93cbd",
+                  "Kiwook_10:main:asset:d5cb29ae0c2e1122",
+                  "Kiwook_10:main:asset:d6c21b6100cd7de7",
+                  "Kiwook_10:main:asset:e94809e9ebf55ef4",
+                  "Kiwook_10:main:asset:fca82b67105c292a",
+                  "Kiwook_10:main:asset:fd1cbe4c8059855b"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 28,
+                    "linked_asset_count": 12,
+                    "linked_asset_ids": [
+                      "Kiwook_10:main:asset:0852a574998fe7ac",
+                      "Kiwook_10:main:asset:1c8d50723ee13d1b",
+                      "Kiwook_10:main:asset:559016aa7d826320",
+                      "Kiwook_10:main:asset:7f64eda4528d8750",
+                      "Kiwook_10:main:asset:9062d77869e4a9d9",
+                      "Kiwook_10:main:asset:a7a8eaa7b483833f",
+                      "Kiwook_10:main:asset:b79ab01648c93cbd",
+                      "Kiwook_10:main:asset:d5cb29ae0c2e1122",
+                      "Kiwook_10:main:asset:d6c21b6100cd7de7",
+                      "Kiwook_10:main:asset:e94809e9ebf55ef4",
+                      "Kiwook_10:main:asset:fca82b67105c292a",
+                      "Kiwook_10:main:asset:fd1cbe4c8059855b"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_10",
+            "reference_scope": "selected_main",
+            "supplementary_references": []
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_10",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.768467+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_10/strict_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.766928+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.768471+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:11.482602+00:00",
+      "status": "complete"
+    },
+    "Kiwook_4": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:09.570257+00:00",
+      "paper_id": "Kiwook_4",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_4",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.566577+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/bridge_extraction_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.565687+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.566583+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_4"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.565210+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/canonical_graph_audit_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.564644+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.565213+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_4",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.564101+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/canonical_graph_build_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.563560+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.564104+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_4",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.567727+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/projection_evidence_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.567143+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.567729+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_4",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.569726+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/projection_exploratory_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.569228+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.569728+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_4",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/Kiwook_4.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.568733+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/projection_mechanism_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.568227+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.568735+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_4",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:09.561579+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 5,
+                "linked_asset_count": 5,
+                "linked_asset_ids": [
+                  "Kiwook_4:main:asset:0311204d0038d3dd",
+                  "Kiwook_4:main:asset:159941c64f468f56",
+                  "Kiwook_4:main:asset:20d669f7b7e9789b",
+                  "Kiwook_4:main:asset:a32f830dda21b3e8",
+                  "Kiwook_4:main:asset:d463e49d5f9c477f"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 15,
+                    "linked_asset_count": 5,
+                    "linked_asset_ids": [
+                      "Kiwook_4:main:asset:0311204d0038d3dd",
+                      "Kiwook_4:main:asset:159941c64f468f56",
+                      "Kiwook_4:main:asset:20d669f7b7e9789b",
+                      "Kiwook_4:main:asset:a32f830dda21b3e8",
+                      "Kiwook_4:main:asset:d463e49d5f9c477f"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              },
+              {
+                "document_id": "si1",
+                "fallback": "skip",
+                "indexed_asset_count": 41,
+                "linked_asset_count": 40,
+                "linked_asset_ids": [
+                  "Kiwook_4:si1:asset:047e40520450a05e",
+                  "Kiwook_4:si1:asset:0852a574998fe7ac",
+                  "Kiwook_4:si1:asset:18700da72511b6f2",
+                  "Kiwook_4:si1:asset:33b522553f54f46f",
+                  "Kiwook_4:si1:asset:3efc7389e6648a7e",
+                  "Kiwook_4:si1:asset:4467e0c4f119f957",
+                  "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                  "Kiwook_4:si1:asset:4dc944cfe5722f70",
+                  "Kiwook_4:si1:asset:512ab392d00aa0fc",
+                  "Kiwook_4:si1:asset:51a250c8d3dcc3ee",
+                  "Kiwook_4:si1:asset:6d314346ab4fdc9a",
+                  "Kiwook_4:si1:asset:6f58e48f0e5292cb",
+                  "Kiwook_4:si1:asset:752a25449a4a9fea",
+                  "Kiwook_4:si1:asset:7586b30ebc50b061",
+                  "Kiwook_4:si1:asset:78278cbdd59ae14b",
+                  "Kiwook_4:si1:asset:7f7b21bf7e3a118b",
+                  "Kiwook_4:si1:asset:849064097f7e6876",
+                  "Kiwook_4:si1:asset:8547cc0fbb0a3efd",
+                  "Kiwook_4:si1:asset:8915664a68e195eb",
+                  "Kiwook_4:si1:asset:9392e8b61dc1dbb6",
+                  "Kiwook_4:si1:asset:9ccf69c477d37d25",
+                  "Kiwook_4:si1:asset:9d021a28426bc3c5",
+                  "Kiwook_4:si1:asset:9f819f42d9cb3c35",
+                  "Kiwook_4:si1:asset:a3c8025c18178f69",
+                  "Kiwook_4:si1:asset:a47a21de973f60a1",
+                  "Kiwook_4:si1:asset:ab4106322d87de62",
+                  "Kiwook_4:si1:asset:ace565463db3853f",
+                  "Kiwook_4:si1:asset:ad4b7bcd685b674c",
+                  "Kiwook_4:si1:asset:b710e1235208b9bd",
+                  "Kiwook_4:si1:asset:bb364ccf7263287a",
+                  "Kiwook_4:si1:asset:bcabdfe81132625c",
+                  "Kiwook_4:si1:asset:d916b523c3164deb",
+                  "Kiwook_4:si1:asset:da335509a42301a9",
+                  "Kiwook_4:si1:asset:da501fefe5821edf",
+                  "Kiwook_4:si1:asset:de287cdc807dc04b",
+                  "Kiwook_4:si1:asset:de68a47d8c5378be",
+                  "Kiwook_4:si1:asset:efc80203783743eb",
+                  "Kiwook_4:si1:asset:f0dbf1d37f9c3b3c",
+                  "Kiwook_4:si1:asset:fb1981a438a67d41",
+                  "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "supporting_information",
+                "sections": [
+                  "Supplementary Fig S1",
+                  "Supplementary Fig S10",
+                  "Supplementary Fig S11",
+                  "Supplementary Fig S12",
+                  "Supplementary Fig S13",
+                  "Supplementary Fig S14",
+                  "Supplementary Fig S15",
+                  "Supplementary Fig S16",
+                  "Supplementary Fig S17",
+                  "Supplementary Fig S19",
+                  "Supplementary Fig S2",
+                  "Supplementary Fig S20",
+                  "Supplementary Fig S21",
+                  "Supplementary Fig S22",
+                  "Supplementary Fig S23",
+                  "Supplementary Fig S24",
+                  "Supplementary Fig S25",
+                  "Supplementary Fig S26",
+                  "Supplementary Fig S27",
+                  "Supplementary Fig S28",
+                  "Supplementary Fig S29",
+                  "Supplementary Fig S3",
+                  "Supplementary Fig S30",
+                  "Supplementary Fig S31",
+                  "Supplementary Fig S32",
+                  "Supplementary Fig S33",
+                  "Supplementary Fig S34",
+                  "Supplementary Fig S35",
+                  "Supplementary Fig S36",
+                  "Supplementary Fig S37",
+                  "Supplementary Fig S38",
+                  "Supplementary Fig S39",
+                  "Supplementary Fig S4",
+                  "Supplementary Fig S40",
+                  "Supplementary Fig S41",
+                  "Supplementary Fig S42",
+                  "Supplementary Fig S43",
+                  "Supplementary Fig S44",
+                  "Supplementary Fig S5",
+                  "Supplementary Fig S6",
+                  "Supplementary Fig S7",
+                  "Supplementary Fig S8",
+                  "Supplementary Fig S9",
+                  "Supplementary Table S1",
+                  "Supplementary Table S2",
+                  "Supplementary Table S3",
+                  "Supplementary Table S4",
+                  "Supplementary Table S5",
+                  "Supplementary Table S6",
+                  "Supplementary Table S7",
+                  "Supplementary Table S8"
+                ],
+                "selection_mode": "referenced_blocks",
+                "source_count": 51,
+                "source_details": [
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac"
+                    ],
+                    "section": "Supplementary Fig S1"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:9d021a28426bc3c5"
+                    ],
+                    "section": "Supplementary Fig S10"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:9f819f42d9cb3c35"
+                    ],
+                    "section": "Supplementary Fig S11"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 3,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:047e40520450a05e",
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:9f819f42d9cb3c35"
+                    ],
+                    "section": "Supplementary Fig S12"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:8915664a68e195eb"
+                    ],
+                    "section": "Supplementary Fig S13"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:9ccf69c477d37d25"
+                    ],
+                    "section": "Supplementary Fig S14"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:ace565463db3853f"
+                    ],
+                    "section": "Supplementary Fig S15"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:de68a47d8c5378be"
+                    ],
+                    "section": "Supplementary Fig S16"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:b710e1235208b9bd"
+                    ],
+                    "section": "Supplementary Fig S17"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:0852a574998fe7ac",
+                      "Kiwook_4:si1:asset:512ab392d00aa0fc"
+                    ],
+                    "section": "Supplementary Fig S19"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S2"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:752a25449a4a9fea",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S20"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:f0dbf1d37f9c3b3c",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S21"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:a47a21de973f60a1",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S22"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:a3c8025c18178f69",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S23"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7586b30ebc50b061",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S24"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:18700da72511b6f2",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S25"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:6d314346ab4fdc9a",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S26"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:bb364ccf7263287a",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S27"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:de287cdc807dc04b",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S28"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:78278cbdd59ae14b",
+                      "Kiwook_4:si1:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "Supplementary Fig S29"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff"
+                    ],
+                    "section": "Supplementary Fig S3"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:3efc7389e6648a7e",
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff"
+                    ],
+                    "section": "Supplementary Fig S30"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:da335509a42301a9"
+                    ],
+                    "section": "Supplementary Fig S31"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:ad4b7bcd685b674c"
+                    ],
+                    "section": "Supplementary Fig S32"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:fb1981a438a67d41"
+                    ],
+                    "section": "Supplementary Fig S33"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:4467e0c4f119f957",
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff"
+                    ],
+                    "section": "Supplementary Fig S34"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:8547cc0fbb0a3efd"
+                    ],
+                    "section": "Supplementary Fig S35"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:d916b523c3164deb"
+                    ],
+                    "section": "Supplementary Fig S36"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:da501fefe5821edf"
+                    ],
+                    "section": "Supplementary Fig S37"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff",
+                      "Kiwook_4:si1:asset:6f58e48f0e5292cb"
+                    ],
+                    "section": "Supplementary Fig S38"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:33b522553f54f46f",
+                      "Kiwook_4:si1:asset:47323ed0d9eb4aff"
+                    ],
+                    "section": "Supplementary Fig S39"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b"
+                    ],
+                    "section": "Supplementary Fig S4"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b"
+                    ],
+                    "section": "Supplementary Fig S40"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b",
+                      "Kiwook_4:si1:asset:efc80203783743eb"
+                    ],
+                    "section": "Supplementary Fig S41"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 2,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:4dc944cfe5722f70",
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b"
+                    ],
+                    "section": "Supplementary Fig S42"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b"
+                    ],
+                    "section": "Supplementary Fig S43"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:7f7b21bf7e3a118b"
+                    ],
+                    "section": "Supplementary Fig S44"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:bcabdfe81132625c"
+                    ],
+                    "section": "Supplementary Fig S5"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:51a250c8d3dcc3ee"
+                    ],
+                    "section": "Supplementary Fig S6"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:ab4106322d87de62"
+                    ],
+                    "section": "Supplementary Fig S7"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:849064097f7e6876"
+                    ],
+                    "section": "Supplementary Fig S8"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 1,
+                    "linked_asset_ids": [
+                      "Kiwook_4:si1:asset:9392e8b61dc1dbb6"
+                    ],
+                    "section": "Supplementary Fig S9"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S1"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S2"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S3"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S4"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S5"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S6"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S7"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S8"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_4",
+            "reference_scope": "selected_main",
+            "supplementary_references": [
+              "Supplementary Fig S1",
+              "Supplementary Fig S10",
+              "Supplementary Fig S11",
+              "Supplementary Fig S12",
+              "Supplementary Fig S13",
+              "Supplementary Fig S14",
+              "Supplementary Fig S15",
+              "Supplementary Fig S16",
+              "Supplementary Fig S17",
+              "Supplementary Fig S18a",
+              "Supplementary Fig S19",
+              "Supplementary Fig S2",
+              "Supplementary Fig S20",
+              "Supplementary Fig S21",
+              "Supplementary Fig S22",
+              "Supplementary Fig S23",
+              "Supplementary Fig S24",
+              "Supplementary Fig S25",
+              "Supplementary Fig S26",
+              "Supplementary Fig S27",
+              "Supplementary Fig S28",
+              "Supplementary Fig S29",
+              "Supplementary Fig S3",
+              "Supplementary Fig S30",
+              "Supplementary Fig S31",
+              "Supplementary Fig S32",
+              "Supplementary Fig S33",
+              "Supplementary Fig S34",
+              "Supplementary Fig S35",
+              "Supplementary Fig S36",
+              "Supplementary Fig S37",
+              "Supplementary Fig S38",
+              "Supplementary Fig S39",
+              "Supplementary Fig S4",
+              "Supplementary Fig S40",
+              "Supplementary Fig S41",
+              "Supplementary Fig S42",
+              "Supplementary Fig S43",
+              "Supplementary Fig S44",
+              "Supplementary Fig S5",
+              "Supplementary Fig S6",
+              "Supplementary Fig S7",
+              "Supplementary Fig S8",
+              "Supplementary Fig S9",
+              "Supplementary Table S1",
+              "Supplementary Table S2",
+              "Supplementary Table S3",
+              "Supplementary Table S4",
+              "Supplementary Table S5",
+              "Supplementary Table S6",
+              "Supplementary Table S7",
+              "Supplementary Table S8"
+            ]
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_4",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.562978+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_4/strict_extraction_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.562400+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.562982+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:09.252175+00:00",
+      "status": "complete"
+    },
+    "Kiwook_5": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:09.822830+00:00",
+      "paper_id": "Kiwook_5",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_5",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.818476+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/bridge_extraction_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.817866+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.818479+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_5"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.817305+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/canonical_graph_audit_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.816741+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.817308+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_5",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.816160+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/canonical_graph_build_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.815597+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.816162+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_5",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.819690+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/projection_evidence_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.819085+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.819692+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_5",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.822203+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/projection_exploratory_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.821595+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.822205+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_5",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_5/Kiwook_5.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.820982+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/projection_mechanism_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.820359+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.820985+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_5",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:09.811806+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 7,
+                "linked_asset_count": 7,
+                "linked_asset_ids": [
+                  "Kiwook_5:main:asset:11bb2ee2434bb0ca",
+                  "Kiwook_5:main:asset:1da438bda5f209e0",
+                  "Kiwook_5:main:asset:60819dbb49fa6666",
+                  "Kiwook_5:main:asset:b646b18d3cb4a1b4",
+                  "Kiwook_5:main:asset:c74e5f98e934f0b3",
+                  "Kiwook_5:main:asset:c7db626e205899d6",
+                  "Kiwook_5:main:asset:c9d9bdc9ca936c6f"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 10,
+                    "linked_asset_count": 7,
+                    "linked_asset_ids": [
+                      "Kiwook_5:main:asset:11bb2ee2434bb0ca",
+                      "Kiwook_5:main:asset:1da438bda5f209e0",
+                      "Kiwook_5:main:asset:60819dbb49fa6666",
+                      "Kiwook_5:main:asset:b646b18d3cb4a1b4",
+                      "Kiwook_5:main:asset:c74e5f98e934f0b3",
+                      "Kiwook_5:main:asset:c7db626e205899d6",
+                      "Kiwook_5:main:asset:c9d9bdc9ca936c6f"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_5",
+            "reference_scope": "selected_main",
+            "supplementary_references": [
+              "Supplementary Fig S1",
+              "Supplementary Fig S2",
+              "Supplementary Fig S3",
+              "Supplementary Fig S4",
+              "Supplementary Fig S5",
+              "Supplementary Fig S6",
+              "Supplementary Fig S7",
+              "Supplementary Fig S8",
+              "Supplementary Table S1",
+              "Supplementary Table S2",
+              "Supplementary Table S3"
+            ]
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_5",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:09.814946+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_5/strict_extraction_pass_1_20260805T135709Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:09.813443+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:09.814952+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:09.570751+00:00",
+      "status": "complete"
+    },
+    "Kiwook_6": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:10.081987+00:00",
+      "paper_id": "Kiwook_6",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_6",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.076161+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/bridge_extraction_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.075438+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.076163+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_6"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.074701+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/canonical_graph_audit_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.073943+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.074704+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_6",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.073208+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/canonical_graph_build_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.072468+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.073210+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_6",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.077658+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/projection_evidence_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.076909+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.077660+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_6",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.081146+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/projection_exploratory_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.079973+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.081151+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_6",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/Kiwook_6.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.079212+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/projection_mechanism_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.078418+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.079214+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_6",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:10.068457+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 7,
+                "linked_asset_count": 7,
+                "linked_asset_ids": [
+                  "Kiwook_6:main:asset:07369f17baca6369",
+                  "Kiwook_6:main:asset:203cb7323e6f634e",
+                  "Kiwook_6:main:asset:405f511019ed03c1",
+                  "Kiwook_6:main:asset:53d682cbc50ad00c",
+                  "Kiwook_6:main:asset:6aa3bbe3f1cc9240",
+                  "Kiwook_6:main:asset:7c9c89c8998daefa",
+                  "Kiwook_6:main:asset:ab7273bc12242b48"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 11,
+                    "linked_asset_count": 7,
+                    "linked_asset_ids": [
+                      "Kiwook_6:main:asset:07369f17baca6369",
+                      "Kiwook_6:main:asset:203cb7323e6f634e",
+                      "Kiwook_6:main:asset:405f511019ed03c1",
+                      "Kiwook_6:main:asset:53d682cbc50ad00c",
+                      "Kiwook_6:main:asset:6aa3bbe3f1cc9240",
+                      "Kiwook_6:main:asset:7c9c89c8998daefa",
+                      "Kiwook_6:main:asset:ab7273bc12242b48"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              },
+              {
+                "document_id": "si1",
+                "fallback": "skip",
+                "indexed_asset_count": 4,
+                "linked_asset_count": 4,
+                "linked_asset_ids": [
+                  "Kiwook_6:si1:asset:01c8297877c22214",
+                  "Kiwook_6:si1:asset:0bc81f67a35b764f",
+                  "Kiwook_6:si1:asset:ab19e8d46028f10e",
+                  "Kiwook_6:si1:asset:bd61cfe9fae07523"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "supporting_information",
+                "sections": [
+                  "Supplementary Fig S1",
+                  "Supplementary Table S1",
+                  "Supplementary Table S2",
+                  "Supplementary Table S3",
+                  "Supplementary Table S4",
+                  "Supplementary Table S5"
+                ],
+                "selection_mode": "referenced_blocks",
+                "source_count": 6,
+                "source_details": [
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 4,
+                    "linked_asset_ids": [
+                      "Kiwook_6:si1:asset:01c8297877c22214",
+                      "Kiwook_6:si1:asset:0bc81f67a35b764f",
+                      "Kiwook_6:si1:asset:ab19e8d46028f10e",
+                      "Kiwook_6:si1:asset:bd61cfe9fae07523"
+                    ],
+                    "section": "Supplementary Fig S1"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S1"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S2"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S3"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S4"
+                  },
+                  {
+                    "chunk_count": 1,
+                    "linked_asset_count": 0,
+                    "linked_asset_ids": [],
+                    "section": "Supplementary Table S5"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_6",
+            "reference_scope": "selected_main",
+            "supplementary_references": [
+              "Supplementary Fig S1",
+              "Supplementary Fig S2",
+              "Supplementary Fig S3",
+              "Supplementary Table S1",
+              "Supplementary Table S2",
+              "Supplementary Table S3",
+              "Supplementary Table S4",
+              "Supplementary Table S5",
+              "Supplementary Table S6"
+            ]
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_6",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.071667+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_6/strict_extraction_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.070116+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.071672+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:09.823426+00:00",
+      "status": "complete"
+    },
+    "Kiwook_7": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:10.919461+00:00",
+      "paper_id": "Kiwook_7",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_7",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.912163+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/bridge_extraction_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.911196+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.912166+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_7"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.910237+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/canonical_graph_audit_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.909301+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.910240+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_7",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.908187+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/canonical_graph_build_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.907257+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.908190+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_7",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.914125+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/projection_evidence_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.913111+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.914128+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_7",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.918457+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/projection_exploratory_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.917330+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.918462+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_7",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_7/Kiwook_7.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.916053+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/projection_mechanism_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.915089+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.916056+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_7",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:10.899968+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 7,
+                "linked_asset_count": 7,
+                "linked_asset_ids": [
+                  "Kiwook_7:main:asset:029eea17dcc71cf0",
+                  "Kiwook_7:main:asset:0a647cc4cd7744b8",
+                  "Kiwook_7:main:asset:36377b3bcd2012cf",
+                  "Kiwook_7:main:asset:4501d734b21c9025",
+                  "Kiwook_7:main:asset:64110372e84e1bed",
+                  "Kiwook_7:main:asset:a32f830dda21b3e8",
+                  "Kiwook_7:main:asset:e8b94fc0f7894acc"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 8,
+                    "linked_asset_count": 7,
+                    "linked_asset_ids": [
+                      "Kiwook_7:main:asset:029eea17dcc71cf0",
+                      "Kiwook_7:main:asset:0a647cc4cd7744b8",
+                      "Kiwook_7:main:asset:36377b3bcd2012cf",
+                      "Kiwook_7:main:asset:4501d734b21c9025",
+                      "Kiwook_7:main:asset:64110372e84e1bed",
+                      "Kiwook_7:main:asset:a32f830dda21b3e8",
+                      "Kiwook_7:main:asset:e8b94fc0f7894acc"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              },
+              {
+                "document_id": "si1",
+                "fallback": "skip",
+                "indexed_asset_count": 18,
+                "linked_asset_count": 18,
+                "linked_asset_ids": [
+                  "Kiwook_7:si1:asset:01c8297877c22214",
+                  "Kiwook_7:si1:asset:03db58e69f24553b",
+                  "Kiwook_7:si1:asset:0bc81f67a35b764f",
+                  "Kiwook_7:si1:asset:1610123d43d1c062",
+                  "Kiwook_7:si1:asset:1f66c52344133401",
+                  "Kiwook_7:si1:asset:2768a8160ec702a1",
+                  "Kiwook_7:si1:asset:39317ba78c8196a5",
+                  "Kiwook_7:si1:asset:56a8168bf5e6e3b7",
+                  "Kiwook_7:si1:asset:709a390bcc1e649d",
+                  "Kiwook_7:si1:asset:78f3016e32d096eb",
+                  "Kiwook_7:si1:asset:9e297b87649a3cb7",
+                  "Kiwook_7:si1:asset:a9ac18b14f0b89d9",
+                  "Kiwook_7:si1:asset:ab19e8d46028f10e",
+                  "Kiwook_7:si1:asset:b5d78d9d3deaa92c",
+                  "Kiwook_7:si1:asset:bd61cfe9fae07523",
+                  "Kiwook_7:si1:asset:c870556670b42f59",
+                  "Kiwook_7:si1:asset:c9ff3543c9e1946f",
+                  "Kiwook_7:si1:asset:f9264b748e474b16"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "supporting_information",
+                "sections": [
+                  "Supplementary Fig 1"
+                ],
+                "selection_mode": "referenced_blocks",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 4,
+                    "linked_asset_count": 18,
+                    "linked_asset_ids": [
+                      "Kiwook_7:si1:asset:01c8297877c22214",
+                      "Kiwook_7:si1:asset:03db58e69f24553b",
+                      "Kiwook_7:si1:asset:0bc81f67a35b764f",
+                      "Kiwook_7:si1:asset:1610123d43d1c062",
+                      "Kiwook_7:si1:asset:1f66c52344133401",
+                      "Kiwook_7:si1:asset:2768a8160ec702a1",
+                      "Kiwook_7:si1:asset:39317ba78c8196a5",
+                      "Kiwook_7:si1:asset:56a8168bf5e6e3b7",
+                      "Kiwook_7:si1:asset:709a390bcc1e649d",
+                      "Kiwook_7:si1:asset:78f3016e32d096eb",
+                      "Kiwook_7:si1:asset:9e297b87649a3cb7",
+                      "Kiwook_7:si1:asset:a9ac18b14f0b89d9",
+                      "Kiwook_7:si1:asset:ab19e8d46028f10e",
+                      "Kiwook_7:si1:asset:b5d78d9d3deaa92c",
+                      "Kiwook_7:si1:asset:bd61cfe9fae07523",
+                      "Kiwook_7:si1:asset:c870556670b42f59",
+                      "Kiwook_7:si1:asset:c9ff3543c9e1946f",
+                      "Kiwook_7:si1:asset:f9264b748e474b16"
+                    ],
+                    "section": "Supplementary Fig 1"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_7",
+            "reference_scope": "selected_main",
+            "supplementary_references": [
+              "Supplementary Fig 1",
+              "Supplementary Table 1",
+              "Supplementary Table 2",
+              "Supplementary Table 3",
+              "Supplementary Table 4"
+            ]
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_7",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:10.905913+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_7/strict_extraction_pass_1_20260805T135710Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:10.904331+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:10.905919+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:10.082823+00:00",
+      "status": "complete"
+    },
+    "Kiwook_8": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:11.204597+00:00",
+      "paper_id": "Kiwook_8",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_8",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.197005+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/bridge_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.195639+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.197010+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_8"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.194546+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/canonical_graph_audit_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.193448+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.194549+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_8",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.192410+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/canonical_graph_build_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.191338+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.192413+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_8",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.199212+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/projection_evidence_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.198117+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.199216+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_8",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.203523+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/projection_exploratory_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.202427+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.203527+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_8",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_8/Kiwook_8.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.201367+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/projection_mechanism_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.200270+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.201370+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_8",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:11.185560+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 7,
+                "linked_asset_count": 7,
+                "linked_asset_ids": [
+                  "Kiwook_8:main:asset:281a751d4cf46f88",
+                  "Kiwook_8:main:asset:30c8e1f36f3e348e",
+                  "Kiwook_8:main:asset:3b5cf170df1c7bce",
+                  "Kiwook_8:main:asset:77c20a59c0234b29",
+                  "Kiwook_8:main:asset:a7078f4a19dd640f",
+                  "Kiwook_8:main:asset:a9895dbef1f3ff82",
+                  "Kiwook_8:main:asset:cbe940804806183c"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 26,
+                    "linked_asset_count": 7,
+                    "linked_asset_ids": [
+                      "Kiwook_8:main:asset:281a751d4cf46f88",
+                      "Kiwook_8:main:asset:30c8e1f36f3e348e",
+                      "Kiwook_8:main:asset:3b5cf170df1c7bce",
+                      "Kiwook_8:main:asset:77c20a59c0234b29",
+                      "Kiwook_8:main:asset:a7078f4a19dd640f",
+                      "Kiwook_8:main:asset:a9895dbef1f3ff82",
+                      "Kiwook_8:main:asset:cbe940804806183c"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_8",
+            "reference_scope": "selected_main",
+            "supplementary_references": []
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_8",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.190171+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_8/strict_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.188591+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.190175+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:10.920444+00:00",
+      "status": "complete"
+    },
+    "Kiwook_9": {
+      "campaign_cache_checked": true,
+      "completed_at_utc": "2026-08-05T13:57:11.481386+00:00",
+      "paper_id": "Kiwook_9",
+      "preexisting_cache_adopted": false,
+      "projections": {},
+      "stages": {
+        "bridge_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_bridge_graph",
+                "--paper-id",
+                "Kiwook_9",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN",
+                "--model",
+                "현재 frozen bridge 모델",
+                "--concurrency",
+                "4",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.469469+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/bridge_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.468287+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.469473+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_audit": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.inspect_graphml",
+                "--graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.graphml",
+                "--output-dir",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/audit/Kiwook_9"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.467119+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/canonical_graph_audit_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.465932+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.467123+00:00",
+          "status": "complete"
+        },
+        "canonical_graph_build": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_paper_graph",
+                "--paper-id",
+                "Kiwook_9",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--run-id",
+                "DRY_RUN"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.464771+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/canonical_graph_build_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.463627+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.464774+00:00",
+          "status": "complete"
+        },
+        "projection_evidence": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_9",
+                "--mode",
+                "evidence",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.473306+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/projection_evidence_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.471349+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.473316+00:00",
+          "status": "complete"
+        },
+        "projection_exploratory": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_9",
+                "--mode",
+                "exploratory",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.bridge.graphml",
+                "--candidate-bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.bridge.candidates.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.480194+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/projection_exploratory_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.478723+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.480198+00:00",
+          "status": "complete"
+        },
+        "projection_mechanism": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.build_graphagents_projection",
+                "--paper-id",
+                "Kiwook_9",
+                "--mode",
+                "mechanism",
+                "--canonical-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.graphml",
+                "--bridge-graphml",
+                "/home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_9/Kiwook_9.bridge.graphml"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.477449+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/projection_mechanism_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.475267+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.477454+00:00",
+          "status": "complete"
+        },
+        "selection_preview": {
+          "attempts": [],
+          "command": [
+            "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+            "-m",
+            "scripts.preview_document_selection",
+            "--paper-id",
+            "Kiwook_9",
+            "--config",
+            "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+            "--json"
+          ],
+          "exit_code": 0,
+          "finished_at_utc": "2026-08-05T13:57:11.459651+00:00",
+          "preview": {
+            "documents": [
+              {
+                "document_id": "main",
+                "fallback": "error",
+                "indexed_asset_count": 18,
+                "linked_asset_count": 18,
+                "linked_asset_ids": [
+                  "Kiwook_9:main:asset:1021a97ee04c9df0",
+                  "Kiwook_9:main:asset:17d5c92f2e575539",
+                  "Kiwook_9:main:asset:3346c7bcf7a37efa",
+                  "Kiwook_9:main:asset:3c56fb6806a52296",
+                  "Kiwook_9:main:asset:5ab6c8df43bbe3bf",
+                  "Kiwook_9:main:asset:6ec7eb9198ac482c",
+                  "Kiwook_9:main:asset:7c690473059112d4",
+                  "Kiwook_9:main:asset:7c9c89c8998daefa",
+                  "Kiwook_9:main:asset:7f7cb4291841dace",
+                  "Kiwook_9:main:asset:80e7a15a98a461dc",
+                  "Kiwook_9:main:asset:82b194c1ae7bdb6e",
+                  "Kiwook_9:main:asset:82cf76eb4e1ace73",
+                  "Kiwook_9:main:asset:8a7ccee5b0e94e66",
+                  "Kiwook_9:main:asset:8dc5c51eedb1206e",
+                  "Kiwook_9:main:asset:9e297b87649a3cb7",
+                  "Kiwook_9:main:asset:b710e1235208b9bd",
+                  "Kiwook_9:main:asset:d98577148e3e2cb4",
+                  "Kiwook_9:main:asset:ffdbd5a1c8678a0a"
+                ],
+                "loose_asset_count": 0,
+                "reference_scope": "selected_main",
+                "role": "main",
+                "sections": [
+                  "[main] whole document"
+                ],
+                "selection_mode": "whole_document",
+                "source_count": 1,
+                "source_details": [
+                  {
+                    "chunk_count": 16,
+                    "linked_asset_count": 18,
+                    "linked_asset_ids": [
+                      "Kiwook_9:main:asset:1021a97ee04c9df0",
+                      "Kiwook_9:main:asset:17d5c92f2e575539",
+                      "Kiwook_9:main:asset:3346c7bcf7a37efa",
+                      "Kiwook_9:main:asset:3c56fb6806a52296",
+                      "Kiwook_9:main:asset:5ab6c8df43bbe3bf",
+                      "Kiwook_9:main:asset:6ec7eb9198ac482c",
+                      "Kiwook_9:main:asset:7c690473059112d4",
+                      "Kiwook_9:main:asset:7c9c89c8998daefa",
+                      "Kiwook_9:main:asset:7f7cb4291841dace",
+                      "Kiwook_9:main:asset:80e7a15a98a461dc",
+                      "Kiwook_9:main:asset:82b194c1ae7bdb6e",
+                      "Kiwook_9:main:asset:82cf76eb4e1ace73",
+                      "Kiwook_9:main:asset:8a7ccee5b0e94e66",
+                      "Kiwook_9:main:asset:8dc5c51eedb1206e",
+                      "Kiwook_9:main:asset:9e297b87649a3cb7",
+                      "Kiwook_9:main:asset:b710e1235208b9bd",
+                      "Kiwook_9:main:asset:d98577148e3e2cb4",
+                      "Kiwook_9:main:asset:ffdbd5a1c8678a0a"
+                    ],
+                    "section": "[main] whole document"
+                  }
+                ]
+              }
+            ],
+            "paper_id": "Kiwook_9",
+            "reference_scope": "selected_main",
+            "supplementary_references": [
+              "Supplementary Fig S1",
+              "Supplementary Fig S10",
+              "Supplementary Fig S11",
+              "Supplementary Fig S12",
+              "Supplementary Fig S2",
+              "Supplementary Fig S3",
+              "Supplementary Fig S4",
+              "Supplementary Fig S5",
+              "Supplementary Fig S6",
+              "Supplementary Fig S7",
+              "Supplementary Fig S8",
+              "Supplementary Fig S9",
+              "Supplementary Table S1",
+              "Supplementary Table S2"
+            ]
+          },
+          "status": "complete",
+          "warnings": []
+        },
+        "strict_extraction": {
+          "attempts": [
+            {
+              "command": [
+                "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+                "-m",
+                "scripts.extract_paper",
+                "--paper-id",
+                "Kiwook_9",
+                "--config",
+                "/home/rldnr7959/GraphAgentsDAC/configs/papers.yaml",
+                "--model",
+                "현재 frozen strict 모델",
+                "--concurrency",
+                "2",
+                "--provider",
+                "현재 frozen provider"
+              ],
+              "delay_seconds": 0,
+              "exit_code": 0,
+              "finished_at_utc": "2026-08-05T13:57:11.462436+00:00",
+              "log_path": "data_dac/held_out_runs/bridge-v2.3.3-heldout-dryrun/logs/Kiwook_9/strict_extraction_pass_1_20260805T135711Z.log",
+              "pass": 1,
+              "started_at_utc": "2026-08-05T13:57:11.461157+00:00",
+              "status": "complete"
+            }
+          ],
+          "completed_at_utc": "2026-08-05T13:57:11.462440+00:00",
+          "status": "complete"
+        }
+      },
+      "started_at_utc": "2026-08-05T13:57:11.205641+00:00",
+      "status": "complete"
+    }
+  },
+  "protocol": {
+    "baseline_tag": "bridge-v2.3.3-frozen-3paper",
+    "campaign_name": "bridge-v2.3.3-heldout-7paper",
+    "config_path": "configs/papers.yaml",
+    "frozen_rules": {
+      "allow_candidate_partition_tuning": false,
+      "allow_failed_chunk_exclusion": false,
+      "allow_model_or_provider_change": false,
+      "allow_projection_policy_tuning": false,
+      "allow_prompt_tuning": false,
+      "allow_relation_policy_tuning": false,
+      "allow_repair_policy_tuning": false,
+      "allow_schema_tuning": false
+    },
+    "model_environment": {
+      "bridge_model": "OPENROUTER_BRIDGE_MODEL",
+      "provider": "OPENROUTER_PROVIDER",
+      "strict_model": "OPENROUTER_EXTRACT_MODEL"
+    },
+    "operational_retry_protocol": {
+      "allow_incomplete": false,
+      "bridge_backoff_seconds": [
+        0,
+        60,
+        180,
+        600,
+        1200
+      ],
+      "bridge_concurrency": 4,
+      "bridge_max_outer_passes": 5,
+      "change_model_between_passes": false,
+      "change_provider_between_passes": false,
+      "force": false,
+      "reuse_valid_cache": true,
+      "strict_backoff_seconds": [
+        0,
+        60,
+        180,
+        600,
+        1200
+      ],
+      "strict_concurrency": 2,
+      "strict_max_outer_passes": 5
+    },
+    "papers": [
+      "Kiwook_4",
+      "Kiwook_5",
+      "Kiwook_6",
+      "Kiwook_7",
+      "Kiwook_8",
+      "Kiwook_9",
+      "Kiwook_10"
+    ],
+    "projection_modes": [
+      "evidence",
+      "mechanism",
+      "exploratory"
+    ],
+    "protected_paths": [
+      "dac_her",
+      "scripts/extract_paper.py",
+      "scripts/build_paper_graph.py",
+      "scripts/extract_bridge_graph.py",
+      "scripts/build_graphagents_projection.py",
+      "scripts/inspect_graphml.py",
+      "scripts/preview_document_selection.py"
+    ],
+    "protocol_version": "1.0",
+    "resolution_protocol": {
+      "manual_review_during_held_out": false,
+      "mode": "automatic_registry_rule_only",
+      "reject_preexisting_manual_decisions": true
+    },
+    "selection_preflight": {
+      "configured_si_with_zero_selected_sources": "warn",
+      "run_preview": true
+    }
+  },
+  "protocol_path": "configs/heldout/bridge_v2_3_3_protocol.json",
+  "protocol_sha256": "12018a33c8035f368e9991dbe19a36a41b4d9e50becaa3838fbf040ee85e54de",
+  "resolved_runtime": {
+    "bridge_concurrency": 4,
+    "bridge_model": "현재 frozen bridge 모델",
+    "provider": "현재 frozen provider",
+    "strict_concurrency": 2,
+    "strict_model": "현재 frozen strict 모델"
+  },
+  "selected_paper_statuses": {
+    "Kiwook_10": "complete",
+    "Kiwook_4": "complete",
+    "Kiwook_5": "complete",
+    "Kiwook_6": "complete",
+    "Kiwook_7": "complete",
+    "Kiwook_8": "complete",
+    "Kiwook_9": "complete"
+  },
+  "status": "complete",
+  "updated_at_utc": "2026-08-05T13:57:11.788134+00:00"
+}
