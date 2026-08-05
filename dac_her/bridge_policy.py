@@ -190,15 +190,21 @@ _COLLECTIVE_COMPETITOR_TERMS = re.compile(
     r"\b(?:motifs?|sites?|classes?|configurations?|states?|species|pathways?)\b",
     re.I,
 )
-_CANDIDATE_ONLY_CODES = frozenset({
-    "RELATION_CUE_MISMATCH",
-    "ARGUMENT_SCOPE_AMBIGUOUS",
-    "CAUSAL_ARGUMENT_SCOPE_AMBIGUOUS",
-    (
-        "TABLE_DERIVED_RELATION_"
-        "REQUIRES_CONTEXT"
-    ),
-})
+_TABLE_ONLY_DERIVED_CODE = (
+    "TABLE_DERIVED_RELATION_"
+    "REQUIRES_CONTEXT"
+)
+_CANDIDATE_ONLY_CODES = (
+    frozenset({
+        "RELATION_CUE_MISMATCH",
+        "ARGUMENT_SCOPE_AMBIGUOUS",
+        (
+            "CAUSAL_ARGUMENT_"
+            "SCOPE_AMBIGUOUS"
+        ),
+        _TABLE_ONLY_DERIVED_CODE,
+    })
+)
 
 _FIGURE_CAPTION = re.compile(
     r"""
@@ -257,10 +263,6 @@ _FAILURE_EVENT = re.compile(
     )\b
     """,
     re.I | re.VERBOSE,
-)
-
-_TABLE_ONLY_DERIVED_CODE = (
-    "TABLE_DERIVED_RELATION_REQUIRES_CONTEXT"
 )
 
 @dataclass(frozen=True)
@@ -936,6 +938,12 @@ def _cross_clause_causal_scope_issues(
         )
     )
 
+    if (
+        not subject_phrase
+        or not relation_phrase
+    ):
+        return []
+
     boundary = source.find("in which")
     subject_pos = source.find(
         subject_phrase
@@ -1029,11 +1037,8 @@ def _table_derived_context_issues(
         return [
             _policy_issue(
                 (
-                    "TABLE_DERIVED_RELATION_"
-                    "REQUIRES_CONTEXT"
-                ),
-                "comparison_items",
-                (
+                    _TABLE_ONLY_DERIVED_CODE,
+                    "comparison_items",
                     "The relation is derived only "
                     "from bare table rows. Table "
                     "header or column-semantic "

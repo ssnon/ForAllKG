@@ -32,6 +32,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--canonical-graphml", default=None)
     parser.add_argument("--bridge-graphml", default=None)
+    parser.add_argument(
+        "--candidate-bridge-graphml",
+        default=None,
+        help=(
+            "Semantic-candidate Bridge GraphML. "
+            "Required for exploratory mode. "
+            "It must belong to the same extraction "
+            "and policy run as --bridge-graphml."
+        ),
+    )
     parser.add_argument("--output-dir", default=None)
     return parser.parse_args()
 
@@ -63,21 +73,97 @@ def main() -> None:
         else None
     )
     candidate_bridge_path = (
-        paper_root
-        / (
-            f"{args.paper_id}"
-            ".bridge.candidates.graphml"
+        Path(
+            args.candidate_bridge_graphml
+        )
+        if args.candidate_bridge_graphml
+        else (
+            paper_root
+            / (
+                f"{args.paper_id}"
+                ".bridge.candidates.graphml"
+            )
         )
     )
+
+    candidate_required = (
+        args.mode == "exploratory"
+    )
+
+    if (
+        candidate_required
+        and not candidate_bridge_path.exists()
+    ):
+        raise FileNotFoundError(
+            "Candidate Bridge graph not found: "
+            f"{candidate_bridge_path}"
+        )
 
     candidate_bridge_graph = (
         nx.read_graphml(
             candidate_bridge_path,
             force_multigraph=True,
         )
-        if candidate_bridge_path.exists()
+        if candidate_required
         else None
     )
+
+    if (
+        bridge_graph is not None
+        and candidate_bridge_graph
+        is not None
+    ):
+        metadata_keys = (
+            "bridge_extraction_id",
+            "bridge_policy_run_id",
+            "bridge_policy_version",
+        )
+
+        mismatches: list[str] = []
+
+        for key in metadata_keys:
+            confirmed_value = str(
+                bridge_graph.graph.get(
+                    key,
+                    "",
+                )
+            )
+            candidate_value = str(
+                candidate_bridge_graph
+                .graph.get(
+                    key,
+                    "",
+                )
+            )
+
+            if (
+                not confirmed_value
+                or not candidate_value
+            ):
+                mismatches.append(
+                    f"{key}: missing metadata "
+                    f"({confirmed_value!r}, "
+                    f"{candidate_value!r})"
+                )
+                continue
+
+            if (
+                confirmed_value
+                != candidate_value
+            ):
+                mismatches.append(
+                    f"{key}: "
+                    f"{confirmed_value!r} != "
+                    f"{candidate_value!r}"
+                )
+
+        if mismatches:
+            raise RuntimeError(
+                "Confirmed and candidate Bridge "
+                "graphs are not from the same "
+                "policy materialization:\n- "
+                + "\n- ".join(mismatches)
+            )
     projection, node_rows, evidence_rows = (
         build_graphagents_projection(
             canonical_graph,
@@ -144,6 +230,47 @@ def main() -> None:
         "mode": args.mode,
         "canonical_graphml": str(canonical_path),
         "bridge_graphml": str(bridge_path) if bridge_graph is not None else "",
+        "candidate_bridge_graphml": (
+            str(candidate_bridge_path)
+            if candidate_bridge_graph
+            is not None
+            else ""
+        ),
+
+        "bridge_extraction_id": (
+            str(
+                bridge_graph.graph.get(
+                    "bridge_extraction_id",
+                    "",
+                )
+            )
+            if bridge_graph is not None
+            else ""
+        ),
+
+        "bridge_policy_run_id": (
+            str(
+                bridge_graph.graph.get(
+                    "bridge_policy_run_id",
+                    "",
+                )
+            )
+            if bridge_graph is not None
+            else ""
+        ),
+
+        "candidate_bridge_policy_run_id": (
+            str(
+                candidate_bridge_graph
+                .graph.get(
+                    "bridge_policy_run_id",
+                    "",
+                )
+            )
+            if candidate_bridge_graph
+            is not None
+            else ""
+        ),
         "nodes": projection.number_of_nodes(),
         "edges": projection.number_of_edges(),
         "node_text_rows": len(node_rows),

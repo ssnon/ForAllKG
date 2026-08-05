@@ -90,29 +90,124 @@ def _node_label(node_id: str, attrs: dict[str, Any]) -> str:
     )
 
 
-def node_text(node_id: str, attrs: dict[str, Any]) -> str:
-    node_type = str(attrs.get("type", "Unknown"))
-    label = _node_label(node_id, attrs)
-    parts = [f"type: {node_type}", f"label: {label}"]
+def node_text(
+    node_id: str,
+    attrs: dict[str, Any],
+) -> str:
+    node_type = str(
+        attrs.get(
+            "type",
+            "Unknown",
+        )
+    )
+    label = _node_label(
+        node_id,
+        attrs,
+    )
+
+    parts = [
+        f"type: {node_type}",
+        f"label: {label}",
+    ]
 
     if attrs.get("description"):
-        parts.append(f"description: {attrs['description']}")
-    if attrs.get("statement") and str(attrs.get("statement")) != label:
-        parts.append(f"statement: {attrs['statement']}")
-    if attrs.get("retention_lane") == "accepted_pattern":
         parts.append(
-            "pattern: "
+            "description: "
+            f"{attrs['description']}"
+        )
+
+    if (
+        attrs.get("statement")
+        and str(
+            attrs.get("statement")
+        )
+        != label
+    ):
+        parts.append(
+            "statement: "
+            f"{attrs['statement']}"
+        )
+
+    policy_lane = str(
+        attrs.get(
+            "policy_lane",
+            "",
+        )
+    )
+    retention_lane = str(
+        attrs.get(
+            "retention_lane",
+            "",
+        )
+    )
+
+    if (
+        policy_lane
+        == "semantic_candidate"
+    ):
+        parts.append(
+            "status: unverified "
+            "semantic candidate"
+        )
+        parts.append(
+            "verification required: true"
+        )
+        parts.append(
+            "proposed pattern: "
             f"{attrs.get('pattern_subject', '')} "
             f"{attrs.get('pattern_relation', '')} "
             f"{attrs.get('pattern_object', '')}"
         )
-        if attrs.get("qualifiers_json"):
-            parts.append(f"qualifiers: {attrs['qualifiers_json']}")
-    elif attrs.get("retention_lane") == "paper_local_frontier":
-        parts.append("discovery lane: paper-local frontier concept")
+
+        reason_codes = attrs.get(
+            "candidate_reason_codes_json"
+        )
+
+        if reason_codes:
+            parts.append(
+                "candidate reason codes: "
+                f"{reason_codes}"
+            )
+
+    elif (
+        retention_lane
+        == "accepted_pattern"
+    ):
+        parts.append(
+            "confirmed pattern: "
+            f"{attrs.get('pattern_subject', '')} "
+            f"{attrs.get('pattern_relation', '')} "
+            f"{attrs.get('pattern_object', '')}"
+        )
+
+        if attrs.get(
+            "qualifiers_json"
+        ):
+            parts.append(
+                "qualifiers: "
+                f"{attrs['qualifiers_json']}"
+            )
+
+    elif (
+        retention_lane
+        == "paper_local_frontier"
+    ):
+        parts.append(
+            "discovery lane: "
+            "paper-local frontier concept"
+        )
+
     if attrs.get("evidence_scope"):
-        parts.append(f"evidence scope: {attrs['evidence_scope']}")
-    return "\n".join(str(part) for part in parts if str(part).strip())
+        parts.append(
+            "evidence scope: "
+            f"{attrs['evidence_scope']}"
+        )
+
+    return "\n".join(
+        str(part)
+        for part in parts
+        if str(part).strip()
+    )
 
 
 def _edge_attr_id(left: str, right: str, key: str, attrs: dict[str, Any]) -> str:
@@ -788,6 +883,25 @@ def build_graphagents_projection(
                 ),
                 "exploration_cost": 2.5,
                 "requires_verification": True,
+
+                "proposed_subject": str(
+                    attrs.get(
+                        "pattern_subject",
+                        "",
+                    )
+                ),
+                "proposed_relation": str(
+                    attrs.get(
+                        "pattern_relation",
+                        "",
+                    )
+                ),
+                "proposed_object": str(
+                    attrs.get(
+                        "pattern_object",
+                        "",
+                    )
+                ),
             })
 
             attrs["node_text"] = node_text(
@@ -811,14 +925,15 @@ def build_graphagents_projection(
             if concept_id not in projection:
                 continue
 
-            relation = str(
+            source_grounding_relation = str(
                 attrs.get(
                     "relation",
-                    (
-                        "GROUNDS_"
-                        "SEMANTIC_CANDIDATE"
-                    ),
+                    "",
                 )
+            )
+
+            relation = (
+                "GROUNDS_SEMANTIC_CANDIDATE"
             )
 
             source_edge_id = (
@@ -880,8 +995,7 @@ def build_graphagents_projection(
                             pointer_payload
                         ),
                         derivation_rule=(
-                            "direct_candidate_"
-                            "grounding"
+                            "direct_candidate_grounding"
                         ),
                         source_paper_ids=[
                             str(
@@ -905,6 +1019,9 @@ def build_graphagents_projection(
                     "source": anchor_id,
                     "target": concept_id,
                     "relation": relation,
+                    "source_grounding_relation": (
+                        source_grounding_relation
+                    ),
                     "evidence_status": (
                         "semantic_candidate"
                     ),
@@ -1010,6 +1127,9 @@ def build_graphagents_projection(
                     "relation": (
                         "GROUNDS_"
                         "SEMANTIC_CANDIDATE"
+                    ),
+                    "source_grounding_relation": (
+                        source_grounding_relation
                     ),
                     "evidence_status": (
                         "semantic_candidate"

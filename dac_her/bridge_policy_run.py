@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import networkx as nx
+import csv
 
 from dac_her.bridge_extraction import (
     bridge_raw_output_path,
@@ -171,6 +172,7 @@ def _copy_latest_artifacts(
         "bridge_issues.csv",
         "bridge_rejected.csv",
         "bridge.candidates.graphml",
+        "bridge_candidate_issues.csv",
     )
 
     for name in names:
@@ -203,6 +205,35 @@ def _copy_latest_artifacts(
         },
     )
 
+def _write_candidate_issue_table(
+    path: Path,
+    rows: list[dict[str, Any]],
+) -> None:
+    if not rows:
+        path.write_text(
+            "",
+            encoding="utf-8-sig",
+        )
+        return
+
+    fields: list[str] = []
+
+    for row in rows:
+        for field in row:
+            if field not in fields:
+                fields.append(field)
+
+    with path.open(
+        "w",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fields,
+        )
+        writer.writeheader()
+        writer.writerows(rows)
 
 def materialize_bridge_policy_run(
     *,
@@ -832,6 +863,12 @@ def materialize_bridge_policy_run(
     write_json(
         policy_dir / "summary.json",
         summary,
+    )
+
+    _write_candidate_issue_table(
+        policy_dir
+        / "bridge_candidate_issues.csv",
+        candidate_records,
     )
 
     _copy_latest_artifacts(

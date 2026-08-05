@@ -66,7 +66,6 @@ def bridge_rejections_path(
         / f"{safe_chunk_id}__rejections.json"
     )
 
-
 def bridge_relation_repairs_path(
     chunk_id: str,
     output_dir: str | Path,
@@ -83,6 +82,22 @@ def bridge_relation_repairs_path(
         )
     )
 
+def bridge_candidate_issues_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+
+    return (
+        Path(output_dir)
+        / (
+            f"{safe_chunk_id}"
+            "__candidate_issues.json"
+        )
+    )
 
 def _catalog(
     result: KnowledgeGraph,
@@ -131,6 +146,13 @@ def filter_bridge_raw_chunk(
     )
     candidate_path = (
         bridge_candidates_path(
+            strict_result.chunk_id,
+            output_dir,
+        )
+    )
+
+    candidate_issues_path = (
+        bridge_candidate_issues_path(
             strict_result.chunk_id,
             output_dir,
         )
@@ -240,6 +262,19 @@ def filter_bridge_raw_chunk(
         encoding="utf-8",
     )
 
+    candidate_issues_path.write_text(
+        json.dumps(
+            [
+                record.to_dict()
+                for record
+                in candidate_records
+            ],
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
     return {
         "status": "success",
         "paper_id": (
@@ -292,6 +327,9 @@ def filter_bridge_raw_chunk(
         ),
         "candidates_path": str(
             candidate_path
+        ),
+        "candidate_issues_path": str(
+            candidate_issues_path
         ),
         "candidate_count": len(
             candidate_result.concepts

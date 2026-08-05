@@ -323,6 +323,13 @@ def main() -> None:
         ],
     )
     print(
+        "Semantic candidates:",
+        summary.get(
+            "semantic_candidates",
+            0,
+        ),
+    )
+    print(
         "Fatal rejected candidates:",
         fatal_rejected,
     )
@@ -337,6 +344,16 @@ def main() -> None:
         summary[
             "latest_bridge_graphml"
         ],
+    )
+    print(
+        "Candidate graph:",
+        summary.get(
+            (
+                "latest_candidate_"
+                "bridge_graphml"
+            ),
+            "",
+        ),
     )
 
 
