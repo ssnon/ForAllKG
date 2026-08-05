@@ -183,35 +183,6 @@ def extract_bridge_chunk(
                 )
             )
 
-            repairable_rejections = [
-                rejection
-                for rejection in rejections
-                if any(
-                    code
-                    in repair_rejected_bridge_candidates.REPAIRABLE_BRIDGE_CODES
-                    for code
-                    in rejection.reason_codes
-                )
-            ]
-
-            if repairable_rejections:
-                repair_debug_path = (
-                    debug_dir
-                    / f"{safe_id}__policy_repair.json"
-                )
-
-                result, rejections = (
-                    repair_rejected_bridge_candidates(
-                        llm=llm,
-                        accepted_result=result,
-                        rejections=rejections,
-                        strict_nodes=nodes,
-                        source_payload=source_payload,
-                        max_tokens=max_tokens,
-                        debug_path=repair_debug_path,
-                    )
-                )
-
             metadata = dict(llm.last_call_metadata or {})
             attempts.append(metadata)
             output_path.write_text(

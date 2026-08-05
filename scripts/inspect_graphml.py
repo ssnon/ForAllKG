@@ -886,6 +886,8 @@ def main() -> None:
             "SI figure edges missing asset pointer: "
             f"{len(si_figure_asset_issues)}"
         ),
+        f"Core semantic gate: {semantic_gate['passes_core_semantic_gate']}",
+        f"Calibration semantic gate: {semantic_gate['passes_calibration_semantic_gate']}",
         f"Semantic gate: {semantic_gate['passes_semantic_gate']}",
         "",
         "Node type counts:",

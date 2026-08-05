@@ -27,6 +27,9 @@ def repair_rejected_bridge_candidates(
     debug_path: Path,
 ) -> tuple[
     BridgeChunkGraph,
-    list[BridgeRejection],
-]:
-    ...
+    list[BridgeRejection],]:
+    
+    raise NotImplementedError(
+        "Bridge policy repair is deferred "
+        "until the 10-paper audit is complete."
+    )

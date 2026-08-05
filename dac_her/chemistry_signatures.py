@@ -59,8 +59,18 @@ def composition_signature(
     text = unicodedata.normalize("NFKC", str(value or ""))
     counts: dict[str, int] = {}
 
+
     # Pt-Ru, W1Mo1, Mo2-NG, FeN4 등의 formula-like span만 처리한다.
     for formula in FORMULA_RUN_RE.findall(text):
+        # CVD, STEM, XPS 같은 대문자 분석·공정 약어를
+        # 화학식으로 해석하지 않는다.
+        if (
+            formula.isalpha()
+            and formula.isupper()
+            and len(formula) >= 3
+        ):
+            continue
+
         local_counts: Counter[str] = Counter()
 
         for symbol, raw_count in ELEMENT_RE.findall(formula):

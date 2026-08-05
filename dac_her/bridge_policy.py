@@ -8,7 +8,7 @@ from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from dac_her.scientific_signatures import normalize_scientific_text
 
 
-BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3-calibration"
+BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.1-calibration"
 
 _GENERIC_LABELS = {
     "high performance",
@@ -193,6 +193,44 @@ def _member_count(value: str) -> int:
     return len([part for part in parts if part.strip()])
 
 
+def _policy_issue(
+    code: str,
+    field: str,
+    detail: str,
+    *,
+    repairable: bool = False,
+) -> BridgePolicyIssue:
+    return BridgePolicyIssue(
+        code=code,
+        field=field,
+        detail=detail,
+        repairable=repairable,
+    )
+
+def _dedupe_issues(
+    issues: Iterable[BridgePolicyIssue],
+) -> list[BridgePolicyIssue]:
+    result: list[BridgePolicyIssue] = []
+    seen: set[
+        tuple[str, str, str, bool]
+    ] = set()
+
+    for issue in issues:
+        signature = (
+            issue.code,
+            issue.field,
+            issue.detail,
+            issue.repairable,
+        )
+
+        if signature in seen:
+            continue
+
+        seen.add(signature)
+        result.append(issue)
+
+    return result
+
 def _pattern_grounding_issues(
     concept: BridgeConcept,
     *,
@@ -316,55 +354,243 @@ def _pattern_grounding_issues(
                     repairable=False,
                 )
             )
+    elif (
+        concept.pattern_support_mode
+        == "derived_multi_span"
+    ):
+        if relation not in {
+            "CORRELATES_WITH",
+            "VARIES_WITH",
+            "CONTRASTS_WITH",
+        }:
+            issues.append(
+                _policy_issue(
+                    "UNSUPPORTED_DERIVED_RELATION",
+                    "pattern_relation",
+                    (
+                        "Derived multi-span support is "
+                        "restricted to comparative "
+                        "non-causal relations."
+                    ),
+                )
+            )
 
+        pairs = {
+            (
+                normalize_scientific_text(
+                    item.subject_value
+                ),
+                normalize_scientific_text(
+                    item.object_value
+                ),
+            )
+            for item in concept.comparison_items
+        }
+
+        subject_values = {
+            subject
+            for subject, _ in pairs
+            if subject
+        }
+
+        object_values = {
+            object_
+            for _, object_ in pairs
+            if object_
+        }
+
+        if (
+            len(pairs) < 2
+            or len(subject_values) < 2
+        ):
+            issues.append(
+                _policy_issue(
+                    "INSUFFICIENT_COMPARISON_EVIDENCE",
+                    "comparison_items",
+                    (
+                        "At least two distinct "
+                        "comparison items are required."
+                    ),
+                )
+            )
+
+        if (
+            relation
+            in {
+                "VARIES_WITH",
+                "CONTRASTS_WITH",
+            }
+            and len(object_values) < 2
+        ):
+            issues.append(
+                _policy_issue(
+                    "INSUFFICIENT_COMPARISON_EVIDENCE",
+                    "comparison_items",
+                    (
+                        "The compared outcomes do not "
+                        "provide distinct object values."
+                    ),
+                )
+            )
+
+        if any(
+            not _phrase_in_core(
+                item.source_phrase,
+                core_text,
+            )
+            for item in concept.comparison_items
+        ):
+            issues.append(
+                _policy_issue(
+                    "SOURCE_SPAN_NOT_IN_CORE",
+                    "comparison_items",
+                    (
+                        "One or more comparison source "
+                        "phrases are not in CORE_TEXT."
+                    ),
+                )
+            )
+
+        if any(
+            link.evidence_strength != "indirect"
+            for link in linked_links
+        ):
+            issues.append(
+                _policy_issue(
+                    (
+                        "DERIVED_RELATION_REQUIRES_"
+                        "INDIRECT_EVIDENCE"
+                    ),
+                    "links",
+                    (
+                        "Derived relations must use "
+                        "indirect evidence links."
+                    ),
+                )
+            )
     # 기존 derived_multi_span 검사는
     # 같은 방식으로 Issue 객체를 생성한다.
 
     return issues
 
-
-def _competition_reasons(concept: BridgeConcept) -> list[str]:
+def _competition_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
     relation = concept.pattern_relation
-    if relation not in {"COMPETES_WITH", "COMPETES_FOR"}:
+
+    if relation not in {
+        "COMPETES_WITH",
+        "COMPETES_FOR",
+    }:
         return []
 
-    reasons: list[str] = []
+    issues: list[BridgePolicyIssue] = []
     qualifiers = _qualifier_map(concept)
-    subject = concept.pattern_subject or ""
-    object_ = concept.pattern_object or ""
+
+    subject = (
+        concept.pattern_subject or ""
+    )
+    object_ = (
+        concept.pattern_object or ""
+    )
 
     if relation == "COMPETES_WITH":
-        if not qualifiers.get("competition_target"):
-            reasons.append("COMPETITION_TARGET_MISSING")
-        # Reject the exact semantic error observed in the pilot: a collective
-        # set of competitors connected directly to the process they compete for.
-        if (
-            _COLLECTIVE_COMPETITOR_TERMS.search(subject)
-            and _COMPETITION_TARGET_TERMS.search(object_)
+        if not qualifiers.get(
+            "competition_target"
         ):
-            reasons.append("COMPETITION_ARGUMENT_MISMATCH")
+            issues.append(
+                _policy_issue(
+                    "COMPETITION_TARGET_MISSING",
+                    "qualifiers",
+                    (
+                        "COMPETES_WITH requires a "
+                        "competition_target qualifier."
+                    ),
+                )
+            )
+
+        if (
+            _COLLECTIVE_COMPETITOR_TERMS.search(
+                subject
+            )
+            and _COMPETITION_TARGET_TERMS.search(
+                object_
+            )
+        ):
+            issues.append(
+                _policy_issue(
+                    "COMPETITION_ARGUMENT_MISMATCH",
+                    "pattern_object",
+                    (
+                        "A collective competitor set "
+                        "cannot directly use the "
+                        "competition target as its peer."
+                    ),
+                )
+            )
 
     if relation == "COMPETES_FOR":
-        members = qualifiers.get("competitor_members", "")
+        members = qualifiers.get(
+            "competitor_members",
+            "",
+        )
+
         if _member_count(members) < 2:
-            reasons.append("COMPETITOR_MEMBERS_MISSING")
-        if normalize_scientific_text(subject) == normalize_scientific_text(object_):
-            reasons.append("COMPETITION_ARGUMENT_MISMATCH")
+            issues.append(
+                _policy_issue(
+                    "COMPETITOR_MEMBERS_MISSING",
+                    "qualifiers",
+                    (
+                        "COMPETES_FOR requires at "
+                        "least two competitor members."
+                    ),
+                )
+            )
 
-    return reasons
+    return issues
 
+def _relation_direction_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    """Reject the pilot's known reversed VARIES_WITH orientation.
 
-def _relation_direction_reasons(concept: BridgeConcept) -> list[str]:
-    # Conservative guard for the pilot's reversed identity/site relation. It is
-    # intentionally narrow to avoid imposing a universal causal orientation.
+    Preferred orientation:
+        outcome/property VARIES_WITH condition/axis
+
+    Example:
+        preferred adsorption site
+            VARIES_WITH
+        anchored metal identity
+    """
     if concept.pattern_relation != "VARIES_WITH":
         return []
-    subject = normalize_scientific_text(concept.pattern_subject or "")
-    object_ = normalize_scientific_text(concept.pattern_object or "")
-    if "identity" in subject and "identity" not in object_:
-        return ["RELATION_ARGUMENT_DIRECTION"]
-    return []
 
+    subject = normalize_scientific_text(
+        concept.pattern_subject or ""
+    )
+    object_ = normalize_scientific_text(
+        concept.pattern_object or ""
+    )
+
+    if (
+        "identity" in subject
+        and "identity" not in object_
+    ):
+        return [
+            _policy_issue(
+                "RELATION_ARGUMENT_DIRECTION",
+                "pattern_subject",
+                (
+                    "VARIES_WITH should normally orient "
+                    "the varying outcome/property as the "
+                    "subject and the condition or axis as "
+                    "the object."
+                ),
+                repairable=False,
+            )
+        ]
+
+    return []
 
 def concept_policy_issues(
     concept: BridgeConcept,
@@ -372,62 +598,173 @@ def concept_policy_issues(
     strict_nodes: Iterable[dict[str, Any]],
     core_text: str | None = None,
     linked_links: list[BridgeLink] | None = None,
-) -> list[str]:
-    """High-precision deterministic rejection rules.
+) -> list[BridgePolicyIssue]:
+    """Apply high-precision deterministic Bridge policy checks."""
 
-    Accepted patterns must expose auditable source support. Frontier concepts
-    are filtered more aggressively because table fields and scalar metrics are
-    already represented in the canonical evidence graph.
-    """
-    reasons: list[str] = []
-    normalized_label = normalize_scientific_text(concept.label)
-    normalized_phrase = normalize_scientific_text(concept.source_phrase)
+    issues: list[BridgePolicyIssue] = []
+
+    normalized_label = normalize_scientific_text(
+        concept.label
+    )
+    normalized_phrase = normalize_scientific_text(
+        concept.source_phrase
+    )
 
     if normalized_label in _GENERIC_LABELS:
-        reasons.append("GENERIC_LANGUAGE")
+        issues.append(
+            _policy_issue(
+                "GENERIC_LANGUAGE",
+                "label",
+                (
+                    "The concept label is too generic "
+                    "to represent a reusable Bridge concept."
+                ),
+            )
+        )
 
     if concept.retention_lane == "accepted_pattern":
-        subject = normalize_scientific_text(concept.pattern_subject or "")
-        object_ = normalize_scientific_text(concept.pattern_object or "")
-        if not subject or not object_ or subject == object_:
-            reasons.append("RELATION_MISSING")
+        subject = normalize_scientific_text(
+            concept.pattern_subject or ""
+        )
+        object_ = normalize_scientific_text(
+            concept.pattern_object or ""
+        )
+
+        if (
+            not subject
+            or not object_
+            or subject == object_
+        ):
+            issues.append(
+                _policy_issue(
+                    "RELATION_MISSING",
+                    "pattern_subject/pattern_object",
+                    (
+                        "Accepted patterns require two "
+                        "distinct non-empty arguments."
+                    ),
+                )
+            )
+
         if (
             _METRIC_TERMS.search(subject)
             and _METRIC_TERMS.search(object_)
-            and not _RELATION_CUES.search(concept.source_phrase)
-            and concept.pattern_support_mode != "derived_multi_span"
+            and not _RELATION_CUES.search(
+                concept.source_phrase
+            )
+            and concept.pattern_support_mode
+            != "derived_multi_span"
         ):
-            reasons.append("UNSUPPORTED_RELATION")
+            issues.append(
+                _policy_issue(
+                    "UNSUPPORTED_RELATION",
+                    "source_phrase",
+                    (
+                        "The source phrase does not expose "
+                        "a relation cue supporting the two "
+                        "metric-like arguments."
+                    ),
+                )
+            )
 
-        reasons.extend(
+        issues.extend(
             _pattern_grounding_issues(
                 concept,
                 core_text=core_text,
                 linked_links=linked_links or [],
             )
         )
-        reasons.extend(_competition_reasons(concept))
-        reasons.extend(_relation_direction_reasons(concept))
-        return list(dict.fromkeys(reasons))
 
-    if _TABLE_FIELD_CUES.fullmatch(normalized_label):
-        reasons.append("TABLE_FIELD")
+        issues.extend(
+            _competition_issues(concept)
+        )
 
-    if _METRIC_TERMS.search(normalized_label) and not _RELATION_CUES.search(
-        " ".join((concept.label, concept.source_phrase, concept.description or ""))
+        issues.extend(
+            _relation_direction_issues(concept)
+        )
+
+        return _dedupe_issues(issues)
+
+    # paper_local_frontier checks
+    if _TABLE_FIELD_CUES.fullmatch(
+        normalized_label
     ):
-        reasons.append("SCALAR_METRIC")
+        issues.append(
+            _policy_issue(
+                "TABLE_FIELD",
+                "label",
+                (
+                    "A bare table-field label is already "
+                    "represented in the strict evidence graph."
+                ),
+            )
+        )
 
-    strict_labels = _strict_labels(strict_nodes)
-    if normalized_label in strict_labels or normalized_phrase in strict_labels:
-        reasons.append("STRICT_DUPLICATE")
+    combined_text = " ".join(
+        (
+            concept.label,
+            concept.source_phrase,
+            concept.description or "",
+        )
+    )
 
-    if _NUMERIC_OR_UNIT.search(concept.source_phrase) and _METRIC_TERMS.search(
-        concept.source_phrase
+    if (
+        _METRIC_TERMS.search(normalized_label)
+        and not _RELATION_CUES.search(
+            combined_text
+        )
     ):
-        reasons.append("INSTANCE_ONLY")
+        issues.append(
+            _policy_issue(
+                "SCALAR_METRIC",
+                "label",
+                (
+                    "The candidate is a scalar metric "
+                    "rather than a reusable frontier concept."
+                ),
+            )
+        )
 
-    return list(dict.fromkeys(reasons))
+    strict_labels = _strict_labels(
+        strict_nodes
+    )
+
+    if (
+        normalized_label in strict_labels
+        or normalized_phrase in strict_labels
+    ):
+        issues.append(
+            _policy_issue(
+                "STRICT_DUPLICATE",
+                "label/source_phrase",
+                (
+                    "The candidate duplicates content "
+                    "already represented in the strict graph."
+                ),
+            )
+        )
+
+    if (
+        _NUMERIC_OR_UNIT.search(
+            concept.source_phrase
+        )
+        and _METRIC_TERMS.search(
+            concept.source_phrase
+        )
+    ):
+        issues.append(
+            _policy_issue(
+                "INSTANCE_ONLY",
+                "source_phrase",
+                (
+                    "The candidate is a paper-specific "
+                    "numeric instance rather than a "
+                    "reusable Bridge concept."
+                ),
+            )
+        )
+
+    return _dedupe_issues(issues)
 
 
 def filter_bridge_result(
@@ -449,27 +786,41 @@ def filter_bridge_result(
             concept,
             strict_nodes=strict_nodes,
             core_text=core_text,
-            linked_links=(
-                links_by_concept.get(
-                    concept.id,
-                    [],
-                )
+            linked_links=links_by_concept.get(
+                concept.id,
+                [],
+            ),
+        )
+
+        signature = (
+            concept.retention_lane,
+            normalize_scientific_text(
+                concept.label
+            ),
+            normalize_scientific_text(
+                concept.pattern_subject or ""
+            ),
+            str(
+                concept.pattern_relation or ""
+            ),
+            normalize_scientific_text(
+                concept.pattern_object or ""
             ),
         )
 
         if signature in seen_signatures:
             issues.append(
-                BridgePolicyIssue(
-                    code="DUPLICATE_MENTION",
-                    field="label",
-                    detail=(
-                        "An equivalent bridge "
-                        "mention already appeared "
-                        "in this chunk."
+                _policy_issue(
+                    "DUPLICATE_MENTION",
+                    "label",
+                    (
+                        "An equivalent Bridge mention "
+                        "already appeared in this chunk."
                     ),
-                    repairable=False,
                 )
             )
+
+        seen_signatures.add(signature)
 
         if issues:
             rejections.append(

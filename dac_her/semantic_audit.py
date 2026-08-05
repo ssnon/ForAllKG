@@ -339,12 +339,56 @@ def semantic_readiness(
     cross_document_duplicates: Sequence[dict[str, Any]],
     si_figure_issues: Sequence[dict[str, Any]],
 ) -> dict[str, Any]:
-    payload = {
-        "composition_incompatible_model_of": len(model_of_issues),
-        "source_metric_mismatches": len(metric_issues),
-        "undetected_exact_duplicate_claims": len(exact_claim_detection_issues),
-        "unresolved_high_confidence_cross_document_duplicates": len(cross_document_duplicates),
-        "si_figure_edges_missing_asset_pointer": len(si_figure_issues),
+    blocking = {
+        "composition_incompatible_model_of": (
+            len(model_of_issues)
+        ),
+        "source_metric_mismatches": (
+            len(metric_issues)
+        ),
+        "si_figure_edges_missing_asset_pointer": (
+            len(si_figure_issues)
+        ),
     }
-    payload["passes_semantic_gate"] = all(value == 0 for value in payload.values())
-    return payload
+
+    review_debt = {
+        "undetected_exact_duplicate_claims": (
+            len(exact_claim_detection_issues)
+        ),
+        "unresolved_high_confidence_cross_document_duplicates": (
+            len(cross_document_duplicates)
+        ),
+    }
+
+    passes_core = all(
+        value == 0
+        for value in blocking.values()
+    )
+
+    passes_calibration = (
+        passes_core
+        and all(
+            value == 0
+            for value in review_debt.values()
+        )
+    )
+
+    return {
+        **blocking,
+        **review_debt,
+        "review_debt_total": sum(
+            review_debt.values()
+        ),
+        "passes_core_semantic_gate": (
+            passes_core
+        ),
+        "passes_calibration_semantic_gate": (
+            passes_calibration
+        ),
+
+        # 기존 downstream 호환성을 위해 당분간
+        # 기존 의미를 보존한다.
+        "passes_semantic_gate": (
+            passes_calibration
+        ),
+    }

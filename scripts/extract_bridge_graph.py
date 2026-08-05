@@ -317,6 +317,27 @@ def main() -> None:
         canonical_graph=canonical_graph,
     )
 
+    for graph in (
+        raw_graph,
+        canonical_bridge_graph,
+    ):
+        graph.graph.update({
+            "bridge_policy_version": (
+                BRIDGE_POLICY_VERSION
+            ),
+            "bridge_prompt_version": (
+                BRIDGE_PROMPT_VERSION
+            ),
+            "bridge_run_id": (
+                bridge_run_id
+            ),
+            "bridge_run_fingerprint": (
+                bridge_run_metadata[
+                    "bridge_run_fingerprint"
+                ]
+            ),
+        })
+
     raw_path = save_bridge_graph(raw_graph, bridge_dir / "bridge.raw.graphml")
     graph_path = save_bridge_graph(
         canonical_bridge_graph,

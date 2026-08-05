@@ -20,7 +20,7 @@ def normalize_scientific_text(value: Any) -> str:
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
     text = text.lower().strip()
-    for name, symbol in metal_signature.items():
+    for name, symbol in _ELEMENT_NAMES.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"[^a-z0-9+.%/\-\s]", " ", text)

@@ -181,6 +181,24 @@ def audit_bridge_graph(
             len(pattern_issues) == 0
             and anchor_status_counts.get("unresolved_in_canonical", 0) == 0
         ),
+        "policy_version": str(
+            graph.graph.get(
+                "bridge_policy_version",
+                BRIDGE_POLICY_VERSION,
+            )
+        ),
+        "prompt_version": str(
+            graph.graph.get(
+                "bridge_prompt_version",
+                "",
+            )
+        ),
+        "bridge_run_id": str(
+            graph.graph.get(
+                "bridge_run_id",
+                "",
+            )
+        ),
     }
     tables = {
         "concepts": concepts,

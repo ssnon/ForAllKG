@@ -57,7 +57,6 @@ def node_composition_signature(
     if node_type in {
         "Catalyst",
         "CatalystModel",
-        "Material",
     }:
         return composition_signature(
             data.get("description")
