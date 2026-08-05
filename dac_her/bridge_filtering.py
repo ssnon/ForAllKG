@@ -6,6 +6,7 @@ from typing import Any
 
 from dac_her.bridge_policy import (
     filter_bridge_result,
+    partition_bridge_result
 )
 from dac_her.bridge_relation_repairs import (
     apply_deterministic_relation_repairs,
@@ -38,6 +39,19 @@ def bridge_output_path(
         / f"{safe_chunk_id}.json"
     )
 
+def bridge_candidates_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+
+    return (
+        Path(output_dir)
+        / f"{safe_chunk_id}__candidates.json"
+    )
 
 def bridge_rejections_path(
     chunk_id: str,
@@ -115,6 +129,12 @@ def filter_bridge_raw_chunk(
             output_dir,
         )
     )
+    candidate_path = (
+        bridge_candidates_path(
+            strict_result.chunk_id,
+            output_dir,
+        )
+    )
 
     nodes = _catalog(strict_result)
 
@@ -156,14 +176,25 @@ def filter_bridge_raw_chunk(
         )
     )
 
-    filtered_result, rejections = (
-        filter_bridge_result(
-            repaired_result,
-            strict_nodes=nodes,
-            core_text=str(
-                source_payload["core_text"]
-            ),
-        )
+    partition = partition_bridge_result(
+        repaired_result,
+        strict_nodes=nodes,
+        core_text=str(
+            source_payload["core_text"]
+        ),
+    )
+
+    filtered_result = (
+        partition.accepted
+    )
+    candidate_result = (
+        partition.candidates
+    )
+    candidate_records = list(
+        partition.candidate_records
+    )
+    rejections = list(
+        partition.rejections
     )
 
     output_path.write_text(
@@ -194,6 +225,15 @@ def filter_bridge_raw_chunk(
                 for repair
                 in relation_repairs
             ],
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    candidate_path.write_text(
+        json.dumps(
+            candidate_result.model_dump(),
             ensure_ascii=False,
             indent=2,
         ),
@@ -249,5 +289,14 @@ def filter_bridge_raw_chunk(
         ),
         "relation_repair_count": len(
             relation_repairs
+        ),
+        "candidates_path": str(
+            candidate_path
+        ),
+        "candidate_count": len(
+            candidate_result.concepts
+        ),
+        "fatal_rejection_count": len(
+            rejections
         ),
     }

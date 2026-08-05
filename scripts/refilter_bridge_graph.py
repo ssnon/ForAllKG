@@ -18,6 +18,8 @@ import dac_her.schemas \
     as schemas_module
 import dac_her.scientific_signatures \
     as scientific_signatures_module
+import dac_her.bridge_policy_run \
+    as bridge_policy_run_module
 
 from dac_her.bridge_policy_run import (
     materialize_bridge_policy_run,
@@ -254,6 +256,7 @@ def main() -> None:
         bridge_schemas_module.__file__,
         scientific_signatures_module.__file__,
         schemas_module.__file__,
+        bridge_policy_run_module.__file__,
     )
 
     summary = (
@@ -284,6 +287,16 @@ def main() -> None:
         )
     )
 
+    fatal_rejected = int(
+        summary.get(
+            "fatal_rejected_candidates",
+            summary.get(
+                "rejected_candidates",
+                0,
+            ),
+        )
+    )
+    
     print(
         "Bridge refilter finished"
     )
@@ -310,10 +323,8 @@ def main() -> None:
         ],
     )
     print(
-        "Rejected candidates:",
-        summary[
-            "rejected_candidates"
-        ],
+        "Fatal rejected candidates:",
+        fatal_rejected,
     )
     print(
         "Relation repairs:",

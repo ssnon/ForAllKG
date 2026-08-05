@@ -39,15 +39,31 @@ def canonical_alias_map(graph: nx.Graph | None) -> dict[str, str]:
 
 
 def build_bridge_graph(
-    bridge_results: Iterable[BridgeChunkGraph],
+    bridge_results: Iterable[
+        BridgeChunkGraph
+    ],
     *,
-    strict_results: dict[str, KnowledgeGraph],
-    canonical_graph: nx.Graph | None = None,
-) -> tuple[nx.MultiDiGraph, list[dict[str, Any]]]:
+    strict_results: dict[
+        str,
+        KnowledgeGraph,
+    ],
+    canonical_graph: (
+        nx.Graph | None
+    ) = None,
+    graph_layer: str = (
+        "peripheral_explicit"
+    ),
+    evidence_status: str = (
+        "source_explicit_peripheral"
+    ),
+) -> tuple[
+    nx.MultiDiGraph,
+    list[dict[str, Any]],
+]:
     graph = nx.MultiDiGraph(
         graph_stage="bridge_v2",
-        graph_layer="peripheral_explicit",
-        evidence_status="source_explicit_peripheral",
+        graph_layer=graph_layer,
+        evidence_status=evidence_status,
     )
     alias_map = canonical_alias_map(canonical_graph)
     issues: list[dict[str, Any]] = []
@@ -101,8 +117,8 @@ def build_bridge_graph(
                 section=result.section,
                 page_ids_json=json.dumps(result.page_ids, ensure_ascii=False),
                 asset_ids_json=json.dumps(result.asset_ids, ensure_ascii=False),
-                graph_layer="peripheral_explicit",
-                evidence_status="source_explicit_peripheral",
+                graph_layer=graph_layer,
+                evidence_status=evidence_status,
             )
 
         for index, link in enumerate(result.links):
@@ -175,8 +191,8 @@ def build_bridge_graph(
                 evidence_text=link.evidence_text,
                 confidence=link.confidence,
                 human_verified=False,
-                graph_layer="peripheral_explicit",
-                evidence_status="source_explicit_peripheral",
+                graph_layer=graph_layer,
+                evidence_status=evidence_status,
                 raw_anchor_id=raw_anchor_id,
                 anchor_resolution_status=anchor_status,
             )

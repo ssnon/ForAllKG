@@ -36,6 +36,8 @@ import dac_her.schemas \
     as schemas_module
 import dac_her.scientific_signatures \
     as scientific_signatures_module
+import dac_her.bridge_policy_run \
+    as bridge_policy_run_module
 
 from dac_her.bridge_extraction import (
     extract_bridge_raw_chunk,
@@ -662,6 +664,7 @@ def main() -> None:
         bridge_schemas_module.__file__,
         scientific_signatures_module.__file__,
         schemas_module.__file__,
+        bridge_policy_run_module.__file__,
     )
 
     policy_summary = (

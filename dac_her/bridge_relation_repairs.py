@@ -70,42 +70,13 @@ def _repair_concept(
     BridgeConcept,
     BridgeRelationRepair | None,
 ]:
-    evidence_text = " ".join(
-        value
-        for value in (
-            concept.relation_evidence_phrase,
-            concept.source_phrase,
-        )
-        if value
-    )
-
-    if (
-        concept.pattern_relation
-        == "VARIES_WITH"
-        and concept.pattern_support_mode
-        == "explicit_single_span"
-        and _COMPARATIVE_CUE.search(
-            evidence_text
-        )
-    ):
-        updated = concept.model_copy(
-            update={
-                "pattern_relation": (
-                    "CONTRASTS_WITH"
-                ),
-            }
-        )
-
-        return updated, BridgeRelationRepair(
-            concept_id=concept.id,
-            old_relation="VARIES_WITH",
-            new_relation="CONTRASTS_WITH",
-            rule_id=(
-                "PAIRWISE_COMPARISON_TO_CONTRAST"
-            ),
-            evidence=concept.source_phrase,
-        )
-
+    # No deterministic relation relabel is enabled
+    # in the frozen three-paper baseline.
+    #
+    # Comparative wording alone does not distinguish:
+    #   peer A CONTRASTS_WITH peer B
+    # from:
+    #   property VARIES_WITH condition/composition.
     return concept, None
 
 

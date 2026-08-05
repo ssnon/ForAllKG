@@ -275,7 +275,22 @@ def main() -> None:
                     "__relation_repairs.json"
                 )
             )
+            candidate_path = (
+                filtered_dir
+                / (
+                    f"{safe_id}"
+                    "__candidates.json"
+                )
+            )
 
+            candidate_issues_path = (
+                filtered_dir
+                / (
+                    f"{safe_id}"
+                    "__candidate_issues.json"
+                )
+            )
+            
             filtered_result = (
                 BridgeChunkGraph
                 .model_validate_json(
@@ -284,7 +299,20 @@ def main() -> None:
                     )
                 )
             )
+            candidate_result = (
+                BridgeChunkGraph
+                .model_validate_json(
+                    candidate_path.read_text(
+                        encoding="utf-8"
+                    )
+                )
+            )
 
+            candidate_by_id = {
+                concept.id: concept
+                for concept
+                in candidate_result.concepts
+            }
             filtered_by_id = {
                 concept.id: concept
                 for concept
@@ -297,7 +325,12 @@ def main() -> None:
                     rejection_path
                 )
             }
-
+            candidate_issue_by_id = {
+                str(row["concept_id"]): row
+                for row in _load_json_list(
+                    candidate_issues_path
+                )
+            }
             repairs_by_id: dict[
                 str,
                 list[dict[str, Any]],
@@ -327,6 +360,17 @@ def main() -> None:
             for concept in raw_result.concepts:
                 filtered_concept = (
                     filtered_by_id.get(
+                        concept.id
+                    )
+                )
+                candidate_concept = (
+                    candidate_by_id.get(
+                        concept.id
+                    )
+                )
+
+                candidate_issue = (
+                    candidate_issue_by_id.get(
                         concept.id
                     )
                 )
@@ -368,7 +412,26 @@ def main() -> None:
                         .pattern_object
                         or ""
                     )
+                elif candidate_concept is not None:
+                    automatic_status = (
+                        "SEMANTIC_CANDIDATE"
+                    )
 
+                    effective_subject = (
+                        candidate_concept
+                        .pattern_subject
+                        or ""
+                    )
+                    effective_relation = (
+                        candidate_concept
+                        .pattern_relation
+                        or ""
+                    )
+                    effective_object = (
+                        candidate_concept
+                        .pattern_object
+                        or ""
+                    )
                 elif rejection is not None:
                     automatic_status = (
                         "REJECTED"
@@ -565,6 +628,18 @@ def main() -> None:
                     ),
                     "evidence_pointer_count": (
                         pointer_count
+                    ),
+                    "candidate_reason_codes_json": (
+                        _json_text(
+                            (
+                                candidate_issue.get(
+                                    "reason_codes",
+                                    [],
+                                )
+                                if candidate_issue
+                                else []
+                            )
+                        )
                     ),
                     "rejection_reason_codes_json": (
                         _json_text(

@@ -102,6 +102,45 @@ def _load_rejections(
 
     return rows
 
+def _load_candidate_issues(
+    records: Iterable[
+        dict[str, Any]
+    ],
+) -> list[dict[str, Any]]:
+    rows: list[
+        dict[str, Any]
+    ] = []
+
+    for record in records:
+        value = record.get(
+            "candidate_issues_path"
+        )
+
+        if not value:
+            continue
+
+        path = Path(str(value))
+
+        if not path.exists():
+            continue
+
+        try:
+            payload = json.loads(
+                path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        except Exception:
+            continue
+
+        if isinstance(payload, list):
+            rows.extend(
+                item
+                for item in payload
+                if isinstance(item, dict)
+            )
+
+    return rows
 
 def _copy_latest_artifacts(
     *,
@@ -131,6 +170,7 @@ def _copy_latest_artifacts(
         "bridge_links.csv",
         "bridge_issues.csv",
         "bridge_rejected.csv",
+        "bridge.candidates.graphml",
     )
 
     for name in names:
@@ -450,6 +490,10 @@ def materialize_bridge_policy_run(
             f"{record['pattern_count']} "
             f"frontier="
             f"{record['frontier_count']} "
+            f"candidate="
+            f"{record['candidate_count']} "
+            f"fatal_rejected="
+            f"{record['fatal_rejection_count']} "
             f"rejected="
             f"{record['rejection_count']} "
             f"repairs="
@@ -473,8 +517,30 @@ def materialize_bridge_policy_run(
         for record in records
     ]
 
+    candidate_results = [
+        BridgeChunkGraph
+        .model_validate_json(
+            Path(
+                str(
+                    record[
+                        "candidates_path"
+                    ]
+                )
+            ).read_text(
+                encoding="utf-8"
+            )
+        )
+        for record in records
+    ]
+
     rejections = _load_rejections(
         records
+    )
+
+    candidate_records = (
+        _load_candidate_issues(
+            records
+        )
     )
 
     canonical_graph = (
@@ -502,6 +568,18 @@ def materialize_bridge_policy_run(
         bridge_results,
         strict_results=strict_results,
         canonical_graph=canonical_graph,
+    )
+
+    candidate_bridge_graph, (
+        candidate_issues
+    ) = build_bridge_graph(
+        candidate_results,
+        strict_results=strict_results,
+        canonical_graph=canonical_graph,
+        graph_layer="bridge_candidate",
+        evidence_status=(
+            "semantic_candidate"
+        ),
     )
 
     graph_metadata = {
@@ -546,6 +624,17 @@ def materialize_bridge_policy_run(
     canonical_bridge_graph.graph.update(
         graph_metadata
     )
+    candidate_bridge_graph.graph.update(
+        graph_metadata
+    )
+    candidate_bridge_graph.graph.update({
+        "graph_layer": (
+            "bridge_candidate"
+        ),
+        "evidence_status": (
+            "semantic_candidate"
+        ),
+    })
 
     raw_graph_path = (
         save_bridge_graph(
@@ -558,6 +647,13 @@ def materialize_bridge_policy_run(
         canonical_bridge_graph,
         policy_dir
         / "bridge.graphml",
+    )
+    candidate_graph_path = (
+        save_bridge_graph(
+            candidate_bridge_graph,
+            policy_dir
+            / "bridge.candidates.graphml",
+        )
     )
 
     write_bridge_tables(
@@ -582,6 +678,18 @@ def materialize_bridge_policy_run(
     shutil.copyfile(
         graph_path,
         latest_bridge_path,
+    )
+    latest_candidate_bridge_path = (
+        paper_root
+        / (
+            f"{paper_id}"
+            ".bridge.candidates.graphml"
+        )
+    )
+
+    shutil.copyfile(
+        candidate_graph_path,
+        latest_candidate_bridge_path,
     )
 
     pattern_count = sum(
@@ -612,6 +720,15 @@ def materialize_bridge_policy_run(
             )
         )
         for record in records
+    )
+    candidate_concept_count = sum(
+        len(result.concepts)
+        for result in candidate_results
+    )
+
+    candidate_link_count = sum(
+        len(result.links)
+        for result in candidate_results
     )
 
     summary = {
@@ -665,6 +782,9 @@ def materialize_bridge_policy_run(
             frontier_count
         ),
         "links": link_count,
+        "fatal_rejected_candidates": len(
+            rejections
+        ),
         "rejected_candidates": len(
             rejections
         ),
@@ -691,6 +811,21 @@ def materialize_bridge_policy_run(
         ),
         "latest_bridge_graphml": str(
             latest_bridge_path
+        ),
+        "semantic_candidates": (
+            candidate_concept_count
+        ),
+        "semantic_candidate_links": (
+            candidate_link_count
+        ),
+        "candidate_anchor_issues": len(
+            candidate_issues
+        ),
+        "candidate_graphml": str(
+            candidate_graph_path
+        ),
+        "latest_candidate_bridge_graphml": str(
+            latest_candidate_bridge_path
         ),
     }
 

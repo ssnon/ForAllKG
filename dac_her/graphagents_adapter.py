@@ -49,6 +49,21 @@ _BACKTRACE_RELATIONS = {
 }
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+
+    return (
+        str(value)
+        .strip()
+        .lower()
+        in {
+            "1",
+            "true",
+            "yes",
+        }
+    )
+
 def _stable_id(*parts: object) -> str:
     payload = "|".join(map(str, parts)).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()[:20]
@@ -194,6 +209,8 @@ def _add_projection_edge(
     evidence_pointers: list[Any] | None = None,
     derivation_rule: str = "",
     source_paper_ids: list[str] | None = None,
+    exploration_cost: float = 1.0,
+    requires_verification: bool = False,
 ) -> str:
     edge_id = f"projection:{_stable_id(source, target, relation, evidence_status, source_edge_ids)}"
     record = {
@@ -213,10 +230,41 @@ def _add_projection_edge(
         "source_paper_ids_json": json.dumps(
             sorted(set(source_paper_ids or [])), ensure_ascii=False
         ),
+        "exploration_cost": float(
+            exploration_cost
+        ),
+        "requires_verification": bool(
+            requires_verification
+        ),
     }
 
     if projection.has_edge(source, target):
         existing = dict(projection.edges[source, target])
+        existing_cost = float(
+            existing.get(
+                "exploration_cost",
+                1.0,
+            )
+        )
+
+        existing_requires = _as_bool(
+            existing.get(
+                "requires_verification",
+                False,
+            )
+        )
+
+        merged_cost = min(
+            existing_cost,
+            float(exploration_cost),
+        )
+
+        merged_requires = (
+            existing_requires
+            and bool(
+                requires_verification
+            )
+        )
         relations = set(json.loads(existing.get("relations_json", "[]")))
         if not relations and existing.get("relation"):
             relations.add(str(existing["relation"]))
@@ -349,6 +397,12 @@ def _add_projection_edge(
                 ensure_ascii=False,
             ),
             "support_count": len(edge_ids),
+            "exploration_cost": (
+                merged_cost
+            ),
+            "requires_verification": (
+                merged_requires
+            ),
         })
         return edge_id
 
@@ -455,9 +509,18 @@ def _concept_allowed(attrs: dict[str, Any], mode: ProjectionMode) -> bool:
 def build_graphagents_projection(
     canonical_graph: nx.Graph,
     *,
-    bridge_graph: nx.Graph | None = None,
+    bridge_graph: (
+        nx.Graph | None
+    ) = None,
+    candidate_bridge_graph: (
+        nx.Graph | None
+    ) = None,
     mode: ProjectionMode = "mechanism",
-) -> tuple[nx.DiGraph, list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    nx.DiGraph,
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     if mode not in {"evidence", "mechanism", "exploratory"}:
         raise ValueError(f"Unknown projection mode: {mode!r}")
 
@@ -626,6 +689,8 @@ def build_graphagents_projection(
                     supporting_node_ids=[anchor_id, concept_id],
                     evidence_pointers=pointer_payload,
                     source_paper_ids=[str(attrs.get("paper_id", ""))],
+                    exploration_cost=1.0,
+                    requires_verification=False,
                 )
                 evidence_rows.append({
                     "projection_edge_id": edge_id,
@@ -673,6 +738,8 @@ def build_graphagents_projection(
                     evidence_pointers=pointer_payload,
                     derivation_rule="lift_removed_bridge_anchor",
                     source_paper_ids=[str(attrs.get("paper_id", ""))],
+                    exploration_cost=1.0,
+                    requires_verification=False,
                 )
                 evidence_rows.append({
                     "projection_edge_id": edge_id,
@@ -686,6 +753,286 @@ def build_graphagents_projection(
                     "derivation_rule": "lift_removed_bridge_anchor",
                 })
 
+    # Semantic candidates are available only to
+    # exploratory projections.
+    if (
+        candidate_bridge_graph
+        is not None
+        and mode == "exploratory"
+    ):
+        for (
+            node_id,
+            attrs_value,
+        ) in (
+            candidate_bridge_graph
+            .nodes(data=True)
+        ):
+            node_id = str(node_id)
+            attrs = dict(attrs_value)
+
+            if (
+                attrs.get("type")
+                != "BridgeConcept"
+            ):
+                continue
+
+            attrs.update({
+                "policy_lane": (
+                    "semantic_candidate"
+                ),
+                "graph_layer": (
+                    "bridge_candidate"
+                ),
+                "evidence_status": (
+                    "semantic_candidate"
+                ),
+                "exploration_cost": 2.5,
+                "requires_verification": True,
+            })
+
+            attrs["node_text"] = node_text(
+                node_id,
+                attrs,
+            )
+
+            projection.add_node(
+                node_id,
+                **attrs,
+            )
+
+        for (
+            anchor_id,
+            concept_id,
+            key,
+            attrs,
+        ) in _edge_records(
+            candidate_bridge_graph
+        ):
+            if concept_id not in projection:
+                continue
+
+            relation = str(
+                attrs.get(
+                    "relation",
+                    (
+                        "GROUNDS_"
+                        "SEMANTIC_CANDIDATE"
+                    ),
+                )
+            )
+
+            source_edge_id = (
+                _edge_attr_id(
+                    anchor_id,
+                    concept_id,
+                    key,
+                    attrs,
+                )
+            )
+
+            pointer_payload: list[
+                Any
+            ] = []
+
+            try:
+                parsed = json.loads(
+                    str(
+                        attrs.get(
+                            (
+                                "evidence_"
+                                "pointers_json"
+                            ),
+                            "[]",
+                        )
+                    )
+                )
+
+                if isinstance(
+                    parsed,
+                    list,
+                ):
+                    pointer_payload = parsed
+
+            except json.JSONDecodeError:
+                pass
+
+            if anchor_id in projection:
+                edge_id = (
+                    _add_projection_edge(
+                        projection,
+                        source=anchor_id,
+                        target=concept_id,
+                        relation=relation,
+                        evidence_status=(
+                            "semantic_candidate"
+                        ),
+                        graph_layer=(
+                            "bridge_candidate"
+                        ),
+                        source_edge_ids=[
+                            source_edge_id
+                        ],
+                        supporting_node_ids=[
+                            anchor_id,
+                            concept_id,
+                        ],
+                        evidence_pointers=(
+                            pointer_payload
+                        ),
+                        derivation_rule=(
+                            "direct_candidate_"
+                            "grounding"
+                        ),
+                        source_paper_ids=[
+                            str(
+                                attrs.get(
+                                    "paper_id",
+                                    "",
+                                )
+                            )
+                        ],
+                        exploration_cost=2.5,
+                        requires_verification=(
+                            True
+                        ),
+                    )
+                )
+
+                evidence_rows.append({
+                    "projection_edge_id": (
+                        edge_id
+                    ),
+                    "source": anchor_id,
+                    "target": concept_id,
+                    "relation": relation,
+                    "evidence_status": (
+                        "semantic_candidate"
+                    ),
+                    "source_edge_ids": [
+                        source_edge_id
+                    ],
+                    "supporting_node_ids": [
+                        anchor_id,
+                        concept_id,
+                    ],
+                    "evidence_pointers": (
+                        pointer_payload
+                    ),
+                    "derivation_rule": (
+                        "direct_candidate_"
+                        "grounding"
+                    ),
+                    "exploration_cost": 2.5,
+                    "requires_verification": (
+                        True
+                    ),
+                })
+
+                continue
+
+            if anchor_id in canonical_graph:
+                origins = (
+                    _backtrace_origins(
+                        canonical_graph,
+                        anchor_id,
+                    )
+                )
+            else:
+                origins = []
+
+            for origin in origins:
+                origin_id = str(
+                    origin["origin_id"]
+                )
+
+                if origin_id not in projection:
+                    continue
+
+                source_edges = (
+                    origin["edge_path"]
+                    + [source_edge_id]
+                )
+                nodes = (
+                    origin["node_path"]
+                    + [concept_id]
+                )
+
+                edge_id = (
+                    _add_projection_edge(
+                        projection,
+                        source=origin_id,
+                        target=concept_id,
+                        relation=(
+                            "GROUNDS_"
+                            "SEMANTIC_CANDIDATE"
+                        ),
+                        evidence_status=(
+                            "semantic_candidate"
+                        ),
+                        graph_layer=(
+                            "bridge_candidate_"
+                            "projection"
+                        ),
+                        source_edge_ids=(
+                            source_edges
+                        ),
+                        supporting_node_ids=(
+                            nodes
+                        ),
+                        evidence_pointers=(
+                            pointer_payload
+                        ),
+                        derivation_rule=(
+                            "lift_removed_"
+                            "candidate_anchor"
+                        ),
+                        source_paper_ids=[
+                            str(
+                                attrs.get(
+                                    "paper_id",
+                                    "",
+                                )
+                            )
+                        ],
+                        exploration_cost=2.5,
+                        requires_verification=(
+                            True
+                        ),
+                    )
+                )
+
+                evidence_rows.append({
+                    "projection_edge_id": (
+                        edge_id
+                    ),
+                    "source": origin_id,
+                    "target": concept_id,
+                    "relation": (
+                        "GROUNDS_"
+                        "SEMANTIC_CANDIDATE"
+                    ),
+                    "evidence_status": (
+                        "semantic_candidate"
+                    ),
+                    "source_edge_ids": (
+                        source_edges
+                    ),
+                    "supporting_node_ids": (
+                        nodes
+                    ),
+                    "evidence_pointers": (
+                        pointer_payload
+                    ),
+                    "derivation_rule": (
+                        "lift_removed_"
+                        "candidate_anchor"
+                    ),
+                    "exploration_cost": 2.5,
+                    "requires_verification": (
+                        True
+                    ),
+                })
+
     node_rows = [
         {
             "node_id": str(node_id),
@@ -694,6 +1041,26 @@ def build_graphagents_projection(
             "node_text": str(attrs.get("node_text", "")),
             "graph_layer": str(attrs.get("graph_layer", "")),
             "retention_lane": str(attrs.get("retention_lane", "")),
+            "policy_lane": str(
+                attrs.get(
+                    "policy_lane",
+                    "",
+                )
+            ),
+            "evidence_status": str(
+                attrs.get(
+                    "evidence_status",
+                    "",
+                )
+            ),
+            "requires_verification": (
+                _as_bool(
+                    attrs.get(
+                        "requires_verification",
+                        False,
+                    )
+                )
+            ),
         }
         for node_id, attrs in projection.nodes(data=True)
     ]

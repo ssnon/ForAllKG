@@ -62,12 +62,32 @@ def main() -> None:
         if bridge_required
         else None
     )
-    projection, node_rows, evidence_rows = build_graphagents_projection(
-        canonical_graph,
-        bridge_graph=bridge_graph,
-        mode=args.mode,
+    candidate_bridge_path = (
+        paper_root
+        / (
+            f"{args.paper_id}"
+            ".bridge.candidates.graphml"
+        )
     )
 
+    candidate_bridge_graph = (
+        nx.read_graphml(
+            candidate_bridge_path,
+            force_multigraph=True,
+        )
+        if candidate_bridge_path.exists()
+        else None
+    )
+    projection, node_rows, evidence_rows = (
+        build_graphagents_projection(
+            canonical_graph,
+            bridge_graph=bridge_graph,
+            candidate_bridge_graph=(
+                candidate_bridge_graph
+            ),
+            mode=args.mode,
+        )
+    )
     evidence_status_counts = Counter(
         str(
             row.get(

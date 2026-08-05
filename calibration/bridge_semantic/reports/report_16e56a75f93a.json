@@ -1,0 +1,255 @@
+{
+  "accepted_argument_direction_accuracy": 0.9473684210526315,
+  "accepted_argument_object_accuracy": 0.9473684210526315,
+  "accepted_argument_subject_accuracy": 0.9473684210526315,
+  "accepted_argument_tuple_accuracy": 0.9473684210526315,
+  "accepted_full_pattern_accuracy": 0.9473684210526315,
+  "accepted_precision": 0.95,
+  "accepted_recall": 0.8142857142857143,
+  "accepted_relation_label_accuracy": 1.0,
+  "accepted_without_evidence_pointers": 0,
+  "automatic_lane_counts": {
+    "confirmed": 60,
+    "fatal_rejection": 5,
+    "semantic_candidate": 14
+  },
+  "bridge_policy_run_ids": [
+    "5aa8240346c78f67",
+    "65a651f44d626b88",
+    "8c2e90432a1dd26b"
+  ],
+  "candidate_argument_tuple_accuracy": 0.8461538461538461,
+  "candidate_full_pattern_accuracy": 0.7692307692307693,
+  "candidate_relation_label_accuracy": 0.7692307692307693,
+  "confirmed_binary_accuracy": 0.7974683544303798,
+  "confirmed_false_positives_by_relation": {
+    "VARIES_WITH": 3
+  },
+  "confirmed_plus_candidate_argument_tuple_accuracy": 0.9285714285714286,
+  "confirmed_plus_candidate_full_pattern_accuracy": 0.9142857142857143,
+  "confirmed_plus_candidate_recall": 1.0,
+  "confirmed_plus_candidate_relation_label_accuracy": 0.9571428571428572,
+  "confirmed_precision": 0.95,
+  "confirmed_recall": 0.8142857142857143,
+  "confusion_matrix": {
+    "false_negative": 13,
+    "false_positive": 3,
+    "true_negative": 6,
+    "true_positive": 57
+  },
+  "deterministic_repairs": {
+    "applied": 0,
+    "gold_correct": 0,
+    "precision": null
+  },
+  "error_count": 20,
+  "error_type_counts": {
+    "ARGUMENT_OBJECT_ERROR": 3,
+    "ARGUMENT_SUBJECT_ERROR": 3,
+    "ARGUMENT_TUPLE_ERROR": 3,
+    "CONFIRMED_FALSE_POSITIVE": 3,
+    "CONFIRMED_MISS_RECOVERED_AS_CANDIDATE": 13,
+    "INVALID_SEMANTIC_CANDIDATE": 1
+  },
+  "fatal_rejection_false_negative_count": 0,
+  "fatal_rejection_false_negative_share": 0.0,
+  "fatal_rejection_precision": 1.0,
+  "fatal_rejections": {
+    "count": 5,
+    "false_negative": 0,
+    "false_negative_share": 0.0,
+    "gold_correct": 5,
+    "precision": 1.0
+  },
+  "manual_anchor_review": {
+    "accuracy": 1.0,
+    "correct": 70,
+    "incorrect": 0,
+    "uncertain": 0
+  },
+  "per_paper_metrics": {
+    "Kiwook_1": {
+      "candidate": 2,
+      "candidate_valid": 2,
+      "candidate_validity": 1.0,
+      "confirmed": 19,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_precision": 1.0,
+      "confirmed_recall": 0.9047619047619048,
+      "confirmed_tp": 19,
+      "fatal_rejection_false_negative_share": null,
+      "fatal_rejection_precision": null,
+      "gold_accept": 21,
+      "relation_candidates": 21
+    },
+    "Kiwook_2": {
+      "candidate": 8,
+      "candidate_invalid": 1,
+      "candidate_valid": 7,
+      "candidate_validity": 0.875,
+      "confirmed": 26,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_precision": 1.0,
+      "confirmed_recall": 0.7878787878787878,
+      "confirmed_tp": 26,
+      "fatal_correct": 4,
+      "fatal_reject": 4,
+      "fatal_rejection_false_negative_share": 0.0,
+      "fatal_rejection_precision": 1.0,
+      "gold_accept": 33,
+      "gold_reject": 5,
+      "relation_candidates": 38
+    },
+    "Kiwook_3": {
+      "candidate": 4,
+      "candidate_valid": 4,
+      "candidate_validity": 1.0,
+      "confirmed": 15,
+      "confirmed_fp": 3,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_precision": 0.8,
+      "confirmed_recall": 0.75,
+      "confirmed_tp": 12,
+      "fatal_correct": 1,
+      "fatal_reject": 1,
+      "fatal_rejection_false_negative_share": 0.0,
+      "fatal_rejection_precision": 1.0,
+      "gold_accept": 16,
+      "gold_reject": 4,
+      "relation_candidates": 20
+    }
+  },
+  "per_relation_metrics": {
+    "COMPETES_WITH": {
+      "confirmed_any": 1,
+      "confirmed_correct": 1,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 1,
+      "confirmed_recall": 1.0,
+      "confirmed_relation_label_recall": 1.0,
+      "gold_accept": 1
+    },
+    "CONTRASTS_WITH": {
+      "candidate_any": 3,
+      "candidate_correct": 3,
+      "candidate_predictions": 3,
+      "confirmed_any": 7,
+      "confirmed_correct": 7,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 7,
+      "confirmed_recall": 0.7,
+      "confirmed_relation_label_recall": 0.7,
+      "gold_accept": 10
+    },
+    "CORRELATES_WITH": {
+      "confirmed_any": 7,
+      "confirmed_correct": 7,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 7,
+      "confirmed_recall": 1.0,
+      "confirmed_relation_label_recall": 1.0,
+      "gold_accept": 7
+    },
+    "IMPOSES_TRADEOFF": {
+      "confirmed_any": 1,
+      "confirmed_correct": 1,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 1,
+      "confirmed_recall": 1.0,
+      "confirmed_relation_label_recall": 1.0,
+      "gold_accept": 1
+    },
+    "MODULATES": {
+      "confirmed_any": 8,
+      "confirmed_correct": 8,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 8,
+      "confirmed_recall": 1.0,
+      "confirmed_relation_label_recall": 1.0,
+      "gold_accept": 8
+    },
+    "PROMOTES": {
+      "candidate_any": 3,
+      "candidate_correct": 2,
+      "candidate_predictions": 3,
+      "confirmed_any": 15,
+      "confirmed_correct": 15,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 0.9444444444444444,
+      "confirmed_predictions": 15,
+      "confirmed_recall": 0.8333333333333334,
+      "confirmed_relation_label_recall": 0.8333333333333334,
+      "gold_accept": 18
+    },
+    "SELECTS": {
+      "candidate_any": 2,
+      "candidate_correct": 1,
+      "candidate_predictions": 2,
+      "confirmed_any": 5,
+      "confirmed_correct": 5,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 0.8571428571428571,
+      "confirmed_predictions": 5,
+      "confirmed_recall": 0.7142857142857143,
+      "confirmed_relation_label_recall": 0.7142857142857143,
+      "gold_accept": 7
+    },
+    "SUGGESTS_DESIGN_RULE": {
+      "confirmed_any": 2,
+      "confirmed_correct": 2,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 2,
+      "confirmed_recall": 1.0,
+      "confirmed_relation_label_recall": 1.0,
+      "gold_accept": 2
+    },
+    "SUPPRESSES": {
+      "candidate_any": 1,
+      "candidate_predictions": 1,
+      "confirmed_any": 2,
+      "confirmed_correct": 2,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 0.6666666666666666,
+      "confirmed_predictions": 2,
+      "confirmed_recall": 0.6666666666666666,
+      "confirmed_relation_label_recall": 0.6666666666666666,
+      "gold_accept": 3
+    },
+    "VARIES_WITH": {
+      "candidate_any": 4,
+      "candidate_correct": 4,
+      "candidate_predictions": 4,
+      "confirmed_any": 9,
+      "confirmed_correct": 9,
+      "confirmed_plus_candidate_recall": 1.0,
+      "confirmed_plus_candidate_relation_label_recall": 1.0,
+      "confirmed_predictions": 9,
+      "confirmed_recall": 0.6923076923076923,
+      "confirmed_relation_label_recall": 0.6923076923076923,
+      "gold_accept": 13
+    }
+  },
+  "policy_decision_accuracy": 0.7974683544303798,
+  "policy_reason_code_counts": {
+    "FAILURE_MODE_WITHOUT_FAILURE_EVENT": 1,
+    "FIGURE_CAPTION_WITHOUT_TREND": 3,
+    "INSUFFICIENT_COMPARISON_EVIDENCE": 1,
+    "RELATION_CUE_MISMATCH": 4
+  },
+  "policy_set_id": "16e56a75f93a",
+  "relation_candidates": 79,
+  "semantic_candidates": {
+    "count": 14,
+    "gold_invalid": 1,
+    "gold_valid": 13,
+    "recovery_count": 13,
+    "validity": 0.9285714285714286
+  },
+  "semantic_candidates_without_evidence_pointers": 0
+}

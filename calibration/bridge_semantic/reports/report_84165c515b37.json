@@ -1,0 +1,33 @@
+{
+  "accepted_argument_direction_accuracy": 0.9142857142857143,
+  "accepted_precision": 0.9210526315789473,
+  "accepted_recall": 0.49295774647887325,
+  "accepted_relation_label_accuracy": 0.9714285714285714,
+  "accepted_without_evidence_pointers": 0,
+  "bridge_policy_run_ids": [
+    "1258bcc3fb718d4a",
+    "6043a1adf9014787",
+    "c8cd9196f1e2471c"
+  ],
+  "confusion_matrix": {
+    "false_negative": 36,
+    "false_positive": 3,
+    "true_negative": 5,
+    "true_positive": 35
+  },
+  "deterministic_repairs": {
+    "applied": 1,
+    "gold_correct": 0,
+    "precision": 0.0
+  },
+  "error_count": 43,
+  "manual_anchor_review": {
+    "accuracy": 1.0,
+    "correct": 71,
+    "incorrect": 0
+  },
+  "policy_decision_accuracy": 0.5063291139240507,
+  "policy_set_id": "84165c515b37",
+  "rejected_false_negative_share": 0.8780487804878049,
+  "relation_candidates": 79
+}

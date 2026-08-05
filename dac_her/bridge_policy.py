@@ -8,7 +8,7 @@ from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from dac_her.scientific_signatures import normalize_scientific_text
 
 
-BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.2-calibration"
+BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.3-calibration"
 
 _GENERIC_LABELS = {
     "high performance",
@@ -54,12 +54,34 @@ _NUMERIC_OR_UNIT = re.compile(
 
 _RELATION_EVIDENCE_CUES: dict[str, re.Pattern[str]] = {
     "CORRELATES_WITH": re.compile(
-        r"\b(?:correlat\w*|associat\w*|relationship|related to)\b", re.I
+        r"""
+        \b(?:
+            correlat\w*
+            | associat\w*
+            | relationship
+            | related\s+to
+            | reflect\w*
+            | correspond\w*\s+to
+        )\b
+        """,
+        re.I | re.VERBOSE,
     ),
     "VARIES_WITH": re.compile(
-        r"\b(?:var(?:y|ies|ied|iation)|depend\w* on|change\w* with|"
-        r"different (?:for|among|across)|as .{0,80} (?:increase|decrease|change))\b",
-        re.I,
+        r"""
+        \b(?:
+            var(?:y|ies|ied|iation)
+            | depend\w*\s+on
+            | change\w*\s+with
+            | different\s+(?:for|among|across)
+            | with\s+the\s+(?:increase|decrease)\s+of
+            | systematically\s+
+            (?:increase|decrease|reduce)\w*
+            |
+            (?:increase|decrease|reduce)\w*
+            \s+from\s+.{0,60}\s+to
+        )\b
+        """,
+        re.I | re.VERBOSE,
     ),
     "COMPETES_WITH": re.compile(r"\b(?:compet\w*|competitive)\b", re.I),
     "COMPETES_FOR": re.compile(r"\b(?:compet\w*|competitive)\b", re.I),
@@ -69,19 +91,67 @@ _RELATION_EVIDENCE_CUES: dict[str, re.Pattern[str]] = {
         re.I,
     ),
     "CONTRASTS_WITH": re.compile(
-        r"\b(?:contrast\w*|whereas|while|compared with|different from|"
-        r"in contrast)\b",
-        re.I,
+        r"""
+        \b(?:
+            contrast\w*
+            | whereas
+            | compared\s+(?:with|to)
+            | different\s+from
+            | in\s+contrast
+            | outperform\w*
+            |
+            (?:
+                better
+                | worse
+                | higher
+                | lower
+                | superior
+                | inferior
+                | more\s+favorable
+                | less\s+favorable
+            )
+            (?:\s+[\w-]+){0,4}
+            \s+(?:than|to)
+        )\b
+        """,
+        re.I | re.VERBOSE,
     ),
-    "MODULATES": re.compile(r"\bmodulat\w*\b", re.I),
+    "MODULATES": re.compile(
+        r"""
+        \b(?:
+            modulat\w*
+            | affect\w*
+            | redistribut\w*
+            | tun(?:e|ed|ing)\s+by
+            | alter\w*
+        )\b
+        """,
+        re.I | re.VERBOSE,
+    ),
     "MEDIATES": re.compile(r"\bmediat\w*\b", re.I),
     "PROMOTES": re.compile(
-        r"\b(?:"
-        r"promot\w*|enhanc\w*|"
-        r"facilitat\w*|accelerat\w*|"
-        r"boost\w*|improv\w*"
-        r")\b",
-        re.I,
+        r"""
+        \b(?:
+            promot\w*
+            | enhanc\w*
+            | facilitat\w*
+            | accelerat\w*
+            | boost\w*
+            | improv\w*
+            | result\w*\s+in
+            | lead\w*\s+to
+            | stabiliz\w*
+            | guarantee\w*
+            | thanks\s+to
+            | provide\w*
+            .{0,60}
+            (?:site|sites|nucleation)
+            | serve\w*
+            .{0,60}
+            to\s+stabiliz\w*
+        )\b
+        """,
+        re.I | re.VERBOSE,
     ),
     "SUPPRESSES": re.compile(
         r"\b(?:suppress\w*|inhibit\w*|retard\w*|reduce\w*)\b", re.I
@@ -91,8 +161,18 @@ _RELATION_EVIDENCE_CUES: dict[str, re.Pattern[str]] = {
         re.I,
     ),
     "IMPOSES_TRADEOFF": re.compile(
-        r"\b(?:trade[- ]?off|at the expense of|balance between|compromise)\b",
-        re.I,
+        r"""
+        \b(?:
+            trade[- ]?off
+            | at\s+the\s+expense\s+of
+            | balance\s+between
+            | compromise
+            | comes?\s+with
+            .{0,50}
+            sacrifice\s+of
+        )\b
+        """,
+        re.I | re.VERBOSE,
     ),
     "IDENTIFIES_FAILURE_MODE": re.compile(
         r"\b(?:fail\w*|degrad\w*|deactivat\w*|collapse\w*|dissolv\w*|"
@@ -109,6 +189,123 @@ _COMPETITION_TARGET_TERMS = re.compile(
 _COLLECTIVE_COMPETITOR_TERMS = re.compile(
     r"\b(?:motifs?|sites?|classes?|configurations?|states?|species|pathways?)\b",
     re.I,
+)
+_CANDIDATE_ONLY_CODES = frozenset({
+    "RELATION_CUE_MISMATCH",
+    "ARGUMENT_SCOPE_AMBIGUOUS",
+    "CAUSAL_ARGUMENT_SCOPE_AMBIGUOUS",
+    (
+        "TABLE_DERIVED_RELATION_"
+        "REQUIRES_CONTEXT"
+    ),
+})
+
+_FIGURE_CAPTION = re.compile(
+    r"""
+    ^\s*
+    (?:\*\*)?
+    (?:
+        fig(?:ure)?\.?\s*[\w.-]+
+        |
+        effects?\s+of\b
+    )
+    """,
+    re.I | re.VERBOSE,
+)
+
+_EXPLICIT_TREND = re.compile(
+    r"""
+    \b(?:
+        increase\w*
+        | decrease\w*
+        | reduc\w*
+        | rise\w*
+        | fall\w*
+        | higher
+        | lower
+        | better
+        | worse
+        | superior
+        | inferior
+        | from\s+.{0,40}\s+to
+        | correlat\w*
+        | depend\w*
+        | var(?:y|ies|ied)
+    )\b
+    """,
+    re.I | re.VERBOSE,
+)
+
+_TABLE_ROW = re.compile(
+    r"^\s*\|.*\|\s*$",
+    re.S,
+)
+
+_FAILURE_EVENT = re.compile(
+    r"""
+    \b(?:
+        fail\w*
+        | degrad\w*
+        | deactivat\w*
+        | collaps\w*
+        | dissolv\w*
+        | agglomerat\w*
+        | poison\w*
+        | detach\w*
+        | leach\w*
+        | reconstruct\w*
+    )\b
+    """,
+    re.I | re.VERBOSE,
+)
+
+_TABLE_ONLY_DERIVED_CODE = (
+    "TABLE_DERIVED_RELATION_REQUIRES_CONTEXT"
+)
+
+@dataclass(frozen=True)
+class BridgePolicyPartition:
+    accepted: BridgeChunkGraph
+    candidates: BridgeChunkGraph
+    candidate_records: tuple[
+        BridgeRejection,
+        ...,
+    ]
+    rejections: tuple[
+        BridgeRejection,
+        ...
+    ]
+
+
+def _candidate_only(
+    issues: list[BridgePolicyIssue],
+) -> bool:
+    codes = {
+        issue.code
+        for issue in issues
+    }
+
+    return (
+        bool(codes)
+        and codes.issubset(
+            _CANDIDATE_ONLY_CODES
+        )
+    )
+
+_COORDINATED_CAUSAL_INTERPRETATION = (
+    re.compile(
+        r"""
+        \bsuggest\w*
+        .{0,160}
+        \band\s+
+        (?:
+            enhanc\w*
+            | improv\w*
+            | promot\w*
+        )
+        """,
+        re.I | re.VERBOSE,
+    )
 )
 
 @dataclass(frozen=True)
@@ -245,6 +442,15 @@ def _relation_cue_supported(
         cue.search(candidate)
         for candidate in candidates
         if candidate
+    )
+
+def _has_any_relation_cue(
+    text: str,
+) -> bool:
+    return any(
+        cue.search(text)
+        for cue
+        in _RELATION_EVIDENCE_CUES.values()
     )
 
 def _pattern_grounding_issues(
@@ -608,6 +814,238 @@ def _relation_direction_issues(
 
     return []
 
+def _figure_caption_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if (
+        concept.retention_lane
+        != "accepted_pattern"
+    ):
+        return []
+
+    if (
+        _FIGURE_CAPTION.search(
+            concept.source_phrase
+        )
+        and not _EXPLICIT_TREND.search(
+            concept.source_phrase
+        )
+    ):
+        return [
+            _policy_issue(
+                "FIGURE_CAPTION_WITHOUT_TREND",
+                "source_phrase",
+                (
+                    "A figure caption names variables "
+                    "but does not state a directional "
+                    "or comparative result."
+                ),
+            )
+        ]
+
+    return []
+
+def _single_row_variation_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if (
+        concept.pattern_relation
+        != "VARIES_WITH"
+        or concept.pattern_support_mode
+        != "explicit_single_span"
+    ):
+        return []
+
+    if _TABLE_ROW.fullmatch(
+        concept.source_phrase
+    ):
+        return [
+            _policy_issue(
+                "SINGLE_ROW_VARIATION_INFERENCE",
+                "source_phrase",
+                (
+                    "One table row cannot establish "
+                    "variation across an identity, "
+                    "condition, or composition axis. "
+                    "Use derived_multi_span with at "
+                    "least two distinct comparison items."
+                ),
+            )
+        ]
+
+    return []
+
+def _failure_mode_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if (
+        concept.pattern_relation
+        != "IDENTIFIES_FAILURE_MODE"
+    ):
+        return []
+
+    evidence = " ".join([
+        concept.source_phrase,
+        (
+            concept.relation_evidence_phrase
+            or ""
+        ),
+    ])
+
+    if not _FAILURE_EVENT.search(
+        evidence
+    ):
+        return [
+            _policy_issue(
+                "FAILURE_MODE_WITHOUT_FAILURE_EVENT",
+                "pattern_relation",
+                (
+                    "IDENTIFIES_FAILURE_MODE "
+                    "requires an actual degradation, "
+                    "instability, or failure event."
+                ),
+            )
+        ]
+
+    return []
+
+def _cross_clause_causal_scope_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if concept.pattern_relation not in {
+        "PROMOTES",
+        "SUPPRESSES",
+        "MODULATES",
+        "MEDIATES",
+    }:
+        return []
+
+    source = normalize_scientific_text(
+        concept.source_phrase
+    )
+    subject_phrase = (
+        normalize_scientific_text(
+            concept.subject_evidence_phrase
+            or ""
+        )
+    )
+    relation_phrase = (
+        normalize_scientific_text(
+            concept.relation_evidence_phrase
+            or ""
+        )
+    )
+
+    boundary = source.find("in which")
+    subject_pos = source.find(
+        subject_phrase
+    )
+    relation_pos = source.find(
+        relation_phrase
+    )
+
+    if (
+        boundary >= 0
+        and subject_pos >= 0
+        and relation_pos >= 0
+        and subject_pos < boundary
+        and relation_pos > boundary
+    ):
+        return [
+            _policy_issue(
+                "ARGUMENT_SCOPE_AMBIGUOUS",
+                "pattern_subject",
+                (
+                    "The extracted subject occurs "
+                    "before a clause boundary, while "
+                    "the causal predicate occurs in "
+                    "a later clause with a potentially "
+                    "different grammatical actor."
+                ),
+                repairable=True,
+            )
+        ]
+
+    return []
+
+def _causal_scope_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if concept.pattern_relation not in {
+        "PROMOTES",
+        "SUPPRESSES",
+        "MODULATES",
+        "MEDIATES",
+    }:
+        return []
+
+    if (
+        _COORDINATED_CAUSAL_INTERPRETATION
+        .search(concept.source_phrase)
+    ):
+        return [
+            _policy_issue(
+                "CAUSAL_ARGUMENT_SCOPE_AMBIGUOUS",
+                "pattern_subject",
+                (
+                    "The source presents coordinated "
+                    "interpretations, so the extracted "
+                    "subject may not be the grammatical "
+                    "cause of the object."
+                ),
+                repairable=True,
+            )
+        ]
+
+    return []
+
+def _table_derived_context_issues(
+    concept: BridgeConcept,
+) -> list[BridgePolicyIssue]:
+    if (
+        concept.retention_lane
+        != "accepted_pattern"
+        or concept.pattern_support_mode
+        != "derived_multi_span"
+    ):
+        return []
+
+    phrases = [
+        item.source_phrase
+        for item
+        in concept.comparison_items
+        if item.source_phrase
+    ]
+
+    if (
+        phrases
+        and all(
+            _TABLE_ROW.fullmatch(
+                phrase
+            )
+            for phrase in phrases
+        )
+    ):
+        return [
+            _policy_issue(
+                (
+                    "TABLE_DERIVED_RELATION_"
+                    "REQUIRES_CONTEXT"
+                ),
+                "comparison_items",
+                (
+                    "The relation is derived only "
+                    "from bare table rows. Table "
+                    "header or column-semantic "
+                    "context is required before "
+                    "confirmed acceptance."
+                ),
+                repairable=True,
+            )
+        ]
+
+    return []
+
 def concept_policy_issues(
     concept: BridgeConcept,
     *,
@@ -665,7 +1103,7 @@ def concept_policy_issues(
         if (
             _METRIC_TERMS.search(subject)
             and _METRIC_TERMS.search(object_)
-            and not _RELATION_CUES.search(
+            and not _has_any_relation_cue(
                 concept.source_phrase
             )
             and concept.pattern_support_mode
@@ -687,16 +1125,56 @@ def concept_policy_issues(
             _pattern_grounding_issues(
                 concept,
                 core_text=core_text,
-                linked_links=linked_links or [],
+                linked_links=(
+                    linked_links or []
+                ),
             )
         )
 
         issues.extend(
-            _competition_issues(concept)
+            _competition_issues(
+                concept
+            )
         )
 
         issues.extend(
-            _relation_direction_issues(concept)
+            _relation_direction_issues(
+                concept
+            )
+        )
+
+        issues.extend(
+            _figure_caption_issues(
+                concept
+            )
+        )
+
+        issues.extend(
+            _single_row_variation_issues(
+                concept
+            )
+        )
+
+        issues.extend(
+            _failure_mode_issues(
+                concept
+            )
+        )
+
+        issues.extend(
+            _causal_scope_issues(
+                concept
+            )
+        )
+        issues.extend(
+            _cross_clause_causal_scope_issues(
+                concept
+            )
+        )
+        issues.extend(
+            _table_derived_context_issues(
+                concept
+            )
         )
 
         return _dedupe_issues(issues)
@@ -726,7 +1204,7 @@ def concept_policy_issues(
 
     if (
         _METRIC_TERMS.search(normalized_label)
-        and not _RELATION_CUES.search(
+        and not _has_any_relation_cue(
             combined_text
         )
     ):
@@ -782,16 +1260,73 @@ def concept_policy_issues(
 
     return _dedupe_issues(issues)
 
-
 def filter_bridge_result(
     result: BridgeChunkGraph,
     *,
     strict_nodes: list[dict[str, Any]],
     core_text: str | None = None,
-) -> tuple[BridgeChunkGraph, list[BridgeRejection]]:
-    rejections: list[BridgeRejection] = []
-    retained: list[BridgeConcept] = []
-    retained_ids: set[str] = set()
+) -> tuple[
+    BridgeChunkGraph,
+    list[BridgeRejection],
+]:
+    partition = partition_bridge_result(
+        result,
+        strict_nodes=strict_nodes,
+        core_text=core_text,
+    )
+
+    return (
+        partition.accepted,
+        [
+            *partition.candidate_records,
+            *partition.rejections,
+        ],
+    )
+
+def concept_rejection_reasons(
+    concept: BridgeConcept,
+    *,
+    strict_nodes: Iterable[
+        dict[str, Any]
+    ],
+    core_text: str | None = None,
+    linked_links: list[
+        BridgeLink
+    ] | None = None,
+) -> list[str]:
+    return list(dict.fromkeys(
+        issue.code
+        for issue in concept_policy_issues(
+            concept,
+            strict_nodes=strict_nodes,
+            core_text=core_text,
+            linked_links=linked_links,
+        )
+    ))
+
+def partition_bridge_result(
+    result: BridgeChunkGraph,
+    *,
+    strict_nodes: list[dict[str, Any]],
+    core_text: str | None = None,
+) -> BridgePolicyPartition:
+    accepted_ids: set[str] = set()
+    candidate_ids: set[str] = set()
+
+    accepted_concepts: list[
+        BridgeConcept
+    ] = []
+    candidate_concepts: list[
+        BridgeConcept
+    ] = []
+
+    candidate_records: list[
+        BridgeRejection
+    ] = []
+    rejections: list[
+        BridgeRejection
+    ] = []
+
     seen_signatures: set[tuple[str, ...]] = set()
     links_by_concept: dict[str, list[BridgeLink]] = {}
     for link in result.links:
@@ -838,87 +1373,117 @@ def filter_bridge_result(
 
         seen_signatures.add(signature)
 
-        if issues:
-            rejections.append(
-                BridgeRejection(
-                    paper_id=result.paper_id,
-                    chunk_id=result.chunk_id,
-                    concept_id=concept.id,
-                    label=concept.label,
-                    retention_lane=(
-                        concept.retention_lane
-                    ),
-                    pattern_subject=(
-                        concept.pattern_subject or ""
-                    ),
-                    pattern_relation=(
-                        concept.pattern_relation or ""
-                    ),
-                    pattern_object=(
-                        concept.pattern_object or ""
-                    ),
-                    pattern_support_mode=(
-                        concept.pattern_support_mode
-                        or ""
-                    ),
-                    subject_evidence_phrase=(
-                        concept.subject_evidence_phrase
-                        or ""
-                    ),
-                    relation_evidence_phrase=(
-                        concept.relation_evidence_phrase
-                        or ""
-                    ),
-                    object_evidence_phrase=(
-                        concept.object_evidence_phrase
-                        or ""
-                    ),
-                    source_phrase=(
-                        concept.source_phrase
-                    ),
-                    reason_codes=tuple(
-                        dict.fromkeys(
-                            issue.code
-                            for issue in issues
-                        )
-                    ),
-                    reason_details=tuple(
-                        issue.to_dict()
-                        for issue in issues
-                    ),
-                )
+        if not issues:
+            accepted_concepts.append(
+                concept
             )
+            accepted_ids.add(concept.id)
             continue
 
-        retained.append(concept)
-        retained_ids.add(concept.id)
+        record = BridgeRejection(
+                paper_id=result.paper_id,
+                chunk_id=result.chunk_id,
+                concept_id=concept.id,
+                label=concept.label,
+                retention_lane=(
+                    concept.retention_lane
+                ),
+                pattern_subject=(
+                    concept.pattern_subject or ""
+                ),
+                pattern_relation=(
+                    concept.pattern_relation or ""
+                ),
+                pattern_object=(
+                    concept.pattern_object or ""
+                ),
+                pattern_support_mode=(
+                    concept.pattern_support_mode
+                    or ""
+                ),
+                subject_evidence_phrase=(
+                    concept.subject_evidence_phrase
+                    or ""
+                ),
+                relation_evidence_phrase=(
+                    concept.relation_evidence_phrase
+                    or ""
+                ),
+                object_evidence_phrase=(
+                    concept.object_evidence_phrase
+                    or ""
+                ),
+                source_phrase=(
+                    concept.source_phrase
+                ),
+                reason_codes=tuple(
+                    dict.fromkeys(
+                        issue.code
+                        for issue in issues
+                    )
+                ),
+                reason_details=tuple(
+                    issue.to_dict()
+                    for issue in issues
+                ),
+            )
 
-    retained_links = [
-        link for link in result.links if link.concept_id in retained_ids
-    ]
-    filtered = result.model_copy(
-        update={"concepts": retained, "links": retained_links}
+        if _candidate_only(issues):
+            candidate_concepts.append(
+                concept
+            )
+            candidate_ids.add(
+                concept.id
+            )
+            candidate_records.append(
+                record
+            )
+        else:
+            rejections.append(
+                record
+            )
+
+    accepted = result.model_copy(
+        update={
+            "concepts": accepted_concepts,
+            "links": [
+                link
+                for link in result.links
+                if link.concept_id
+                in accepted_ids
+            ],
+        }
     )
-    filtered = BridgeChunkGraph.model_validate(filtered.model_dump())
-    return filtered, rejections
 
-def concept_rejection_reasons(
-    concept: BridgeConcept,
-    *,
-    strict_nodes: Iterable[
-        dict[str, Any]
-    ],
-    core_text: str | None = None,
-    linked_links: list[
-        BridgeLink
-    ] | None = None,
-) -> list[str]:
-    return list(dict.fromkeys(
-        issue.code
-        for issue in concept_policy_issues(
-            concept,
-            strict_nodes=strict_nodes,
-            core_text=core_text,
-            linked_links=linked_links,
-        )
-    ))
+    candidates = result.model_copy(
+        update={
+            "concepts": candidate_concepts,
+            "links": [
+                link
+                for link in result.links
+                if link.concept_id
+                in candidate_ids
+            ],
+        }
+    )
+
+    return BridgePolicyPartition(
+        accepted=(
+            BridgeChunkGraph
+            .model_validate(
+                accepted.model_dump()
+            )
+        ),
+        candidates=(
+            BridgeChunkGraph
+            .model_validate(
+                candidates.model_dump()
+            )
+        ),
+        candidate_records=tuple(
+            candidate_records
+        ),
+        rejections=tuple(
+            rejections
+        ),
+    )

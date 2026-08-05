@@ -1,26 +1,26 @@
 {
   "candidate_count": 93,
-  "generated_at_utc": "2026-08-05T06:15:59.356506+00:00",
+  "generated_at_utc": "2026-08-05T08:46:08.398613+00:00",
   "papers": {
     "Kiwook_1": {
       "bridge_extraction_fingerprint": "b68eca2bd9b812d0ad68f23d8eda86ab60f14dfe2ecec2ea21abc01f917b4ae5",
       "bridge_extraction_id": "b68eca2bd9b812d0",
-      "current_bridge_policy_run_id": "6043a1adf9014787",
-      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.2-calibration",
+      "current_bridge_policy_run_id": "8c2e90432a1dd26b",
+      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.3-calibration",
       "strict_run_id": "6ca635326d756f0a"
     },
     "Kiwook_2": {
       "bridge_extraction_fingerprint": "0d53689bf967d1c5fe0fd6b6134e6232c286754c52d36abbe5bc2e2bfe51db9f",
       "bridge_extraction_id": "0d53689bf967d1c5",
-      "current_bridge_policy_run_id": "c8cd9196f1e2471c",
-      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.2-calibration",
+      "current_bridge_policy_run_id": "5aa8240346c78f67",
+      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.3-calibration",
       "strict_run_id": "e4da6f4e405acefc"
     },
     "Kiwook_3": {
       "bridge_extraction_fingerprint": "b55fa58e7fd1a782207d5493169d4c774bf7b43c72015a2967c3f219cda413c0",
       "bridge_extraction_id": "b55fa58e7fd1a782",
-      "current_bridge_policy_run_id": "1258bcc3fb718d4a",
-      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.2-calibration",
+      "current_bridge_policy_run_id": "65a651f44d626b88",
+      "current_bridge_policy_version": "dac-her-bridge-policy-v2.3.3-calibration",
       "strict_run_id": "ee70f3cdb1d88ecd"
     }
   },
