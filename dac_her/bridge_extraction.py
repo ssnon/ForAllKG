@@ -13,7 +13,9 @@ from dac_her.bridge_validation import validate_bridge_chunk
 from dac_her.graph_io import knowledge_graph_to_networkx
 from dac_her.scientific_signatures import strict_node_catalog
 from dac_her.schemas import KnowledgeGraph
-
+from dac_her.bridge_repair import (
+    repair_rejected_bridge_candidates,
+)
 
 def bridge_output_path(chunk_id: str, output_dir: str | Path) -> Path:
     safe_chunk_id = chunk_id.replace(":", "__")
@@ -171,11 +173,44 @@ def extract_bridge_chunk(
                 core_text=str(source_payload["core_text"]),
                 strict_nodes=nodes,
             )
-            result, rejections = filter_bridge_result(
-                raw_result,
-                strict_nodes=nodes,
-                core_text=str(source_payload["core_text"]),
+            result, rejections = (
+                filter_bridge_result(
+                    raw_result,
+                    strict_nodes=nodes,
+                    core_text=str(
+                        source_payload["core_text"]
+                    ),
+                )
             )
+
+            repairable_rejections = [
+                rejection
+                for rejection in rejections
+                if any(
+                    code
+                    in repair_rejected_bridge_candidates.REPAIRABLE_BRIDGE_CODES
+                    for code
+                    in rejection.reason_codes
+                )
+            ]
+
+            if repairable_rejections:
+                repair_debug_path = (
+                    debug_dir
+                    / f"{safe_id}__policy_repair.json"
+                )
+
+                result, rejections = (
+                    repair_rejected_bridge_candidates(
+                        llm=llm,
+                        accepted_result=result,
+                        rejections=rejections,
+                        strict_nodes=nodes,
+                        source_payload=source_payload,
+                        max_tokens=max_tokens,
+                        debug_path=repair_debug_path,
+                    )
+                )
 
             metadata = dict(llm.last_call_metadata or {})
             attempts.append(metadata)

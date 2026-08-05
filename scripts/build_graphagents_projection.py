@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import networkx as nx
+from collections import Counter
 
 from dac_her.graph_io import save_graphml
 from dac_her.graphagents_adapter import (
@@ -67,6 +68,47 @@ def main() -> None:
         mode=args.mode,
     )
 
+    evidence_status_counts = Counter(
+        str(
+            row.get(
+                "evidence_status",
+                "",
+            )
+        )
+        for row in evidence_rows
+    )
+
+    multi_evidence_edges = 0
+    max_support_count = 0
+
+    for _, _, attrs in projection.edges(
+        data=True
+    ):
+        try:
+            edge_ids = json.loads(
+                str(
+                    attrs.get(
+                        "projection_edge_ids_json",
+                        "[]",
+                    )
+                )
+            )
+        except json.JSONDecodeError:
+            edge_ids = []
+
+        support_count = max(
+            1,
+            len(edge_ids),
+        )
+
+        max_support_count = max(
+            max_support_count,
+            support_count,
+        )
+
+        if support_count > 1:
+            multi_evidence_edges += 1
+
     output_dir = (
         Path(args.output_dir)
         if args.output_dir
@@ -89,6 +131,29 @@ def main() -> None:
         "graphml": str(graph_path),
         "node_text": str(node_text_path),
         "edge_evidence": str(evidence_path),
+        "source_asserted_evidence_rows": (
+            evidence_status_counts[
+                "source_asserted"
+            ]
+        ),
+        "derived_evidence_rows": (
+            evidence_status_counts[
+                "derived_projection"
+            ]
+        ),
+        "multi_evidence_graph_edges": (
+            multi_evidence_edges
+        ),
+        "max_support_count": (
+            max_support_count
+        ),
+        "evidence_rows_per_graph_edge": (
+            len(evidence_rows)
+            / max(
+                1,
+                projection.number_of_edges(),
+            )
+        ),
     }
     (output_dir / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2),

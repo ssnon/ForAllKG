@@ -106,6 +106,27 @@ def _edge_attr_id(left: str, right: str, key: str, attrs: dict[str, Any]) -> str
         or f"edge:{_stable_id(left, right, key, attrs.get('relation', ''))}"
     )
 
+def _canonical_edge_index(
+    graph: nx.Graph,
+) -> dict[str, dict[str, Any]]:
+    index: dict[
+        str,
+        dict[str, Any],
+    ] = {}
+
+    for left, right, key, attrs in (
+        _edge_records(graph)
+    ):
+        edge_id = _edge_attr_id(
+            left,
+            right,
+            key,
+            attrs,
+        )
+        index[edge_id] = attrs
+
+    return index
+
 
 def _add_projection_edge(
     projection: nx.DiGraph,
@@ -159,6 +180,89 @@ def _add_projection_edge(
         if existing.get("evidence_status"):
             statuses.add(str(existing["evidence_status"]))
         statuses.add(evidence_status)
+        supporting_ids = set(
+            json.loads(
+                existing.get(
+                    "supporting_node_ids_json",
+                    "[]",
+                )
+            )
+        )
+        supporting_ids.update(
+            supporting_node_ids
+        )
+
+        pointer_map: dict[
+            str,
+            dict[str, Any],
+        ] = {}
+
+        try:
+            existing_pointers = json.loads(
+                existing.get(
+                    "evidence_pointers_json",
+                    "[]",
+                )
+            )
+        except json.JSONDecodeError:
+            existing_pointers = []
+
+        for pointer in existing_pointers:
+            if isinstance(pointer, dict):
+                signature = json.dumps(
+                    pointer,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+                pointer_map[signature] = pointer
+
+        for pointer in (
+            evidence_pointers or []
+        ):
+            if isinstance(pointer, dict):
+                signature = json.dumps(
+                    pointer,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+                pointer_map[signature] = pointer
+
+        paper_ids = set(
+            json.loads(
+                existing.get(
+                    "source_paper_ids_json",
+                    "[]",
+                )
+            )
+        )
+        paper_ids.update(
+            source_paper_ids or []
+        )
+
+        derivation_rules = set(
+            json.loads(
+                existing.get(
+                    "derivation_rules_json",
+                    "[]",
+                )
+            )
+        )
+
+        if existing.get(
+            "derivation_rule"
+        ):
+            derivation_rules.add(
+                str(
+                    existing[
+                        "derivation_rule"
+                    ]
+                )
+            )
+
+        if derivation_rule:
+            derivation_rules.add(
+                derivation_rule
+            )
 
         projection.edges[source, target].update({
             "relation": (
@@ -175,6 +279,23 @@ def _add_projection_edge(
             "evidence_statuses_json": json.dumps(
                 sorted(statuses), ensure_ascii=False
             ),
+            "supporting_node_ids_json": json.dumps(
+                sorted(supporting_ids),
+                ensure_ascii=False,
+            ),
+            "evidence_pointers_json": json.dumps(
+                list(pointer_map.values()),
+                ensure_ascii=False,
+            ),
+            "source_paper_ids_json": json.dumps(
+                sorted(paper_ids),
+                ensure_ascii=False,
+            ),
+            "derivation_rules_json": json.dumps(
+                sorted(derivation_rules),
+                ensure_ascii=False,
+            ),
+            "support_count": len(edge_ids),
         })
         return edge_id
 
@@ -183,6 +304,15 @@ def _add_projection_edge(
     record["evidence_statuses_json"] = json.dumps(
         [evidence_status], ensure_ascii=False
     )
+    record["derivation_rules_json"] = (
+        json.dumps(
+            [derivation_rule]
+            if derivation_rule
+            else [],
+            ensure_ascii=False,
+        )
+    )
+    record["support_count"] = 1
     projection.add_edge(source, target, **record)
     return edge_id
 
@@ -283,6 +413,11 @@ def build_graphagents_projection(
         projection_mode=mode,
     )
     evidence_rows: list[dict[str, Any]] = []
+    canonical_edge_index = (
+        _canonical_edge_index(
+            canonical_graph
+        )
+    )
 
     if mode == "evidence":
         kept_ids = {str(node_id) for node_id in canonical_graph.nodes}
@@ -370,12 +505,19 @@ def build_graphagents_projection(
                     )
                     source_edges = origin["edge_path"] + [support_edge_id]
                     node_path = origin["node_path"] + [claim_id]
+                    pointer_payload = (
+                        _collect_evidence_pointers(
+                            canonical_edge_index,
+                            source_edges,
+                        )
+                    )
                     edge_id = _add_projection_edge(
                         projection,
                         source=origin_id,
                         target=claim_id,
                         relation=relation,
                         evidence_status="derived_projection",
+                        evidence_pointers=pointer_payload,
                         graph_layer="mechanism_projection",
                         source_edge_ids=source_edges,
                         supporting_node_ids=node_path,
@@ -390,7 +532,7 @@ def build_graphagents_projection(
                         "evidence_status": "derived_projection",
                         "source_edge_ids": source_edges,
                         "supporting_node_ids": node_path,
-                        "evidence_pointers": [],
+                        "evidence_pointers": (pointer_payload),
                         "derivation_rule": "evidence_chain_to_claim",
                     })
 

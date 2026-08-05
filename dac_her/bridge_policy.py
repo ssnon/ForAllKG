@@ -8,7 +8,7 @@ from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from dac_her.scientific_signatures import normalize_scientific_text
 
 
-BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.2.1"
+BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3-calibration"
 
 _GENERIC_LABELS = {
     "high performance",
@@ -76,7 +76,12 @@ _RELATION_EVIDENCE_CUES: dict[str, re.Pattern[str]] = {
     "MODULATES": re.compile(r"\bmodulat\w*\b", re.I),
     "MEDIATES": re.compile(r"\bmediat\w*\b", re.I),
     "PROMOTES": re.compile(
-        r"\b(?:promot\w*|enhanc\w*|facilitat\w*|accelerat\w*)\b", re.I
+        r"\b(?:"
+        r"promot\w*|enhanc\w*|"
+        r"facilitat\w*|accelerat\w*|"
+        r"boost\w*|improv\w*"
+        r")\b",
+        re.I,
     ),
     "SUPPRESSES": re.compile(
         r"\b(?:suppress\w*|inhibit\w*|retard\w*|reduce\w*)\b", re.I
@@ -106,6 +111,15 @@ _COLLECTIVE_COMPETITOR_TERMS = re.compile(
     re.I,
 )
 
+@dataclass(frozen=True)
+class BridgePolicyIssue:
+    code: str
+    field: str
+    detail: str
+    repairable: bool
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 @dataclass(frozen=True)
 class BridgeRejection:
@@ -113,13 +127,32 @@ class BridgeRejection:
     chunk_id: str
     concept_id: str
     label: str
+
+    retention_lane: str
+    pattern_subject: str
+    pattern_relation: str
+    pattern_object: str
+    pattern_support_mode: str
+
+    subject_evidence_phrase: str
+    relation_evidence_phrase: str
+    object_evidence_phrase: str
     source_phrase: str
+
     reason_codes: tuple[str, ...]
-    detail: str
+    reason_details: tuple[
+        dict[str, Any],
+        ...
+    ]
 
     def to_dict(self) -> dict[str, Any]:
         row = asdict(self)
-        row["reason_codes"] = list(self.reason_codes)
+        row["reason_codes"] = list(
+            self.reason_codes
+        )
+        row["reason_details"] = list(
+            self.reason_details
+        )
         return row
 
 
@@ -160,61 +193,134 @@ def _member_count(value: str) -> int:
     return len([part for part in parts if part.strip()])
 
 
-def _pattern_grounding_reasons(
+def _pattern_grounding_issues(
     concept: BridgeConcept,
     *,
     core_text: str | None,
     linked_links: list[BridgeLink],
-) -> list[str]:
-    reasons: list[str] = []
-    relation = str(concept.pattern_relation or "")
+) -> list[BridgePolicyIssue]:
+    issues: list[
+        BridgePolicyIssue
+    ] = []
 
-    if concept.pattern_support_mode == "explicit_single_span":
-        span = concept.supporting_phrases[0]
-        evidence_phrases = (
-            concept.subject_evidence_phrase,
-            concept.relation_evidence_phrase,
-            concept.object_evidence_phrase,
+    relation = str(
+        concept.pattern_relation or ""
+    )
+
+    if (
+        concept.pattern_support_mode
+        == "explicit_single_span"
+    ):
+        span = (
+            concept.supporting_phrases[0]
         )
-        if not all(_normalized_contains(span, phrase) for phrase in evidence_phrases):
-            reasons.append("PATTERN_NOT_ENTAILED")
 
-        cue = _RELATION_EVIDENCE_CUES.get(relation)
-        relation_evidence = concept.relation_evidence_phrase or ""
-        if cue is None or not cue.search(relation_evidence):
-            reasons.append("PATTERN_NOT_ENTAILED")
-
-        if not _phrase_in_core(span, core_text):
-            reasons.append("UNSUPPORTED_SOURCE_SPAN")
-
-    elif concept.pattern_support_mode == "derived_multi_span":
-        if relation not in {"CORRELATES_WITH", "VARIES_WITH", "CONTRASTS_WITH"}:
-            reasons.append("UNSUPPORTED_DERIVED_RELATION")
-
-        pairs = {
+        checks = (
             (
-                normalize_scientific_text(item.subject_value),
-                normalize_scientific_text(item.object_value),
+                "SUBJECT_EVIDENCE_NOT_IN_SPAN",
+                "subject_evidence_phrase",
+                concept.subject_evidence_phrase,
+            ),
+            (
+                "RELATION_EVIDENCE_NOT_IN_SPAN",
+                "relation_evidence_phrase",
+                concept.relation_evidence_phrase,
+            ),
+            (
+                "OBJECT_EVIDENCE_NOT_IN_SPAN",
+                "object_evidence_phrase",
+                concept.object_evidence_phrase,
+            ),
+        )
+
+        for code, field, phrase in checks:
+            if not _normalized_contains(
+                span,
+                phrase,
+            ):
+                issues.append(
+                    BridgePolicyIssue(
+                        code=code,
+                        field=field,
+                        detail=(
+                            f"{field} is not "
+                            "contained in the "
+                            "supporting span"
+                        ),
+                        repairable=True,
+                    )
+                )
+
+        cue = (
+            _RELATION_EVIDENCE_CUES.get(
+                relation
             )
-            for item in concept.comparison_items
-        }
-        subject_values = {left for left, _ in pairs if left}
-        object_values = {right for _, right in pairs if right}
-        if len(pairs) < 2 or len(subject_values) < 2:
-            reasons.append("INSUFFICIENT_COMPARISON_EVIDENCE")
-        if relation in {"VARIES_WITH", "CONTRASTS_WITH"} and len(object_values) < 2:
-            reasons.append("INSUFFICIENT_COMPARISON_EVIDENCE")
+        )
 
-        if any(
-            not _phrase_in_core(item.source_phrase, core_text)
-            for item in concept.comparison_items
+        if cue is None:
+            issues.append(
+                BridgePolicyIssue(
+                    code=(
+                        "UNSUPPORTED_RELATION"
+                    ),
+                    field=(
+                        "pattern_relation"
+                    ),
+                    detail=(
+                        "No deterministic "
+                        "cue policy exists "
+                        f"for {relation!r}."
+                    ),
+                    repairable=False,
+                )
+            )
+
+        elif not cue.search(
+            concept.relation_evidence_phrase
+            or ""
         ):
-            reasons.append("UNSUPPORTED_SOURCE_SPAN")
+            issues.append(
+                BridgePolicyIssue(
+                    code=(
+                        "RELATION_CUE_MISMATCH"
+                    ),
+                    field=(
+                        "relation_evidence_phrase"
+                    ),
+                    detail=(
+                        "Relation evidence "
+                        "does not lexically "
+                        f"support {relation}."
+                    ),
+                    repairable=True,
+                )
+            )
 
-        if any(link.evidence_strength != "indirect" for link in linked_links):
-            reasons.append("DERIVED_RELATION_REQUIRES_INDIRECT_EVIDENCE")
+        if not _phrase_in_core(
+            span,
+            core_text,
+        ):
+            issues.append(
+                BridgePolicyIssue(
+                    code=(
+                        "SOURCE_SPAN_NOT_IN_CORE"
+                    ),
+                    field=(
+                        "supporting_phrases"
+                    ),
+                    detail=(
+                        "Supporting span is "
+                        "not verbatim in "
+                        "CORE_TEXT."
+                    ),
+                    repairable=False,
+                )
+            )
 
-    return reasons
+    # 기존 derived_multi_span 검사는
+    # 같은 방식으로 Issue 객체를 생성한다.
+
+    return issues
 
 
 def _competition_reasons(concept: BridgeConcept) -> list[str]:
@@ -260,7 +366,7 @@ def _relation_direction_reasons(concept: BridgeConcept) -> list[str]:
     return []
 
 
-def concept_rejection_reasons(
+def concept_policy_issues(
     concept: BridgeConcept,
     *,
     strict_nodes: Iterable[dict[str, Any]],
@@ -294,7 +400,7 @@ def concept_rejection_reasons(
             reasons.append("UNSUPPORTED_RELATION")
 
         reasons.extend(
-            _pattern_grounding_reasons(
+            _pattern_grounding_issues(
                 concept,
                 core_text=core_text,
                 linked_links=linked_links or [],
@@ -339,41 +445,84 @@ def filter_bridge_result(
         links_by_concept.setdefault(link.concept_id, []).append(link)
 
     for concept in result.concepts:
-        reasons = concept_rejection_reasons(
+        issues = concept_policy_issues(
             concept,
             strict_nodes=strict_nodes,
             core_text=core_text,
-            linked_links=links_by_concept.get(concept.id, []),
+            linked_links=(
+                links_by_concept.get(
+                    concept.id,
+                    [],
+                )
+            ),
         )
-        signature = (
-            concept.retention_lane,
-            normalize_scientific_text(concept.label),
-            normalize_scientific_text(concept.pattern_subject or ""),
-            str(concept.pattern_relation or ""),
-            normalize_scientific_text(concept.pattern_object or ""),
-        )
-        if signature in seen_signatures:
-            reasons.append("DUPLICATE_MENTION")
-        seen_signatures.add(signature)
 
-        if reasons:
+        if signature in seen_signatures:
+            issues.append(
+                BridgePolicyIssue(
+                    code="DUPLICATE_MENTION",
+                    field="label",
+                    detail=(
+                        "An equivalent bridge "
+                        "mention already appeared "
+                        "in this chunk."
+                    ),
+                    repairable=False,
+                )
+            )
+
+        if issues:
             rejections.append(
                 BridgeRejection(
                     paper_id=result.paper_id,
                     chunk_id=result.chunk_id,
                     concept_id=concept.id,
                     label=concept.label,
-                    source_phrase=concept.source_phrase,
-                    reason_codes=tuple(dict.fromkeys(reasons)),
-                    detail=(
-                        "Deterministic Bridge v2.2 policy rejected a candidate "
-                        "whose full relation was not sufficiently grounded, whose "
-                        "competition arguments were malformed, or whose content "
-                        "belongs in the canonical evidence graph."
+                    retention_lane=(
+                        concept.retention_lane
+                    ),
+                    pattern_subject=(
+                        concept.pattern_subject or ""
+                    ),
+                    pattern_relation=(
+                        concept.pattern_relation or ""
+                    ),
+                    pattern_object=(
+                        concept.pattern_object or ""
+                    ),
+                    pattern_support_mode=(
+                        concept.pattern_support_mode
+                        or ""
+                    ),
+                    subject_evidence_phrase=(
+                        concept.subject_evidence_phrase
+                        or ""
+                    ),
+                    relation_evidence_phrase=(
+                        concept.relation_evidence_phrase
+                        or ""
+                    ),
+                    object_evidence_phrase=(
+                        concept.object_evidence_phrase
+                        or ""
+                    ),
+                    source_phrase=(
+                        concept.source_phrase
+                    ),
+                    reason_codes=tuple(
+                        dict.fromkeys(
+                            issue.code
+                            for issue in issues
+                        )
+                    ),
+                    reason_details=tuple(
+                        issue.to_dict()
+                        for issue in issues
                     ),
                 )
             )
             continue
+
         retained.append(concept)
         retained_ids.add(concept.id)
 
@@ -385,3 +534,24 @@ def filter_bridge_result(
     )
     filtered = BridgeChunkGraph.model_validate(filtered.model_dump())
     return filtered, rejections
+
+def concept_rejection_reasons(
+    concept: BridgeConcept,
+    *,
+    strict_nodes: Iterable[
+        dict[str, Any]
+    ],
+    core_text: str | None = None,
+    linked_links: list[
+        BridgeLink
+    ] | None = None,
+) -> list[str]:
+    return list(dict.fromkeys(
+        issue.code
+        for issue in concept_policy_issues(
+            concept,
+            strict_nodes=strict_nodes,
+            core_text=core_text,
+            linked_links=linked_links,
+        )
+    ))

@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-BRIDGE_PROMPT_VERSION = "dac-her-bridge-v2.2-grounded-patterns"
+BRIDGE_PROMPT_VERSION = "dac-her-bridge-v2.3-calibration"
 
 
 BRIDGE_SYSTEM_PROMPT = r"""
@@ -222,3 +222,40 @@ field. For paper_local_frontier, use null/empty values exactly as instructed.
 """.rstrip()
 
     return prompt
+
+
+def build_bridge_repair_prompt(
+    *,
+    original_rejections: list[
+        dict[str, Any]
+    ],
+    strict_nodes: list[
+        dict[str, Any]
+    ],
+    core_text: str,
+    source_metadata: dict[
+        str,
+        Any,
+    ],
+) -> str:
+    return f"""
+Repair only the rejected Bridge candidates
+listed below.
+
+Do not regenerate accepted candidates.
+Do not introduce new scientific relations.
+Correct only evidence phrase alignment or
+relation-cue mismatch.
+
+SOURCE METADATA:
+{json.dumps(source_metadata, ensure_ascii=False)}
+
+STRICT NODE CATALOG:
+{json.dumps(strict_nodes, ensure_ascii=False)}
+
+REJECTED CANDIDATES:
+{json.dumps(original_rejections, ensure_ascii=False)}
+
+CORE_TEXT:
+{core_text}
+"""
