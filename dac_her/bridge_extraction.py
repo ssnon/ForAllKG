@@ -16,6 +16,9 @@ from dac_her.schemas import KnowledgeGraph
 from dac_her.bridge_repair import (
     repair_rejected_bridge_candidates,
 )
+from dac_her.bridge_relation_repairs import (
+    apply_deterministic_relation_repairs,
+)
 
 def bridge_output_path(chunk_id: str, output_dir: str | Path) -> Path:
     safe_chunk_id = chunk_id.replace(":", "__")
@@ -26,6 +29,18 @@ def bridge_rejections_path(chunk_id: str, output_dir: str | Path) -> Path:
     safe_chunk_id = chunk_id.replace(":", "__")
     return Path(output_dir) / f"{safe_chunk_id}__rejections.json"
 
+def bridge_raw_output_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+    return (
+        Path(output_dir)
+        / f"{safe_chunk_id}__raw.json"
+    )
 
 def _catalog(result: KnowledgeGraph) -> list[dict[str, Any]]:
     return strict_node_catalog(knowledge_graph_to_networkx(result))
@@ -84,6 +99,7 @@ def extract_bridge_chunk(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     debug_dir = Path(debug_dir)
     debug_dir.mkdir(parents=True, exist_ok=True)
+    raw_output_path = bridge_raw_output_path(strict_result.chunk_id,output_dir,)
 
     if not force:
         cached = _load_cached(
@@ -173,6 +189,47 @@ def extract_bridge_chunk(
                 core_text=str(source_payload["core_text"]),
                 strict_nodes=nodes,
             )
+            raw_output_path.write_text(
+                json.dumps(
+                    raw_result.model_dump(),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            repaired_result, relation_repairs = (
+                apply_deterministic_relation_repairs(
+                    raw_result
+                )
+            )
+
+            result, rejections = filter_bridge_result(
+                repaired_result,
+                strict_nodes=nodes,
+                core_text=str(
+                    source_payload["core_text"]
+                ),
+            )
+            repair_log_path = (
+                output_path.parent
+                / (
+                    output_path.stem
+                    + "__relation_repairs.json"
+                )
+            )
+
+            repair_log_path.write_text(
+                json.dumps(
+                    [
+                        repair.to_dict()
+                        for repair in relation_repairs
+                    ],
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
             result, rejections = (
                 filter_bridge_result(
                     raw_result,
@@ -219,6 +276,13 @@ def extract_bridge_chunk(
                 "rejection_count": len(rejections),
                 "semantic_repairs": attempt,
                 "attempts": attempts,
+                "raw_output_path": str(raw_output_path),
+                "relation_repairs_path": str(
+                    repair_log_path
+                ),
+                "relation_repair_count": len(
+                    relation_repairs
+                ),
                 **metadata,
             }
         except (ValidationError, ValueError) as error:

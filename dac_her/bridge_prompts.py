@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 
-BRIDGE_PROMPT_VERSION = "dac-her-bridge-v2.3-calibration"
+BRIDGE_PROMPT_VERSION = "dac-her-bridge-v2.3.1-calibration"
 
 
 BRIDGE_SYSTEM_PROMPT = r"""
@@ -110,6 +110,27 @@ RELATION ARGUMENT SEMANTICS
 
 - Never use COMPETES_WITH to connect a set of competitors directly to the
   process/resource they compete for.
+
+RELATION DISAMBIGUATION
+
+- Use CONTRASTS_WITH for a direct comparison between peer
+  alternatives:
+  "dual-atom catalyst performs better than single-atom catalyst"
+  → dual-atom architecture CONTRASTS_WITH single-atom architecture
+
+- Use VARIES_WITH when an outcome/property changes across an
+  explicit axis, condition, identity, or series:
+  "preferred adsorption site changes with metal identity"
+  → preferred adsorption site VARIES_WITH metal identity
+
+- Do not convert a single pairwise "better than" comparison into
+  VARIES_WITH merely because two values differ.
+
+- "X affects/alters/tunes Y" normally supports MODULATES when the
+  author explicitly interprets the effect.
+
+- "X is associated with Y" supports CORRELATES_WITH, not PROMOTES,
+  unless directional enhancement is explicitly stated.
 
 CORE RULES
 

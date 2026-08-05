@@ -8,7 +8,7 @@ from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from dac_her.scientific_signatures import normalize_scientific_text
 
 
-BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.1-calibration"
+BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.2-calibration"
 
 _GENERIC_LABELS = {
     "high performance",
@@ -231,6 +231,22 @@ def _dedupe_issues(
 
     return result
 
+def _relation_cue_supported(
+    concept: BridgeConcept,
+    cue: re.Pattern[str],
+) -> bool:
+    candidates = [
+        concept.relation_evidence_phrase or "",
+        concept.source_phrase,
+        *concept.supporting_phrases,
+    ]
+
+    return any(
+        cue.search(candidate)
+        for candidate in candidates
+        if candidate
+    )
+
 def _pattern_grounding_issues(
     concept: BridgeConcept,
     *,
@@ -313,9 +329,9 @@ def _pattern_grounding_issues(
                 )
             )
 
-        elif not cue.search(
-            concept.relation_evidence_phrase
-            or ""
+        elif not _relation_cue_supported(
+            concept,
+            cue,
         ):
             issues.append(
                 BridgePolicyIssue(
