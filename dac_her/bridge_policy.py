@@ -1036,9 +1036,9 @@ def _table_derived_context_issues(
     ):
         return [
             _policy_issue(
+                _TABLE_ONLY_DERIVED_CODE,
+                "comparison_items",
                 (
-                    _TABLE_ONLY_DERIVED_CODE,
-                    "comparison_items",
                     "The relation is derived only "
                     "from bare table rows. Table "
                     "header or column-semantic "

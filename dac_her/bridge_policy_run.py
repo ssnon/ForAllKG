@@ -613,6 +613,87 @@ def materialize_bridge_policy_run(
         ),
     )
 
+    candidate_record_by_key = {
+        (
+            str(record.get(
+                "chunk_id",
+                "",
+            )),
+            str(record.get(
+                "concept_id",
+                "",
+            )),
+        ): record
+        for record in candidate_records
+    }
+
+    missing_candidate_records: list[
+        tuple[str, str]
+    ] = []
+
+    for _, attrs in (
+        candidate_bridge_graph.nodes(
+            data=True
+        )
+    ):
+        if (
+            attrs.get("type")
+            != "BridgeConcept"
+        ):
+            continue
+
+        key = (
+            str(
+                attrs.get(
+                    "chunk_id",
+                    "",
+                )
+            ),
+            str(
+                attrs.get(
+                    "source_local_id",
+                    "",
+                )
+            ),
+        )
+
+        record = candidate_record_by_key.get(
+            key
+        )
+
+        if record is None:
+            missing_candidate_records.append(
+                key
+            )
+            continue
+
+        attrs[
+            "candidate_reason_codes_json"
+        ] = json.dumps(
+            record.get(
+                "reason_codes",
+                [],
+            ),
+            ensure_ascii=False,
+        )
+
+        attrs[
+            "candidate_reason_details_json"
+        ] = json.dumps(
+            record.get(
+                "reason_details",
+                [],
+            ),
+            ensure_ascii=False,
+        )
+
+    if missing_candidate_records:
+        raise RuntimeError(
+            "Candidate issue provenance is "
+            "missing for candidate graph nodes: "
+            f"{missing_candidate_records[:10]!r}"
+        )
+
     graph_metadata = {
         "bridge_prompt_version": str(
             extraction_metadata.get(
