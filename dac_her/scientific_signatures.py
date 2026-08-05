@@ -6,19 +6,14 @@ from typing import Any
 
 import networkx as nx
 from dac_her.chemistry_signatures import (
-    composition_signature,
+    METAL_NAMES,
     metal_signature,
 )
 
 _ELEMENT_NAMES = {
-    "platinum": "pt", "ruthenium": "ru", "tungsten": "w",
-    "molybdenum": "mo", "iron": "fe", "cobalt": "co", "nickel": "ni",
-    "copper": "cu", "palladium": "pd", "iridium": "ir", "rhodium": "rh",
-    "manganese": "mn", "zinc": "zn", "gold": "au", "silver": "ag",
-    "tin": "sn", "vanadium": "v", "chromium": "cr", "titanium": "ti",
-    "niobium": "nb", "tantalum": "ta",
+    name: symbol.lower()
+    for name, symbol in METAL_NAMES.items()
 }
-_METAL_SYMBOLS = frozenset(metal_signature.values())
 
 
 def normalize_scientific_text(value: Any) -> str:
@@ -30,28 +25,6 @@ def normalize_scientific_text(value: Any) -> str:
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"[^a-z0-9+.%/\-\s]", " ", text)
     return re.sub(r"\s+", " ", text).strip()
-
-
-def metal_signature(value: Any) -> tuple[str, ...]:
-    original = unicodedata.normalize("NFKC", str(value or ""))
-    normalized = normalize_scientific_text(original)
-    tokens = set(normalized.split())
-    found = {token for token in tokens if token in _METAL_SYMBOLS}
-
-    # Recover compact formulas such as PtRu and W1Mo1 without searching for
-    # element-symbol substrings inside ordinary words such as "coordination".
-    for token in re.findall(r"\b[A-Z][A-Za-z0-9]*\b", original):
-        symbols = re.findall(r"[A-Z][a-z]?", token)
-        formula_like = bool(re.search(r"\d", token)) or len(symbols) >= 2
-        if len(token) <= 3:
-            formula_like = True
-        if not formula_like:
-            continue
-        for symbol in symbols:
-            lowered = symbol.lower()
-            if lowered in _METAL_SYMBOLS:
-                found.add(lowered)
-    return tuple(sorted(found))
 
 
 def nuclearity_signature(value: Any) -> str:
@@ -224,7 +197,7 @@ def strong_anchor_context_issues(
     )
 
     if metal_composition_bearing and not cross_metal_comparison:
-        concept_metals = set(metal_signature(text))
+        concept_metals = set(metal_signature(concept_text))
         anchor_metals = set(
             anchor.get("metal_signature") or metal_signature(anchor_label)
         )

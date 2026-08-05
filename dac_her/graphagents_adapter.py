@@ -127,6 +127,59 @@ def _canonical_edge_index(
 
     return index
 
+def _collect_evidence_pointers(
+    edge_index: dict[
+        str,
+        dict[str, Any],
+    ],
+    source_edge_ids: list[str],
+) -> list[dict[str, Any]]:
+    unique: dict[
+        str,
+        dict[str, Any],
+    ] = {}
+
+    for edge_id in source_edge_ids:
+        attrs = edge_index.get(
+            edge_id,
+            {},
+        )
+        raw = attrs.get(
+            "evidence_pointers_json",
+            "[]",
+        )
+
+        try:
+            pointers = json.loads(
+                str(raw)
+            )
+        except (
+            TypeError,
+            json.JSONDecodeError,
+        ):
+            continue
+
+        if not isinstance(
+            pointers,
+            list,
+        ):
+            continue
+
+        for pointer in pointers:
+            if not isinstance(
+                pointer,
+                dict,
+            ):
+                continue
+
+            signature = json.dumps(
+                pointer,
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            unique[signature] = pointer
+
+    return list(unique.values())
 
 def _add_projection_edge(
     projection: nx.DiGraph,

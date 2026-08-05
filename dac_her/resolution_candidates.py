@@ -14,7 +14,7 @@ from typing import Any, Iterable, Mapping, Sequence
 import networkx as nx
 
 from dac_her.chemistry_signatures import (
-    composition_signature,
+    METAL_NAMES,
     metal_signature,
 )
 
@@ -27,14 +27,10 @@ CLAIM_NODE_TYPES: frozenset[str] = frozenset({"ObservationClaim", "MechanismClai
 AUTO_MERGE_TYPES: frozenset[str] = frozenset({"Metal", "Reaction"})
 
 _ELEMENT_NAMES = {
-    "platinum": "pt", "ruthenium": "ru", "tungsten": "w",
-    "molybdenum": "mo", "iron": "fe", "cobalt": "co", "nickel": "ni",
-    "copper": "cu", "palladium": "pd", "iridium": "ir", "rhodium": "rh",
-    "manganese": "mn", "zinc": "zn", "gold": "au", "silver": "ag",
-    "tin": "sn", "vanadium": "v", "chromium": "cr", "titanium": "ti",
-    "niobium": "nb", "tantalum": "ta", "molybdenum": "mo",
+    name: symbol.lower()
+    for name, symbol in METAL_NAMES.items()
 }
-_METAL_SYMBOLS = frozenset(metal_signature.values())
+
 _REACTION_ALIASES = {
     "her": "hydrogen_evolution_reaction",
     "hydrogen evolution": "hydrogen_evolution_reaction",
@@ -55,7 +51,7 @@ def normalize_scientific_text(value: Any) -> str:
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
     text = text.lower().strip()
-    for name, symbol in metal_signature.items():
+    for name, symbol in _ELEMENT_NAMES.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
     replacements = {
         "hydrogen evolution reaction": "her",
@@ -157,15 +153,12 @@ def _neighborhood_signature(graph: nx.Graph, node_id: str) -> frozenset[str]:
     return frozenset(rows)
 
 
-def _metals(value: Any) -> frozenset[str]:
-    tokens = normalized_tokens(value)
-    found = {token for token in tokens if token in _METAL_SYMBOLS}
-    # compact formulas such as W1Mo1 or PtRu
-    compact = re.sub(r"[^a-z]", "", normalize_scientific_text(value))
-    for symbol in sorted(_METAL_SYMBOLS, key=len, reverse=True):
-        if symbol in compact:
-            found.add(symbol)
-    return frozenset(found)
+def _metals(
+    value: Any,
+) -> frozenset[str]:
+    return frozenset(
+        metal_signature(value)
+    )
 
 
 def _state_tokens(value: Any) -> frozenset[str]:
