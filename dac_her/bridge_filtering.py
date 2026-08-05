@@ -1,0 +1,253 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from dac_her.bridge_policy import (
+    filter_bridge_result,
+)
+from dac_her.bridge_relation_repairs import (
+    apply_deterministic_relation_repairs,
+)
+from dac_her.bridge_schemas import (
+    BridgeChunkGraph,
+)
+from dac_her.bridge_validation import (
+    validate_bridge_chunk,
+)
+from dac_her.graph_io import (
+    knowledge_graph_to_networkx,
+)
+from dac_her.scientific_signatures import (
+    strict_node_catalog,
+)
+from dac_her.schemas import KnowledgeGraph
+
+
+def bridge_output_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+    return (
+        Path(output_dir)
+        / f"{safe_chunk_id}.json"
+    )
+
+
+def bridge_rejections_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+    return (
+        Path(output_dir)
+        / f"{safe_chunk_id}__rejections.json"
+    )
+
+
+def bridge_relation_repairs_path(
+    chunk_id: str,
+    output_dir: str | Path,
+) -> Path:
+    safe_chunk_id = chunk_id.replace(
+        ":",
+        "__",
+    )
+    return (
+        Path(output_dir)
+        / (
+            f"{safe_chunk_id}"
+            "__relation_repairs.json"
+        )
+    )
+
+
+def _catalog(
+    result: KnowledgeGraph,
+) -> list[dict[str, Any]]:
+    return strict_node_catalog(
+        knowledge_graph_to_networkx(
+            result
+        )
+    )
+
+
+def filter_bridge_raw_chunk(
+    *,
+    raw_result: BridgeChunkGraph,
+    strict_result: KnowledgeGraph,
+    source_payload: dict[str, Any],
+    output_dir: str | Path,
+) -> dict[str, Any]:
+    """
+    Apply deterministic repairs and the current
+    Bridge policy to one raw Bridge extraction.
+
+    This function performs no LLM calls.
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output_path = bridge_output_path(
+        strict_result.chunk_id,
+        output_dir,
+    )
+    rejection_path = (
+        bridge_rejections_path(
+            strict_result.chunk_id,
+            output_dir,
+        )
+    )
+    repair_path = (
+        bridge_relation_repairs_path(
+            strict_result.chunk_id,
+            output_dir,
+        )
+    )
+
+    nodes = _catalog(strict_result)
+
+    validate_bridge_chunk(
+        raw_result,
+        paper_id=str(
+            source_payload["paper_id"]
+        ),
+        chunk_id=str(
+            source_payload["chunk_id"]
+        ),
+        document_id=str(
+            source_payload["document_id"]
+        ),
+        document_role=str(
+            source_payload["document_role"]
+        ),
+        page_ids=list(
+            source_payload.get(
+                "page_ids",
+                [],
+            )
+        ),
+        asset_ids=list(
+            source_payload.get(
+                "asset_ids",
+                [],
+            )
+        ),
+        core_text=str(
+            source_payload["core_text"]
+        ),
+        strict_nodes=nodes,
+    )
+
+    repaired_result, relation_repairs = (
+        apply_deterministic_relation_repairs(
+            raw_result
+        )
+    )
+
+    filtered_result, rejections = (
+        filter_bridge_result(
+            repaired_result,
+            strict_nodes=nodes,
+            core_text=str(
+                source_payload["core_text"]
+            ),
+        )
+    )
+
+    output_path.write_text(
+        json.dumps(
+            filtered_result.model_dump(),
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    rejection_path.write_text(
+        json.dumps(
+            [
+                rejection.to_dict()
+                for rejection in rejections
+            ],
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    repair_path.write_text(
+        json.dumps(
+            [
+                repair.to_dict()
+                for repair
+                in relation_repairs
+            ],
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    return {
+        "status": "success",
+        "paper_id": (
+            filtered_result.paper_id
+        ),
+        "chunk_id": (
+            filtered_result.chunk_id
+        ),
+        "document_id": (
+            filtered_result.document_id
+        ),
+        "document_role": (
+            filtered_result.document_role
+        ),
+        "section": (
+            filtered_result.section
+        ),
+        "output_path": str(
+            output_path
+        ),
+        "rejections_path": str(
+            rejection_path
+        ),
+        "relation_repairs_path": str(
+            repair_path
+        ),
+        "concept_count": len(
+            filtered_result.concepts
+        ),
+        "pattern_count": sum(
+            concept.retention_lane
+            == "accepted_pattern"
+            for concept
+            in filtered_result.concepts
+        ),
+        "frontier_count": sum(
+            concept.retention_lane
+            == "paper_local_frontier"
+            for concept
+            in filtered_result.concepts
+        ),
+        "link_count": len(
+            filtered_result.links
+        ),
+        "rejection_count": len(
+            rejections
+        ),
+        "relation_repair_count": len(
+            relation_repairs
+        ),
+    }
