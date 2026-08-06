@@ -14,7 +14,7 @@ class ExtractionPolicy:
     right_context_tokens: int = 120
 
     # Model output
-    max_completion_tokens: int = 8000
+    max_completion_tokens: int = 16000
 
     # Execution
     logical_batch_size: int = 10

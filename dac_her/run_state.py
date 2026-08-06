@@ -76,6 +76,7 @@ def compute_run_metadata(
     schemas_path: str | Path,
     chunking_path: str | Path,
     runtime_options: dict[str, Any] | None = None,
+    implementation_paths: tuple[str | Path, ...,] = (),
 ) -> dict[str, Any]:
     project_root = Path(project_root).resolve()
     schemas_path = Path(schemas_path).resolve()
@@ -103,6 +104,28 @@ def compute_run_metadata(
             )
         ],
         "project_root": str(project_root),
+        "implementation_files": [
+            {
+                "relative_path": str(
+                    Path(path)
+                    .resolve()
+                    .relative_to(
+                        project_root
+                    )
+                ),
+                "sha256": sha256_file(
+                    path
+                ),
+            }
+            for path in sorted(
+                (
+                    Path(item).resolve()
+                    for item
+                    in implementation_paths
+                ),
+                key=str,
+            )
+        ],
     }
 
     fingerprint = sha256_text(canonical_json(metadata))

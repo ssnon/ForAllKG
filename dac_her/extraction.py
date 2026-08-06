@@ -18,7 +18,9 @@ from dac_her.measurement_scalarization import (
     measurement_scalarization_issues,
 )
 from dac_her.vocab_registry import VocabularyRegistry
-
+from dac_her.structural_repair import (
+    repair_knowledge_graph_payload,
+)
 
 def chunk_output_path(
     chunk: ChunkSpec,
@@ -76,6 +78,104 @@ def load_existing_result(
     except Exception:
         return None
 
+def _try_structural_repair(
+    *,
+    debug_path: Path,
+    repair_path: Path,
+    chunk: ChunkSpec,
+    experiment_registry: VocabularyRegistry,
+    metric_registry: VocabularyRegistry,
+):
+    if not debug_path.exists():
+        return None
+
+    raw_payload = json.loads(
+        debug_path.read_text(
+            encoding="utf-8",
+        )
+    )
+
+    if not isinstance(
+        raw_payload,
+        dict,
+    ):
+        return None
+
+    repaired_payload, repairs = (
+        repair_knowledge_graph_payload(
+            raw_payload,
+            allow_lossy=False,
+        )
+    )
+
+    if not repairs:
+        return None
+
+    result = KnowledgeGraph.model_validate(
+        repaired_payload
+    )
+
+    result, vocabulary_issues = (
+        normalize_graph_vocabularies(
+            result,
+            experiment_registry=(
+                experiment_registry
+            ),
+            metric_registry=metric_registry,
+        )
+    )
+
+    scalar_issues = (
+        measurement_scalarization_issues(
+            result
+        )
+    )
+
+    if scalar_issues:
+        raise ValueError(
+            format_scalarization_errors(
+                scalar_issues
+            )
+        )
+
+    validate_graph_provenance(
+        result,
+        paper_id=chunk.paper_id,
+        chunk_id=chunk.chunk_id,
+        section=chunk.section,
+        document_id=chunk.document_id,
+        document_role=chunk.document_role,
+        page_ids=chunk.page_ids,
+        asset_ids=chunk.asset_ids,
+    )
+
+    repair_records = [
+        repair.to_dict()
+        for repair in repairs
+    ]
+
+    repair_path.write_text(
+        json.dumps(
+            {
+                "chunk_id": (
+                    chunk.chunk_id
+                ),
+                "repairs": repair_records,
+                "repaired_payload": (
+                    result.model_dump()
+                ),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    return (
+        result,
+        vocabulary_issues,
+        repair_records,
+    )
 
 def extract_one_chunk(
     *,
@@ -294,18 +394,154 @@ def extract_one_chunk(
                     "attempt_usages": attempt_usages,
                     **usage,
                 }
+            
+            repair_feedback: str | None = None
 
+            if isinstance(error, ValidationError):
+                repair_path = (
+                    debug_dir
+                    / (
+                        f"{safe_chunk_id}"
+                        f"__attempt_{attempt}"
+                        "__structural_repair.json"
+                    )
+                )
+
+                repaired = None
+
+                try:
+                    repaired = _try_structural_repair(
+                        debug_path=debug_path,
+                        repair_path=repair_path,
+                        chunk=chunk,
+                        experiment_registry=experiment_registry,
+                        metric_registry=metric_registry,
+                    )
+                except Exception as repair_error:
+                    repair_feedback = (
+                        f"{error}\n\n"
+                        "A conservative deterministic bookkeeping repair "
+                        "was attempted, but the repaired graph still failed "
+                        "validation:\n"
+                        f"{type(repair_error).__name__}: {repair_error}"
+                    )
+
+                if repaired is not None:
+                    (
+                        result,
+                        vocabulary_issues,
+                        repair_records,
+                    ) = repaired
+
+                    output_path.write_text(
+                        json.dumps(
+                            result.model_dump(),
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    output_tokens = usage.get(
+                        "output_tokens"
+                    )
+
+                    utilization = (
+                        output_tokens
+                        / policy.max_completion_tokens
+                        if isinstance(
+                            output_tokens,
+                            int,
+                        )
+                        else None
+                    )
+
+                    print(
+                        "[STRUCTURAL REPAIR SUCCESS]",
+                        chunk.chunk_id,
+                        f"repairs={len(repair_records)}",
+                        flush=True,
+                    )
+
+                    return {
+                        "status": "success",
+                        "paper_id": chunk.paper_id,
+                        "chunk_id": chunk.chunk_id,
+                        "section": chunk.section,
+                        "document_id": chunk.document_id,
+                        "document_role": chunk.document_role,
+                        "page_ids": list(
+                            chunk.page_ids
+                        ),
+                        "asset_ids": list(
+                            chunk.asset_ids
+                        ),
+                        "chunk_index": chunk.index,
+                        "split_depth": (
+                            chunk.split_depth
+                        ),
+                        "semantic_repairs": attempt,
+                        "api_attempts": attempt + 1,
+                        "source_characters": len(
+                            chunk.core_text
+                        ),
+                        "source_tokens_estimated": (
+                            count_tokens(
+                                chunk.core_text
+                            )
+                        ),
+                        "output_path": str(
+                            output_path
+                        ),
+                        "utilization": utilization,
+                        "node_count": len(
+                            result.all_node_ids()
+                        ),
+                        "edge_count": len(
+                            result.edges
+                        ),
+                        "unregistered_vocabulary_count": (
+                            len(vocabulary_issues)
+                        ),
+                        "vocabulary_issues": [
+                            item.to_dict()
+                            for item in vocabulary_issues
+                        ],
+                        "structural_repair_count": (
+                            len(repair_records)
+                        ),
+                        "structural_repairs": (
+                            repair_records
+                        ),
+                        "structural_repair_path": (
+                            str(repair_path)
+                        ),
+                        "attempt_usages": (
+                            attempt_usages
+                        ),
+                        **usage,
+                    }
+                
             if (
-                isinstance(error, (ValidationError, ValueError))
-                and attempt < policy.max_semantic_repairs
+                isinstance(
+                    error,
+                    (ValidationError, ValueError),
+                )
+                and attempt
+                < policy.max_semantic_repairs
             ):
-                validation_feedback = str(error)
+                validation_feedback = (
+                    repair_feedback
+                    or str(error)
+                )
+
                 print(
                     "[SEMANTIC REPAIR]",
                     chunk.chunk_id,
                     f"attempt={attempt + 1}",
                     flush=True,
                 )
+
                 continue
 
             return {

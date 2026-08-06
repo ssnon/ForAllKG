@@ -15,6 +15,13 @@ from dotenv import load_dotenv
 
 import dac_her.chunking as chunking_module
 import dac_her.schemas as schemas_module
+import dac_her.extraction as extraction_module
+import dac_her.graph_normalization as graph_normalization_module
+import dac_her.llm_openrouter as llm_openrouter_module
+import dac_her.measurement_scalarization as measurement_scalarization_module
+import dac_her.structural_repair as structural_repair_module
+import dac_her.validation as validation_module
+
 from dac_her.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from dac_her.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
 from dac_her.config import DocumentConfig, get_paper_config
@@ -241,6 +248,14 @@ def main() -> None:
             "vision_assets": sorted(args.vision_asset),
             "vision_model_override": args.vision_model,
         },
+        implementation_paths=(
+            extraction_module.__file__,
+            graph_normalization_module.__file__,
+            llm_openrouter_module.__file__,
+            measurement_scalarization_module.__file__,
+            structural_repair_module.__file__,
+            validation_module.__file__,
+        ),
     )
     run_id = str(run_metadata["run_id"])
     run_dir = run_directory(PROJECT_ROOT, paper.paper_id, run_id)
