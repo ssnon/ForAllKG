@@ -104,6 +104,33 @@ def _context(chunk: ChunkSpec) -> ValidationContext:
         asset_ids=chunk.asset_ids,
     )
 
+def enforce_chunk_metadata(
+    draft: KnowledgeGraphDraft,
+    *,
+    chunk: ChunkSpec,
+) -> KnowledgeGraphDraft:
+    payload = draft.model_dump()
+
+    # Control-plane metadata is authoritative
+    # from ChunkSpec, not from the LLM.
+    payload["paper_id"] = chunk.paper_id
+    payload["chunk_id"] = chunk.chunk_id
+    payload["section"] = chunk.section
+    payload["document_id"] = chunk.document_id
+    payload["document_role"] = (
+        chunk.document_role
+    )
+
+    payload["page_ids"] = list(
+        chunk.page_ids
+    )
+    payload["asset_ids"] = list(
+        chunk.asset_ids
+    )
+
+    return KnowledgeGraphDraft.model_validate(
+        payload
+    )
 
 def _base_record(chunk: ChunkSpec) -> dict[str, Any]:
     return {
@@ -134,6 +161,8 @@ def _success_record(
     normalization_count: int,
     patch_paths: list[Path],
     patch_operation_count: int,
+    patch_attempts: int,
+    micro_reextract_attempts: int,
 ) -> dict[str, Any]:
     usage = dict(attempt_usages[-1] if attempt_usages else {})
     output_tokens = usage.get("output_tokens")
@@ -148,7 +177,8 @@ def _success_record(
         **_base_record(chunk),
         "acceptance_mode": acceptance_mode,
         "generation_attempts": generation_attempts,
-        "patch_attempts": len(patch_paths),
+        "patch_attempts": patch_attempts,
+        "micro_reextract_attempts": micro_reextract_attempts,
         "api_attempts": len(attempt_usages),
         "output_path": str(output_path),
         "utilization": utilization,
@@ -267,6 +297,10 @@ def extract_one_chunk(
                 max_tokens=policy.max_completion_tokens,
                 debug_path=raw_debug_path,
             )
+            draft = enforce_chunk_metadata(
+                draft,
+                chunk=chunk,
+            )
             usage = dict(llm.last_call_metadata or {})
             usage["max_completion_tokens"] = policy.max_completion_tokens
             usage["call_kind"] = "graph_generation"
@@ -326,6 +360,9 @@ def extract_one_chunk(
                 "error_message": str(error),
                 "quarantine_path": str(quarantine_path),
                 "attempt_usages": attempt_usages,
+                "patch_attempts": patch_attempts,
+                "micro_reextract_attempts": micro_reextract_attempts,
+                "patch_paths": [str(path) for path in patch_paths],
                 **usage,
             }
 
@@ -361,6 +398,8 @@ def extract_one_chunk(
             normalization_count=0,
             patch_paths=[],
             patch_operation_count=0,
+            patch_attempts=0,
+            micro_reextract_attempts=0
         )
     if report.valid and not final_report.valid:
         report = final_report
@@ -405,6 +444,8 @@ def extract_one_chunk(
                 normalization_count=normalization_count,
                 patch_paths=[],
                 patch_operation_count=0,
+                patch_attempts=0,
+                micro_reextract_attempts=0
             )
         if report.valid and not final_report.valid:
             report = final_report
@@ -504,7 +545,10 @@ def extract_one_chunk(
                 )
                 patch_operation_count += applied.operation_count
                 draft = applied.draft
-
+                draft = enforce_chunk_metadata(
+                    draft,
+                    chunk=chunk,
+                )
                 post_patch_normalization = normalize_knowledge_graph_payload(
                     draft.model_dump(),
                     issues=report.issues,
@@ -539,6 +583,8 @@ def extract_one_chunk(
                         normalization_count=normalization_count,
                         patch_paths=patch_paths,
                         patch_operation_count=patch_operation_count,
+                        patch_attempts=patch_attempts,
+                        micro_reextract_attempts=micro_reextract_attempts,
                     )
                 if report.valid and not final_report.valid:
                     report = final_report
@@ -607,7 +653,10 @@ def extract_one_chunk(
                     ),
                     debug_path=micro_debug_path,
                 )
-
+                micro_draft = enforce_chunk_metadata(
+                    micro_draft,
+                    chunk=chunk,
+                )
                 usage = dict(
                     llm.last_call_metadata or {}
                 )
@@ -687,34 +736,22 @@ def extract_one_chunk(
                         chunk=chunk,
                         graph=graph,
                         output_path=output_path,
-                        acceptance_mode=(
-                            "accepted_micro_reextract"
-                        ),
+                        acceptance_mode=("accepted_micro_reextract"),
                         attempt_usages=attempt_usages,
-                        vocabulary_issues=(
-                            vocabulary_issues
-                        ),
+                        vocabulary_issues=(vocabulary_issues),
                         generation_attempts=len([
                             item
                             for item in attempt_usages
                             if item.get("call_kind")
                             == "graph_generation"
                         ]),
-                        normalization_path=(
-                            normalization_path
-                        ),
-                        normalization_count=(
-                            normalization_count
-                        ),
+                        normalization_path=(normalization_path),
+                        normalization_count=(normalization_count),
                         patch_paths=patch_paths,
-                        patch_operation_count=(
-                            patch_operation_count
-                        ),
+                        patch_operation_count=(patch_operation_count),
+                        patch_attempts=patch_attempts,
+                        micro_reextract_attempts=micro_reextract_attempts,
                     )
-
-                    record[
-                        "micro_reextract_attempts"
-                    ] = micro_reextract_attempts
 
                     return record
 
@@ -758,11 +795,24 @@ def extract_one_chunk(
                 **_base_record(chunk),
                 "recovery_reason": decision.reason,
                 "validation_issue_counts": report.code_counts(),
-                "validation_issues": [item.model_dump(mode="json") for item in report.issues],
+                "validation_issues": [
+                    item.model_dump(mode="json")
+                    for item in report.issues
+                ],
                 "normalization_count": normalization_count,
-                "normalization_path": str(normalization_path) if normalization_path else None,
+                "normalization_path": (
+                    str(normalization_path)
+                    if normalization_path
+                    else None
+                ),
                 "patch_attempts": patch_attempts,
-                "patch_paths": [str(path) for path in patch_paths],
+                "micro_reextract_attempts": (
+                    micro_reextract_attempts
+                ),
+                "patch_paths": [
+                    str(path)
+                    for path in patch_paths
+                ],
                 "attempt_usages": attempt_usages,
             }
 

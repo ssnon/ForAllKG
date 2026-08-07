@@ -11,6 +11,7 @@ class RecoveryAction(str, Enum):
     NORMALIZE = "normalize"
     SEMANTIC_PATCH = "semantic_patch"
     RECHUNK = "rechunk"
+    MICRO_REEXTRACT = "micro_reextract"
     QUARANTINE = "quarantine"
 
 
@@ -19,14 +20,6 @@ class RecoveryDecision:
     action: RecoveryAction
     reason: str
     issue_codes: tuple[str, ...]
-
-class RecoveryAction(str, Enum):
-    ACCEPT = "accept"
-    NORMALIZE = "normalize"
-    SEMANTIC_PATCH = "semantic_patch"
-    RECHUNK = "rechunk"
-    MICRO_REEXTRACT = "micro_reextract"
-    QUARANTINE = "quarantine"
 
 LOSSLESS_CODES = {
     IssueCode.DUPLICATE_NODE_ID,
@@ -69,7 +62,7 @@ def decide_recovery(
 
     cannot_rechunk_safely = (
         split_depth >= max_split_depth
-        or source_tokens < min_rechunk_source_tokens
+        or source_tokens <= min_rechunk_source_tokens
     )
 
     if cannot_rechunk_safely:
