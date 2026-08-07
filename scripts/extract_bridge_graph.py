@@ -38,6 +38,10 @@ import dac_her.scientific_signatures \
     as scientific_signatures_module
 import dac_her.bridge_policy_run \
     as bridge_policy_run_module
+import dac_her.bridge_recovery \
+    as bridge_recovery_module
+import dac_her.bridge_source_reconciliation \
+    as bridge_source_reconciliation_module
 
 from dac_her.bridge_extraction import (
     extract_bridge_raw_chunk,
@@ -416,6 +420,8 @@ def main() -> None:
         scientific_signatures_module.__file__,
         schemas_module.__file__,
         llm_openrouter_module.__file__,
+        bridge_recovery_module.__file__,
+        bridge_source_reconciliation_module.__file__,
     )
 
     extraction_metadata = (
