@@ -21,9 +21,22 @@ import dac_her.llm_openrouter as llm_openrouter_module
 import dac_her.measurement_scalarization as measurement_scalarization_module
 import dac_her.structural_repair as structural_repair_module
 import dac_her.validation as validation_module
+import dac_her.chunking_recovery as chunking_recovery_module
+import dac_her.draft_schema as draft_schema_module
+import dac_her.graph_validation as graph_validation_module
+import dac_her.lossless_normalization as lossless_normalization_module
+import dac_her.recovery_policy as recovery_policy_module
+import dac_her.semantic_patch as semantic_patch_module
+import dac_her.semantic_patch_prompts as semantic_patch_prompts_module
+import dac_her.semantic_patch_schema as semantic_patch_schema_module
+import dac_her.strict_recovery as strict_recovery_module
+import dac_her.strict_validation as strict_validation_module
+import dac_her.validation_issues as validation_issues_module
+import dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 
 from dac_her.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from dac_her.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
+from dac_her.chunking_recovery import split_chunk_structurally
 from dac_her.config import DocumentConfig, get_paper_config
 from dac_her.document_package import (
     DocumentPackage,
@@ -107,6 +120,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Regenerate cached figure analyses.",
     )
+    parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help=(
+            "Exit successfully when at least one strict-valid chunk was accepted "
+            "but one or more chunks were quarantined. Held-out evaluation should "
+            "not use this flag."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -154,7 +176,18 @@ def record_active_chunk(
     chunk: ChunkSpec,
     source_chunk_dir: Path,
 ) -> None:
-    source_path = write_source_chunk(source_chunk_dir, chunk)
+    source_path_value = record.get(
+        "source_path"
+    )
+
+    source_path = (
+        Path(source_path_value)
+        if source_path_value
+        else write_source_chunk(
+            source_chunk_dir,
+            chunk,
+        )
+    )
     active[str(record["chunk_id"])] = {
         "paper_id": record["paper_id"],
         "chunk_id": record["chunk_id"],
@@ -175,6 +208,13 @@ def record_active_chunk(
             "unregistered_vocabulary_count", 0
         ),
         "vocabulary_issues": record.get("vocabulary_issues", []),
+        "acceptance_mode": record.get("acceptance_mode"),
+        "normalization_count": record.get("normalization_count", 0),
+        "normalization_path": record.get("normalization_path"),
+        "patch_attempts": record.get("patch_attempts", 0),
+        "patch_operation_count": record.get("patch_operation_count", 0),
+        "patch_paths": record.get("patch_paths", []),
+        "validation_issue_counts": record.get("validation_issue_counts", {}),
     }
 
 
@@ -255,6 +295,18 @@ def main() -> None:
             measurement_scalarization_module.__file__,
             structural_repair_module.__file__,
             validation_module.__file__,
+            chunking_recovery_module.__file__,
+            draft_schema_module.__file__,
+            graph_validation_module.__file__,
+            lossless_normalization_module.__file__,
+            recovery_policy_module.__file__,
+            semantic_patch_module.__file__,
+            semantic_patch_prompts_module.__file__,
+            semantic_patch_schema_module.__file__,
+            strict_recovery_module.__file__,
+            strict_validation_module.__file__,
+            validation_issues_module.__file__,
+            micro_reextract_prompts_module.__file__,
         ),
     )
     run_id = str(run_metadata["run_id"])
@@ -263,7 +315,10 @@ def main() -> None:
     source_chunk_dir = run_dir / "source_chunks"
     debug_dir = run_dir / "debug"
     documents_dir = run_dir / "documents"
-    manifest_path = run_dir / "manifest.jsonl"
+    attempt_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    attempt_dir = run_dir / "attempts" / attempt_id
+    manifest_path = attempt_dir / "manifest.jsonl"
+    events_path = run_dir / "events.jsonl"
 
     for directory in (
         run_dir,
@@ -271,9 +326,10 @@ def main() -> None:
         source_chunk_dir,
         debug_dir,
         documents_dir,
+        attempt_dir,
     ):
         directory.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text("", encoding="utf-8")
+    manifest_path.touch(exist_ok=False)
     write_json(run_dir / "run.json", run_metadata)
     write_latest_run_pointer(
         project_root=PROJECT_ROOT,
@@ -474,7 +530,10 @@ def main() -> None:
     queue: deque[ChunkSpec] = deque(initial_chunks)
     active_chunks: dict[str, dict[str, Any]] = {}
     failed_records: list[dict[str, Any]] = []
+    quarantined_records: list[dict[str, Any]] = []
+    lineage_records: list[dict[str, Any]] = []
     success_count = skipped_count = failed_count = split_count = 0
+    quarantine_count = semantic_rechunk_count = 0
 
     print("Model:", model, flush=True)
     print("Paper ID:", paper.paper_id, flush=True)
@@ -535,8 +594,18 @@ def main() -> None:
                         "error_message": str(error),
                     }
 
+                source_path = write_source_chunk(
+                    source_chunk_dir,
+                    chunk,
+                )
+
+                record.setdefault(
+                    "source_path",
+                    str(source_path),
+                )
                 record["recorded_at_utc"] = datetime.now(timezone.utc).isoformat()
                 append_manifest(manifest_path, record)
+                append_manifest(events_path, {"attempt_id": attempt_id, **record})
                 status = record["status"]
 
                 if status == "success":
@@ -573,44 +642,54 @@ def main() -> None:
                         source_chunk_dir=source_chunk_dir,
                     )
                     print("[SKIPPED]", chunk.chunk_id, flush=True)
-                elif status == "truncated":
+                elif status in {"truncated", "rechunk"}:
                     if chunk.split_depth >= policy.max_split_depth:
                         terminal_record = dict(record)
-                        terminal_record["status"] = "failed"
+                        terminal_record["status"] = "quarantined"
                         terminal_record["error_type"] = "MaxSplitDepthExceeded"
                         terminal_record["error_message"] = (
-                            "Model output remained truncated after reaching "
+                            "Recovery requested another split after reaching "
                             f"max_split_depth={policy.max_split_depth}."
                         )
-                        failed_count += 1
-                        failed_records.append(terminal_record)
-                        print("[FAILED: MAX SPLIT DEPTH]", chunk.chunk_id, flush=True)
+                        quarantine_count += 1
+                        quarantined_records.append(terminal_record)
+                        print("[QUARANTINED: MAX SPLIT DEPTH]", chunk.chunk_id, flush=True)
                         continue
 
                     try:
-                        children = [
-                            decorate_chunk(child)
-                            for child in split_chunk_in_half(chunk, policy)
-                        ]
+                        if status == "rechunk":
+                            rechunk_result = split_chunk_structurally(
+                                chunk,
+                                policy,
+                                reason=record.get("recovery_reason", "semantic_failure"),
+                            )
+                            children = [decorate_chunk(child) for child in rechunk_result.children]
+                            lineage_records.append({
+                                "parent_chunk_id": chunk.chunk_id,
+                                "child_chunk_ids": [child.chunk_id for child in children],
+                                "split_method": rechunk_result.split_method,
+                                "reason": rechunk_result.reason,
+                            })
+                            semantic_rechunk_count += 1
+                        else:
+                            children = [
+                                decorate_chunk(child)
+                                for child in split_chunk_in_half(chunk, policy)
+                            ]
+                            lineage_records.append({
+                                "parent_chunk_id": chunk.chunk_id,
+                                "child_chunk_ids": [child.chunk_id for child in children],
+                                "split_method": "token_midpoint_truncation",
+                                "reason": "output_truncation",
+                            })
                     except RuntimeError as split_error:
-                        # Do not abort the entire paper run merely because one
-                        # model response was truncated for a source chunk that is
-                        # already below the safe split threshold.
                         terminal_record = dict(record)
-                        terminal_record["status"] = "failed"
-                        terminal_record["error_type"] = "UnsplittableTruncation"
-                        terminal_record["error_message"] = (
-                            f"{split_error}. The source chunk is already too "
-                            "small to split; compact retries were exhausted."
-                        )
-                        failed_count += 1
-                        failed_records.append(terminal_record)
-                        print(
-                            "[FAILED: UNSPLITTABLE TRUNCATION]",
-                            chunk.chunk_id,
-                            terminal_record["error_message"],
-                            flush=True,
-                        )
+                        terminal_record["status"] = "quarantined"
+                        terminal_record["error_type"] = "UnsplittableRecovery"
+                        terminal_record["error_message"] = str(split_error)
+                        quarantine_count += 1
+                        quarantined_records.append(terminal_record)
+                        print("[QUARANTINED: UNSPLITTABLE]", chunk.chunk_id, split_error, flush=True)
                         continue
 
                     for child in reversed(children):
@@ -623,6 +702,15 @@ def main() -> None:
                         [child.chunk_id for child in children],
                         flush=True,
                     )
+                elif status == "quarantined":
+                    quarantine_count += 1
+                    quarantined_records.append(record)
+                    print(
+                        "[QUARANTINED]",
+                        chunk.chunk_id,
+                        record.get("recovery_reason", "unknown"),
+                        flush=True,
+                    )
                 else:
                     failed_count += 1
                     failed_records.append(record)
@@ -633,11 +721,17 @@ def main() -> None:
                         flush=True,
                     )
 
-    complete = failed_count == 0
+    complete = failed_count == 0 and quarantine_count == 0
+    paper_status = (
+        "complete"
+        if complete
+        else ("partial" if active_chunks else "quarantined")
+    )
     active_payload = {
         "paper_id": paper.paper_id,
         "run_id": run_id,
         "run_fingerprint": run_metadata["run_fingerprint"],
+        "paper_status": paper_status,
         "complete": complete,
         "active_chunk_count": len(active_chunks),
         "chunks": sorted(
@@ -650,8 +744,10 @@ def main() -> None:
             ),
         ),
         "failed_chunks": failed_records,
+        "quarantined_chunks": quarantined_records,
     }
     write_json(run_dir / "active_chunks.json", active_payload)
+    write_json(run_dir / "lineage.json", {"splits": lineage_records})
 
     summary = {
         "paper_id": paper.paper_id,
@@ -668,7 +764,11 @@ def main() -> None:
         "successful": success_count,
         "skipped": skipped_count,
         "split_operations": split_count,
+        "semantic_rechunk_operations": semantic_rechunk_count,
+        "quarantined": quarantine_count,
         "failed": failed_count,
+        "paper_status": paper_status,
+        "attempt_id": attempt_id,
         "experiment_vocab_version": experiment_registry.version,
         "metric_vocab_version": metric_registry.version,
         "unregistered_vocabulary_count": sum(
@@ -686,12 +786,14 @@ def main() -> None:
     print("Successful:", success_count, flush=True)
     print("Skipped:", skipped_count, flush=True)
     print("Split operations:", split_count, flush=True)
+    print("Quarantined:", quarantine_count, flush=True)
     print("Failed:", failed_count, flush=True)
+    print("Paper status:", paper_status, flush=True)
     print("Complete:", complete, flush=True)
     print("Run directory:", run_dir, flush=True)
     print("Active chunks:", run_dir / "active_chunks.json", flush=True)
 
-    if not complete:
+    if not complete and not (args.allow_partial and paper_status == "partial"):
         raise SystemExit(2)
 
 

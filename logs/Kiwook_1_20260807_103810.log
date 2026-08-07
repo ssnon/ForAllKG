@@ -1,0 +1,78 @@
+===== START Kiwook_1 =====
+Fri Aug  7 10:38:10 KST 2026
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       8.1Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+Model: openai/gpt-5.6-luna
+Paper ID: Kiwook_1
+Run ID: 16f203fedf0485df
+Documents: 2
+Selected sources: 2
+Indexed assets: 31
+Linked assets: 31
+Vision analyses: 0
+Initial chunks: 16
+Estimated source tokens: 20076
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_1:main:f700ac333565d204c1fb
+[SKIPPED] Kiwook_1:main:a4c266e71d7f35d97803
+[SKIPPED] Kiwook_1:main:154b3a3472728841df37
+[SKIPPED] Kiwook_1:main:0562c15b54731e67bca9
+[SKIPPED] Kiwook_1:main:97de4f2566007b72213c
+[SKIPPED] Kiwook_1:main:4108ad0763c3de256ddc
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9211, "output_tokens": 7086, "total_tokens": 16297}
+[SPLIT] Kiwook_1:main:48c81c52325d9cddbab2 -> ['Kiwook_1:main:c565510580e1bf06ffbf', 'Kiwook_1:main:72deb4fecbb4584475ec']
+[SKIPPED] Kiwook_1:main:aed42cb2e2d2757ea88f
+[SKIPPED] Kiwook_1:main:abbdd20424b9897295de
+[SKIPPED] Kiwook_1:main:2aa398d124583073792f
+
+Starting logical batch: 8 chunks
+[SKIPPED] Kiwook_1:main:c565510580e1bf06ffbf
+[SKIPPED] Kiwook_1:main:72deb4fecbb4584475ec
+[SKIPPED] Kiwook_1:main:79462261d4bdbdc31762
+[SKIPPED] Kiwook_1:main:6d867192b4773906e843
+[SKIPPED] Kiwook_1:main:38eaef4d76b8e3b37f3d
+[SKIPPED] Kiwook_1:si1:fbfb609002895cfddf9a
+[SKIPPED] Kiwook_1:si1:feeb341132e3f49e7cc0
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7607, "output_tokens": 7539, "total_tokens": 15146}
+[SUCCESS] Kiwook_1:si1:76f49fc11e9bd9069412 document=si1 source_tokens= 921 output_tokens= 7539 utilization= 47.12% nodes= 31 edges= 60
+
+Extraction finished
+Successful: 1
+Skipped: 16
+Split operations: 1
+Quarantined: 0
+Failed: 0
+Paper status: complete
+Complete: True
+Run directory: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_1/runs/16f203fedf0485df
+Active chunks: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_1/runs/16f203fedf0485df/active_chunks.json
+	Command being timed: "python -m scripts.extract_paper --paper-id Kiwook_1 --concurrency 1"
+	User time (seconds): 0.91
+	System time (seconds): 0.12
+	Percent of CPU this job got: 1%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.89
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 179336
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 50096
+	Voluntary context switches: 339
+	Involuntary context switches: 21
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 1320
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT CODE: 0
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       8.1Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+===== END Kiwook_1 =====

@@ -1,0 +1,48 @@
+===== START Kiwook_10 =====
+Fri Aug  7 11:24:58 KST 2026
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       8.0Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+Model: openai/gpt-5.6-luna
+Paper ID: Kiwook_10
+Run ID: 50fd8f89402ac83d
+Documents: 1
+Selected sources: 1
+Indexed assets: 12
+Linked assets: 12
+Vision analyses: 0
+Initial chunks: 28
+Estimated source tokens: 35483
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8340, "output_tokens": 2075, "total_tokens": 10415}
+[SUCCESS] Kiwook_10:main:634dd7bf15a3f1416265 document=main source_tokens= 1304 output_tokens= 2075 utilization= 12.97% nodes= 12 edges= 14
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8519, "output_tokens": 3299, "total_tokens": 11818}
+[SPLIT] Kiwook_10:main:ed0961733746d1747b49 -> ['Kiwook_10:main:d2d4bedb150dd817550f', 'Kiwook_10:main:c862df8fc322348efe98']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7926, "output_tokens": 6864, "total_tokens": 14790}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 12961, "output_tokens": 450, "total_tokens": 13411}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 12984, "output_tokens": 180, "total_tokens": 13164}
+[SPLIT] Kiwook_10:main:7adeda2b08d6f40d4a8f -> ['Kiwook_10:main:7e06e51ca964f604f26d', 'Kiwook_10:main:6f3dd7b4e3c70080581d']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9022, "output_tokens": 6154, "total_tokens": 15176}
+[SPLIT] Kiwook_10:main:cd1043bdf27f3c934a49 -> ['Kiwook_10:main:27b61d0f64708f87f518', 'Kiwook_10:main:e9ee59a8edf3e6f85e3b']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8506, "output_tokens": 6330, "total_tokens": 14836}
+[SPLIT] Kiwook_10:main:6418a5aa8e694aa0f338 -> ['Kiwook_10:main:db6edbc105530e67b87e', 'Kiwook_10:main:61c594894a609b4ba953']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8906, "output_tokens": 6227, "total_tokens": 15133}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 13190, "output_tokens": 796, "total_tokens": 13986}
+[SUCCESS] Kiwook_10:main:f01a1e1120db415a23c5 document=main source_tokens= 990 output_tokens= 796 utilization= 13.27% nodes= 31 edges= 40
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8951, "output_tokens": 4661, "total_tokens": 13612}
+[SPLIT] Kiwook_10:main:1c7f68ec586bc501c6bb -> ['Kiwook_10:main:2438017d20fb7ff64982', 'Kiwook_10:main:927ebe10046f034bfc7f']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9041, "output_tokens": 8002, "total_tokens": 17043}
+[SPLIT] Kiwook_10:main:08d3e3044b3a9aae5b62 -> ['Kiwook_10:main:55edf819a86f32ac582f', 'Kiwook_10:main:94feba53d1235824ef3c']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8470, "output_tokens": 5937, "total_tokens": 14407}
+[SPLIT] Kiwook_10:main:3d27c515061bd10d7811 -> ['Kiwook_10:main:feae199fbf8e24f9c501', 'Kiwook_10:main:df5e73ec0a287298af38']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8819, "output_tokens": 4043, "total_tokens": 12862}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9130, "output_tokens": 648, "total_tokens": 9778}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9413, "output_tokens": 383, "total_tokens": 9796}
+[SPLIT] Kiwook_10:main:ead0f4354901d5954703 -> ['Kiwook_10:main:4a66a3eceed11db10b15', 'Kiwook_10:main:78793ee89a3778dec61a']
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7971, "output_tokens": 1775, "total_tokens": 9746}
+[SUCCESS] Kiwook_10:main:4a66a3eceed11db10b15 document=main source_tokens= 364 output_tokens= 1775 utilization= 11.09% nodes= 8 edges= 7
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8040, "output_tokens": 6145, "total_tokens": 14185}
+[SPLIT] Kiwook_10:main:78793ee89a3778dec61a -> ['Kiwook_10:main:284133c06369b19ed379', 'Kiwook_10:main:b700252a1efeeeb4f69c']

@@ -1,0 +1,128 @@
+===== START Kiwook_2 =====
+Fri Aug  7 10:39:20 KST 2026
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       8.1Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+Model: openai/gpt-5.6-luna
+Paper ID: Kiwook_2
+Run ID: 18bae31f6c69bfe3
+Documents: 2
+Selected sources: 39
+Indexed assets: 30
+Linked assets: 30
+Vision analyses: 0
+Initial chunks: 56
+Estimated source tokens: 24905
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_2:main:1bf7a29b636a6bb5c4e8
+[SKIPPED] Kiwook_2:main:2566cdb18384f4d652fa
+[SKIPPED] Kiwook_2:main:3a476d4627a0350a8b17
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8874, "output_tokens": 7997, "total_tokens": 16871}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 15440, "output_tokens": 438, "total_tokens": 15878}
+[SUCCESS] Kiwook_2:main:7c42680fc094a6a094bf document=main source_tokens= 1329 output_tokens= 438 utilization= 7.30% nodes= 30 edges= 49
+[SKIPPED] Kiwook_2:main:97da95772312cc63ccca
+[SKIPPED] Kiwook_2:main:145141d1544287a4b24e
+[SKIPPED] Kiwook_2:main:0ce491e53f8502d6aab5
+[SKIPPED] Kiwook_2:main:50aeb9585e85bd0c3764
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8757, "output_tokens": 10752, "total_tokens": 19509}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 19197, "output_tokens": 671, "total_tokens": 19868}
+[SUCCESS] Kiwook_2:main:242e28ff26349eb5548d document=main source_tokens= 1581 output_tokens= 671 utilization= 11.18% nodes= 32 edges= 59
+[SKIPPED] Kiwook_2:main:fa08305387c16a6d5416
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7998, "output_tokens": 8813, "total_tokens": 16811}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 16163, "output_tokens": 604, "total_tokens": 16767}
+[SUCCESS] Kiwook_2:main:0810ee1ff1fe164ae47d document=main source_tokens= 819 output_tokens= 604 utilization= 10.07% nodes= 30 edges= 51
+[SKIPPED] Kiwook_2:main:93fc2625bf776e2d2c7f
+[SKIPPED] Kiwook_2:main:928ffd4bc054c1aec0e1
+[SKIPPED] Kiwook_2:main:fab2cf1db1d475a27275
+[SKIPPED] Kiwook_2:main:954d683499b076f204e0
+[SKIPPED] Kiwook_2:main:b297efa3e3149b5c0d5e
+[SKIPPED] Kiwook_2:main:36d55eb933cf694f55ee
+[SKIPPED] Kiwook_2:main:44ae475e358d310ccf3a
+[SKIPPED] Kiwook_2:si1:c8b0fad8bd147538f380
+[SKIPPED] Kiwook_2:si1:7050296d14f6e0d85ab1
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_2:si1:78d2308f5aeedf5d8f02
+[SKIPPED] Kiwook_2:si1:d873fb68d2e01cde8b0b
+[SKIPPED] Kiwook_2:si1:8b51a86f95ec0946693f
+[SKIPPED] Kiwook_2:si1:6b4022e6c8af9fdcd2de
+[SKIPPED] Kiwook_2:si1:1984364d127a19d012b0
+[SKIPPED] Kiwook_2:si1:256cb37c4637e69bb429
+[SKIPPED] Kiwook_2:si1:09f5309be8b39b6c1a1b
+[SKIPPED] Kiwook_2:si1:92e33f214ccf6bdc8a52
+[SKIPPED] Kiwook_2:si1:382fe95e44d57242381d
+[SKIPPED] Kiwook_2:si1:9c10e17fb4605c933e31
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_2:si1:c5c92ccd216faab4d002
+[SKIPPED] Kiwook_2:si1:56ecdd7318c57b0b3ae1
+[SKIPPED] Kiwook_2:si1:261cc99cbfb5e1507fce
+[SKIPPED] Kiwook_2:si1:49e615402e684e4ac0d2
+[SKIPPED] Kiwook_2:si1:0982f685142f8c8ce717
+[SKIPPED] Kiwook_2:si1:cd86ddd7c87069fc0a65
+[SKIPPED] Kiwook_2:si1:a5328f22101417c75560
+[SKIPPED] Kiwook_2:si1:400c7c6cd67dd3c29edc
+[SKIPPED] Kiwook_2:si1:78a6a45f0a838060725e
+[SKIPPED] Kiwook_2:si1:866d58784b6d18f0dcfe
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_2:si1:e242ff6b676ebedc5d66
+[SKIPPED] Kiwook_2:si1:9b19d3ce31dd757cba69
+[SKIPPED] Kiwook_2:si1:2e15c6d69e0fd0e02262
+[SKIPPED] Kiwook_2:si1:9467910709d09fa59e1e
+[SKIPPED] Kiwook_2:si1:ec6ca433be0dcd00b0a9
+[SKIPPED] Kiwook_2:si1:4931f67d7e680ae55600
+[SKIPPED] Kiwook_2:si1:9cf39a2f22c495a7b9ab
+[SKIPPED] Kiwook_2:si1:63c67fb2b260750b063b
+[SKIPPED] Kiwook_2:si1:9849abcf296359d5a227
+[SKIPPED] Kiwook_2:si1:00f43425e8d9627d3864
+
+Starting logical batch: 6 chunks
+[SKIPPED] Kiwook_2:si1:b281ad2937b1e43c9b77
+[SKIPPED] Kiwook_2:si1:e952d859f5d44a46910f
+[SKIPPED] Kiwook_2:si1:b43474e96218c2626dbe
+[SKIPPED] Kiwook_2:si1:143fec7f3e84f14c68fa
+[SKIPPED] Kiwook_2:si1:b57c1439ff4c3b919f1b
+[SKIPPED] Kiwook_2:si1:7646d652de61b35d8ad6
+
+Extraction finished
+Successful: 3
+Skipped: 53
+Split operations: 0
+Quarantined: 0
+Failed: 0
+Paper status: complete
+Complete: True
+Run directory: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_2/runs/18bae31f6c69bfe3
+Active chunks: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_2/runs/18bae31f6c69bfe3/active_chunks.json
+	Command being timed: "python -m scripts.extract_paper --paper-id Kiwook_2 --concurrency 1"
+	User time (seconds): 1.05
+	System time (seconds): 0.11
+	Percent of CPU this job got: 0%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52.59
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 181816
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 50820
+	Voluntary context switches: 964
+	Involuntary context switches: 27
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2168
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT CODE: 0
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       7.9Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+===== END Kiwook_2 =====

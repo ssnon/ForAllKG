@@ -1,0 +1,152 @@
+===== START Kiwook_6 =====
+Fri Aug  7 10:51:03 KST 2026
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       7.9Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+Model: openai/gpt-5.6-luna
+Paper ID: Kiwook_6
+Run ID: fd0030bfe63c11da
+Documents: 2
+Selected sources: 7
+Indexed assets: 11
+Linked assets: 11
+Vision analyses: 0
+Initial chunks: 17
+Estimated source tokens: 14806
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8046, "output_tokens": 8712, "total_tokens": 16758}
+
+[VALIDATION ERROR]
+Raw response saved to: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da/debug/Kiwook_6__main__8d0cfc9b8ec10db779eb__generation_0.json
+Validation details:
+1 validation error for KnowledgeGraphDraft
+measurements.9
+  Value error, Measurement must contain exactly one of value_numeric or value_text. Preserve the source wording separately in source_expression. [type=value_error, input_value={'id': 'meas_phi_range', ...}], 'description': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/value_error
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8430, "output_tokens": 9557, "total_tokens": 17987}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 18480, "output_tokens": 1027, "total_tokens": 19507}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 18417, "output_tokens": 785, "total_tokens": 19202}
+[SPLIT] Kiwook_6:main:8d0cfc9b8ec10db779eb -> ['Kiwook_6:main:cbde6e13d7fb973c0ba0', 'Kiwook_6:main:e5b1e0ddaf56ef19f421']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8408, "output_tokens": 4067, "total_tokens": 12475}
+[SPLIT] Kiwook_6:main:c9ef4b88c0c87cbc1b2a -> ['Kiwook_6:main:22ae74c2d293d30b8f57', 'Kiwook_6:main:e5ea8a3eb29fdd38e013']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8241, "output_tokens": 3691, "total_tokens": 11932}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8594, "output_tokens": 348, "total_tokens": 8942}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8937, "output_tokens": 735, "total_tokens": 9672}
+[SPLIT] Kiwook_6:main:0b37f47e492b42be0353 -> ['Kiwook_6:main:4eac6767b2dc6b69b474', 'Kiwook_6:main:a79cba27e06514d0f6ff']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8373, "output_tokens": 7377, "total_tokens": 15750}
+[SPLIT] Kiwook_6:main:c887753f39312e5aea6d -> ['Kiwook_6:main:b7ddaa232682e5eb4c63', 'Kiwook_6:main:69cb48006011df7f3137']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8404, "output_tokens": 16000, "total_tokens": 24404}
+
+[VALIDATION ERROR]
+Raw response saved to: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da/debug/Kiwook_6__main__47ecdc0ac05b42322187__generation_0.json
+Validation details:
+1 validation error for KnowledgeGraphDraft
+  Invalid JSON: EOF while parsing a string at line 2 column 49503 [type=json_invalid, input_value='{"paper_id":"Kiwook_6","... stop. assistant. final', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8704, "output_tokens": 3302, "total_tokens": 12006}
+[SUCCESS] Kiwook_6:main:47ecdc0ac05b42322187 document=main source_tokens= 1282 output_tokens= 3302 utilization= 20.64% nodes= 12 edges= 16
+[SKIPPED] Kiwook_6:main:8a0a93f8140105775d77
+[SKIPPED] Kiwook_6:main:e529822a3156809dc1c8
+[SKIPPED] Kiwook_6:main:406b21c8f5a2ef8fa7a2
+[SKIPPED] Kiwook_6:main:63a5f20ceabc9c9bcae7
+[SKIPPED] Kiwook_6:main:1602c1a2c4e8181fe224
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7677, "output_tokens": 7537, "total_tokens": 15214}
+[SPLIT] Kiwook_6:main:b7ddaa232682e5eb4c63 -> ['Kiwook_6:main:f0c38e57b5c2f07b90b5', 'Kiwook_6:main:d2e25db3f6c5834afd9c']
+[SKIPPED] Kiwook_6:main:69cb48006011df7f3137
+[SKIPPED] Kiwook_6:main:4eac6767b2dc6b69b474
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7615, "output_tokens": 3460, "total_tokens": 11075}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7646, "output_tokens": 177, "total_tokens": 7823}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7838, "output_tokens": 215, "total_tokens": 8053}
+[SPLIT] Kiwook_6:main:a79cba27e06514d0f6ff -> ['Kiwook_6:main:4dfe44f5b44d36ceedc8', 'Kiwook_6:main:597b939b0911bebc552d']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7563, "output_tokens": 3353, "total_tokens": 10916}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7026, "output_tokens": 1014, "total_tokens": 8040}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7274, "output_tokens": 274, "total_tokens": 7548}
+[SPLIT] Kiwook_6:main:22ae74c2d293d30b8f57 -> ['Kiwook_6:main:f4059dd4119e30062915', 'Kiwook_6:main:31d93053792e0bce062f']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7647, "output_tokens": 3237, "total_tokens": 10884}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7514, "output_tokens": 567, "total_tokens": 8081}
+
+[VALIDATION ERROR]
+Raw response saved to: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da/debug/Kiwook_6__main__e5ea8a3eb29fdd38e013__patch_0.json
+Validation details:
+1 validation error for KnowledgeGraphPatch
+operations.1
+  Value error, Every patch operation must reference at least one issue_id. [type=value_error, input_value={'op': 'remove_edge', 'is...': None, 'new_id': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/value_error
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7627, "output_tokens": 449, "total_tokens": 8076}
+[SPLIT] Kiwook_6:main:e5ea8a3eb29fdd38e013 -> ['Kiwook_6:main:9db263a8ffafeb6177a8', 'Kiwook_6:main:e5421d455ad1bff397ee']
+[SKIPPED] Kiwook_6:main:cbde6e13d7fb973c0ba0
+[SKIPPED] Kiwook_6:main:e5b1e0ddaf56ef19f421
+[SKIPPED] Kiwook_6:main:33490d76161f8e5990f3
+[SKIPPED] Kiwook_6:si1:7d49680c8e7b907f1357
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_6:main:9db263a8ffafeb6177a8
+[SKIPPED] Kiwook_6:main:e5421d455ad1bff397ee
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7225, "output_tokens": 5197, "total_tokens": 12422}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 11162, "output_tokens": 1238, "total_tokens": 12400}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 10014, "output_tokens": 1074, "total_tokens": 11088}
+
+[VALIDATION ERROR]
+Raw response saved to: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da/debug/Kiwook_6__main__f4059dd4119e30062915__patch_1.json
+Validation details:
+1 validation error for KnowledgeGraphPatch
+operations.1
+  Value error, Operation 'add_edge' requires non-null fields: ['edge']. [type=value_error, input_value={'op': 'add_edge', 'issue...': None, 'new_id': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/value_error
+[SPLIT] Kiwook_6:main:f4059dd4119e30062915 -> ['Kiwook_6:main:0fbeb3ec1240a89c0170', 'Kiwook_6:main:b5b8636216f97085b8c7']
+[SKIPPED] Kiwook_6:main:31d93053792e0bce062f
+[SKIPPED] Kiwook_6:main:4dfe44f5b44d36ceedc8
+[SKIPPED] Kiwook_6:main:597b939b0911bebc552d
+[SKIPPED] Kiwook_6:main:f0c38e57b5c2f07b90b5
+[SKIPPED] Kiwook_6:main:d2e25db3f6c5834afd9c
+[SKIPPED] Kiwook_6:si1:b222a1efcc59d0bab4f3
+[SKIPPED] Kiwook_6:si1:ce096d1f4e80e5a52c84
+
+Starting logical batch: 5 chunks
+[SKIPPED] Kiwook_6:main:0fbeb3ec1240a89c0170
+[SKIPPED] Kiwook_6:main:b5b8636216f97085b8c7
+[SKIPPED] Kiwook_6:si1:cd1342367e2fb3f5ebc1
+[SKIPPED] Kiwook_6:si1:c684497c7a9b7ad63f96
+[SKIPPED] Kiwook_6:si1:e70bb22148b681aaff74
+
+Extraction finished
+Successful: 1
+Skipped: 25
+Split operations: 9
+Quarantined: 0
+Failed: 0
+Paper status: complete
+Complete: True
+Run directory: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da
+Active chunks: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_6/runs/fd0030bfe63c11da/active_chunks.json
+	Command being timed: "python -m scripts.extract_paper --paper-id Kiwook_6 --concurrency 1"
+	User time (seconds): 1.44
+	System time (seconds): 0.11
+	Percent of CPU this job got: 0%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:20.03
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 187172
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 52158
+	Voluntary context switches: 1405
+	Involuntary context switches: 31
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2720
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT CODE: 0
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       7.9Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+===== END Kiwook_6 =====

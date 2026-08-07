@@ -1,0 +1,157 @@
+===== START Kiwook_4 =====
+Fri Aug  7 10:42:40 KST 2026
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       7.9Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+Model: openai/gpt-5.6-luna
+Paper ID: Kiwook_4
+Run ID: 7d5ce3890e7ddf85
+Documents: 2
+Selected sources: 52
+Indexed assets: 46
+Linked assets: 45
+Vision analyses: 0
+Initial chunks: 66
+Estimated source tokens: 19331
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8135, "output_tokens": 4519, "total_tokens": 12654}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9543, "output_tokens": 417, "total_tokens": 9960}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 9960, "output_tokens": 366, "total_tokens": 10326}
+[SPLIT] Kiwook_4:main:e23b5061602a4936dab6 -> ['Kiwook_4:main:30d811c5ff178991c66b', 'Kiwook_4:main:e01e9ce038f95b0f222f']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8146, "output_tokens": 7841, "total_tokens": 15987}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 14783, "output_tokens": 537, "total_tokens": 15320}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 15393, "output_tokens": 437, "total_tokens": 15830}
+[SPLIT] Kiwook_4:main:513486e2e461d23ac7d7 -> ['Kiwook_4:main:2c8f7707a2c446c69d5a', 'Kiwook_4:main:84025aec403cd64d4fb3']
+[SKIPPED] Kiwook_4:main:ff8437992130c8de51a2
+[SKIPPED] Kiwook_4:main:f68187546649b0fbe991
+[SKIPPED] Kiwook_4:main:bdc94023d6a2f37bc62a
+[SKIPPED] Kiwook_4:main:b7a5ff7599d27c208752
+[SKIPPED] Kiwook_4:main:cb51e0ee7c80f47ba076
+[SKIPPED] Kiwook_4:main:b6875d3bfb2524f09350
+[SKIPPED] Kiwook_4:main:3993798cbeabc109dc08
+[SKIPPED] Kiwook_4:main:9755136155ff147c38f6
+
+Starting logical batch: 10 chunks
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7370, "output_tokens": 6842, "total_tokens": 14212}
+[SPLIT] Kiwook_4:main:2c8f7707a2c446c69d5a -> ['Kiwook_4:main:4085082bab7d1f0d5580', 'Kiwook_4:main:0435f17cb6e8d168bd88']
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7580, "output_tokens": 3210, "total_tokens": 10790}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 6566, "output_tokens": 199, "total_tokens": 6765}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 6778, "output_tokens": 583, "total_tokens": 7361}
+[SPLIT] Kiwook_4:main:84025aec403cd64d4fb3 -> ['Kiwook_4:main:1624f6aeca53ca1e9011', 'Kiwook_4:main:ff503bd7432edd1430f1']
+[SKIPPED] Kiwook_4:main:30d811c5ff178991c66b
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 7490, "output_tokens": 2007, "total_tokens": 9497}
+[SUCCESS] Kiwook_4:main:e01e9ce038f95b0f222f document=main source_tokens= 685 output_tokens= 2007 utilization= 12.54% nodes= 7 edges= 11
+[SKIPPED] Kiwook_4:main:52a3c2513623456b90b7
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 8886, "output_tokens": 6728, "total_tokens": 15614}
+[LLM] {"requested_model": "openai/gpt-5.6-luna", "served_model": "openai/gpt-5.6-luna", "input_tokens": 13382, "output_tokens": 1314, "total_tokens": 14696}
+[SUCCESS] Kiwook_4:main:328d4776a010e493d9b4 document=main source_tokens= 1326 output_tokens= 1314 utilization= 21.90% nodes= 30 edges= 38
+[SKIPPED] Kiwook_4:main:db4fa0207aaa67b9aae1
+[SKIPPED] Kiwook_4:main:09ec7a1835ceaa4acdcb
+[SKIPPED] Kiwook_4:main:51695f3e8315641a9ad0
+[SKIPPED] Kiwook_4:si1:3e7508284174c74c1b0d
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_4:main:1624f6aeca53ca1e9011
+[SKIPPED] Kiwook_4:main:ff503bd7432edd1430f1
+[SKIPPED] Kiwook_4:main:4085082bab7d1f0d5580
+[SKIPPED] Kiwook_4:main:0435f17cb6e8d168bd88
+[SKIPPED] Kiwook_4:si1:a10ab3b270087ef55a92
+[SKIPPED] Kiwook_4:si1:e606c1bb5dd0bbe4953c
+[SKIPPED] Kiwook_4:si1:ad6a232a1a5f425dc118
+[SKIPPED] Kiwook_4:si1:8c148e2e0d49227de572
+[SKIPPED] Kiwook_4:si1:cbeed38e096735eb932b
+[SKIPPED] Kiwook_4:si1:47db0c2076a09b2b8023
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_4:si1:21344a8f1a0d9e9ee260
+[SKIPPED] Kiwook_4:si1:9afa0f241c5b4c140b31
+[SKIPPED] Kiwook_4:si1:0d167f85ad6df563b987
+[SKIPPED] Kiwook_4:si1:909489c6e75c2800df9c
+[SKIPPED] Kiwook_4:si1:9899e79f0fdfaf7723af
+[SKIPPED] Kiwook_4:si1:0e430ca4a1198112abdb
+[SKIPPED] Kiwook_4:si1:e77fa1b74d876d633a17
+[SKIPPED] Kiwook_4:si1:1e0a28a05998e4d7c05b
+[SKIPPED] Kiwook_4:si1:53b4e891457810dc79f4
+[SKIPPED] Kiwook_4:si1:002e55a87084dc973190
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_4:si1:b7780cd76d595025f368
+[SKIPPED] Kiwook_4:si1:12b04193e3d06e7f0ecc
+[SKIPPED] Kiwook_4:si1:0b27d841a4a000028ed4
+[SKIPPED] Kiwook_4:si1:6e2d08436ac8d5d93f03
+[SKIPPED] Kiwook_4:si1:5fc8d65daa3166346adf
+[SKIPPED] Kiwook_4:si1:641cb9ca306884d5d833
+[SKIPPED] Kiwook_4:si1:92936b8bde6bd553a1c1
+[SKIPPED] Kiwook_4:si1:c51e3f2c5c25592f90ad
+[SKIPPED] Kiwook_4:si1:20e6c3e42826318fed15
+[SKIPPED] Kiwook_4:si1:f8d223c4e982c8a9faba
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_4:si1:3d06c048dd6fcc6122ce
+[SKIPPED] Kiwook_4:si1:c9e823c749490f6a985a
+[SKIPPED] Kiwook_4:si1:7bf0732a0e50e94ef432
+[SKIPPED] Kiwook_4:si1:7c2f8b7b61ee8e1a999e
+[SKIPPED] Kiwook_4:si1:6c372875f440faeff8fb
+[SKIPPED] Kiwook_4:si1:d53d1548a966d5abd59f
+[SKIPPED] Kiwook_4:si1:93903bc3e4d4cb203fd8
+[SKIPPED] Kiwook_4:si1:c95602bbbf9e66dbbc2b
+[SKIPPED] Kiwook_4:si1:b525d66b6586d4a0fc06
+[SKIPPED] Kiwook_4:si1:f945e3df89417e4924f0
+
+Starting logical batch: 10 chunks
+[SKIPPED] Kiwook_4:si1:ad7cd9ea0308f8b3e6ee
+[SKIPPED] Kiwook_4:si1:f87a51f0eec84d69eca7
+[SKIPPED] Kiwook_4:si1:928b44d49f8d6311bf70
+[SKIPPED] Kiwook_4:si1:97b17d8bda8d3ccfa557
+[SKIPPED] Kiwook_4:si1:f0b5ac07e826a80eaaa9
+[SKIPPED] Kiwook_4:si1:8ef2d0e5c6ce3640aeb0
+[SKIPPED] Kiwook_4:si1:04d4f13086b49266b03b
+[SKIPPED] Kiwook_4:si1:00f4da6a95c246545179
+[SKIPPED] Kiwook_4:si1:3f108d6be8befe4b33b3
+[SKIPPED] Kiwook_4:si1:1c555b3156ab3ea081aa
+
+Starting logical batch: 4 chunks
+[SKIPPED] Kiwook_4:si1:f7c20778769adc8dcd97
+[SKIPPED] Kiwook_4:si1:cd9a73f010cd77a6fd46
+[SKIPPED] Kiwook_4:si1:0c6922da586fb765c9c6
+[SKIPPED] Kiwook_4:si1:3d8e1f2056598978bf77
+
+Extraction finished
+Successful: 2
+Skipped: 68
+Split operations: 4
+Quarantined: 0
+Failed: 0
+Paper status: complete
+Complete: True
+Run directory: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/runs/7d5ce3890e7ddf85
+Active chunks: /home/rldnr7959/GraphAgentsDAC/data_dac/extracted/Kiwook_4/runs/7d5ce3890e7ddf85/active_chunks.json
+	Command being timed: "python -m scripts.extract_paper --paper-id Kiwook_4 --concurrency 1"
+	User time (seconds): 1.15
+	System time (seconds): 0.15
+	Percent of CPU this job got: 0%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:22.86
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 185484
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 51807
+	Voluntary context switches: 1266
+	Involuntary context switches: 28
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 2528
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT CODE: 0
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       7.9Gi        19Gi        95Mi       4.2Gi        23Gi
+Swap:          8.0Gi       780Ki       8.0Gi
+===== END Kiwook_4 =====

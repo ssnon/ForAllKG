@@ -1,0 +1,116 @@
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from dac_her.validation_issues import ValidationReport
+
+
+PATCH_PROMPT_VERSION = "dac-her-semantic-patch-v1.3-replace-edge"
+
+PATCH_SYSTEM_PROMPT = """
+You repair a provenance-preserving scientific knowledge-graph draft.
+Return only a KnowledgeGraphPatch. Never return a complete graph.
+
+The patch must be minimal and source-grounded:
+1. Modify only objects directly implicated by the supplied issue IDs.
+2. Do not add scientific facts, entities, measurements, or claims.
+3. An add_edge operation is permitted only when CORE_TEXT explicitly states
+   the relationship and both endpoint nodes already exist in the draft.
+4. Preserve supplied paper_id, chunk_id, document metadata, page IDs, and
+   asset IDs. Every added edge must use only supplied provenance locators.
+5. Do not guess a claim target, catalyst/model identity, or edge endpoint.
+6. When evidence is insufficient, put the issue ID in unresolved_issue_ids.
+7. Do not remove an edge merely to make validation pass unless the source
+   explicitly shows that the edge is erroneous.
+8. Do not rename a node unless the intended existing ID correspondence is
+   explicit in CORE_TEXT and the draft.
+9. Keep operations independent and concise.
+10. Use replace_edge when correcting the relation, direction,
+    source, and target requires replacing the whole edge.
+11. Do not use multiple endpoint edits when one atomic
+    replace_edge operation expresses the correction.
+12. Replacing Entity --SUPPORTS_CLAIM--> Claim with
+    Claim --APPLIES_TO--> Entity is permitted only when
+    CORE_TEXT explicitly supports the application target.
+
+PATCH OPERATION SHAPE:
+Every operation uses the same flat object schema. Populate the fields needed
+for the selected op and set every unrelated operation-specific field to null.
+
+- add_edge: edge is non-null; all other operation-specific fields are null.
+- remove_edge: edge_index, expected_source, expected_relation, and
+  expected_target are non-null; other operation-specific fields are null.
+- change_entity_type: node_id, old_type, and new_type are non-null; other
+  operation-specific fields are null.
+- replace_edge: edge, edge_index, expected_source,
+  expected_relation, and expected_target are non-null.
+  The expected_* fields describe the complete current edge.
+  edge contains the complete replacement KGEdge.
+  Every other operation-specific field is null.
+- replace_edge_endpoint: edge_index, expected_source, expected_relation,
+  expected_target, endpoint, old_id, and new_id are non-null. The expected_*
+  fields must describe the complete current edge before modification; other
+  operation-specific fields are null.
+- rename_node_id: old_id and new_id are non-null; all other
+  operation-specific fields are null.
+""".strip()
+
+
+def build_semantic_patch_prompt(
+    *,
+    paper_id: str,
+    chunk_id: str,
+    document_id: str,
+    document_role: str,
+    page_ids: list[int] | tuple[int, ...],
+    asset_ids: list[str] | tuple[str, ...],
+    core_text: str,
+    asset_context: str,
+    graph_payload: dict[str, Any],
+    report: ValidationReport,
+    previous_patch_feedback: str | None = None,
+) -> str:
+    prompt = f"""
+PAPER_ID:
+{paper_id}
+
+CHUNK_ID:
+{chunk_id}
+
+DOCUMENT_ID:
+{document_id}
+
+DOCUMENT_ROLE:
+{document_role}
+
+PAGE_IDS:
+{list(page_ids)}
+
+ASSET_IDS:
+{list(asset_ids)}
+
+CORE_TEXT:
+{core_text}
+
+ASSET_CONTEXT:
+{asset_context or 'No linked assets.'}
+
+CURRENT_GRAPH_DRAFT_JSON:
+{json.dumps(graph_payload, ensure_ascii=False, indent=2)}
+
+STRUCTURED_VALIDATION_ISSUES_JSON:
+{json.dumps([item.model_dump(mode='json') for item in report.issues], ensure_ascii=False, indent=2)}
+""".strip()
+
+    if previous_patch_feedback:
+        prompt += f"""
+
+PREVIOUS_PATCH_REJECTION:
+{previous_patch_feedback}
+
+Return a new minimal patch. Do not repeat the rejected operation unless the
+rejection can be resolved with explicit CORE_TEXT evidence.
+""".rstrip()
+
+    return prompt

@@ -12,7 +12,7 @@ from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 
 
-RUN_STATE_VERSION = "semantic-si-assets-run-v4"
+RUN_STATE_VERSION = "semantic-si-assets-run-v5-strict-recovery"
 
 
 def sha256_bytes(data: bytes) -> str:
