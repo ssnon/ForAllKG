@@ -212,8 +212,11 @@ def record_active_chunk(
         "normalization_count": record.get("normalization_count", 0),
         "normalization_path": record.get("normalization_path"),
         "patch_attempts": record.get("patch_attempts", 0),
+        "micro_reextract_attempts": record.get("micro_reextract_attempts", 0),
+        "post_micro_patch_attempts": record.get("post_micro_patch_attempts", 0),
         "patch_operation_count": record.get("patch_operation_count", 0),
         "patch_paths": record.get("patch_paths", []),
+        "attempt_usages": record.get("attempt_usages", []),
         "validation_issue_counts": record.get("validation_issue_counts", {}),
     }
 

@@ -28,6 +28,7 @@ class ExtractionPolicy:
     # Tiny-leaf recovery
     max_micro_reextract_attempts: int = 1
     micro_reextract_max_source_tokens: int = 400
+    max_post_micro_patch_attempts: int = 1
     
     max_patch_attempts: int = 2
     max_patch_operations: int = 12

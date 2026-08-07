@@ -38,10 +38,12 @@ def decide_recovery(
     normalization_attempted: bool,
     patch_attempts: int,
     micro_reextract_attempts: int,
+    post_micro_patch_attempts: int,
     split_depth: int,
     source_tokens: int,
     max_patch_attempts: int,
     max_micro_reextract_attempts: int,
+    max_post_micro_patch_attempts: int,
     micro_reextract_max_source_tokens: int,
     max_split_depth: int,
     min_rechunk_source_tokens: int,
@@ -66,16 +68,25 @@ def decide_recovery(
     )
 
     if cannot_rechunk_safely:
-        if patch_attempts < max_patch_attempts:
+        # ---------------------------------------------------------
+        # Phase 1: constrained semantic patch before micro-reextract
+        # ---------------------------------------------------------
+        if (
+            micro_reextract_attempts == 0
+            and patch_attempts < max_patch_attempts
+        ):
             return RecoveryDecision(
                 RecoveryAction.SEMANTIC_PATCH,
                 (
                     "The chunk cannot be safely split; "
-                    "attempt a constrained patch."
+                    "attempt a constrained pre-micro patch."
                 ),
                 codes,
             )
 
+        # ---------------------------------------------------------
+        # Phase 2: one-shot micro re-extraction
+        # ---------------------------------------------------------
         if (
             source_tokens
             <= micro_reextract_max_source_tokens
@@ -85,21 +96,43 @@ def decide_recovery(
             return RecoveryDecision(
                 RecoveryAction.MICRO_REEXTRACT,
                 (
-                    "Semantic patch attempts were exhausted "
+                    "Pre-micro semantic patch attempts were exhausted "
                     "for a small unsplittable source leaf."
                 ),
                 codes,
             )
 
+        # ---------------------------------------------------------
+        # Phase 3: patch small residual errors left by micro-reextract
+        # ---------------------------------------------------------
+        if (
+            micro_reextract_attempts > 0
+            and post_micro_patch_attempts
+            < max_post_micro_patch_attempts
+        ):
+            return RecoveryDecision(
+                RecoveryAction.SEMANTIC_PATCH,
+                (
+                    "Micro-reextract completed but left a small "
+                    "strict-validation residual; attempt one "
+                    "post-micro constrained patch."
+                ),
+                codes,
+            )
+
+        # ---------------------------------------------------------
+        # Terminal state
+        # ---------------------------------------------------------
         return RecoveryDecision(
             RecoveryAction.QUARANTINE,
             (
-                "Patch and micro-reextract attempts were "
-                "exhausted and the chunk cannot be split safely."
+                "Pre-micro patch, micro-reextract, and "
+                "post-micro patch budgets were exhausted "
+                "and the chunk cannot be split safely."
             ),
             codes,
         )
-
+    
     isolated_count = report.count(IssueCode.ISOLATED_NODE)
     undefined_count = (
         report.count(IssueCode.UNDEFINED_EDGE_SOURCE)

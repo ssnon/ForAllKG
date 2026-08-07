@@ -54,6 +54,20 @@ for the selected op and set every unrelated operation-specific field to null.
   operation-specific fields are null.
 - rename_node_id: old_id and new_id are non-null; all other
   operation-specific fields are null.
+
+For CLAIM_MISSING_APPLICATION_TARGET:
+
+- APPLIES_TO should identify the primary scientific subject
+  of the claim, not merely any entity mentioned in the sentence.
+- For catalyst performance claims, prefer the Catalyst or
+  CatalystModel being evaluated as an APPLIES_TO target.
+- If the claim is explicitly scoped to a reaction, the Reaction
+  may be added as an additional APPLIES_TO target, but it should
+  not replace an explicitly stated catalyst/model subject.
+- For structural characterization claims, prefer the Catalyst,
+  CatalystModel, CoordinationMotif, or other structure-bearing
+  entity that was characterized.
+- Add only targets explicitly supported by CORE_TEXT.
 """.strip()
 
 
