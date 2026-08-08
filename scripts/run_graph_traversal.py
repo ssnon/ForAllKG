@@ -9,6 +9,9 @@ import networkx as nx
 from dac_her.endpoint_selection import (
     EndpointPairSelector,
 )
+from dac_her.path_quality import (
+    PathQualityScorer,
+)
 from dac_her.node_mapping import (
     NodeMapper,
     QueryConcept,
@@ -298,6 +301,9 @@ def main() -> None:
     engine = TraversalEngine(
         graph
     )
+    quality_scorer = PathQualityScorer(
+        graph
+    )
 
     mapper: NodeMapper | None = None
 
@@ -518,14 +524,60 @@ def main() -> None:
                         "pair_diagnostic"
                     ]
                 )
+                row["path_quality"] = (
+                    quality_scorer.score(
+                        row
+                    ).to_dict()
+                )
                 collected[
                     path.path_id
                 ] = row
 
-    paths = sorted(
+    all_paths = sorted(
         collected.values(),
         key=_path_sort_key,
-    )[: args.top_k]
+    )
+    paths = all_paths[: args.top_k]
+
+    path_type_groups: dict[
+        str,
+        list[str],
+    ] = {}
+    for row in all_paths:
+        quality = row.get(
+            "path_quality",
+            {},
+        )
+        path_type = str(
+            quality.get(
+                "path_type",
+                "UNKNOWN",
+            )
+        )
+        path_type_groups.setdefault(
+            path_type,
+            [],
+        ).append(
+            str(row["path_id"])
+        )
+
+    path_type_counts = {
+        path_type: len(path_ids)
+        for path_type, path_ids
+        in sorted(
+            path_type_groups.items()
+        )
+    }
+
+    path_groups = {
+        path_type: path_ids[
+            : args.top_k
+        ]
+        for path_type, path_ids
+        in sorted(
+            path_type_groups.items()
+        )
+    }
 
     payload = {
         "corpus_id": args.corpus_id,
@@ -560,6 +612,13 @@ def main() -> None:
             endpoint_pair_diagnostics
         ),
         "path_count": len(paths),
+        "candidate_path_count_before_top_k": (
+            len(all_paths)
+        ),
+        "path_type_counts": (
+            path_type_counts
+        ),
+        "path_groups": path_groups,
         "paths": paths,
     }
 
@@ -637,6 +696,9 @@ def main() -> None:
                     endpoint_pairs
                 ),
                 "path_count": len(paths),
+                "path_type_counts": (
+                    path_type_counts
+                ),
             },
             ensure_ascii=False,
             indent=2,
@@ -769,17 +831,70 @@ def main() -> None:
                 f"{pair['pair_score']:.4f}"
             )
 
+        quality = path.get(
+            "path_quality",
+            {},
+        )
+        path_type = str(
+            quality.get(
+                "path_type",
+                "UNKNOWN",
+            )
+        )
+        mechanism_density = float(
+            quality.get(
+                "mechanistic_density",
+                0.0,
+            )
+        )
+        navigation_fraction = float(
+            quality.get(
+                "navigation_edge_fraction",
+                0.0,
+            )
+        )
+
         print(
             f"\n[{index}] "
+            f"type={path_type} "
             f"cost={path['total_cost']:.3f} "
             f"hops={path['hop_count']} "
-            f"papers={path['cross_paper_count']} "
+            f"papers="
+            f"{path['visited_paper_count']} "
             f"candidate="
             f"{path['candidate_edge_count']} "
             f"reverse="
-            f"{path['reverse_edge_count']}"
+            f"{path['reverse_edge_count']} "
+            f"mech_density="
+            f"{mechanism_density:.2f} "
+            f"nav_fraction="
+            f"{navigation_fraction:.2f}"
             f"{pair_text}"
         )
+
+        print(
+            "    visited_papers:",
+            path.get(
+                "visited_paper_ids",
+                [],
+            ),
+        )
+        print(
+            "    supporting_papers:",
+            path.get(
+                "supporting_paper_ids",
+                [],
+            ),
+        )
+        if path.get(
+            "hub_scope_paper_ids"
+        ):
+            print(
+                "    hub_scope_papers:",
+                path[
+                    "hub_scope_paper_ids"
+                ],
+            )
 
         for step in path["steps"]:
             marker = (

@@ -35,6 +35,27 @@ def _stable_id(*parts: object, length: int = 20) -> str:
 def _is_alignment(attrs: dict[str, Any]) -> bool:
     return str(attrs.get("graph_layer", "")) == "corpus_alignment" or str(attrs.get("edge_class", "")) in {"registry_alignment", "pattern_alignment"}
 
+def _paper_from_node_id(node_id: str) -> str | None:
+    if not node_id.startswith("paper::"):
+        return None
+    parts = node_id.split("::", 2)
+    if len(parts) < 3:
+        return None
+    paper_id = parts[1].strip()
+    return paper_id or None
+
+
+def _is_alignment_node(attrs: dict[str, Any]) -> bool:
+    return (
+        str(attrs.get("corpus_node_kind", "")) == "alignment_hub"
+        or str(attrs.get("type", "")) in {
+            "CorpusAlignment",
+            "CorpusPattern",
+        }
+        or str(attrs.get("graph_layer", "")) == "corpus_alignment"
+    )
+
+
 
 @dataclass(frozen=True)
 class TraversalConstraints:
@@ -90,6 +111,10 @@ class PathResult:
     reverse_edge_count: int
     source_paper_ids: tuple[str, ...]
     cross_paper_count: int
+    visited_paper_ids: tuple[str, ...]
+    visited_paper_count: int
+    supporting_paper_ids: tuple[str, ...]
+    hub_scope_paper_ids: tuple[str, ...]
     requires_verification: bool
 
     def to_dict(self) -> dict[str, Any]:
@@ -110,6 +135,10 @@ class PathResult:
             "reverse_edge_count": self.reverse_edge_count,
             "source_paper_ids": list(self.source_paper_ids),
             "cross_paper_count": self.cross_paper_count,
+            "visited_paper_ids": list(self.visited_paper_ids),
+            "visited_paper_count": self.visited_paper_count,
+            "supporting_paper_ids": list(self.supporting_paper_ids),
+            "hub_scope_paper_ids": list(self.hub_scope_paper_ids),
             "requires_verification": self.requires_verification,
         }
 
@@ -236,16 +265,58 @@ class TraversalEngine:
     def _materialize(self, path: list[str], *, algorithm: str, mode: str, semantic_stop: str | None) -> PathResult:
         steps = tuple(self._step(left, right) for left, right in zip(path, path[1:], strict=False))
         metrics = self._metrics(path)
-        papers: set[str] = set()
+
+        visited_papers: set[str] = set()
+        supporting_papers: set[str] = set()
+        hub_scope_papers: set[str] = set()
+
         for node_id in path:
             attrs = dict(self.graph.nodes[node_id])
+            namespaced_paper = _paper_from_node_id(node_id)
+            if namespaced_paper:
+                visited_papers.add(namespaced_paper)
+
             direct = str(attrs.get("source_paper_id", "")).strip()
-            if direct:
-                papers.add(direct)
-            papers.update(str(x) for x in _json_list(attrs.get("source_paper_ids_json", "[]")) if str(x).strip())
+            if direct and not _is_alignment_node(attrs):
+                visited_papers.add(direct)
+
+            if _is_alignment_node(attrs):
+                hub_scope_papers.update(
+                    str(x)
+                    for x in _json_list(
+                        attrs.get("source_paper_ids_json", "[]")
+                    )
+                    if str(x).strip()
+                )
+
         for step in steps:
-            papers.update(step.source_paper_ids)
-        path_id = "path:" + _stable_id(algorithm, mode, semantic_stop or "", *path, *[step.navigation_edge_id for step in steps])
+            edge_attrs = dict(
+                self.graph.edges[
+                    step.source,
+                    step.target,
+                ]
+            )
+            if _is_alignment(edge_attrs):
+                hub_scope_papers.update(step.source_paper_ids)
+            else:
+                supporting_papers.update(step.source_paper_ids)
+
+        supporting_papers.update(visited_papers)
+
+        path_id = "path:" + _stable_id(
+            algorithm,
+            mode,
+            semantic_stop or "",
+            *path,
+            *[
+                step.navigation_edge_id
+                for step in steps
+            ],
+        )
+        visited = tuple(sorted(visited_papers))
+        supporting = tuple(sorted(supporting_papers))
+        hub_scope = tuple(sorted(hub_scope_papers))
+
         return PathResult(
             path_id=path_id,
             algorithm=algorithm,
@@ -261,8 +332,14 @@ class TraversalEngine:
             alignment_edge_count=metrics["alignment"],
             candidate_edge_count=metrics["candidate"],
             reverse_edge_count=metrics["reverse"],
-            source_paper_ids=tuple(sorted(papers)),
-            cross_paper_count=len(papers),
+            # Backward-compatible fields now mean papers actually visited
+            # by paper-local nodes, not every paper represented by a hub.
+            source_paper_ids=visited,
+            cross_paper_count=len(visited),
+            visited_paper_ids=visited,
+            visited_paper_count=len(visited),
+            supporting_paper_ids=supporting,
+            hub_scope_paper_ids=hub_scope,
             requires_verification=metrics["candidate"] > 0,
         )
 
