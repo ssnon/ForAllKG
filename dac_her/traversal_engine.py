@@ -40,7 +40,7 @@ def _is_alignment(attrs: dict[str, Any]) -> bool:
 class TraversalConstraints:
     mode: str = "mechanism"
     top_k: int = 5
-    max_depth: int = 6
+    max_depth: int = 8
     max_alignment_edges: int = 2
     min_scientific_edges: int = 1
     max_expansions: int = 20_000
