@@ -24,6 +24,7 @@ import dac_her.validation as validation_module
 import dac_her.chunking_recovery as chunking_recovery_module
 import dac_her.draft_schema as draft_schema_module
 import dac_her.graph_validation as graph_validation_module
+import dac_her.extraction_quality as extraction_quality_module
 import dac_her.lossless_normalization as lossless_normalization_module
 import dac_her.recovery_policy as recovery_policy_module
 import dac_her.semantic_patch as semantic_patch_module
@@ -46,6 +47,12 @@ from dac_her.document_package import (
 )
 from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existing_result
 from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.extraction_quality import (
+    QUALITY_PARTIAL_CRITICAL,
+    QUALITY_REJECTED,
+    annotate_quarantined_records,
+    evaluate_extraction_quality,
+)
 from dac_her.figure_extraction import (
     FigureAnalysis,
     analyze_figure,
@@ -124,9 +131,9 @@ def parse_args() -> argparse.Namespace:
         "--allow-partial",
         action="store_true",
         help=(
-            "Exit successfully when at least one strict-valid chunk was accepted "
-            "but one or more chunks were quarantined. Held-out evaluation should "
-            "not use this flag."
+            "Legacy/explicit override for PARTIAL_CRITICAL extraction. "
+            "PARTIAL_ACCEPTABLE now exits successfully by default; REJECTED "
+            "runs never become usable through this flag."
         ),
     )
     return parser.parse_args()
@@ -301,6 +308,7 @@ def main() -> None:
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
             graph_validation_module.__file__,
+            extraction_quality_module.__file__,
             lossless_normalization_module.__file__,
             recovery_policy_module.__file__,
             semantic_patch_module.__file__,
@@ -724,7 +732,23 @@ def main() -> None:
                         flush=True,
                     )
 
-    complete = failed_count == 0 and quarantine_count == 0
+    # Quarantined leaves remain excluded from active_chunks and therefore
+    # can never enter the canonical graph. We classify paper-level usability
+    # separately from strict completeness.
+    quarantined_records = annotate_quarantined_records(
+        quarantined_records
+    )
+    quality = evaluate_extraction_quality(
+        active_records=active_chunks.values(),
+        quarantined_records=quarantined_records,
+        failed_records=failed_records,
+        policy=policy,
+    )
+
+    complete = bool(quality["strict_complete"])
+    materialization_status = str(
+        quality["graph_materialization_status"]
+    )
     paper_status = (
         "complete"
         if complete
@@ -736,6 +760,8 @@ def main() -> None:
         "run_fingerprint": run_metadata["run_fingerprint"],
         "paper_status": paper_status,
         "complete": complete,
+        "graph_materialization_status": materialization_status,
+        "quality": quality,
         "active_chunk_count": len(active_chunks),
         "chunks": sorted(
             active_chunks.values(),
@@ -750,6 +776,7 @@ def main() -> None:
         "quarantined_chunks": quarantined_records,
     }
     write_json(run_dir / "active_chunks.json", active_payload)
+    write_json(run_dir / "extraction_quality.json", quality)
     write_json(run_dir / "lineage.json", {"splits": lineage_records})
 
     summary = {
@@ -771,6 +798,8 @@ def main() -> None:
         "quarantined": quarantine_count,
         "failed": failed_count,
         "paper_status": paper_status,
+        "graph_materialization_status": materialization_status,
+        "extraction_quality": quality,
         "attempt_id": attempt_id,
         "experiment_vocab_version": experiment_registry.version,
         "metric_vocab_version": metric_registry.version,
@@ -793,10 +822,31 @@ def main() -> None:
     print("Failed:", failed_count, flush=True)
     print("Paper status:", paper_status, flush=True)
     print("Complete:", complete, flush=True)
+    print(
+        "Graph materialization status:",
+        materialization_status,
+        flush=True,
+    )
+    print(
+        "Source-token coverage:",
+        quality.get("source_token_coverage"),
+        flush=True,
+    )
+    print(
+        "Quarantine tiers:",
+        quality.get("quarantine_tier_counts"),
+        flush=True,
+    )
     print("Run directory:", run_dir, flush=True)
     print("Active chunks:", run_dir / "active_chunks.json", flush=True)
 
-    if not complete and not (args.allow_partial and paper_status == "partial"):
+    if materialization_status == QUALITY_REJECTED:
+        raise SystemExit(2)
+
+    if (
+        materialization_status == QUALITY_PARTIAL_CRITICAL
+        and not args.allow_partial
+    ):
         raise SystemExit(2)
 
 

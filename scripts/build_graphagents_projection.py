@@ -8,6 +8,7 @@ import networkx as nx
 from collections import Counter
 
 from dac_her.graph_io import save_graphml
+from dac_her.extraction_quality import projection_quality_summary
 from dac_her.graphagents_adapter import (
     build_graphagents_projection,
     write_jsonl,
@@ -228,6 +229,7 @@ def main() -> None:
     summary = {
         "paper_id": args.paper_id,
         "mode": args.mode,
+        **projection_quality_summary(projection),
         "canonical_graphml": str(canonical_path),
         "bridge_graphml": str(bridge_path) if bridge_graph is not None else "",
         "candidate_bridge_graphml": (

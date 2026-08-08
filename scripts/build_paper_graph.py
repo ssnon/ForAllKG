@@ -11,6 +11,13 @@ import networkx as nx
 
 from dac_her.config import get_paper_config
 from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
+from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.extraction_quality import (
+    QUALITY_PARTIAL_CRITICAL,
+    QUALITY_REJECTED,
+    graph_quality_attributes,
+    quality_from_active_payload,
+)
 from dac_her.locator_index import load_locator_index
 from dac_her.provenance_backfill import (
     backfill_edge_asset_provenance,
@@ -65,7 +72,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--allow-incomplete",
         action="store_true",
-        help="Build despite failed chunks. Not recommended.",
+        help=(
+            "Explicitly allow PARTIAL_CRITICAL extraction. "
+            "PARTIAL_ACCEPTABLE is allowed automatically; REJECTED runs "
+            "with unresolved failures/very low coverage remain blocked."
+        ),
     )
     parser.add_argument(
         "--decisions",
@@ -416,10 +427,34 @@ def main() -> None:
         raise ValueError(
             "active_chunks.json and run.json refer to different runs."
         )
-    if not active_payload.get("complete", False) and not args.allow_incomplete:
+    extraction_quality = quality_from_active_payload(
+        active_payload,
+        policy=ExtractionPolicy(),
+    )
+    write_json(
+        run_dir / "extraction_quality.json",
+        extraction_quality,
+    )
+    materialization_status = str(
+        extraction_quality["graph_materialization_status"]
+    )
+
+    if materialization_status == QUALITY_REJECTED:
         raise RuntimeError(
-            "The extraction run is incomplete. Resolve failed chunks before "
-            "building, or pass --allow-incomplete explicitly."
+            "The extraction run is REJECTED: unresolved failed chunks, no "
+            "usable strict-valid leaves, or source-token coverage below the "
+            "minimum threshold. Quarantined/failed leaves are never merged."
+        )
+
+    if (
+        materialization_status == QUALITY_PARTIAL_CRITICAL
+        and not args.allow_incomplete
+    ):
+        raise RuntimeError(
+            "The extraction run is PARTIAL_CRITICAL. Strict-valid leaves are "
+            "available, but coverage is below the automatic graph gate. "
+            "Review extraction_quality.json or pass --allow-incomplete "
+            "explicitly."
         )
 
     chunk_records = active_payload.get("chunks")
@@ -431,11 +466,15 @@ def main() -> None:
         run_dir=run_dir,
     )
 
+    quality_attrs = graph_quality_attributes(
+        extraction_quality
+    )
     merged = nx.MultiDiGraph(
         paper_id=paper.paper_id,
         run_id=str(run_metadata["run_id"]),
         run_fingerprint=str(run_metadata["run_fingerprint"]),
         graph_stage="raw_merged",
+        **quality_attrs,
     )
 
     loaded_chunks = 0
@@ -588,6 +627,7 @@ def main() -> None:
             f"retarget(s); see {run_dir / 'semantic_edge_repairs.csv'}"
         )
     canonical.graph["graph_stage"] = "canonical"
+    canonical.graph.update(quality_attrs)
     canonical.graph["resolution_file"] = (
         str(decisions_path) if decisions_path is not None else ""
     )
@@ -666,6 +706,8 @@ def main() -> None:
         "run_id": run_metadata["run_id"],
         "loaded_chunks": loaded_chunks,
         "loaded_chunk_ids": loaded_chunk_ids,
+        "graph_materialization_status": materialization_status,
+        "extraction_quality": extraction_quality,
         "loaded_documents": sorted({
             str(record.get("document_id", "main"))
             for record in chunk_records
@@ -700,6 +742,14 @@ def main() -> None:
     print("Paper:", paper.paper_id)
     print("Run ID:", run_metadata["run_id"])
     print("Chunks:", loaded_chunks)
+    print(
+        "Graph materialization status:",
+        materialization_status,
+    )
+    print(
+        "Source-token coverage:",
+        extraction_quality.get("source_token_coverage"),
+    )
     print("Raw nodes/edges:", merged.number_of_nodes(), merged.number_of_edges())
     print(
         "Canonical nodes/edges:",

@@ -46,6 +46,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable exact confirmed Bridge pattern alignment hubs.",
     )
+    parser.add_argument(
+        "--allow-critical-partial",
+        action="store_true",
+        help=(
+            "Allow per-paper projections marked PARTIAL_CRITICAL. "
+            "COMPLETE and PARTIAL_ACCEPTABLE are allowed by default; "
+            "REJECTED/unknown projection quality remains blocked."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -62,6 +71,29 @@ def main() -> None:
         )
         for paper_id in args.paper_ids
     ]
+
+    blocked: list[tuple[str, str]] = []
+    for bundle in bundles:
+        status = str(
+            bundle.summary.get(
+                "extraction_quality_status",
+                "unknown",
+            )
+        )
+        if status in {"complete", "partial_acceptable"}:
+            continue
+        if status == "partial_critical" and args.allow_critical_partial:
+            continue
+        blocked.append((bundle.paper_id, status))
+
+    if blocked:
+        raise RuntimeError(
+            "Corpus input contains projections that are not usable under "
+            "the default extraction-quality policy. Rebuild legacy "
+            "projections so quality metadata is present, or explicitly "
+            "allow PARTIAL_CRITICAL inputs. Blocked: "
+            f"{blocked!r}"
+        )
 
     (
         graph,

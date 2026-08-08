@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import itertools
 import json
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal
@@ -825,6 +826,42 @@ def build_corpus_graph(
             "candidate_bridge_policy_run_id": str(
                 bundle.summary.get("candidate_bridge_policy_run_id", "")
             ),
+            "extraction_quality_status": str(
+                bundle.summary.get("extraction_quality_status", "unknown")
+            ),
+            "extraction_complete": bool(
+                bundle.summary.get("extraction_complete", False)
+            ),
+            "extraction_source_token_coverage": float(
+                bundle.summary.get(
+                    "extraction_source_token_coverage",
+                    -1.0,
+                )
+            ),
+            "extraction_quarantine_token_fraction": float(
+                bundle.summary.get(
+                    "extraction_quarantine_token_fraction",
+                    -1.0,
+                )
+            ),
+            "extraction_quarantined_chunk_count": int(
+                bundle.summary.get(
+                    "extraction_quarantined_chunk_count",
+                    0,
+                )
+            ),
+            "extraction_failed_chunk_count": int(
+                bundle.summary.get(
+                    "extraction_failed_chunk_count",
+                    0,
+                )
+            ),
+            "extraction_absence_claims_allowed": bool(
+                bundle.summary.get(
+                    "extraction_absence_claims_allowed",
+                    False,
+                )
+            ),
         })
 
     registry_rows = (
@@ -897,6 +934,22 @@ def build_corpus_graph(
             ),
         })
 
+    quality_counts = Counter(
+        str(row.get("extraction_quality_status", "unknown"))
+        for row in per_paper
+    )
+    partial_papers = [
+        str(row["paper_id"])
+        for row in per_paper
+        if str(row.get("extraction_quality_status", ""))
+        in {"partial_acceptable", "partial_critical"}
+    ]
+    absence_claim_safe_papers = [
+        str(row["paper_id"])
+        for row in per_paper
+        if bool(row.get("extraction_absence_claims_allowed", False))
+    ]
+
     manifest = {
         "corpus_id": corpus_id,
         "mode": mode,
@@ -906,6 +959,11 @@ def build_corpus_graph(
         "paper_ids": paper_ids,
         "paper_count": len(paper_ids),
         "papers": per_paper,
+        "extraction_quality_counts": dict(
+            sorted(quality_counts.items())
+        ),
+        "partial_paper_ids": partial_papers,
+        "absence_claim_safe_paper_ids": absence_claim_safe_papers,
         "source_projection_nodes": source_node_count,
         "source_projection_edges": source_edge_count,
         "corpus_nodes": corpus.number_of_nodes(),

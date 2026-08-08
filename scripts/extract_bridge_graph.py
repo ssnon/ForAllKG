@@ -46,6 +46,12 @@ import dac_her.bridge_source_reconciliation \
 from dac_her.bridge_extraction import (
     extract_bridge_raw_chunk,
 )
+from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.extraction_quality import (
+    QUALITY_PARTIAL_CRITICAL,
+    QUALITY_REJECTED,
+    quality_from_active_payload,
+)
 from dac_her.bridge_policy_run import (
     materialize_bridge_policy_run,
 )
@@ -283,17 +289,32 @@ def main() -> None:
         ),
     }
 
-    if (
-        not active_payload.get(
-            "complete",
-            False,
+    extraction_quality = quality_from_active_payload(
+        active_payload,
+        policy=ExtractionPolicy(),
+    )
+    write_json(
+        strict_run_dir / "extraction_quality.json",
+        extraction_quality,
+    )
+    materialization_status = str(
+        extraction_quality["graph_materialization_status"]
+    )
+
+    if materialization_status == QUALITY_REJECTED:
+        raise RuntimeError(
+            "Strict extraction is REJECTED. Bridge extraction cannot proceed "
+            "from a run with unresolved failed chunks or insufficient "
+            "strict-valid source-token coverage."
         )
+
+    if (
+        materialization_status == QUALITY_PARTIAL_CRITICAL
         and not args.allow_incomplete
     ):
         raise RuntimeError(
-            "Strict extraction is incomplete. "
-            "Resolve failed chunks or pass "
-            "--allow-incomplete explicitly."
+            "Strict extraction is PARTIAL_CRITICAL. Review "
+            "extraction_quality.json or pass --allow-incomplete explicitly."
         )
 
     chunk_records = active_payload.get(

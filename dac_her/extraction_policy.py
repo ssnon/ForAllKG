@@ -43,6 +43,16 @@ class ExtractionPolicy:
     # Strict acceptance: no destructive graph edits by default.
     allow_destructive_patches: bool = False
 
+    # Paper-level partial graph materialization.
+    #
+    # Keep local strict validators unchanged. These thresholds only decide
+    # whether already strict-valid leaves can be materialized when sibling
+    # leaves were quarantined. Source-token coverage is intentionally more
+    # important than raw chunk-success counts.
+    partial_acceptable_min_source_token_coverage: float = 0.95
+    partial_acceptable_max_quarantine_token_fraction: float = 0.05
+    partial_critical_min_source_token_coverage: float = 0.70
+
     # Output utilization warnings
     warning_utilization: float = 0.80
     critical_utilization: float = 0.953

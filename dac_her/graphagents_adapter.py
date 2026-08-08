@@ -619,9 +619,15 @@ def build_graphagents_projection(
     if mode not in {"evidence", "mechanism", "exploratory"}:
         raise ValueError(f"Unknown projection mode: {mode!r}")
 
+    quality_graph_attrs = {
+        str(key): value
+        for key, value in canonical_graph.graph.items()
+        if str(key).startswith("extraction_")
+    }
     projection = nx.DiGraph(
         graph_stage="graphagents_projection",
         projection_mode=mode,
+        **quality_graph_attrs,
     )
     evidence_rows: list[dict[str, Any]] = []
     canonical_edge_index = (
