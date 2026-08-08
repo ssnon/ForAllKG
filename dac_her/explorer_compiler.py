@@ -212,7 +212,7 @@ class ExplorationReportCompiler:
         if issues:
             raise ExplorationCompileError(issues)
 
-        def support_papers(statement: Any) -> list[str]:
+        def support_papers(statement: Any, *, include_paths: bool = True) -> list[str]:
             papers: set[str] = set()
             for node_id in statement.support_node_ids:
                 node = nodes.get(node_id)
@@ -226,11 +226,12 @@ class ExplorationReportCompiler:
                 if edge is None or _is_alignment_edge(edge):
                     continue
                 papers.update(str(x) for x in edge.source_paper_ids if str(x).strip())
-            for path_id in statement.support_path_ids:
-                path = paths.get(path_id)
-                if path is not None:
-                    papers.update(path.visited_paper_ids)
-                    papers.update(path.supporting_paper_ids)
+            if include_paths:
+                for path_id in statement.support_path_ids:
+                    path = paths.get(path_id)
+                    if path is not None:
+                        papers.update(path.visited_paper_ids)
+                        papers.update(path.supporting_paper_ids)
             for hit_id in statement.support_direct_hit_ids:
                 hit = hits.get(hit_id)
                 if hit is None:
@@ -345,32 +346,72 @@ class ExplorationReportCompiler:
 
         motifs: list[MechanisticMotif] = []
         for row in draft.recurring_mechanistic_motifs:
-            motif_paths = [paths[path_id] for path_id in row.path_ids]
-            mechanism_node_ids: set[str] = {
+            # v2.5.1-h2 provenance precedence:
+            #
+            # * statement_local_ids are narrative/reference links.
+            # * explicit motif support_node_ids/support_edge_ids, when present,
+            #   are the authoritative scientific provenance of the motif.
+            # * only when explicit motif support is absent do we fall back to
+            #   the scientific supports of referenced statements.
+            # * path_ids are navigation context only and never expand motif
+            #   scientific scope.
+            #
+            # This prevents a cross-paper synthesis statement from promoting a
+            # single-paper motif into a cross-paper recurring motif merely
+            # because that statement also cites another paper for a scope limit.
+            motif_statement_drafts = [
+                statement_drafts[local_id]
+                for local_id in row.statement_local_ids
+            ]
+
+            has_explicit_scientific_support = bool(row.support_node_ids or row.support_edge_ids)
+            supported_node_ids: set[str] = set()
+            supported_edge_ids: set[str] = set()
+            supported_direct_hit_ids: set[str] = set()
+
+            if has_explicit_scientific_support:
+                supported_node_ids.update(row.support_node_ids)
+                supported_edge_ids.update(row.support_edge_ids)
+            else:
+                for statement in motif_statement_drafts:
+                    supported_node_ids.update(statement.support_node_ids)
+                    supported_edge_ids.update(statement.support_edge_ids)
+                    supported_direct_hit_ids.update(statement.support_direct_hit_ids)
+
+            for hit_id in supported_direct_hit_ids:
+                hit = hits.get(hit_id)
+                if hit is not None:
+                    supported_node_ids.add(hit.node_evidence_ref)
+
+            mechanism_node_ids = {
                 node_id
-                for path in motif_paths
-                for node_id in path.quality.mechanism_node_ids
+                for node_id in supported_node_ids
                 if node_id in nodes and _is_mechanism_node(node_id, nodes[node_id])
             }
-            mechanism_node_ids.update(
-                node_id
-                for node_id in row.support_node_ids
-                if node_id in nodes and _is_mechanism_node(node_id, nodes[node_id])
-            )
-            mechanism_edge_ids: set[str] = {
-                step.edge_evidence_ref
-                for path in motif_paths
-                for step in path.steps
-                if step.edge_evidence_ref in edges and _is_mechanism_edge(edges[step.edge_evidence_ref])
-            }
-            mechanism_edge_ids.update(
+            mechanism_edge_ids = {
                 edge_id
-                for edge_id in row.support_edge_ids
+                for edge_id in supported_edge_ids
                 if edge_id in edges and _is_mechanism_edge(edges[edge_id])
-            )
-            paper_ids = referenced_statement_papers(row.statement_local_ids)
-            for path in motif_paths:
-                paper_ids.update(path.visited_paper_ids)
+            }
+
+            # A MechanisticMotif's paper scope is defined by its actual
+            # mechanism-bearing scientific evidence, not by all papers named in
+            # explanatory statements.  This gives the validator an independent,
+            # deterministic invariant for motif scope.
+            paper_ids: set[str] = set()
+            for node_id in mechanism_node_ids:
+                node = nodes.get(node_id)
+                if node is None or _is_alignment_node(node):
+                    continue
+                if node.source_paper_id:
+                    paper_ids.add(str(node.source_paper_id))
+                paper_ids.update(str(x) for x in node.source_paper_ids if str(x).strip())
+            for edge_id in mechanism_edge_ids:
+                edge = edges.get(edge_id)
+                if edge is None or _is_alignment_edge(edge):
+                    continue
+                paper_ids.update(str(x) for x in edge.source_paper_ids if str(x).strip())
+
             statement_ids = final_statement_ids(row.statement_local_ids)
             motif_id = _stable_id("motif", packet.packet_sha256, row.label, _canonical_json(statement_ids), _canonical_json(sorted(row.path_ids)))
             motifs.append(

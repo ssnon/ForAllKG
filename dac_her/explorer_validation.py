@@ -53,6 +53,34 @@ _HYPOTHESIS_PATTERNS = (
 
 _NUMBER_RE = re.compile(r"(?<![A-Za-z0-9_])[-+]?\d+(?:\.\d+)?(?:\s*(?:eV|meV|V|mV|A|mA|K|°C|C|%|nm|Å|pm|cm|mm|s|ms|h|mol|M|pH))?", re.I)
 
+_STRONG_CAUSAL_PATTERNS = (
+    re.compile(r"\bcauses?\b", re.I),
+    re.compile(r"\bcaused by\b", re.I),
+    re.compile(r"\bdrives?\b", re.I),
+    re.compile(r"\bleads? to\b", re.I),
+    re.compile(r"\bresults? in\b", re.I),
+    re.compile(r"\bpromotes?\b", re.I),
+    re.compile(r"\benhances?\b", re.I),
+    re.compile(r"\bfacilitates?\b", re.I),
+    re.compile(r"\benables?\b", re.I),
+    re.compile(r"\bimproves?\b", re.I),
+    re.compile(r"\baccelerates?\b", re.I),
+    re.compile(r"\blowers?\b", re.I),
+    re.compile(r"\breduces?\b", re.I),
+    re.compile(r"\bincreases?\b", re.I),
+    re.compile(r"\bdecreases?\b", re.I),
+    re.compile(r"\bmodulates?\b", re.I),
+    re.compile(r"\bregulates?\b", re.I),
+    re.compile(r"\bcontrols?\b", re.I),
+)
+
+_CAUSAL_EDGE_MARKERS = (
+    "CAUSE", "DRIVE", "LEAD", "RESULT", "PROMOT", "ENHANC",
+    "FACILITAT", "ENABLE", "IMPROV", "ACCELERAT", "LOWER",
+    "REDUC", "INCREAS", "DECREAS", "MODULAT", "REGULAT", "CONTROL",
+)
+
+
 
 class ValidationIssue(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -106,6 +134,57 @@ def _contains_absence_language(text: str) -> bool:
 
 def _contains_hypothesis_language(text: str) -> bool:
     return any(pattern.search(text) for pattern in _HYPOTHESIS_PATTERNS)
+
+
+def _contains_strong_causal_language(text: str) -> bool:
+    return any(pattern.search(text) for pattern in _STRONG_CAUSAL_PATTERNS)
+
+
+def _edge_has_strong_causal_semantics(edge: Any) -> bool:
+    relation = str(getattr(edge, "relation", "")).upper()
+    return any(marker in relation for marker in _CAUSAL_EDGE_MARKERS)
+
+
+def _label_has_grounded_causal_support(
+    *,
+    statement_ids: Iterable[str],
+    node_ids: Iterable[str],
+    edge_ids: Iterable[str],
+    statements: dict[str, ExplorerStatement],
+    nodes: dict[str, Any],
+    edges: dict[str, Any],
+    hits: dict[str, Any],
+) -> bool:
+    candidate_node_ids = {str(x) for x in node_ids}
+    candidate_edge_ids = {str(x) for x in edge_ids}
+    candidate_statement_texts: list[str] = []
+    for statement_id in statement_ids:
+        statement = statements.get(statement_id)
+        if statement is None:
+            continue
+        candidate_statement_texts.append(statement.text)
+        candidate_node_ids.update(statement.support_node_ids)
+        candidate_edge_ids.update(statement.support_edge_ids)
+        for hit_id in statement.support_direct_hit_ids:
+            hit = hits.get(hit_id)
+            if hit is not None:
+                candidate_node_ids.add(hit.node_evidence_ref)
+    if any(_contains_strong_causal_language(text) for text in candidate_statement_texts):
+        return True
+    for node_id in candidate_node_ids:
+        node = nodes.get(node_id)
+        if node is None or _is_alignment_node(node):
+            continue
+        text = f"{getattr(node, 'label', '')}\n{getattr(node, 'node_text', '')}"
+        if _contains_strong_causal_language(text):
+            return True
+    for edge_id in candidate_edge_ids:
+        edge = edges.get(edge_id)
+        if edge is None or _is_alignment_edge(edge):
+            continue
+        if _edge_has_strong_causal_semantics(edge):
+            return True
+    return False
 
 
 class ExplorationReportValidator:
@@ -223,23 +302,82 @@ class ExplorationReportValidator:
 
         for index, motif in enumerate(report.recurring_mechanistic_motifs):
             location = f"recurring_mechanistic_motifs[{index}]"
-            if motif.cross_paper and len(set(motif.paper_ids)) < 2:
-                error("CROSS_PAPER_REQUIRES_TWO_PAPERS", location + ".paper_ids", "cross_paper=True requires at least two distinct papers.")
             for path_id in motif.path_ids:
                 if path_id not in paths:
                     error("UNKNOWN_PATH_REF", location + ".path_ids", f"Unknown path ID: {path_id}")
+
+            motif_scientific_papers: set[str] = set()
+            valid_mechanism_evidence_count = 0
             for node_id in motif.mechanism_node_ids:
                 node = nodes.get(node_id)
                 if node is None:
                     error("UNKNOWN_NODE_REF", location + ".mechanism_node_ids", f"Unknown node ID: {node_id}")
                 elif not _is_mechanism_node(node_id, node):
                     error("NON_MECHANISM_NODE", location + ".mechanism_node_ids", f"Node is not mechanism-bearing: {node_id}")
+                else:
+                    valid_mechanism_evidence_count += 1
+                    if not _is_alignment_node(node):
+                        if node.source_paper_id:
+                            motif_scientific_papers.add(str(node.source_paper_id))
+                        motif_scientific_papers.update(
+                            str(x) for x in node.source_paper_ids if str(x).strip()
+                        )
+
             for edge_id in motif.mechanism_edge_ids:
                 edge = edges.get(edge_id)
                 if edge is None:
                     error("UNKNOWN_EDGE_REF", location + ".mechanism_edge_ids", f"Unknown edge ID: {edge_id}")
                 elif not _is_mechanism_edge(edge):
                     error("NON_MECHANISM_EDGE", location + ".mechanism_edge_ids", f"Edge is not mechanism-bearing: {edge_id}")
+                else:
+                    valid_mechanism_evidence_count += 1
+                    if not _is_alignment_edge(edge):
+                        motif_scientific_papers.update(
+                            str(x) for x in edge.source_paper_ids if str(x).strip()
+                        )
+
+            if valid_mechanism_evidence_count == 0:
+                error(
+                    "MOTIF_REQUIRES_MECHANISM_EVIDENCE",
+                    location,
+                    "A mechanistic motif must contain at least one mechanism-bearing scientific node or edge.",
+                )
+
+            declared_papers = set(motif.paper_ids)
+            if motif.cross_paper and len(declared_papers) < 2:
+                error(
+                    "CROSS_PAPER_REQUIRES_TWO_PAPERS",
+                    location + ".paper_ids",
+                    "cross_paper=True requires at least two distinct papers.",
+                )
+            if declared_papers != motif_scientific_papers:
+                error(
+                    "MOTIF_PAPER_SCOPE_MISMATCH",
+                    location + ".paper_ids",
+                    "Motif paper_ids must equal the papers represented by its mechanism-bearing scientific evidence; "
+                    f"declared={sorted(declared_papers)!r}, evidence={sorted(motif_scientific_papers)!r}.",
+                )
+
+            expected_cross_paper = len(motif_scientific_papers) >= 2
+            if motif.cross_paper != expected_cross_paper:
+                error(
+                    "MOTIF_CROSS_PAPER_FLAG_MISMATCH",
+                    location + ".cross_paper",
+                    "cross_paper must be derived from mechanism-bearing motif evidence, not path or statement scope.",
+                )
+
+            self._validate_free_text_label(
+                label=motif.label,
+                location=location + ".label",
+                statement_ids=motif.statement_ids,
+                node_ids=motif.mechanism_node_ids,
+                edge_ids=motif.mechanism_edge_ids,
+                statements=statements,
+                nodes=nodes,
+                edges=edges,
+                hits=hits,
+                error=error,
+            )
 
         for index, connection in enumerate(report.cross_paper_connections):
             location = f"cross_paper_connections[{index}]"
@@ -274,6 +412,18 @@ class ExplorationReportValidator:
             for node_id in [*lever.mechanism_node_ids, *lever.outcome_node_ids]:
                 if node_id not in nodes:
                     error("UNKNOWN_NODE_REF", location, f"Unknown node ID: {node_id}")
+            self._validate_free_text_label(
+                label=lever.label,
+                location=location + ".label",
+                statement_ids=lever.statement_ids,
+                node_ids=[*lever.mechanism_node_ids, *lever.outcome_node_ids],
+                edge_ids=[],
+                statements=statements,
+                nodes=nodes,
+                edges=edges,
+                hits=hits,
+                error=error,
+            )
 
         errors = sum(issue.severity == "error" for issue in issues)
         warnings = sum(issue.severity == "warning" for issue in issues)
@@ -283,6 +433,41 @@ class ExplorationReportValidator:
             warnings=warnings,
             issues=issues,
         )
+
+    def _validate_free_text_label(
+        self,
+        *,
+        label: str,
+        location: str,
+        statement_ids: Iterable[str],
+        node_ids: Iterable[str],
+        edge_ids: Iterable[str],
+        statements: dict[str, ExplorerStatement],
+        nodes: dict[str, Any],
+        edges: dict[str, Any],
+        hits: dict[str, Any],
+        error: Any,
+    ) -> None:
+        if _contains_hypothesis_language(label):
+            error(
+                "HYPOTHESIS_LANGUAGE_FORBIDDEN",
+                location,
+                "Graph Explorer labels may summarize supplied evidence but may not introduce hypothesis language.",
+            )
+        if _contains_strong_causal_language(label) and not _label_has_grounded_causal_support(
+            statement_ids=statement_ids,
+            node_ids=node_ids,
+            edge_ids=edge_ids,
+            statements=statements,
+            nodes=nodes,
+            edges=edges,
+            hits=hits,
+        ):
+            error(
+                "UNSUPPORTED_CAUSAL_LABEL",
+                location,
+                "Label introduces strong causal language that is not present in its grounded supporting statements, nodes, or scientific edges.",
+            )
 
     def _validate_statement(
         self,
