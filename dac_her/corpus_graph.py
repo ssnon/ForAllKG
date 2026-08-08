@@ -112,6 +112,25 @@ def _json_list(value: Any) -> list[Any]:
         return []
     return payload if isinstance(payload, list) else []
 
+def _as_bool(
+    value: Any,
+) -> bool:
+    if isinstance(
+        value,
+        bool,
+    ):
+        return value
+
+    return (
+        str(value)
+        .strip()
+        .lower()
+        in {
+            "1",
+            "true",
+            "yes",
+        }
+    )
 
 def _remap_json_id_list(
     value: Any,
@@ -484,6 +503,53 @@ def add_pattern_alignment_hubs(
             continue
         if str(attrs.get("retention_lane", "")) != "accepted_pattern":
             continue
+
+        # CorpusPattern hubs represent only
+        # confirmed cross-paper scientific patterns.
+        # Exploratory semantic candidates must remain
+        # local, verification-required hypotheses.
+
+        if (
+            str(
+                attrs.get(
+                    "policy_lane",
+                    "",
+                )
+            )
+            == "semantic_candidate"
+        ):
+            continue
+
+        if (
+            str(
+                attrs.get(
+                    "evidence_status",
+                    "",
+                )
+            )
+            == "semantic_candidate"
+        ):
+            continue
+
+        if (
+            str(
+                attrs.get(
+                    "graph_layer",
+                    "",
+                )
+            )
+            == "bridge_candidate"
+        ):
+            continue
+
+        if _as_bool(
+            attrs.get(
+                "requires_verification",
+                False,
+            )
+        ):
+            continue
+        
         signature = _pattern_signature(dict(attrs))
         if signature is None:
             continue
@@ -970,6 +1036,71 @@ def audit_corpus_graph(
                 "hub_id": hub_id,
                 "missing_members": missing_members,
             })
+        if (
+            str(
+                attrs.get(
+                    "type",
+                    "",
+                )
+            )
+            == "CorpusPattern"
+        ):
+            invalid_members = []
+
+            for member in members:
+                if member not in graph:
+                    continue
+
+                member_attrs = (
+                    graph.nodes[
+                        member
+                    ]
+                )
+
+                if (
+                    str(
+                        member_attrs.get(
+                            "policy_lane",
+                            "",
+                        )
+                    )
+                    == "semantic_candidate"
+                    or str(
+                        member_attrs.get(
+                            "evidence_status",
+                            "",
+                        )
+                    )
+                    == "semantic_candidate"
+                    or str(
+                        member_attrs.get(
+                            "graph_layer",
+                            "",
+                        )
+                    )
+                    == "bridge_candidate"
+                    or _as_bool(
+                        member_attrs.get(
+                            "requires_verification",
+                            False,
+                        )
+                    )
+                ):
+                    invalid_members.append(
+                        member
+                    )
+
+            if invalid_members:
+                issues.append({
+                    "issue": (
+                        "candidate_member_in_"
+                        "confirmed_pattern_hub"
+                    ),
+                    "hub_id": hub_id,
+                    "member_ids": (
+                        invalid_members
+                    ),
+                })
 
     return {
         "graph_stage": str(graph.graph.get("graph_stage", "")),
