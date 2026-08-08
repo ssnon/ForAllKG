@@ -9,6 +9,11 @@ import networkx as nx
 from dac_her.endpoint_selection import (
     EndpointPairSelector,
 )
+from dac_her.path_bundle import (
+    PathBundlePolicy,
+    PathBundleSelector,
+    render_step_safe,
+)
 from dac_her.path_quality import (
     PathQualityScorer,
 )
@@ -139,6 +144,41 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Use v2.4.0 all-pairs behavior "
             "for ablation/debugging."
+        ),
+    )
+    parser.add_argument(
+        "--bundle-max-per-endpoint-pair",
+        type=int,
+        default=2,
+        help=(
+            "Preferred maximum returned paths sharing "
+            "the same endpoint pair before diversity relaxation."
+        ),
+    )
+    parser.add_argument(
+        "--bundle-max-per-paper-signature",
+        type=int,
+        default=2,
+        help=(
+            "Preferred maximum returned paths sharing "
+            "the same visited-paper set before diversity relaxation."
+        ),
+    )
+    parser.add_argument(
+        "--bundle-max-edge-jaccard",
+        type=float,
+        default=0.80,
+        help=(
+            "Preferred maximum edge-set Jaccard overlap "
+            "between returned paths before relaxation."
+        ),
+    )
+    parser.add_argument(
+        "--disable-bundle-selector",
+        action="store_true",
+        help=(
+            "Disable diversity-aware PathBundleSelector "
+            "and use the previous top-k slicing behavior."
         ),
     )
     parser.add_argument(
@@ -537,46 +577,93 @@ def main() -> None:
         collected.values(),
         key=_path_sort_key,
     )
-    paths = all_paths[: args.top_k]
 
-    path_type_groups: dict[
-        str,
-        list[str],
-    ] = {}
-    for row in all_paths:
-        quality = row.get(
-            "path_quality",
-            {},
-        )
-        path_type = str(
-            quality.get(
-                "path_type",
-                "UNKNOWN",
-            )
-        )
-        path_type_groups.setdefault(
-            path_type,
-            [],
-        ).append(
-            str(row["path_id"])
-        )
+    bundle_policy = PathBundlePolicy(
+        max_per_endpoint_pair=(
+            args.bundle_max_per_endpoint_pair
+        ),
+        max_per_paper_signature=(
+            args.bundle_max_per_paper_signature
+        ),
+        max_edge_jaccard=(
+            args.bundle_max_edge_jaccard
+        ),
+    )
 
-    path_type_counts = {
-        path_type: len(path_ids)
-        for path_type, path_ids
-        in sorted(
-            path_type_groups.items()
-        )
-    }
-
-    path_groups = {
-        path_type: path_ids[
+    if args.disable_bundle_selector:
+        paths = all_paths[
             : args.top_k
         ]
-        for path_type, path_ids
-        in sorted(
-            path_type_groups.items()
+        bundle_selection = {
+            "enabled": False,
+            "policy": bundle_policy.to_dict(),
+            "selected_path_ids": [
+                str(row["path_id"])
+                for row in paths
+            ],
+            "diagnostics": [],
+        }
+    else:
+        bundle_result = PathBundleSelector(
+            policy=bundle_policy
+        ).select(
+            all_paths,
+            top_k=args.top_k,
         )
+        paths = (
+            bundle_result.selected_paths
+        )
+        bundle_selection = {
+            "enabled": True,
+            **bundle_result.to_dict(),
+        }
+
+    def type_groups(
+        rows: list[dict],
+    ) -> dict[str, list[str]]:
+        groups: dict[
+            str,
+            list[str],
+        ] = {}
+        for row in rows:
+            quality = row.get(
+                "path_quality",
+                {},
+            )
+            path_type = str(
+                quality.get(
+                    "path_type",
+                    "UNKNOWN",
+                )
+            )
+            groups.setdefault(
+                path_type,
+                [],
+            ).append(
+                str(row["path_id"])
+            )
+        return {
+            path_type: path_ids
+            for path_type, path_ids
+            in sorted(groups.items())
+        }
+
+    candidate_path_groups = (
+        type_groups(all_paths)
+    )
+    returned_path_groups = (
+        type_groups(paths)
+    )
+
+    candidate_path_type_counts = {
+        path_type: len(path_ids)
+        for path_type, path_ids
+        in candidate_path_groups.items()
+    }
+    returned_path_type_counts = {
+        path_type: len(path_ids)
+        for path_type, path_ids
+        in returned_path_groups.items()
     }
 
     payload = {
@@ -611,14 +698,38 @@ def main() -> None:
         "endpoint_pair_diagnostics": (
             endpoint_pair_diagnostics
         ),
+        "candidate_path_count": (
+            len(all_paths)
+        ),
+        "returned_path_count": len(
+            paths
+        ),
+        "candidate_path_type_counts": (
+            candidate_path_type_counts
+        ),
+        "returned_path_type_counts": (
+            returned_path_type_counts
+        ),
+        "candidate_path_groups": (
+            candidate_path_groups
+        ),
+        "returned_path_groups": (
+            returned_path_groups
+        ),
+        "bundle_selection": (
+            bundle_selection
+        ),
+        # Backward-compatible aliases now refer to returned paths.
         "path_count": len(paths),
         "candidate_path_count_before_top_k": (
             len(all_paths)
         ),
         "path_type_counts": (
-            path_type_counts
+            returned_path_type_counts
         ),
-        "path_groups": path_groups,
+        "path_groups": (
+            returned_path_groups
+        ),
         "paths": paths,
     }
 
@@ -695,9 +806,17 @@ def main() -> None:
                 "endpoint_pair_count": len(
                     endpoint_pairs
                 ),
-                "path_count": len(paths),
-                "path_type_counts": (
-                    path_type_counts
+                "candidate_path_count": len(
+                    all_paths
+                ),
+                "returned_path_count": len(
+                    paths
+                ),
+                "candidate_path_type_counts": (
+                    candidate_path_type_counts
+                ),
+                "returned_path_type_counts": (
+                    returned_path_type_counts
                 ),
             },
             ensure_ascii=False,
@@ -815,6 +934,41 @@ def main() -> None:
                     ),
                 )
 
+    if not args.disable_bundle_selector:
+        print()
+        print("Path bundle selection:")
+        for row in paths:
+            selection = row.get(
+                "bundle_selection",
+                {},
+            )
+            print(
+                "  ",
+                str(row["path_id"]),
+                "base_rank="
+                + str(
+                    selection.get(
+                        "base_rank"
+                    )
+                ),
+                "bundle_rank="
+                + str(
+                    selection.get(
+                        "bundle_rank"
+                    )
+                ),
+                "pass="
+                + str(
+                    selection.get(
+                        "selection_pass"
+                    )
+                ),
+                "edge_jaccard="
+                + (
+                    f"{float(selection.get('max_edge_jaccard_with_selected', 0.0)):.2f}"
+                ),
+            )
+
     for index, path in enumerate(
         paths,
         start=1,
@@ -841,10 +995,25 @@ def main() -> None:
                 "UNKNOWN",
             )
         )
-        mechanism_density = float(
+        mechanism_edge_density = float(
             quality.get(
-                "mechanistic_density",
+                "mechanistic_edge_density",
+                quality.get(
+                    "mechanistic_density",
+                    0.0,
+                ),
+            )
+        )
+        mechanism_node_density = float(
+            quality.get(
+                "mechanistic_node_density",
                 0.0,
+            )
+        )
+        mechanistic_content = str(
+            quality.get(
+                "mechanistic_content",
+                "low",
             )
         )
         navigation_fraction = float(
@@ -865,8 +1034,12 @@ def main() -> None:
             f"{path['candidate_edge_count']} "
             f"reverse="
             f"{path['reverse_edge_count']} "
-            f"mech_density="
-            f"{mechanism_density:.2f} "
+            f"mech_edge_density="
+            f"{mechanism_edge_density:.2f} "
+            f"mech_node_density="
+            f"{mechanism_node_density:.2f} "
+            f"mech_content="
+            f"{mechanistic_content} "
             f"nav_fraction="
             f"{navigation_fraction:.2f}"
             f"{pair_text}"
@@ -896,24 +1069,24 @@ def main() -> None:
                 ],
             )
 
-        for step in path["steps"]:
-            marker = (
-                " <-reverse"
-                if step[
-                    "traversal_direction"
-                ]
-                == "reverse"
-                else ""
-            )
+        mechanism_nodes = quality.get(
+            "mechanism_node_ids",
+            [],
+        )
+        if mechanism_nodes:
             print(
-                "  ",
-                step["source"],
-                "--",
-                step["relation"],
-                "-->",
-                step["target"],
-                marker,
+                "    mechanism_nodes:",
+                mechanism_nodes,
             )
+
+        for step in path["steps"]:
+            for line in render_step_safe(
+                step
+            ):
+                print(
+                    "   ",
+                    line,
+                )
 
     if args.output:
         print(

@@ -67,6 +67,16 @@ _OBSERVATION_MARKERS = (
     "QUANTIF",
 )
 
+_MECHANISM_NODE_TYPE_MARKERS = (
+    "MECHANISM",
+    "MECHANISTIC",
+)
+
+_ALIGNMENT_NODE_TYPES = {
+    "CORPUSALIGNMENT",
+    "CORPUSPATTERN",
+}
+
 
 def _as_bool(value: Any) -> bool:
     if isinstance(value, bool):
@@ -131,18 +141,85 @@ def relation_role(
     return "scientific_other"
 
 
+def _normalized_node_type(
+    attrs: dict[str, Any],
+) -> str:
+    return "".join(
+        character
+        for character in str(
+            attrs.get("type", "")
+        ).upper()
+        if character.isalnum()
+    )
+
+
+def _is_alignment_node(
+    attrs: dict[str, Any],
+) -> bool:
+    node_type = _normalized_node_type(
+        attrs
+    )
+    corpus_kind = str(
+        attrs.get(
+            "corpus_node_kind",
+            "",
+        )
+    ).strip().lower()
+
+    return (
+        node_type in _ALIGNMENT_NODE_TYPES
+        or corpus_kind == "alignment_hub"
+    )
+
+
+def _is_mechanism_node(
+    node_id: str,
+    attrs: dict[str, Any],
+) -> bool:
+    """Conservative detector for mechanism-bearing graph nodes.
+
+    Prefer explicit node type. The ``mech_`` ID fallback exists because the
+    current strict/canonical projections preserve semantically named source
+    IDs even when a generic graph node type is retained. We intentionally do
+    not infer mechanism status from free-form labels.
+    """
+    node_type = _normalized_node_type(
+        attrs
+    )
+    if any(
+        marker in node_type
+        for marker in _MECHANISM_NODE_TYPE_MARKERS
+    ):
+        return True
+
+    local_id = str(node_id).split(
+        "::"
+    )[-1].strip().lower()
+    return local_id.startswith("mech_")
+
+
 @dataclass(frozen=True)
 class PathQuality:
     path_type: str
+    path_structure_type: str
     path_tags: tuple[str, ...]
     endpoint_semantic_tier: int
     endpoint_pair_score: float | None
     mechanism_edge_count: int
+    mechanism_node_count: int
+    mechanism_node_ids: tuple[str, ...]
+    content_node_count: int
     observation_edge_count: int
     scaffold_edge_count: int
     alignment_edge_count: int
     other_scientific_edge_count: int
     mechanistic_density: float
+    mechanistic_edge_density: float
+    mechanistic_node_density: float
+    mechanistic_content_score: float
+    mechanism_bearing: bool
+    mechanism_content_sources: tuple[str, ...]
+    mechanistic_content_basis: str
     scaffold_density: float
     navigation_edge_fraction: float
     reverse_fraction: float
@@ -161,6 +238,12 @@ class PathQuality:
         payload = asdict(self)
         payload["path_tags"] = list(
             self.path_tags
+        )
+        payload["mechanism_node_ids"] = list(
+            self.mechanism_node_ids
+        )
+        payload["mechanism_content_sources"] = list(
+            self.mechanism_content_sources
         )
         payload["visited_paper_ids"] = list(
             self.visited_paper_ids
@@ -236,6 +319,41 @@ class PathQualityScorer:
             role = relation_role(step)
             role_counts[role] += 1
 
+        path_nodes = [
+            str(node_id)
+            for node_id
+            in path_row.get("nodes", [])
+        ]
+        content_node_ids: list[str] = []
+        mechanism_node_ids: list[str] = []
+
+        for node_id in path_nodes:
+            if node_id not in self.graph:
+                continue
+            attrs = dict(
+                self.graph.nodes[node_id]
+            )
+            if _is_alignment_node(attrs):
+                continue
+            content_node_ids.append(node_id)
+            if _is_mechanism_node(
+                node_id,
+                attrs,
+            ):
+                mechanism_node_ids.append(
+                    node_id
+                )
+
+        content_node_count = len(
+            content_node_ids
+        )
+        mechanism_node_ids = sorted(
+            set(mechanism_node_ids)
+        )
+        mechanism_node_count = len(
+            mechanism_node_ids
+        )
+
         hop_count = int(
             path_row.get(
                 "hop_count",
@@ -284,10 +402,70 @@ class PathQualityScorer:
             role_counts["scientific_other"]
         )
 
-        mechanistic_density = _safe_fraction(
+        mechanistic_edge_density = _safe_fraction(
             mechanism_edge_count,
             scientific_edge_count,
         )
+        # Backward-compatible alias. In v2.4.4 the explicit name above
+        # should be preferred because this density is edge-only.
+        mechanistic_density = (
+            mechanistic_edge_density
+        )
+        mechanistic_node_density = _safe_fraction(
+            mechanism_node_count,
+            content_node_count,
+        )
+        mechanistic_content_score = max(
+            mechanistic_edge_density,
+            mechanistic_node_density,
+        )
+        mechanism_bearing = (
+            mechanism_edge_count > 0
+            or mechanism_node_count > 0
+        )
+        mechanism_content_sources: list[str] = []
+        if mechanism_edge_count > 0:
+            mechanism_content_sources.append(
+                "edge_relation"
+            )
+        if mechanism_node_count > 0:
+            mechanism_content_sources.append(
+                "mechanism_node"
+            )
+
+        # Mechanistic-content *band* is intentionally categorical rather
+        # than thresholding a single density. Edge relations and
+        # mechanism-bearing nodes are distinct evidence channels:
+        # - both channels present  -> high
+        # - one channel present    -> medium
+        # - neither present        -> low
+        #
+        # Densities remain available as descriptive continuous features.
+        # This avoids anomalies where a path containing multiple explicit
+        # mechanism nodes plus a mechanism relation could be rated below a
+        # shorter path simply because its denominator was larger.
+        if (
+            mechanism_edge_count > 0
+            and mechanism_node_count > 0
+        ):
+            mechanistic_content = "high"
+            mechanistic_content_basis = (
+                "edge_and_node"
+            )
+        elif mechanism_edge_count > 0:
+            mechanistic_content = "medium"
+            mechanistic_content_basis = (
+                "edge_only"
+            )
+        elif mechanism_node_count > 0:
+            mechanistic_content = "medium"
+            mechanistic_content_basis = (
+                "node_only"
+            )
+        else:
+            mechanistic_content = "low"
+            mechanistic_content_basis = "none"
+
         scaffold_density = _safe_fraction(
             scaffold_edge_count,
             scientific_edge_count,
@@ -447,11 +625,18 @@ class PathQualityScorer:
             tags.add("reverse_heavy")
         if navigation_fraction >= 0.60:
             tags.add("navigation_heavy")
-        if mechanistic_density >= 0.25:
+        if mechanism_edge_count > 0:
+            tags.add("mechanism_edge_bearing")
+        if mechanism_node_count > 0:
+            tags.add("mechanism_node_bearing")
+        if mechanism_bearing:
+            tags.add("mechanism_bearing")
+        if mechanistic_content == "high":
             tags.add("mechanism_rich")
 
         return PathQuality(
             path_type=path_type,
+            path_structure_type=path_type,
             path_tags=tuple(sorted(tags)),
             endpoint_semantic_tier=(
                 endpoint_tier
@@ -459,6 +644,15 @@ class PathQualityScorer:
             endpoint_pair_score=pair_score,
             mechanism_edge_count=(
                 mechanism_edge_count
+            ),
+            mechanism_node_count=(
+                mechanism_node_count
+            ),
+            mechanism_node_ids=tuple(
+                mechanism_node_ids
+            ),
+            content_node_count=(
+                content_node_count
             ),
             observation_edge_count=(
                 observation_edge_count
@@ -475,6 +669,24 @@ class PathQualityScorer:
             mechanistic_density=(
                 mechanistic_density
             ),
+            mechanistic_edge_density=(
+                mechanistic_edge_density
+            ),
+            mechanistic_node_density=(
+                mechanistic_node_density
+            ),
+            mechanistic_content_score=(
+                mechanistic_content_score
+            ),
+            mechanism_bearing=(
+                mechanism_bearing
+            ),
+            mechanism_content_sources=tuple(
+                mechanism_content_sources
+            ),
+            mechanistic_content_basis=(
+                mechanistic_content_basis
+            ),
             scaffold_density=(
                 scaffold_density
             ),
@@ -490,10 +702,8 @@ class PathQualityScorer:
             endpoint_relevance=(
                 endpoint_relevance
             ),
-            mechanistic_content=_band(
-                mechanistic_density,
-                medium=0.10,
-                high=0.30,
+            mechanistic_content=(
+                mechanistic_content
             ),
             navigation_burden=_band(
                 navigation_fraction,
