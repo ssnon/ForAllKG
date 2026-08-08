@@ -1,0 +1,191 @@
+{
+  "schema_version": "graph-explorer-benchmark-suite-v1",
+  "suite_id": "graph-explorer-v2.5.2-core-regression",
+  "description": "Frozen Graph Explorer v2.5.1-h2 regression suite plus adversarial templates.",
+  "cases": [
+    {
+      "case_id": "cross_paper_alignment_safety",
+      "description": "Cross-paper alignment must not be promoted into a causal water-dissociation -> spillover mechanism.",
+      "enabled": true,
+      "packet": "data_dac/explorer_smoke/water_to_her_via_spillover_v250_h1.packet.json",
+      "output_prefix": "data_dac/explorer_smoke/water_to_her_via_spillover_v251",
+      "tags": [
+        "alignment",
+        "cross-paper",
+        "causal-safety"
+      ],
+      "expectations": {
+        "must_validate": true,
+        "max_repairs": 1,
+        "max_compile_issues": 0,
+        "min_reported_statements": 2,
+        "min_synthesis_statements": 1,
+        "min_unresolved_connections": 1,
+        "min_mechanism_routes": 1,
+        "required_terms_anywhere": [
+          "water dissociation",
+          "spillover"
+        ],
+        "required_terms_by_role": {},
+        "forbidden_terms_by_role": {},
+        "forbidden_regexes": [
+          "water\\s+dissociation\\s+(?:directly\\s+)?(?:causes|drives|promotes|enhances)\\s+(?:hydrogen\\s+)?spillover"
+        ],
+        "require_candidate_verification_propagation": true,
+        "forbid_partial_paper_absence_claims": true,
+        "forbid_alignment_causal_claims": true,
+        "require_report_packet_sha_match": true,
+        "repair_expectation": "allowed",
+        "max_repair_text_changes": null,
+        "require_support_only_repair": false
+      }
+    },
+    {
+      "case_id": "missing_waypoint_abstention",
+      "description": "Direct coordination->HER evidence exists, but the requested charge-transfer mediator is absent from the packet.",
+      "enabled": true,
+      "packet": "data_dac/explorer_smoke/coordination_to_her_via_charge_transfer_v250_h1.packet.json",
+      "output_prefix": "data_dac/explorer_smoke/coordination_to_her_via_charge_transfer_v251",
+      "tags": [
+        "direct-hit",
+        "abstention",
+        "missing-waypoint"
+      ],
+      "expectations": {
+        "must_validate": true,
+        "max_repairs": 1,
+        "max_compile_issues": 0,
+        "min_reported_statements": 1,
+        "min_synthesis_statements": 0,
+        "min_unresolved_connections": 1,
+        "min_mechanism_routes": 0,
+        "required_terms_anywhere": [
+          "charge transfer",
+          "hydrogen adsorption"
+        ],
+        "required_terms_by_role": {},
+        "forbidden_terms_by_role": {
+          "reported": [
+            "charge transfer"
+          ]
+        },
+        "forbidden_regexes": [],
+        "require_candidate_verification_propagation": true,
+        "forbid_partial_paper_absence_claims": true,
+        "forbid_alignment_causal_claims": true,
+        "require_report_packet_sha_match": true,
+        "repair_expectation": "none",
+        "max_repair_text_changes": 0,
+        "require_support_only_repair": false
+      }
+    },
+    {
+      "case_id": "positive_adsorption_thermodynamics",
+      "description": "Rich Kiwook_9 evidence should yield positive coordination->adsorption thermodynamics->HER synthesis without inventing charge-transfer mediation.",
+      "enabled": true,
+      "packet": "data_dac/explorer_smoke/n_coord_charge_to_her_current_v250_h1.packet.json",
+      "output_prefix": "data_dac/explorer_smoke/n_coord_charge_to_her_current_v251",
+      "tags": [
+        "positive",
+        "mechanism",
+        "repair"
+      ],
+      "expectations": {
+        "must_validate": true,
+        "max_repairs": 1,
+        "max_compile_issues": 0,
+        "min_reported_statements": 3,
+        "min_synthesis_statements": 1,
+        "min_unresolved_connections": 1,
+        "min_mechanism_routes": 1,
+        "required_terms_anywhere": [
+          "hydrogen adsorption",
+          "exchange current density",
+          "charge transfer"
+        ],
+        "required_terms_by_role": {
+          "reported": [
+            "hydrogen adsorption"
+          ]
+        },
+        "forbidden_terms_by_role": {
+          "reported": [
+            "charge transfer"
+          ]
+        },
+        "forbidden_regexes": [],
+        "require_candidate_verification_propagation": true,
+        "forbid_partial_paper_absence_claims": true,
+        "forbid_alignment_causal_claims": true,
+        "require_report_packet_sha_match": true,
+        "repair_expectation": "allowed",
+        "max_repair_text_changes": 0,
+        "require_support_only_repair": true
+      }
+    },
+    {
+      "case_id": "candidate_verification_template",
+      "description": "Enable after building an exploratory packet containing >=1 semantic-candidate edge/path.",
+      "enabled": true,
+      "packet": "data_dac/explorer_benchmark/candidate_verification.packet.json",
+      "output_prefix": "data_dac/explorer_benchmark/candidate_verification_v251",
+      "tags": [
+        "candidate",
+        "verification",
+        "adversarial"
+      ],
+      "expectations": {
+        "must_validate": true,
+        "max_repairs": 1,
+        "max_compile_issues": 0,
+        "min_reported_statements": 0,
+        "min_synthesis_statements": 0,
+        "min_unresolved_connections": 0,
+        "min_mechanism_routes": 0,
+        "required_terms_anywhere": [],
+        "required_terms_by_role": {},
+        "forbidden_terms_by_role": {},
+        "forbidden_regexes": [],
+        "require_candidate_verification_propagation": true,
+        "forbid_partial_paper_absence_claims": true,
+        "forbid_alignment_causal_claims": true,
+        "require_report_packet_sha_match": true,
+        "repair_expectation": "allowed",
+        "max_repair_text_changes": null,
+        "require_support_only_repair": false
+      }
+    },
+    {
+      "case_id": "partial_paper_absence_template",
+      "description": "Enable after building a packet that includes Kiwook_10 (partial_acceptable) as scientific support.",
+      "enabled": true,
+      "packet": "data_dac/explorer_benchmark/partial_absence.packet.json",
+      "output_prefix": "data_dac/explorer_benchmark/partial_absence_v251",
+      "tags": [
+        "partial-paper",
+        "absence",
+        "adversarial"
+      ],
+      "expectations": {
+        "must_validate": true,
+        "max_repairs": 1,
+        "max_compile_issues": 0,
+        "min_reported_statements": 0,
+        "min_synthesis_statements": 0,
+        "min_unresolved_connections": 1,
+        "min_mechanism_routes": 0,
+        "required_terms_anywhere": [],
+        "required_terms_by_role": {},
+        "forbidden_terms_by_role": {},
+        "forbidden_regexes": [],
+        "require_candidate_verification_propagation": true,
+        "forbid_partial_paper_absence_claims": true,
+        "forbid_alignment_causal_claims": true,
+        "require_report_packet_sha_match": true,
+        "repair_expectation": "allowed",
+        "max_repair_text_changes": null,
+        "require_support_only_repair": false
+      }
+    }
+  ]
+}

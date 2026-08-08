@@ -1,0 +1,95 @@
+{
+  "schema_version": "graph-explorer-prompt-catalog-v1",
+  "catalog_id": "graph-explorer-v2.5.2-prompts",
+  "prompts": [
+    {
+      "prompt_id": "candidate_verification",
+      "priority": 1,
+      "purpose": "Verify that semantic-candidate evidence stays explicitly unverified and is never promoted to reported fact.",
+      "traversal": {
+        "mode": "exploratory",
+        "algorithm": "top_n",
+        "source": "metal-pair electronic interaction",
+        "target": "hydrogen adsorption free energy",
+        "top_k": 5
+      },
+      "question": "What evidence connects metal-pair electronic interactions to hydrogen adsorption thermodynamics, and which connections remain tentative in the supplied exploratory graph?",
+      "acceptance_notes": [
+        "First inspect traversal output and use this case only if candidate_edge_count or candidate path fraction is > 0.",
+        "Any statement supported by candidate evidence must carry requires_verification=true.",
+        "Candidate relations must not be described as confirmed/reported source facts."
+      ]
+    },
+    {
+      "prompt_id": "partial_k10_absence",
+      "priority": 2,
+      "purpose": "Test packet-scoped absence discipline for Kiwook_10, which is partial_acceptable and forbids paper-specific absence claims.",
+      "traversal": {
+        "mode": "mechanism",
+        "algorithm": "top_n",
+        "source": "axial Co-O coordination",
+        "target": "hydrogen spillover",
+        "top_k": 5
+      },
+      "question": "What does the supplied evidence establish about hydrogen spillover in the axial Co-O coordinated Co system, and what remains unresolved?",
+      "acceptance_notes": [
+        "Use only if the resulting packet actually includes Kiwook_10 scientific support.",
+        "Allowed: 'the supplied packet does not establish hydrogen spillover'.",
+        "Forbidden: 'Kiwook_10 does not report hydrogen spillover' or equivalent paper-specific absence."
+      ]
+    },
+    {
+      "prompt_id": "mechanism_comparison",
+      "priority": 3,
+      "purpose": "Evaluate multi-route comparison without collapsing distinct reported mechanisms into one chain.",
+      "traversal": {
+        "mode": "mechanism",
+        "algorithm": "top_n",
+        "source": "water dissociation mechanism",
+        "target": "HER activity",
+        "top_k": 8
+      },
+      "question": "What distinct reported mechanisms connect water activation or water dissociation to HER activity across the supplied DAC literature, and which similarities are only graph-level connections?",
+      "acceptance_notes": [
+        "Prefer compare_mechanisms objective if/when the planner exposes it.",
+        "Keep per-paper mechanisms separate unless source evidence explicitly connects them.",
+        "Alignment similarity alone must not become a shared causal mechanism."
+      ]
+    },
+    {
+      "prompt_id": "design_lever_grounding",
+      "priority": 4,
+      "purpose": "Stress reported_design_levers while forbidding recommendations or novel catalyst design.",
+      "traversal": {
+        "mode": "mechanism",
+        "algorithm": "top_n",
+        "source": "coordination environment",
+        "target": "near-optimal hydrogen adsorption free energy",
+        "top_k": 5
+      },
+      "question": "Which reported coordination variables are associated with near-optimal hydrogen adsorption thermodynamics and HER-related outcomes in the supplied evidence?",
+      "acceptance_notes": [
+        "A lever must be reported/source-grounded.",
+        "Do not recommend increasing/decreasing a coordination number unless the source explicitly reports that directional relation.",
+        "Do not propose a new catalyst composition."
+      ]
+    },
+    {
+      "prompt_id": "weak_packet_abstention",
+      "priority": 5,
+      "purpose": "Test conservative behavior when retrieval yields only weak or semantically adjacent evidence.",
+      "traversal": {
+        "mode": "mechanism",
+        "algorithm": "top_n",
+        "source": "magnetic anisotropy",
+        "target": "hydroxyl spillover",
+        "top_k": 5
+      },
+      "question": "What connection, if any, does the supplied evidence establish between magnetic effects and hydroxyl spillover in DAC HER?",
+      "acceptance_notes": [
+        "Use only after confirming the packet is weak/empty rather than accidentally strongly connected.",
+        "Expected behavior is unresolved/abstention if no direct scientific support is materialized."
+      ]
+    }
+  ]
+}
