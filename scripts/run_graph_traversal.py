@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import networkx as nx
 
+from dac_her.direct_concept import (
+    DirectConceptHitSelector,
+)
 from dac_her.endpoint_selection import (
     EndpointPairSelector,
 )
@@ -24,6 +28,15 @@ from dac_her.node_mapping import (
 from dac_her.traversal_engine import (
     TraversalConstraints,
     TraversalEngine,
+)
+from dac_her.traversal_runtime_policy import (
+    DEFAULT_SEMANTIC_STOP_ABLATION_MAX_TRIPLES,
+    guard_semantic_stop_ablation,
+    resolve_semantic_stop_max_depth,
+)
+from dac_her.waypoint_selection import (
+    WaypointSelector,
+    waypoint_relevance_pool,
 )
 
 
@@ -147,6 +160,48 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--waypoint-k",
+        type=int,
+        default=8,
+        help=(
+            "Maximum semantic-stop waypoint candidates after "
+            "exact/contains/semantic tiering."
+        ),
+    )
+    parser.add_argument(
+        "--disable-waypoint-selector",
+        action="store_true",
+        help=(
+            "Use all mapped semantic-stop candidates without "
+            "v2.4.6 waypoint tier selection."
+        ),
+    )
+    parser.add_argument(
+        "--direct-hit-k",
+        type=int,
+        default=5,
+        help=(
+            "Maximum same-node DirectConceptHit records returned "
+            "alongside traversal paths."
+        ),
+    )
+    parser.add_argument(
+        "--direct-hit-min-similarity",
+        type=float,
+        default=0.60,
+        help=(
+            "Minimum similarity required on both query sides for "
+            "a semantic DirectConceptHit."
+        ),
+    )
+    parser.add_argument(
+        "--disable-direct-concept-hits",
+        action="store_true",
+        help=(
+            "Disable the v2.4.6 same-node direct-answer channel."
+        ),
+    )
+    parser.add_argument(
         "--bundle-max-per-endpoint-pair",
         type=int,
         default=2,
@@ -203,6 +258,33 @@ def parse_args() -> argparse.Namespace:
         "--max-depth",
         type=int,
         default=8,
+        help=(
+            "Maximum path depth for ordinary traversal. "
+            "For backward compatibility, an explicitly supplied value "
+            "also overrides semantic-stop depth unless "
+            "--semantic-stop-max-depth is supplied."
+        ),
+    )
+    parser.add_argument(
+        "--semantic-stop-max-depth",
+        type=int,
+        default=None,
+        help=(
+            "Maximum total source→waypoint→target depth for semantic-stop. "
+            "Defaults to 12 when --max-depth is not explicitly supplied."
+        ),
+    )
+    parser.add_argument(
+        "--semantic-stop-ablation-max-triples",
+        type=int,
+        default=(
+            DEFAULT_SEMANTIC_STOP_ABLATION_MAX_TRIPLES
+        ),
+        help=(
+            "Safety cap for source×target×waypoint combinations when "
+            "semantic_stop is used with --disable-endpoint-selector. "
+            "Set <=0 to disable the guard."
+        ),
     )
     parser.add_argument(
         "--max-alignment-edges",
@@ -270,6 +352,32 @@ def _map(
 def _path_sort_key(
     row: dict,
 ) -> tuple:
+    waypoint = row.get("waypoint")
+    if isinstance(waypoint, dict):
+        waypoint_tier = int(
+            waypoint.get(
+                "semantic_tier",
+                99,
+            )
+        )
+        waypoint_similarity = float(
+            waypoint.get(
+                "semantic_similarity",
+                0.0,
+            )
+        )
+        waypoint_rank = int(
+            waypoint.get(
+                "waypoint_rank",
+                10**9,
+            )
+            or 10**9
+        )
+    else:
+        waypoint_tier = 99
+        waypoint_similarity = 0.0
+        waypoint_rank = 10**9
+
     pair = row.get("endpoint_pair")
     if isinstance(pair, dict):
         tier = int(
@@ -288,7 +396,13 @@ def _path_sort_key(
         tier = 99
         pair_score = 0.0
 
+    # If a semantic waypoint exists, its query relevance is a hard
+    # preference signal before endpoint/path cost. For ordinary traversal
+    # these leading fields are equal and the v2.4.5 ordering is preserved.
     return (
+        waypoint_tier,
+        -waypoint_similarity,
+        waypoint_rank,
         tier,
         -pair_score,
         float(row["total_cost"]),
@@ -297,8 +411,33 @@ def _path_sort_key(
     )
 
 
+def _flag_was_explicit(
+    flag: str,
+    argv: list[str] | None = None,
+) -> bool:
+    rows = list(sys.argv[1:] if argv is None else argv)
+    return any(
+        item == flag
+        or item.startswith(flag + "=")
+        for item in rows
+    )
+
+
 def main() -> None:
     args = parse_args()
+
+    semantic_stop_max_depth = resolve_semantic_stop_max_depth(
+        base_max_depth=args.max_depth,
+        semantic_stop_max_depth=args.semantic_stop_max_depth,
+        base_max_depth_explicit=_flag_was_explicit(
+            "--max-depth"
+        ),
+    )
+    effective_max_depth = (
+        semantic_stop_max_depth
+        if args.algorithm == "semantic_stop"
+        else args.max_depth
+    )
 
     if (
         args.algorithm == "semantic_stop"
@@ -434,10 +573,85 @@ def main() -> None:
             "No semantic-stop nodes matched."
         )
 
+    if args.disable_direct_concept_hits:
+        direct_concept_hits: list[dict] = []
+    else:
+        direct_concept_hits = [
+            item.to_dict()
+            for item in DirectConceptHitSelector(
+                graph,
+                min_similarity=(
+                    args.direct_hit_min_similarity
+                ),
+            ).select(
+                source_matches,
+                target_matches,
+                top_k=args.direct_hit_k,
+            )
+        ]
+
+    waypoint_diagnostics: list[dict] = []
+    if args.algorithm == "semantic_stop":
+        actual_stop_matches = [
+            dict(row)
+            for row in stop_matches
+            if row is not None
+        ]
+        if args.disable_waypoint_selector:
+            waypoint_candidates = [
+                {
+                    "stop_match": row,
+                    "waypoint_diagnostic": None,
+                }
+                for row in actual_stop_matches
+            ]
+        else:
+            waypoint_selector = WaypointSelector()
+            (
+                selected_waypoints,
+                waypoint_rows,
+            ) = waypoint_selector.select(
+                actual_stop_matches,
+                top_k=args.waypoint_k,
+            )
+            waypoint_diagnostics = [
+                item.to_dict()
+                for item in waypoint_rows
+            ]
+            stop_by_id = {
+                str(row["node_id"]): row
+                for row in actual_stop_matches
+            }
+            waypoint_candidates = [
+                {
+                    "stop_match": stop_by_id[
+                        item.node_id
+                    ],
+                    "waypoint_diagnostic": (
+                        item.to_dict()
+                    ),
+                }
+                for item in selected_waypoints
+            ]
+        if not waypoint_candidates:
+            raise RuntimeError(
+                "No semantic-stop waypoint candidates remained."
+            )
+    else:
+        waypoint_candidates = [
+            {
+                "stop_match": None,
+                "waypoint_diagnostic": None,
+            }
+        ]
+
     constraints = TraversalConstraints(
         mode=args.mode,
         top_k=args.top_k,
         max_depth=args.max_depth,
+        semantic_stop_max_depth=(
+            semantic_stop_max_depth
+        ),
         max_alignment_edges=(
             args.max_alignment_edges
         ),
@@ -453,7 +667,39 @@ def main() -> None:
         dict
     ] = []
 
+    semantic_stop_ablation_guard = None
+
     if args.disable_endpoint_selector:
+        endpoint_source_matches = source_matches
+        endpoint_target_matches = target_matches
+        if args.algorithm == "semantic_stop":
+            (
+                endpoint_source_matches,
+                endpoint_target_matches,
+                guard_diagnostic,
+            ) = guard_semantic_stop_ablation(
+                source_matches,
+                target_matches,
+                waypoint_count=len(waypoint_candidates),
+                max_triples=(
+                    args.semantic_stop_ablation_max_triples
+                ),
+            )
+            semantic_stop_ablation_guard = (
+                guard_diagnostic.to_dict()
+            )
+            if guard_diagnostic.applied:
+                print(
+                    "WARNING: semantic-stop no-selector ablation "
+                    "was safety-capped: "
+                    f"source {guard_diagnostic.source_count_before}"
+                    f"->{guard_diagnostic.source_count_after}, "
+                    f"target {guard_diagnostic.target_count_before}"
+                    f"->{guard_diagnostic.target_count_after}, "
+                    f"triple upper bound="
+                    f"{guard_diagnostic.traversal_triple_upper_bound}."
+                )
+
         endpoint_pairs = [
             {
                 "source_match": (
@@ -465,9 +711,11 @@ def main() -> None:
                 "pair_diagnostic": None,
             }
             for source_match
-            in source_matches
+            in endpoint_source_matches
             for target_match
-            in target_matches
+            in endpoint_target_matches
+            if str(source_match["node_id"])
+            != str(target_match["node_id"])
         ]
     else:
         selector = EndpointPairSelector(
@@ -480,7 +728,7 @@ def main() -> None:
             source_matches,
             target_matches,
             top_k=args.endpoint_pair_k,
-            max_depth=args.max_depth,
+            max_depth=effective_max_depth,
         )
 
         endpoint_pair_diagnostics = [
@@ -529,7 +777,15 @@ def main() -> None:
             "target_match"
         ]
 
-        for stop_match in stop_matches:
+        for waypoint_candidate in waypoint_candidates:
+            stop_match = waypoint_candidate[
+                "stop_match"
+            ]
+            waypoint_diagnostic = (
+                waypoint_candidate[
+                    "waypoint_diagnostic"
+                ]
+            )
             stop_node = (
                 str(
                     stop_match["node_id"]
@@ -559,6 +815,9 @@ def main() -> None:
                 row["stop_match"] = (
                     stop_match
                 )
+                row["waypoint"] = (
+                    waypoint_diagnostic
+                )
                 row["endpoint_pair"] = (
                     endpoint_pair[
                         "pair_diagnostic"
@@ -578,6 +837,21 @@ def main() -> None:
         key=_path_sort_key,
     )
 
+    if (
+        args.algorithm == "semantic_stop"
+        and not args.disable_waypoint_selector
+    ):
+        (
+            bundle_candidate_paths,
+            admitted_waypoint_tiers,
+        ) = waypoint_relevance_pool(
+            all_paths,
+            top_k=args.top_k,
+        )
+    else:
+        bundle_candidate_paths = all_paths
+        admitted_waypoint_tiers = ()
+
     bundle_policy = PathBundlePolicy(
         max_per_endpoint_pair=(
             args.bundle_max_per_endpoint_pair
@@ -591,7 +865,7 @@ def main() -> None:
     )
 
     if args.disable_bundle_selector:
-        paths = all_paths[
+        paths = bundle_candidate_paths[
             : args.top_k
         ]
         bundle_selection = {
@@ -607,7 +881,7 @@ def main() -> None:
         bundle_result = PathBundleSelector(
             policy=bundle_policy
         ).select(
-            all_paths,
+            bundle_candidate_paths,
             top_k=args.top_k,
         )
         paths = (
@@ -676,12 +950,46 @@ def main() -> None:
         "constraints": (
             constraints.to_dict()
         ),
+        "depth_policy": {
+            "base_max_depth": args.max_depth,
+            "semantic_stop_max_depth": (
+                semantic_stop_max_depth
+            ),
+            "effective_max_depth": (
+                effective_max_depth
+            ),
+        },
+        "effective_max_depth": (
+            effective_max_depth
+        ),
+        "semantic_stop_ablation_guard": (
+            semantic_stop_ablation_guard
+        ),
         "source_matches": source_matches,
         "target_matches": target_matches,
         "stop_matches": (
             []
             if stop_matches == [None]
             else stop_matches
+        ),
+        "waypoint_selector_enabled": (
+            args.algorithm == "semantic_stop"
+            and not args.disable_waypoint_selector
+        ),
+        "waypoint_diagnostics": (
+            waypoint_diagnostics
+        ),
+        "admitted_waypoint_tiers": list(
+            admitted_waypoint_tiers
+        ),
+        "direct_concept_hits_enabled": (
+            not args.disable_direct_concept_hits
+        ),
+        "direct_concept_hit_count": len(
+            direct_concept_hits
+        ),
+        "direct_concept_hits": (
+            direct_concept_hits
         ),
         "endpoint_selector_enabled": (
             not args.disable_endpoint_selector
@@ -700,6 +1008,9 @@ def main() -> None:
         ),
         "candidate_path_count": (
             len(all_paths)
+        ),
+        "waypoint_relevance_pool_count": (
+            len(bundle_candidate_paths)
         ),
         "returned_path_count": len(
             paths
@@ -803,11 +1114,33 @@ def main() -> None:
                     for row in stop_matches
                     if row is not None
                 ],
+                "waypoint_count": (
+                    len([
+                        row
+                        for row in waypoint_diagnostics
+                        if row.get("selected")
+                    ])
+                ),
+                "admitted_waypoint_tiers": list(
+                    admitted_waypoint_tiers
+                ),
+                "direct_concept_hit_count": len(
+                    direct_concept_hits
+                ),
+                "effective_max_depth": (
+                    effective_max_depth
+                ),
+                "semantic_stop_ablation_guard": (
+                    semantic_stop_ablation_guard
+                ),
                 "endpoint_pair_count": len(
                     endpoint_pairs
                 ),
                 "candidate_path_count": len(
                     all_paths
+                ),
+                "waypoint_relevance_pool_count": len(
+                    bundle_candidate_paths
                 ),
                 "returned_path_count": len(
                     paths
@@ -823,6 +1156,51 @@ def main() -> None:
             indent=2,
         )
     )
+
+    if direct_concept_hits:
+        print()
+        print("Direct concept hits:")
+        for rank, hit in enumerate(
+            direct_concept_hits,
+            start=1,
+        ):
+            minimum = hit.get(
+                "minimum_similarity"
+            )
+            minimum_text = (
+                f"{float(minimum):.4f}"
+                if minimum is not None
+                else "NA"
+            )
+            print(
+                f"  [{rank}] "
+                f"tier={hit['hit_tier']} "
+                f"min_sim={minimum_text} "
+                f"basis={hit['quality_basis']}"
+            )
+            print(
+                "      ",
+                hit["label"],
+                f"({hit['node_id']})",
+            )
+
+    if waypoint_diagnostics:
+        print()
+        print("Selected semantic waypoints:")
+        for row in waypoint_diagnostics:
+            if not row.get("selected"):
+                continue
+            print(
+                f"  [{row['waypoint_rank']}] "
+                f"tier={row['semantic_tier']} "
+                f"sim={row['semantic_similarity']:.4f} "
+                f"{row['label']}"
+            )
+        if admitted_waypoint_tiers:
+            print(
+                "  admitted tiers for bundle:",
+                list(admitted_waypoint_tiers),
+            )
 
     if endpoint_pair_diagnostics:
         print()
@@ -840,7 +1218,7 @@ def main() -> None:
         if not selected_rows:
             print(
                 "  NONE within max-depth="
-                f"{args.max_depth}"
+                f"{effective_max_depth}"
             )
             blocked = [
                 row
@@ -985,6 +1363,18 @@ def main() -> None:
                 f"{pair['pair_score']:.4f}"
             )
 
+        waypoint = path.get(
+            "waypoint"
+        )
+        waypoint_text = ""
+        if isinstance(waypoint, dict):
+            waypoint_text = (
+                f" waypoint_tier="
+                f"{waypoint['semantic_tier']}"
+                f" waypoint_rank="
+                f"{waypoint['waypoint_rank']}"
+            )
+
         quality = path.get(
             "path_quality",
             {},
@@ -1043,6 +1433,7 @@ def main() -> None:
             f"nav_fraction="
             f"{navigation_fraction:.2f}"
             f"{pair_text}"
+            f"{waypoint_text}"
         )
 
         print(
@@ -1077,6 +1468,14 @@ def main() -> None:
             print(
                 "    mechanism_nodes:",
                 mechanism_nodes,
+            )
+
+        if isinstance(waypoint, dict):
+            print(
+                "    semantic_waypoint:",
+                waypoint.get("label"),
+                "node_id=",
+                waypoint.get("node_id"),
             )
 
         for step in path["steps"]:

@@ -396,7 +396,11 @@ class EndpointPairSelector:
                         * weighted_cost
                     )
 
-                if not same_component:
+                if source_id == target_id:
+                    reason = (
+                        "zero_hop_direct_concept"
+                    )
+                elif not same_component:
                     reason = (
                         "different_weak_component"
                     )

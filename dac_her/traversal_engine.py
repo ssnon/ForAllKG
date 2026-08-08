@@ -62,9 +62,18 @@ class TraversalConstraints:
     mode: str = "mechanism"
     top_k: int = 5
     max_depth: int = 8
+    semantic_stop_max_depth: int = 12
     max_alignment_edges: int = 2
     min_scientific_edges: int = 1
     max_expansions: int = 20_000
+
+    def effective_max_depth(
+        self,
+        algorithm: TraversalAlgorithm,
+    ) -> int:
+        if algorithm == "semantic_stop":
+            return int(self.semantic_stop_max_depth)
+        return int(self.max_depth)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -164,8 +173,19 @@ class TraversalEngine:
             "reverse": reverse,
         }
 
-    def _allowed(self, path: list[str], constraints: TraversalConstraints) -> bool:
-        if len(path) < 2 or len(path) - 1 > constraints.max_depth:
+    def _allowed(
+        self,
+        path: list[str],
+        constraints: TraversalConstraints,
+        *,
+        max_depth: int | None = None,
+    ) -> bool:
+        effective_depth = (
+            constraints.max_depth
+            if max_depth is None
+            else int(max_depth)
+        )
+        if len(path) < 2 or len(path) - 1 > effective_depth:
             return False
         if not path_allowed(self.graph, path, mode=constraints.mode):
             return False
@@ -236,7 +256,13 @@ class TraversalEngine:
                 path = left[:-1] + right
                 if len(set(path)) != len(path):
                     continue
-                if self._allowed(path, constraints):
+                if self._allowed(
+                    path,
+                    constraints,
+                    max_depth=(
+                        constraints.semantic_stop_max_depth
+                    ),
+                ):
                     combined[tuple(path)] = path
         rows = list(combined.values())
         rows.sort(key=lambda p: (path_cost(self.graph, p), len(p), p))
