@@ -2,7 +2,7 @@ Notebooks/GRAPHDATA_OUTPUT_MATERIALPROPERTIES/pfas_and_domain_knowledge_graph.gr
 .env
 data_dac/
 os.environ[OPENROUTER_EXTRACT_MODEL]
-tests/
+
 */__pycache__
 __pycache__/
 *.py[cod]
