@@ -1,0 +1,59 @@
+{
+  "schema_version": "hypothesis-portfolio-v1",
+  "portfolio_id": "hypothesis_portfolio:2771aea8745682a69058",
+  "source_context_id": "hypothesis_context:v262:3926226f9d86c1203fa4",
+  "source_context_sha256": "a6fa703e80b4a1b5538bf609b73113bde0b0aecbe2b75f8843c9b463f5e26dad",
+  "source_report_id": "report:v262:3926226f9d86c1203fa4",
+  "source_report_sha256": "af38c2aaea6921e9ae68a3a987fe8a97e17237eee50a860198e1e454ed23fa56",
+  "hypotheses": [
+    {
+      "schema_version": "hypothesis-card-v1",
+      "hypothesis_id": "hypothesis:47d39f5048ab94b791d8",
+      "source_context_id": "hypothesis_context:v262:3926226f9d86c1203fa4",
+      "source_context_sha256": "a6fa703e80b4a1b5538bf609b73113bde0b0aecbe2b75f8843c9b463f5e26dad",
+      "source_report_id": "report:v262:3926226f9d86c1203fa4",
+      "source_report_sha256": "af38c2aaea6921e9ae68a3a987fe8a97e17237eee50a860198e1e454ed23fa56",
+      "title": "Fixture hypothesis h-causal",
+      "hypothesis_statement": "Axial coordination causes improved catalytic activity.",
+      "hypothesis_type": "mechanistic_extension",
+      "premise_statement_ids": [
+        "s:assoc"
+      ],
+      "gap_statement_ids": [],
+      "inferential_bridge": "Axial coordination directly leads to the activity increase.",
+      "predicted_observations": [
+        {
+          "observation_id": "prediction:c4de30c7ed1423326761",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "expected_direction": "qualitative_change",
+          "rationale": "The observation follows qualitatively from the proposed bridge."
+        }
+      ],
+      "falsification_criteria": [
+        {
+          "criterion_id": "falsifier:361d9ce52866c5cde0b5",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "falsifying_outcome": "The predicted qualitative response is not observed."
+        }
+      ],
+      "assumptions": [],
+      "source_paper_ids": [
+        "Kiwook_9"
+      ],
+      "gap_paper_ids": [],
+      "cross_paper_synthesis": false,
+      "candidate_dependency": "none",
+      "evidence_profile": {
+        "premise_count": 1,
+        "gap_count": 0,
+        "source_paper_count": 1,
+        "candidate_premise_count": 0,
+        "reported_premise_count": 0,
+        "synthesis_premise_count": 1
+      },
+      "status": "hypothesized",
+      "novelty_status": "not_assessed"
+    }
+  ],
+  "abstention_reason": null
+}

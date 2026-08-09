@@ -1,0 +1,53 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:b0638de531bd828653f6",
+  "context_sha256": "e5c3a4a7977a00167bc8a8c0be7ddbf4a028c068291d4c0e519faa38b5cb6b46",
+  "source_packet_id": "packet:v262:b0638de531bd828653f6",
+  "source_packet_sha256": "50def69a0fcf59ac9b677bf7aae6a4c348ea05bb8d1a921063864fbbfbbbe592",
+  "source_report_id": "report:v262:b0638de531bd828653f6",
+  "source_report_sha256": "ad91d140c2e882dd85589f3c40c006f252d1279ac8dc0bf2276a23ca5a24c6dc",
+  "task_id": "task:v262:b0638de531bd828653f6",
+  "question": "Does alignment establish a mechanism?",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:alignment",
+      "text": "A registry-aligned concept links water dissociation and spillover.",
+      "epistemic_role": "evidence_synthesis",
+      "claim_kind": "association",
+      "paper_ids": [
+        "Kiwook_9"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:alignment"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [
+        "path:alignment"
+      ],
+      "requires_verification": false,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

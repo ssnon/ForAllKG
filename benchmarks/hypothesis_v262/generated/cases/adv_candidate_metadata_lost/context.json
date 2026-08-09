@@ -1,0 +1,51 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:3b26401c6b5de563a4d8",
+  "context_sha256": "650edf76ec811a362867e8c0165e06354f118aecbaac236d6bab57c12a23513b",
+  "source_packet_id": "packet:v262:3b26401c6b5de563a4d8",
+  "source_packet_sha256": "3532bfe64641550e68e394b9e8d75c2d6eb1753a7dea714b3a508d2c82ae7c76",
+  "source_report_id": "report:v262:3b26401c6b5de563a4d8",
+  "source_report_sha256": "ee3a4edae0d7531299df2990987f20cb0e5d368a99c7f1bfc4c3528e2b4fec5c",
+  "task_id": "task:v262:3b26401c6b5de563a4d8",
+  "question": "Can the candidate relation motivate a hypothesis?",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:candidate",
+      "text": "A provisional candidate relation links adsorption and electronic state.",
+      "epistemic_role": "evidence_synthesis",
+      "claim_kind": "association",
+      "paper_ids": [
+        "Kiwook_9"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:candidate"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [],
+      "requires_verification": true,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

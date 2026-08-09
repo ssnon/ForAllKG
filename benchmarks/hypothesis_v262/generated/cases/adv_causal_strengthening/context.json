@@ -1,0 +1,51 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:3926226f9d86c1203fa4",
+  "context_sha256": "a6fa703e80b4a1b5538bf609b73113bde0b0aecbe2b75f8843c9b463f5e26dad",
+  "source_packet_id": "packet:v262:3926226f9d86c1203fa4",
+  "source_packet_sha256": "87bd93614e4db8fcefc0b110ea9d82d9ff8e96576fa8006b46b3814a49d50015",
+  "source_report_id": "report:v262:3926226f9d86c1203fa4",
+  "source_report_sha256": "af38c2aaea6921e9ae68a3a987fe8a97e17237eee50a860198e1e454ed23fa56",
+  "task_id": "task:v262:3926226f9d86c1203fa4",
+  "question": "What relation can be hypothesized?",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:assoc",
+      "text": "Axial coordination is associated with improved activity.",
+      "epistemic_role": "evidence_synthesis",
+      "claim_kind": "association",
+      "paper_ids": [
+        "Kiwook_9"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:assoc"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [],
+      "requires_verification": false,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

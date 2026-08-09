@@ -1,0 +1,60 @@
+{
+  "schema_version": "hypothesis-portfolio-v1",
+  "portfolio_id": "hypothesis_portfolio:2013aecdb0ecfb4ab3e4",
+  "source_context_id": "hypothesis_context:v262:cb79048c03e4acd3249d",
+  "source_context_sha256": "409fc57b6041a4b57c4654d5356e374ea4bf871d06e91d1cad32009027e2ddba",
+  "source_report_id": "report:v262:cb79048c03e4acd3249d",
+  "source_report_sha256": "b4657d53d1be4b168458c01f0942a37c8c783ef80e829b5e932041c58165a106",
+  "hypotheses": [
+    {
+      "schema_version": "hypothesis-card-v1",
+      "hypothesis_id": "hypothesis:f94702f4beb5d7fc0a4f",
+      "source_context_id": "hypothesis_context:v262:cb79048c03e4acd3249d",
+      "source_context_sha256": "409fc57b6041a4b57c4654d5356e374ea4bf871d06e91d1cad32009027e2ddba",
+      "source_report_id": "report:v262:cb79048c03e4acd3249d",
+      "source_report_sha256": "b4657d53d1be4b168458c01f0942a37c8c783ef80e829b5e932041c58165a106",
+      "title": "Fixture hypothesis h-candidate",
+      "hypothesis_statement": "The provisional electronic-state relation may contribute to catalytic behavior.",
+      "hypothesis_type": "mechanistic_extension",
+      "premise_statement_ids": [
+        "s:candidate",
+        "s:reported"
+      ],
+      "gap_statement_ids": [],
+      "inferential_bridge": "If the candidate relation holds, electronic restructuring could modify intermediate interactions.",
+      "predicted_observations": [
+        {
+          "observation_id": "prediction:0e4608a9e8512e382147",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "expected_direction": "qualitative_change",
+          "rationale": "The observation follows qualitatively from the proposed bridge."
+        }
+      ],
+      "falsification_criteria": [
+        {
+          "criterion_id": "falsifier:313e57b436c059170350",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "falsifying_outcome": "The predicted qualitative response is not observed."
+        }
+      ],
+      "assumptions": [],
+      "source_paper_ids": [
+        "Kiwook_9"
+      ],
+      "gap_paper_ids": [],
+      "cross_paper_synthesis": false,
+      "candidate_dependency": "supporting",
+      "evidence_profile": {
+        "premise_count": 2,
+        "gap_count": 0,
+        "source_paper_count": 1,
+        "candidate_premise_count": 1,
+        "reported_premise_count": 1,
+        "synthesis_premise_count": 1
+      },
+      "status": "hypothesized",
+      "novelty_status": "not_assessed"
+    }
+  ],
+  "abstention_reason": null
+}

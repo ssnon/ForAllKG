@@ -1,0 +1,53 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:7006e1be6edb4bf3a8db",
+  "context_sha256": "0e8d990d7b9481fd08c3d3421c3f15210ec2aceb39c14725d244a2b71214e6c6",
+  "source_packet_id": "packet:v262:7006e1be6edb4bf3a8db",
+  "source_packet_sha256": "304159e4d99960baa6263938523970e77921f08c80ca8a50ebdf15976761b759",
+  "source_report_id": "report:v262:7006e1be6edb4bf3a8db",
+  "source_report_sha256": "c3f2bc86b1466e15e8c1cea928671cba2bd7b43dca2dba8fb9c536ba4ac7300d",
+  "task_id": "task:v262:7006e1be6edb4bf3a8db",
+  "question": "Could spillover mediate the axial Co-O activity relation?",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:k10",
+      "text": "Axial Co-O coordination is associated with activity and charge transfer.",
+      "epistemic_role": "reported",
+      "claim_kind": "mechanism",
+      "paper_ids": [
+        "Kiwook_10"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:k10"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [],
+      "requires_verification": false,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [
+    "Kiwook_10"
+  ],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

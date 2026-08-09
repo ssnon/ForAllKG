@@ -1,0 +1,51 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:f92cd5f5583effaeccdf",
+  "context_sha256": "4911c0923bc272e0a33d0df8070341bec2f24683fc4f2218a8c46288752cf829",
+  "source_packet_id": "packet:v262:f92cd5f5583effaeccdf",
+  "source_packet_sha256": "7cee47289517bd27f1b853ac8ca98099bfed9bdea5881dac2345e26f83f5f41a",
+  "source_report_id": "report:v262:f92cd5f5583effaeccdf",
+  "source_report_sha256": "c11a361d1a157bf059de76a3a21874df49eb1c33e854a7d27b3f65d5c22f3fb1",
+  "task_id": "task:v262:f92cd5f5583effaeccdf",
+  "question": "Generate distinct mechanistic hypotheses.",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:reported",
+      "text": "Charge redistribution may influence hydrogen adsorption.",
+      "epistemic_role": "reported",
+      "claim_kind": "mechanism",
+      "paper_ids": [
+        "Kiwook_9"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:reported"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [],
+      "requires_verification": false,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

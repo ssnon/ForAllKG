@@ -1,0 +1,59 @@
+{
+  "schema_version": "hypothesis-portfolio-v1",
+  "portfolio_id": "hypothesis_portfolio:ecc9f67bbeebd99416b2",
+  "source_context_id": "hypothesis_context:v262:3b26401c6b5de563a4d8",
+  "source_context_sha256": "650edf76ec811a362867e8c0165e06354f118aecbaac236d6bab57c12a23513b",
+  "source_report_id": "report:v262:3b26401c6b5de563a4d8",
+  "source_report_sha256": "ee3a4edae0d7531299df2990987f20cb0e5d368a99c7f1bfc4c3528e2b4fec5c",
+  "hypotheses": [
+    {
+      "schema_version": "hypothesis-card-v1",
+      "hypothesis_id": "hypothesis:5a92b660304e240d1c1f",
+      "source_context_id": "hypothesis_context:v262:3b26401c6b5de563a4d8",
+      "source_context_sha256": "650edf76ec811a362867e8c0165e06354f118aecbaac236d6bab57c12a23513b",
+      "source_report_id": "report:v262:3b26401c6b5de563a4d8",
+      "source_report_sha256": "ee3a4edae0d7531299df2990987f20cb0e5d368a99c7f1bfc4c3528e2b4fec5c",
+      "title": "Fixture hypothesis h-base",
+      "hypothesis_statement": "The selected evidence may support a testable mechanistic extension.",
+      "hypothesis_type": "mechanistic_extension",
+      "premise_statement_ids": [
+        "s:candidate"
+      ],
+      "gap_statement_ids": [],
+      "inferential_bridge": "The proposed bridge is an explicitly hypothetical mechanistic link.",
+      "predicted_observations": [
+        {
+          "observation_id": "prediction:d0e9576d72e88fb66cc7",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "expected_direction": "qualitative_change",
+          "rationale": "The observation follows qualitatively from the proposed bridge."
+        }
+      ],
+      "falsification_criteria": [
+        {
+          "criterion_id": "falsifier:66beccb8eaed3d3e78f5",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "falsifying_outcome": "The predicted qualitative response is not observed."
+        }
+      ],
+      "assumptions": [],
+      "source_paper_ids": [
+        "Kiwook_9"
+      ],
+      "gap_paper_ids": [],
+      "cross_paper_synthesis": false,
+      "candidate_dependency": "none",
+      "evidence_profile": {
+        "premise_count": 1,
+        "gap_count": 0,
+        "source_paper_count": 1,
+        "candidate_premise_count": 1,
+        "reported_premise_count": 0,
+        "synthesis_premise_count": 1
+      },
+      "status": "hypothesized",
+      "novelty_status": "not_assessed"
+    }
+  ],
+  "abstention_reason": null
+}

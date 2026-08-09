@@ -1,0 +1,51 @@
+{
+  "schema_version": "hypothesis-context-v1",
+  "context_id": "hypothesis_context:v262:fda3b47bb4629d1ccd51",
+  "context_sha256": "c5f4ec30ec7c73aad27c1812c07ea7d5722a2259dcc547aff64b1991f2fc43ec",
+  "source_packet_id": "packet:v262:fda3b47bb4629d1ccd51",
+  "source_packet_sha256": "29abd2cb2142bb70c65f9789a0d17c9d90570d6af3039aeca80080d9c1b6f681",
+  "source_report_id": "report:v262:fda3b47bb4629d1ccd51",
+  "source_report_sha256": "c491afff1d6bca47ba6ff1d3dd85ecefe25c5eda391ebf1e69ef603bd4092bcb",
+  "task_id": "task:v262:fda3b47bb4629d1ccd51",
+  "question": "What qualitative prediction follows?",
+  "corpus_id": "dac_her_v262_fixture",
+  "evidence_statements": [
+    {
+      "statement_id": "s:reported",
+      "text": "Coordination changes adsorption geometry.",
+      "epistemic_role": "reported",
+      "claim_kind": "mechanism",
+      "paper_ids": [
+        "Kiwook_9"
+      ],
+      "scientific_support_node_ids": [
+        "node:s:reported"
+      ],
+      "scientific_support_edge_ids": [],
+      "support_path_ids": [],
+      "alignment_path_ids": [],
+      "requires_verification": false,
+      "eligible_as_premise": true,
+      "eligible_as_gap": false,
+      "premise_restrictions": []
+    }
+  ],
+  "mechanism_routes": [],
+  "mechanistic_motifs": [],
+  "reported_design_levers": [],
+  "research_gaps": [],
+  "partial_absence_blocked_paper_ids": [],
+  "policy": {
+    "generated_hypotheses_allowed": true,
+    "external_novelty_claims_allowed": false,
+    "experiment_protocols_allowed": false,
+    "unsupported_numeric_predictions_allowed": false,
+    "alignment_can_be_scientific_premise": false,
+    "unresolved_can_be_positive_premise": false,
+    "navigation_note_can_be_positive_premise": false,
+    "candidate_evidence_must_propagate": true,
+    "falsifiable_prediction_required": true,
+    "falsification_condition_required": true,
+    "source_report_must_validate": true
+  }
+}

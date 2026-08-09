@@ -1,0 +1,61 @@
+{
+  "schema_version": "hypothesis-portfolio-v1",
+  "portfolio_id": "hypothesis_portfolio:730db6725572c8c4bd76",
+  "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+  "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+  "source_report_id": "report:v262:ae4f7e6c36770616b6be",
+  "source_report_sha256": "b8acfa6179a2e7a5b8185c9c8897d2cd0abdbcb6b09c58cafe60e2125182e3f4",
+  "hypotheses": [
+    {
+      "schema_version": "hypothesis-card-v1",
+      "hypothesis_id": "hypothesis:f50f86f6062ce57377a5",
+      "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+      "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+      "source_report_id": "report:v262:ae4f7e6c36770616b6be",
+      "source_report_sha256": "b8acfa6179a2e7a5b8185c9c8897d2cd0abdbcb6b09c58cafe60e2125182e3f4",
+      "title": "Fixture hypothesis h-base",
+      "hypothesis_statement": "The selected evidence may support a testable mechanistic extension.",
+      "hypothesis_type": "mechanistic_extension",
+      "premise_statement_ids": [
+        "s:spill",
+        "s:water"
+      ],
+      "gap_statement_ids": [],
+      "inferential_bridge": "The graph alignment demonstrates that water dissociation causes hydrogen spillover.",
+      "predicted_observations": [
+        {
+          "observation_id": "prediction:5735634887deecf5855c",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "expected_direction": "qualitative_change",
+          "rationale": "The observation follows qualitatively from the proposed bridge."
+        }
+      ],
+      "falsification_criteria": [
+        {
+          "criterion_id": "falsifier:29253da12a53fcc96a45",
+          "observable": "Catalytic response under the hypothesized mechanism",
+          "falsifying_outcome": "The predicted qualitative response is not observed."
+        }
+      ],
+      "assumptions": [],
+      "source_paper_ids": [
+        "Kiwook_4",
+        "Kiwook_6"
+      ],
+      "gap_paper_ids": [],
+      "cross_paper_synthesis": true,
+      "candidate_dependency": "none",
+      "evidence_profile": {
+        "premise_count": 2,
+        "gap_count": 0,
+        "source_paper_count": 2,
+        "candidate_premise_count": 0,
+        "reported_premise_count": 2,
+        "synthesis_premise_count": 0
+      },
+      "status": "hypothesized",
+      "novelty_status": "not_assessed"
+    }
+  ],
+  "abstention_reason": null
+}
