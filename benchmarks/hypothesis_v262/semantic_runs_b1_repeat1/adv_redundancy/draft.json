@@ -1,0 +1,130 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "Both hypotheses use s:reported without presenting the reported possibility as an established fact. The added mediation language is part of the explicitly hypothesized extension rather than a silent restatement of the premise.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No research gaps or scope-limit statements are supplied or represented as established evidence.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "Neither hypothesis relies on candidate or provisional evidence; both use the reported premise s:reported and remain marked as hypothesized.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The proposed bridge is a bounded mechanistic extension from possible charge-redistribution effects on hydrogen adsorption to altered electronic interaction with adsorbed hydrogen. It is explicitly qualified with may rather than asserted as established.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypotheses use mechanistic language, both state that charge redistribution may mediate the changes. The causal interpretation is therefore explicitly hypothetical rather than presented as a demonstrated causal fact.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The hypotheses and predictions specify only that a qualitative change may occur; they do not claim an unsupported increase, decrease, or non-monotonic direction.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "fail",
+      "rationale": "The predicted observable is a catalytic response, whereas the hypothesis concerns mediation of hydrogen adsorption changes and its bridge concerns electronic interaction with adsorbed hydrogen. The supplied hypothesis does not establish a clear linkage from that mechanism to the stated catalytic-response observable.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "fail",
+      "rationale": "The falsification criterion merely states that the predicted qualitative response is not observed, while the response is defined as a broad catalytic response and no concrete expected response is specified. This makes the criterion insufficiently informative for meaningfully testing the stated adsorption mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "Both hypotheses draw from a single source paper, Kiwook_9, and no cross-paper synthesis or silent merging of distinct systems is present.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "fail",
+      "rationale": "The two portfolio entries have identical hypothesis statements, inferential bridges, premises, predictions, and falsification criteria. They therefore do not represent scientifically distinct hypotheses.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has nonempty eligible evidence: s:reported is an eligible reported mechanism premise. This is sufficient to motivate a bounded hypothesis, even though it does not establish that either hypothesis is true.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:reported"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is grounded in the eligible reported premise and uses explicitly hypothetical, non-directional mechanistic language without cross-paper conflation. However, the two entries are duplicates, and their catalytic-response prediction and falsifier are not sufficiently linked to or informative for the stated hydrogen-adsorption mechanism."
+}

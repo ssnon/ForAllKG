@@ -1,0 +1,26 @@
+{
+  "schema_version": "hypothesis-evaluation-report-v262",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "context_id": "hypothesis_context:v262:f92cd5f5583effaeccdf",
+  "context_sha256": "4911c0923bc272e0a33d0df8070341bec2f24683fc4f2218a8c46288752cf829",
+  "portfolio_id": "hypothesis_portfolio:b6ac58c53e273715824a",
+  "portfolio_sha256": "8f1334d4f8d8076bb5e5dc65f89b2b22f286e837f9d2c8404d875e7d3bc3a79c",
+  "hard_gate_passed": true,
+  "hard_gate_errors": 0,
+  "hard_gate_warnings": 0,
+  "hard_gate_issues": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "layer": "diagnostic",
+      "code": "HYPOTHESIS_REDUNDANCY",
+      "location": "portfolio.hypotheses",
+      "message": "Hypotheses hypothesis:56c003147bd76a7dee40 and hypothesis:b4bf09a99f1e45a3b60a have high lexical-semantic overlap (Jaccard=1.000); review whether they represent distinct scientific hypotheses.",
+      "hypothesis_id": null,
+      "statement_ids": [
+        "s:reported"
+      ],
+      "source": "hypothesis_semantic_checks_v262"
+    }
+  ]
+}

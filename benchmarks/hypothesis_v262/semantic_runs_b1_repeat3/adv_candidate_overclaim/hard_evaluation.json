@@ -1,0 +1,26 @@
+{
+  "schema_version": "hypothesis-evaluation-report-v262",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "context_id": "hypothesis_context:v262:f0b7a52bbf8446943d7c",
+  "context_sha256": "dcbd66b35b8bd193407f52ab7d58e6afe84812382d060a91eafc2c28e9ebe7cd",
+  "portfolio_id": "hypothesis_portfolio:beeee3f1e0faa1a2c18c",
+  "portfolio_sha256": "5861477e5483e33f89570f677046ac6a956ac0e7c9cd42f65db545ea2d885968",
+  "hard_gate_passed": true,
+  "hard_gate_errors": 0,
+  "hard_gate_warnings": 0,
+  "hard_gate_issues": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "layer": "diagnostic",
+      "code": "CANDIDATE_OVERCLAIM_LANGUAGE",
+      "location": "hypotheses[0]",
+      "message": "Candidate-dependent hypothesis uses language that can read as confirmed/established evidence; semantic review is required.",
+      "hypothesis_id": "hypothesis:6d80ebf99126b1e8b711",
+      "statement_ids": [
+        "s:candidate"
+      ],
+      "source": "hypothesis_semantic_checks_v262"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "hypothesis-evaluation-report-v262",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "context_id": "hypothesis_context:v262:cb79048c03e4acd3249d",
+  "context_sha256": "409fc57b6041a4b57c4654d5356e374ea4bf871d06e91d1cad32009027e2ddba",
+  "portfolio_id": "hypothesis_portfolio:2013aecdb0ecfb4ab3e4",
+  "portfolio_sha256": "6bd09a009abfc87230dd3afa5764a0c643fa42742ae6f00de541ebf978691f76",
+  "hard_gate_passed": true,
+  "hard_gate_errors": 0,
+  "hard_gate_warnings": 0,
+  "hard_gate_issues": [],
+  "diagnostics": []
+}

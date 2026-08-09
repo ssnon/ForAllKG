@@ -1,0 +1,130 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "warning",
+      "rationale": "Both hypotheses preserve the reported relationship that charge redistribution may affect hydrogen adsorption, but the term \"mediate\" presents a somewhat more specific mechanistic role than the supplied statement that it \"may influence\" adsorption.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No research gap or unresolved scope limitation is presented as established evidence. The portfolio contains no gap statements.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "Neither hypothesis relies on candidate or provisional evidence, and both are explicitly marked as hypothesized.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The proposed bridge from charge redistribution to altered electronic interaction with adsorbed hydrogen is a bounded mechanistic extension of the supplied evidence rather than an unsupported multi-step assertion.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypotheses use mechanistic language, both state the proposed relationship as \"may\" and are explicitly marked as hypothesized. They do not present charge redistribution as an established cause.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The hypotheses and predictions assert only a qualitative change and do not specify an unsupported increase, decrease, or non-monotonic direction.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "fail",
+      "rationale": "The proposed mechanism concerns hydrogen adsorption, but the prediction is framed as a qualitative change in catalytic response. The supplied premise does not establish that this broader observable follows from the adsorption mechanism, so the prediction adds an insufficiently linked outcome.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "fail",
+      "rationale": "The falsification criterion that \"the predicted qualitative response is not observed\" merely restates the prediction and leaves the catalytic response and qualitative change unspecified. It therefore provides no sufficiently informative, independently interpretable falsifying outcome.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "Both hypotheses draw on the same single paper, Kiwook_9, and no cross-paper synthesis or conflation of distinct systems is present.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "fail",
+      "rationale": "The two hypotheses have identical hypothesis statements, inferential bridges, premises, predictions, and falsification criteria. They are duplicates rather than scientifically distinct hypotheses.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio contains one eligible reported premise, s:reported, that supports at least a bounded mechanistic hypothesis. Non-abstention is therefore appropriate, although the evidence does not establish the hypotheses as proven.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:reported"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is grounded in the eligible reported premise and makes an explicitly hypothetical, bounded mechanistic extension without candidate-evidence or cross-paper problems. However, both entries are exact duplicates, the prediction broadens the observable from hydrogen adsorption to catalytic response without adequate linkage, and the falsifier is too vague and self-referential to be informative. The wording also gives the reported influence relationship a somewhat stronger mediation framing."
+}

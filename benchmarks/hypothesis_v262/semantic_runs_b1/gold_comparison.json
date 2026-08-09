@@ -1,0 +1,61 @@
+{
+  "schema_version": "hypothesis-semantic-gold-comparison-v262",
+  "suite_id": "hypothesis-semantic-gold-v262-b1",
+  "passed": true,
+  "case_count": 8,
+  "passed_cases": 8,
+  "failed_cases": 0,
+  "critical_mismatches": 0,
+  "noncritical_mismatches": 0,
+  "missing_reviews": 0,
+  "case_results": [
+    {
+      "case_id": "canonical_valid",
+      "passed": true,
+      "exact_or_allowed_agreements": 2,
+      "mismatches": []
+    },
+    {
+      "case_id": "canonical_candidate",
+      "passed": true,
+      "exact_or_allowed_agreements": 1,
+      "mismatches": []
+    },
+    {
+      "case_id": "canonical_abstention",
+      "passed": true,
+      "exact_or_allowed_agreements": 2,
+      "mismatches": []
+    },
+    {
+      "case_id": "adv_candidate_overclaim",
+      "passed": true,
+      "exact_or_allowed_agreements": 1,
+      "mismatches": []
+    },
+    {
+      "case_id": "adv_alignment_causalization",
+      "passed": true,
+      "exact_or_allowed_agreements": 2,
+      "mismatches": []
+    },
+    {
+      "case_id": "adv_directional_specificity",
+      "passed": true,
+      "exact_or_allowed_agreements": 1,
+      "mismatches": []
+    },
+    {
+      "case_id": "adv_causal_strengthening",
+      "passed": true,
+      "exact_or_allowed_agreements": 1,
+      "mismatches": []
+    },
+    {
+      "case_id": "adv_redundancy",
+      "passed": true,
+      "exact_or_allowed_agreements": 1,
+      "mismatches": []
+    }
+  ]
+}

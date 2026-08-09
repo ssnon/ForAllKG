@@ -1,0 +1,26 @@
+{
+  "schema_version": "hypothesis-evaluation-report-v262",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "context_id": "hypothesis_context:v262:d1977aa7452d6f2eccc8",
+  "context_sha256": "e0c04bb43ee7515777275c282b43299dcf97c5bfd8707d846116e0bcf5d79fa0",
+  "portfolio_id": "hypothesis_portfolio:016ad6396c2127fde603",
+  "portfolio_sha256": "cdda72955f98842432b3aed8ecaa806578522c47347d5c9963a387d42007c22a",
+  "hard_gate_passed": true,
+  "hard_gate_errors": 0,
+  "hard_gate_warnings": 0,
+  "hard_gate_issues": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "layer": "diagnostic",
+      "code": "UNJUSTIFIED_NON_MONOTONIC_SPECIFICITY",
+      "location": "hypotheses[0].predicted_observations[0]",
+      "message": "Prediction specifies a non-monotonic direction, but the selected premise text does not explicitly support non-monotonicity for this observable. Treat as a semantic-review warning, not a hard failure.",
+      "hypothesis_id": "hypothesis:d182dca2183c3871f85c",
+      "statement_ids": [
+        "s:dgh"
+      ],
+      "source": "hypothesis_semantic_checks_v262"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": "hypothesis-semantic-review-v262",
+  "review_id": "hypothesis_semantic_review:a9c94cd031f43390ecd0",
+  "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+  "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+  "source_portfolio_id": "hypothesis_portfolio:730db6725572c8c4bd76",
+  "source_portfolio_sha256": "cc9a0a206b65c1f9040fee746389dda563773aec3f5c4f5d3d12d77ff40395c7",
+  "source_evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "source_hard_gate_passed": true,
+  "critic_prompt_version": "hypothesis-semantic-critic-prompt-v2.6.2-b1",
+  "critic_prompt_sha256": "26c7d6dc3778cfb99923ec21a77ea4ab6e93f8e3662230b873fd1c6b3e68e3a4",
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis cites the two eligible reported premises, s:water and s:spill, without changing their stated content. The stronger causal claim appears in the inferential bridge and is evaluated under inferential proportionality and causal strengthening rather than as a restatement of either premise.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No unresolved content is presented as an established research gap or as reported evidence. The portfolio contains no research gaps or gap statements, and the hypothesis is explicitly marked as hypothesized.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no candidate or provisional premises; its evidence profile reports zero candidate premises and the hypothesis has candidate_dependency set to none.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "fail",
+      "rationale": "The inferential bridge states that graph alignment demonstrates that water dissociation causes hydrogen spillover. This is an unbounded causal and mechanistic upgrade from two separately reported contributions, rather than a clearly bounded hypothetical extension. The generic hypothesis statement does not sufficiently constrain or qualify that stronger bridge.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "fail",
+      "rationale": "The bridge uses 'causes' and claims that alignment 'demonstrates' the causal relationship. The supplied premises only report that water dissociation contributes to alkaline HER and that hydrogen spillover contributes to HER; they do not establish that one causes the other. Although a hypothetical causal mechanism is allowed, this bridge presents the causal relationship as demonstrated rather than explicitly as a bounded hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The prediction uses only a qualitative-change direction and does not assert an unsupported increase, decrease, or non-monotonic response. Its lack of operational detail affects prediction informativeness, but it does not itself introduce an unjustified directional claim.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "warning",
+      "rationale": "The predicted catalytic response is at least nominally connected to the proposed mechanism, and its rationale explicitly refers to the proposed bridge. However, the prediction is so generic that the supplied bridge does not determine what qualitative response should occur, making the linkage weak and underspecified.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "fail",
+      "rationale": "The falsifier says only that the 'predicted qualitative response' is not observed, while the observable is the catalytic response 'under the hypothesized mechanism.' Because neither the response nor the relevant mechanistic signature is specified, the criterion is too vague to provide a meaningful discriminating test of the hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "fail",
+      "rationale": "The premises come from distinct papers, Kiwook_4 and Kiwook_6, and the bridge treats their graph alignment as demonstrating a causal connection. The supplied route is explicitly a PATTERN_ALIGNMENT route, so alignment provides navigation context rather than mechanistic evidence. The distinct reported contributions are therefore silently merged into a causal cross-paper mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains only one hypothesis, so distinctness among multiple hypotheses cannot be evaluated.",
+      "hypothesis_ids": [
+        "hypothesis:f50f86f6062ce57377a5"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "There are two eligible reported positive premises, s:water and s:spill, from which at least a bounded hypothesis about a possible connection can be motivated. Non-abstention is therefore appropriate, although the submitted causal bridge is not established by those premises.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio has sufficient eligible evidence to motivate a hypothesis, and the two selected premises are accurately identified. However, the inferential bridge fails to remain bounded: it treats pattern alignment across Kiwook_4 and Kiwook_6 as demonstrating that water dissociation causes hydrogen spillover. The prediction and falsifier are linked only generically, with the falsifier too vague to be informative."
+}

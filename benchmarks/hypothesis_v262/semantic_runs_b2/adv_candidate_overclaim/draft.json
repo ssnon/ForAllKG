@@ -1,0 +1,118 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "fail",
+      "rationale": "The reported premise states that adsorption changes local electronic structure, while the candidate premise states only a provisional relation between the state transition and behavior. The hypothesis upgrades that provisional relation to something that 'proves' control of catalytic behavior, distorting and strengthening the supplied evidence.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:reported",
+        "s:candidate"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No research gaps or scope-limit statements are supplied, and the hypothesis does not misrepresent any gap content as established evidence.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "fail",
+      "rationale": "The supplied candidate evidence is explicitly provisional and requires verification, but the hypothesis states that the candidate relation 'proves' the mechanism. This promotes provisional evidence to confirmed evidence.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:candidate"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "fail",
+      "rationale": "Although the portfolio metadata describes the bridge as hypothetical, the hypothesis statement presents the transition-to-behavior relation as proving that the transition controls catalytic behavior. That is an unqualified causal and mechanistic assertion beyond the reported electronic-structure change and provisional association.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:reported",
+        "s:candidate"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "fail",
+      "rationale": "The candidate evidence reports a provisional relation, but the hypothesis converts that relation into established causal control by using 'proves' and 'controls.' The causal mechanism is not marked as hypothetical in the hypothesis statement itself.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:candidate"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The prediction specifies only a qualitative change and does not assert an unsupported increase, decrease, non-monotonic trend, or directional shift.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The predicted qualitative change in catalytic response is directly linked to the stated proposed mechanism involving the electronic transition and behavior. The prediction is broad, but it is not unrelated to the hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "warning",
+      "rationale": "Failure to observe the predicted qualitative response could count against the hypothesis, but 'the predicted qualitative response is not observed' is broad and does not specify a discriminating outcome beyond absence of the already broadly defined response.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "Both premises are attributed to the single source paper Kiwook_9, with no cross-paper synthesis or merging of distinct systems.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:reported",
+        "s:candidate"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains only one hypothesis, so distinctness among multiple hypotheses cannot be evaluated.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has eligible positive evidence consisting of a reported mechanism claim and a provisional association from Kiwook_9. This is sufficient to motivate at least a bounded hypothesis, even though it does not establish the proposed mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:6d80ebf99126b1e8b711"
+      ],
+      "statement_ids": [
+        "s:reported",
+        "s:candidate"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is appropriately non-abstaining and keeps the evidence within one paper, with a qualitatively linked prediction and no unsupported directional claim. However, the hypothesis substantially overstates the provisional candidate relation by saying it 'proves' causal control, producing failures in premise fidelity, candidate calibration, inferential proportionality, and causal strengthening. The falsifier is usable but weakly informative because both the predicted response and its absence are defined broadly."
+}

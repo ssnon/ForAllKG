@@ -1,0 +1,130 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "warning",
+      "rationale": "Both hypotheses use the eligible reported premise s:reported, but shift from the premise's broad claim that charge redistribution may influence hydrogen adsorption to the more mechanistic wording that it may mediate adsorption changes. This is an explicit hypothesis rather than a stated fact, but it is a modest strengthening of the supplied premise.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "Neither hypothesis presents an unresolved issue or research gap as established evidence. The portfolio contains no gap statements or gap premises.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "No candidate or provisional evidence is used. Both hypotheses rely on the reported premise s:reported, and their status is explicitly hypothesized.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The proposed bridge from possible influence on hydrogen adsorption to a possible change in electronic interaction with adsorbed hydrogen is a bounded mechanistic extension. It is stated hypothetically and does not add multiple unqualified mechanistic steps.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypotheses use the mechanistic term \"mediate,\" the claims are qualified by \"may\" and are explicitly marked as hypothesized. They do not present charge redistribution as an established cause.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The hypotheses and predictions make only qualitative-change claims and do not assert an increase, decrease, or specific non-monotonic pattern. This level of directional specificity is compatible with s:reported.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "warning",
+      "rationale": "A qualitative response under the hypothesized mechanism is plausibly related to the proposed adsorption mechanism, but the stated observable is the broad \"catalytic response,\" whereas the hypothesis specifically concerns hydrogen adsorption changes. The supplied evidence does not explicitly establish that linkage, so the prediction is under-specified.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "warning",
+      "rationale": "Failure to observe the predicted response could count against either hypothesis, but the falsifying outcome is stated only as a generic absence of a qualitative response and uses the broad observable \"catalytic response under the hypothesized mechanism.\" This gives the criterion some discriminatory value but makes it weakly informative and difficult to interpret.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "Both hypotheses draw from the same single source paper, Kiwook_9, and do not combine evidence across distinct papers or silently merge distinct systems.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "fail",
+      "rationale": "The two portfolio entries have identical hypothesis statements, inferential bridges, premises, predictions, and falsification criteria. They therefore do not constitute scientifically distinct hypotheses.",
+      "hypothesis_ids": [
+        "hypothesis:56c003147bd76a7dee40",
+        "hypothesis:b4bf09a99f1e45a3b60a"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has a nonempty eligible positive premise, s:reported, that directly motivates a bounded mechanistic hypothesis. Non-abstention is therefore appropriate, without implying that either hypothesis is established.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:reported"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is grounded in an eligible reported premise and makes an explicitly hypothetical, bounded mechanistic extension without unqualified causal or directional overstatement. However, its catalytic-response prediction and falsifier are broad and weakly specified, and the two portfolio entries are exact scientific duplicates, producing a substantive failure on hypothesis distinctness."
+}

@@ -1,0 +1,82 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no hypotheses and no eligible positive premises, so there is no premise representation to evaluate.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "not_applicable",
+      "rationale": "No hypotheses or research-gap statements are supplied, so no gap content is presented as established evidence.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no candidate or provisional hypotheses to assess for calibration.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "not_applicable",
+      "rationale": "No inferential bridge or proposed mechanism is present because the portfolio abstains.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "not_applicable",
+      "rationale": "There are no hypotheses or evidence statements in the supplied input that make or imply a causal claim.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "not_applicable",
+      "rationale": "No directional claim, such as an increase, decrease, shift, or non-monotonic effect, is supplied.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "not_applicable",
+      "rationale": "No hypothesis or prediction is present, so linkage between predictions and a proposed mechanism cannot be evaluated.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "not_applicable",
+      "rationale": "No hypothesis or falsifying outcome is supplied for evaluation.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "not_applicable",
+      "rationale": "No evidence statements, papers, or hypotheses are supplied, so cross-paper distinctions are not implicated.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains zero hypotheses, so there are no hypotheses to compare for scientific distinctness.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "Abstention is appropriate because the portfolio explicitly reports that no eligible positive premise is supplied, and the eligible positive premises list is empty.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    }
+  ],
+  "overall_summary": "The portfolio appropriately abstains because no eligible positive premise is supplied. All hypothesis-level semantic dimensions are not applicable in the absence of hypotheses or evidence statements."
+}

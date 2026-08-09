@@ -1,0 +1,120 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis preserves the supplied observation that intermediate nitrogen coordination is associated with near-optimal hydrogen adsorption free energy. It does not present that association as a stronger reported result.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No unresolved evidence or scope limitation is presented as established evidence, and the portfolio contains no research-gap statements.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "The hypothesis does not rely on candidate or provisional evidence; its sole premise is reported evidence from Kiwook_9.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The bridge from an association between nitrogen coordination and hydrogen adsorption free energy to the explicitly qualified proposal that coordination may tune adsorption thermodynamics is a bounded hypothetical inference, not an asserted multi-step mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypothesis introduces a possible tuning relationship, the wording 'may tune' and the explicit hypothetical status prevent the reported association in s:dgh from being silently converted into established causation.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "warning",
+      "rationale": "The predicted non-monotonic response across nitrogen coordination is more specific than the premise, which reports only an association with near-optimal hydrogen adsorption free energy and does not support non-monotonicity. This is a plausible hypothesis-level specification but is not clearly warranted by s:dgh.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The prediction concerns hydrogen adsorption free energy across nitrogen coordination, directly matching the proposed coordination–adsorption relationship in the hypothesis. The issue is the strength of the non-monotonic direction, addressed under directional_specificity, rather than a lack of linkage.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "warning",
+      "rationale": "Failure to observe the predicted response for hydrogen adsorption free energy across nitrogen coordination would count against the hypothesis, so the criterion is relevant. However, 'the predicted qualitative response' does not specify the non-monotonic pattern precisely, making the falsifier less informative than it could be.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "The portfolio uses one premise from one source paper, Kiwook_9, and does not merge distinct papers, catalysts, or systems.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains only one hypothesis, so there are no multiple hypotheses to compare for scientific distinctness.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has one eligible reported positive premise, s:dgh, which is sufficient to motivate a bounded hypothesis about how coordination may affect hydrogen adsorption thermodynamics. The non-abstention does not imply that the hypothesis is proven.",
+      "hypothesis_ids": [
+        "hypothesis:d182dca2183c3871f85c"
+      ],
+      "statement_ids": [
+        "s:dgh"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is semantically controlled overall: it faithfully uses the reported association, marks the mechanistic bridge as hypothetical, avoids unsupported candidate or cross-paper synthesis, and makes a linked prediction. The principal concern is that the non-monotonic prediction and its corresponding falsifier are more specific and less precisely defined than the supplied evidence warrants."
+}
