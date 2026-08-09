@@ -1,0 +1,125 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis represents both supplied reported premises without silent strengthening: e2:alignment:water is used as evidence that water dissociation contributes to alkaline HER behavior, and e2:alignment:spillover is used as evidence that hydrogen spillover contributes to HER behavior.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "The unresolved scope-limit statement e2:alignment:gap is treated as the motivation for a proposed coupling rather than as established evidence. The inferential bridge explicitly states that the coupling is proposed and not a causal conclusion derived from graph alignment.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:gap"
+      ]
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no candidate or provisional evidence; both premises are reported and the hypothesis has candidate_dependency set to none.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The bridge makes a bounded cross-paper inference from two reported mechanism contributions to a condition-dependent coupling, while explicitly labeling the coupling as proposed and stating mechanistic alternatives with uncertainty. The assumptions also delimit the comparison rather than presenting the multi-step mechanism as established.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover",
+        "e2:alignment:gap"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypothesis proposes a directional dependence, it uses explicitly hypothetical language such as \"may\" and \"I propose,\" and the bridge states that the proposal is not a causal conclusion derived from graph alignment. The supplied associations are therefore not silently promoted to established causation.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "warning",
+      "rationale": "The supplied premises establish separate contributions to HER behavior but do not establish that reducing water-dissociation activity will decrease the spillover-associated contribution. That decrease is a legitimate hypothesis-level directional prediction, but it is more specific than the reported evidence and is appropriately treated as a proposed outcome rather than a supported fact.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The predicted decrease directly follows from the proposed gating relation: if water-dissociation activity is required for or enables the spillover-associated contribution, reducing it should reduce the associated HER behavior. The prediction is therefore linked to the stated hypothesis rather than added independently.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "pass",
+      "rationale": "The criterion that spillover-associated HER behavior remains unchanged or increases when water-dissociation contribution is reduced would meaningfully count against the proposed dependence. It is directional and conditional, rather than merely restating the hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "The portfolio identifies two source papers, preserves the distinct water-dissociation and spillover premises, and explicitly characterizes the proposal as cross-paper synthesis. It also explicitly rejects graph alignment as causal evidence and includes assumptions that constrain the comparison.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover",
+        "e2:alignment:gap"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains only one hypothesis, so there are no multiple hypotheses to compare for scientific distinctness.",
+      "hypothesis_ids": [
+        "hypothesis:1abbe061315c95a871fa"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "Non-abstention is appropriate because the portfolio has two eligible reported positive premises, e2:alignment:water and e2:alignment:spillover, plus an explicit unresolved coupling gap. This is sufficient to motivate a bounded hypothesis, without implying that the hypothesis is proven.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "e2:alignment:water",
+        "e2:alignment:spillover",
+        "e2:alignment:gap"
+      ]
+    }
+  ],
+  "overall_summary": "The hypothesis is semantically controlled overall: it preserves the two reported premises, keeps the unresolved causal coupling as a research gap, explicitly treats the cross-paper bridge as hypothetical, and provides a linked and informative falsifier. The main caution is directional specificity, because the predicted decrease in spillover-associated HER behavior is more specific than the supplied evidence itself."
+}

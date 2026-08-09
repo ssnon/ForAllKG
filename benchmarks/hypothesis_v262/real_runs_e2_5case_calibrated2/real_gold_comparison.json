@@ -1,0 +1,67 @@
+{
+  "schema_version": "hypothesis-semantic-gold-comparison-v262",
+  "suite_id": "hypothesis-real-output-gold-v262-e2-5case",
+  "passed": false,
+  "case_count": 5,
+  "passed_cases": 3,
+  "failed_cases": 2,
+  "critical_mismatches": 2,
+  "noncritical_mismatches": 0,
+  "missing_reviews": 0,
+  "case_results": [
+    {
+      "case_id": "real_k9_coordination_charge_transfer",
+      "passed": true,
+      "exact_or_allowed_agreements": 11,
+      "mismatches": []
+    },
+    {
+      "case_id": "e2_candidate_live",
+      "passed": false,
+      "exact_or_allowed_agreements": 10,
+      "mismatches": [
+        {
+          "case_id": "e2_candidate_live",
+          "dimension": "candidate_calibration",
+          "allowed_verdicts": [
+            "warning"
+          ],
+          "actual_verdict": "pass",
+          "critical": true,
+          "kind": "critical_mismatch",
+          "note": "The candidate status is preserved, but the proposed functional dependence is strong enough to merit a warning rather than a clean pass."
+        }
+      ]
+    },
+    {
+      "case_id": "e2_alignment_live",
+      "passed": true,
+      "exact_or_allowed_agreements": 11,
+      "mismatches": []
+    },
+    {
+      "case_id": "e2_partial_live",
+      "passed": false,
+      "exact_or_allowed_agreements": 10,
+      "mismatches": [
+        {
+          "case_id": "e2_partial_live",
+          "dimension": "candidate_calibration",
+          "allowed_verdicts": [
+            "not_applicable"
+          ],
+          "actual_verdict": "pass",
+          "critical": true,
+          "kind": "critical_mismatch",
+          "note": "No candidate/provisional premise is present. I classify this as not_applicable rather than pass; this is the one deliberate correction to the critic scaffold."
+        }
+      ]
+    },
+    {
+      "case_id": "e2_abstention_live",
+      "passed": true,
+      "exact_or_allowed_agreements": 11,
+      "mismatches": []
+    }
+  ]
+}

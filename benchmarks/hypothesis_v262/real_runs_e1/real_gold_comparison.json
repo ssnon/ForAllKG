@@ -1,0 +1,19 @@
+{
+  "schema_version": "hypothesis-semantic-gold-comparison-v262",
+  "suite_id": "hypothesis-real-gold-v262-e1",
+  "passed": true,
+  "case_count": 1,
+  "passed_cases": 1,
+  "failed_cases": 0,
+  "critical_mismatches": 0,
+  "noncritical_mismatches": 0,
+  "missing_reviews": 0,
+  "case_results": [
+    {
+      "case_id": "real_k9_coordination_charge_transfer",
+      "passed": true,
+      "exact_or_allowed_agreements": 11,
+      "mismatches": []
+    }
+  ]
+}

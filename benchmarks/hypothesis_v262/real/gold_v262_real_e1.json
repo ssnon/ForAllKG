@@ -1,0 +1,119 @@
+{
+  "schema_version": "hypothesis-real-gold-suite-v262",
+  "suite_id": "hypothesis-real-gold-v262-e1",
+  "cases": [
+    {
+      "case_id": "real_k9_coordination_charge_transfer",
+      "description": "Real Kiwook_9 Hypothesis Maker output for nitrogen coordination, charge transfer, hydrogen adsorption thermodynamics, and HER activity.",
+      "context_path": "../../../data_dac/hypothesis_smoke/n_coord_v260.context.json",
+      "portfolio_path": "../../../data_dac/hypothesis_smoke/n_coord_v261.portfolio.json",
+      "lineage": {
+        "context_file_sha256": "e3a44a696450d50da214390f5945bdb23a597a6da7f9cd5f0d7a9b068538e5cc",
+        "portfolio_file_sha256": "4ef9579df1a658c34c1d67258aa4648b8fa542ae9ba45d677e94818cab573df9",
+        "context_id": "hypothesis_context:365930331e516067a041",
+        "context_declared_sha256": "4ebb09f5809003e202c9915fe492d0a531dcb7ee0c43ce7f9a4aa412aee73d96",
+        "portfolio_id": "hypothesis_portfolio:9ebc041739912d11d9d5",
+        "portfolio_source_context_id": "hypothesis_context:365930331e516067a041",
+        "portfolio_source_context_sha256": "4ebb09f5809003e202c9915fe492d0a531dcb7ee0c43ce7f9a4aa412aee73d96",
+        "context_source_report_id": "report:5278742c871ae6c22cad",
+        "context_source_report_sha256": "857bf1b67c85b0c3ac1ecd1f363dc6c7be5058f7ebdcf57daac5e25580d9c8a0",
+        "portfolio_source_report_id": "report:5278742c871ae6c22cad",
+        "portfolio_source_report_sha256": "857bf1b67c85b0c3ac1ecd1f363dc6c7be5058f7ebdcf57daac5e25580d9c8a0"
+      },
+      "expectations": [
+        {
+          "dimension": "premise_fidelity",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "Reported premises remain distinct from the proposed charge-transfer hypothesis."
+        },
+        {
+          "dimension": "gap_discipline",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "The unresolved direct charge-transfer relation remains a gap."
+        },
+        {
+          "dimension": "candidate_calibration",
+          "allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "note": "This real K9 portfolio has no candidate/provisional premise dependency."
+        },
+        {
+          "dimension": "inferential_proportionality",
+          "allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "note": "The primary-mediation formulation is stronger than the supplied evidence directly warrants."
+        },
+        {
+          "dimension": "causal_strengthening",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "Causal language is explicitly framed as proposed hypothesis rather than established evidence."
+        },
+        {
+          "dimension": "directional_specificity",
+          "allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "note": "Non-monotonic charge-transfer specificity is stronger than the premises support."
+        },
+        {
+          "dimension": "prediction_linkage",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "Predictions are linked to the stated inferential bridges."
+        },
+        {
+          "dimension": "falsifier_informativeness",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "Falsifiers test consequences that would challenge the proposed mechanisms."
+        },
+        {
+          "dimension": "cross_paper_discipline",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "The K9 real case does not silently conflate separate papers or catalysts."
+        },
+        {
+          "dimension": "hypothesis_distinctness",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "The two K9 hypotheses make scientifically distinct mediation claims."
+        },
+        {
+          "dimension": "abstention_appropriateness",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "note": "Non-abstention is appropriate because eligible positive premises are present."
+        }
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": [],
+      "generator_version": "hypothesis-maker-v2.6.1",
+      "note": "Human-reviewed seed case. Inferential proportionality and directional specificity are intentionally warnings, not hard failures."
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no hypotheses and no eligible positive premise statements to evaluate for faithful representation.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "not_applicable",
+      "rationale": "No research gaps or hypotheses are supplied, so there is no gap content whose evidential status could be misrepresented.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "No candidate or provisional evidence is used in the empty hypothesis portfolio.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "not_applicable",
+      "rationale": "No hypothesis or inferential bridge is proposed.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "not_applicable",
+      "rationale": "No causal claim or mechanistic hypothesis is present. The only statement is explicitly navigation-only and does not assert a scientific relation.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "e2:abstention:navigation"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "not_applicable",
+      "rationale": "No directional claim involving increase, decrease, non-monotonicity, or a shift is made.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "not_applicable",
+      "rationale": "No hypothesis or predictions are supplied, so prediction-to-hypothesis linkage cannot be evaluated.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "not_applicable",
+      "rationale": "No hypothesis or falsifying outcome is supplied for evaluation.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no evidence synthesis, hypotheses, or paper-linked claims requiring cross-paper comparison.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains zero hypotheses, so there are no hypotheses to compare for scientific distinctness.",
+      "hypothesis_ids": [],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "Abstention is appropriate because no eligible positive premises, research gaps, or mechanistic routes are supplied. The navigation-only statement explicitly cannot support a falsifiable mechanistic hypothesis.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "e2:abstention:navigation"
+      ]
+    }
+  ],
+  "overall_summary": "The empty portfolio and abstention are semantically appropriate: the sole supplied statement is navigation-only and is not eligible as a premise or research gap. All hypothesis-specific dimensions are not applicable because no hypothesis, prediction, or falsifier is present."
+}
