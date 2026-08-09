@@ -23,17 +23,17 @@
       "inferential_bridge": "Axial coordination directly leads to the activity increase.",
       "predicted_observations": [
         {
-          "observation_id": "prediction:c4de30c7ed1423326761",
-          "observable": "Catalytic response under the hypothesized mechanism",
-          "expected_direction": "qualitative_change",
-          "rationale": "The observation follows qualitatively from the proposed bridge."
+          "observation_id": "prediction:f5418d623bc3d7f7ef8b",
+          "observable": "Catalytic activity across axial-coordination states",
+          "expected_direction": "increase",
+          "rationale": "If axial coordination is causally responsible for the reported association, states with stronger axial coordination should show higher catalytic activity under comparable context."
         }
       ],
       "falsification_criteria": [
         {
-          "criterion_id": "falsifier:361d9ce52866c5cde0b5",
-          "observable": "Catalytic response under the hypothesized mechanism",
-          "falsifying_outcome": "The predicted qualitative response is not observed."
+          "criterion_id": "falsifier:b671b4d8804f222f39b3",
+          "observable": "Catalytic activity across axial-coordination states",
+          "falsifying_outcome": "Axial coordination changes reproducibly across states while catalytic activity does not change in the predicted direction."
         }
       ],
       "assumptions": [],

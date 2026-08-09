@@ -38,9 +38,12 @@ class HypothesisSemanticGoldComparator:
             else:
                 actual = {row.dimension: row.verdict for row in review.dimensions}
                 expected_dimensions = {
-                    expectation.dimension
-                    for expectation in case.expectations
+                    expectation.dimension for expectation in case.expectations
                 }
+                allowed_additional_failures = set(
+                    case.allowed_additional_fail_dimensions
+                )
+
                 for expectation in case.expectations:
                     verdict = actual.get(expectation.dimension)
                     if verdict is None:
@@ -73,30 +76,37 @@ class HypothesisSemanticGoldComparator:
                                 note=expectation.note,
                             )
                         )
-                        
-            if review is not None and case.forbid_unexpected_failures:
-                for dimension, verdict in actual.items():
-                    if dimension in expected_dimensions:
-                        continue
 
-                    if verdict == "fail":
-                        mismatches.append(
-                            SemanticGoldMismatch(
-                                case_id=case.case_id,
-                                dimension=dimension,
-                                allowed_verdicts=["pass", "warning", "not_applicable"],
-                                actual_verdict="fail",
-                                critical=True,
-                                kind="unexpected_failure",
-                                note=(
-                                    "Critic produced an unanticipated semantic FAIL "
-                                    "on a dimension not marked problematic by the gold case."
-                                ),
+                if case.forbid_unexpected_failures:
+                    for dimension, verdict in actual.items():
+                        if dimension in expected_dimensions:
+                            continue
+                        if dimension in allowed_additional_failures:
+                            continue
+                        if verdict == "fail":
+                            mismatches.append(
+                                SemanticGoldMismatch(
+                                    case_id=case.case_id,
+                                    dimension=dimension,
+                                    allowed_verdicts=[
+                                        "pass",
+                                        "warning",
+                                        "not_applicable",
+                                    ],
+                                    actual_verdict="fail",
+                                    critical=True,
+                                    kind="unexpected_failure",
+                                    note=(
+                                        "Critic produced an unanticipated semantic FAIL "
+                                        "on a dimension not marked problematic or explicitly "
+                                        "allowed by the gold case."
+                                    ),
+                                )
                             )
-                        )
 
             case_passed = not any(
-                row.critical or row.kind in {"missing_review", "missing_dimension"}
+                row.critical
+                or row.kind in {"missing_review", "missing_dimension"}
                 for row in mismatches
             )
             results.append(

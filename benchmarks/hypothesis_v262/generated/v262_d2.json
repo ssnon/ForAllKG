@@ -1,0 +1,485 @@
+{
+  "schema_version": "hypothesis-benchmark-suite-result-v262",
+  "suite_id": "hypothesis-v262-deterministic-a1",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "passed": true,
+  "passed_cases": 16,
+  "failed_cases": 0,
+  "case_results": [
+    {
+      "case_id": "canonical_valid",
+      "category": "canonical",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:b0658cd05029d6986074",
+        "context_sha256": "f6cb6f082d415db243b9c3f3f69abd8fc0a4cd661c96cee60cecf76a28d5fee8",
+        "portfolio_id": "hypothesis_portfolio:752fdf1ddfe32fa85f50",
+        "portfolio_sha256": "18214262972a37063ea9486b3f03c42444f14879dd7ed1cc468cbce4660938aa",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "canonical_candidate",
+      "category": "canonical",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:cb79048c03e4acd3249d",
+        "context_sha256": "409fc57b6041a4b57c4654d5356e374ea4bf871d06e91d1cad32009027e2ddba",
+        "portfolio_id": "hypothesis_portfolio:2013aecdb0ecfb4ab3e4",
+        "portfolio_sha256": "6bd09a009abfc87230dd3afa5764a0c643fa42742ae6f00de541ebf978691f76",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "canonical_abstention",
+      "category": "canonical",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:3272ca26fb7a077c75b4",
+        "context_sha256": "89cfb7126cb201311ca95dbbaef7bf9ea27547aca5ce912c7f3a8fac630432a7",
+        "portfolio_id": "hypothesis_portfolio:v262:abstain",
+        "portfolio_sha256": "9fa91c217f90a64bd52f05022293dbb59ebcc0db323038f2c98d9bc4059e52ac",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_ineligible_premise",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:837067b6ce59695a0c9d",
+        "context_sha256": "9e1f5d381e18e1433e845e4782aed45289843e8113911b3faf92cc88c2f4f791",
+        "portfolio_id": "hypothesis_portfolio:6caf07a525a2d6d7668b",
+        "portfolio_sha256": "8993d1a4f0c160953cc3b91549d33816988900c2625669957082e17577126ca6",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 2,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "INELIGIBLE_POSITIVE_PREMISE",
+            "location": "hypotheses[0].premise_statement_ids",
+            "message": "s:gap: ['unresolved_not_positive_premise', 'scope_limit_not_positive_premise']",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          },
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "HYPOTHESIS_WITHOUT_ELIGIBLE_PREMISE",
+            "location": "hypotheses[0].premise_statement_ids",
+            "message": "Hypothesis references no statement that the context marks eligible_as_premise=true.",
+            "hypothesis_id": "hypothesis:3a83b45a24b3daa0976c",
+            "statement_ids": [],
+            "source": "hypothesis-benchmark-evaluator-v2.6.2-a1"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_candidate_metadata_lost",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:3b26401c6b5de563a4d8",
+        "context_sha256": "650edf76ec811a362867e8c0165e06354f118aecbaac236d6bab57c12a23513b",
+        "portfolio_id": "hypothesis_portfolio:ecc9f67bbeebd99416b2",
+        "portfolio_sha256": "7dccc0e5144a8bfb8d6ee510a5053a61b310fa514deb30bc585e8407ebebd9ae",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "CANDIDATE_DEPENDENCY_MISMATCH",
+            "location": "hypotheses[0].candidate_dependency",
+            "message": "expected=essential, actual=none",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_partial_absence",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:7006e1be6edb4bf3a8db",
+        "context_sha256": "0e8d990d7b9481fd08c3d3421c3f15210ec2aceb39c14725d244a2b71214e6c6",
+        "portfolio_id": "hypothesis_portfolio:93de4ad95e07b3bdac0e",
+        "portfolio_sha256": "f66d2339bc97539e39ab88cf097d0a0e3a3630670e6da07fdd658351e0a3029f",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "PARTIAL_PAPER_ABSENCE_CLAIM",
+            "location": "hypotheses[0]",
+            "message": "paper-level absence claim is unsafe for partial paper(s): ['Kiwook_10']",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_novelty",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:d5dfd69bfe14de3d0f14",
+        "context_sha256": "1d36f3fbd63436491f2ea08be4982d8ab92e6376c44eb40fd43f0cbe005db444",
+        "portfolio_id": "hypothesis_portfolio:947c5edb9fe558ce8ac6",
+        "portfolio_sha256": "8f1b74be974851dd47561c68a25bfad33869e2536bb941d99af5dbeb0d985730",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "EXTERNAL_NOVELTY_CLAIM",
+            "location": "hypotheses[0]",
+            "message": "literature-wide novelty has not been assessed",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_numeric",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:fda3b47bb4629d1ccd51",
+        "context_sha256": "c5f4ec30ec7c73aad27c1812c07ea7d5722a2259dcc547aff64b1991f2fc43ec",
+        "portfolio_id": "hypothesis_portfolio:820ca2950385bfafc91f",
+        "portfolio_sha256": "25f942ed0e003bd9485d28709aaa7bb1f680c7131cb75578fae4f78c93c17583",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "UNSUPPORTED_NUMERIC_PREDICTION",
+            "location": "hypotheses[0]",
+            "message": "generated numeric values not present in positive premises: ['37%']",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_protocol",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:892711ffb0dcceab07d1",
+        "context_sha256": "6076f9548fc40bb02f105b76dd00668d514ce3ccdc7bf5c9f0ea1c92a30b6988",
+        "portfolio_id": "hypothesis_portfolio:c58ea0adf01fe4f33774",
+        "portfolio_sha256": "d74422f4333de1acdf7cdef2f79d31777661274c6ae9f682ea4de9321b232677",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 2,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "EXPERIMENT_PROTOCOL_LEAKAGE",
+            "location": "hypotheses[0]",
+            "message": "Hypothesis Maker may state observables/falsifiers but not an experimental protocol",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          },
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "UNSUPPORTED_NUMERIC_PREDICTION",
+            "location": "hypotheses[0]",
+            "message": "generated numeric values not present in positive premises: ['2 h', '500 c']",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_alignment_premise",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:b0638de531bd828653f6",
+        "context_sha256": "e5c3a4a7977a00167bc8a8c0be7ddbf4a028c068291d4c0e519faa38b5cb6b46",
+        "portfolio_id": "hypothesis_portfolio:3daa169c6b088d7d6644",
+        "portfolio_sha256": "f85b2d34060695b87f8cb5caece38dd092990a9d01ba6288084bbaa278747a6a",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "ALIGNMENT_USED_AS_SCIENTIFIC_PREMISE",
+            "location": "hypotheses[0].premise_statement_ids",
+            "message": "s:alignment depends on alignment path(s)",
+            "hypothesis_id": null,
+            "statement_ids": [],
+            "source": "hypothesis_validation_v260"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_zero_premise",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:a578f76f6552ea789031",
+        "context_sha256": "4758bb6920528492b45b5cf94c9b9f90474111321f98ef5120978bfd1799a8bc",
+        "portfolio_id": "hypothesis_portfolio:494a5788f2fe149cf139",
+        "portfolio_sha256": "166955fd12d31789b1226f8b27c026ed92e3009b78f6825868e2f691603be9bb",
+        "hard_gate_passed": false,
+        "hard_gate_errors": 1,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [
+          {
+            "severity": "error",
+            "layer": "hard_gate",
+            "code": "HYPOTHESIS_WITHOUT_ELIGIBLE_PREMISE",
+            "location": "hypotheses[0].premise_statement_ids",
+            "message": "A non-abstaining hypothesis must reference at least one eligible positive premise.",
+            "hypothesis_id": "hypothesis:e329300cb94851859c10",
+            "statement_ids": [],
+            "source": "hypothesis-benchmark-evaluator-v2.6.2-a1"
+          }
+        ],
+        "diagnostics": []
+      }
+    },
+    {
+      "case_id": "adv_candidate_overclaim",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:f0b7a52bbf8446943d7c",
+        "context_sha256": "dcbd66b35b8bd193407f52ab7d58e6afe84812382d060a91eafc2c28e9ebe7cd",
+        "portfolio_id": "hypothesis_portfolio:4d8e2614bf4433453c14",
+        "portfolio_sha256": "3b084ccb70bea4b2258d38e048ca8295cafabdfd89acbd3fff48fcb5b149b654",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "layer": "diagnostic",
+            "code": "CANDIDATE_OVERCLAIM_LANGUAGE",
+            "location": "hypotheses[0]",
+            "message": "Candidate-dependent hypothesis uses language that can read as confirmed/established evidence; semantic review is required.",
+            "hypothesis_id": "hypothesis:f5ded9fc933ab780ae6f",
+            "statement_ids": [
+              "s:candidate"
+            ],
+            "source": "hypothesis_semantic_checks_v262"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "adv_alignment_causalization",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+        "context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+        "portfolio_id": "hypothesis_portfolio:e711760e546b08d4fd96",
+        "portfolio_sha256": "d5b722dbd65379c22ae133f084738b13a2ff69dc3178dbb6c6c3536498b5f45b",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "layer": "diagnostic",
+            "code": "ALIGNMENT_CAUSALIZATION_LANGUAGE",
+            "location": "hypotheses[0]",
+            "message": "Generated text appears to use graph/alignment language as causal or mechanistic support. Alignment is navigation context only.",
+            "hypothesis_id": "hypothesis:83afdc61596f8b4bce8b",
+            "statement_ids": [],
+            "source": "hypothesis_semantic_checks_v262"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "adv_directional_specificity",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:d1977aa7452d6f2eccc8",
+        "context_sha256": "e0c04bb43ee7515777275c282b43299dcf97c5bfd8707d846116e0bcf5d79fa0",
+        "portfolio_id": "hypothesis_portfolio:016ad6396c2127fde603",
+        "portfolio_sha256": "cdda72955f98842432b3aed8ecaa806578522c47347d5c9963a387d42007c22a",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "layer": "diagnostic",
+            "code": "UNJUSTIFIED_NON_MONOTONIC_SPECIFICITY",
+            "location": "hypotheses[0].predicted_observations[0]",
+            "message": "Prediction specifies a non-monotonic direction, but the selected premise text does not explicitly support non-monotonicity for this observable. Treat as a semantic-review warning, not a hard failure.",
+            "hypothesis_id": "hypothesis:d182dca2183c3871f85c",
+            "statement_ids": [
+              "s:dgh"
+            ],
+            "source": "hypothesis_semantic_checks_v262"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "adv_causal_strengthening",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:3926226f9d86c1203fa4",
+        "context_sha256": "a6fa703e80b4a1b5538bf609b73113bde0b0aecbe2b75f8843c9b463f5e26dad",
+        "portfolio_id": "hypothesis_portfolio:2771aea8745682a69058",
+        "portfolio_sha256": "87d2507de730aebe22608a8889b668bc3a87035e81c02723ac3a8befef57c38c",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "layer": "diagnostic",
+            "code": "POSSIBLE_CAUSAL_STRENGTHENING",
+            "location": "hypotheses[0]",
+            "message": "Association premise is strengthened into causal language without an explicit hypothetical/modal qualifier.",
+            "hypothesis_id": "hypothesis:47d39f5048ab94b791d8",
+            "statement_ids": [
+              "s:assoc"
+            ],
+            "source": "hypothesis_semantic_checks_v262"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "adv_redundancy",
+      "category": "adversarial",
+      "expectation_passed": true,
+      "expectation_failures": [],
+      "report": {
+        "schema_version": "hypothesis-evaluation-report-v262",
+        "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+        "context_id": "hypothesis_context:v262:f92cd5f5583effaeccdf",
+        "context_sha256": "4911c0923bc272e0a33d0df8070341bec2f24683fc4f2218a8c46288752cf829",
+        "portfolio_id": "hypothesis_portfolio:b6ac58c53e273715824a",
+        "portfolio_sha256": "04afd0f8f2ba8da16626290cd808e18742eb671936e8cad2ea203a4be853b8fd",
+        "hard_gate_passed": true,
+        "hard_gate_errors": 0,
+        "hard_gate_warnings": 0,
+        "hard_gate_issues": [],
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "layer": "diagnostic",
+            "code": "HYPOTHESIS_REDUNDANCY",
+            "location": "portfolio.hypotheses",
+            "message": "Hypotheses hypothesis:56c003147bd76a7dee40 and hypothesis:b4bf09a99f1e45a3b60a have high lexical-semantic overlap (Jaccard=1.000); review whether they represent distinct scientific hypotheses.",
+            "hypothesis_id": null,
+            "statement_ids": [
+              "s:reported"
+            ],
+            "source": "hypothesis_semantic_checks_v262"
+          }
+        ]
+      }
+    }
+  ]
+}

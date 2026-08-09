@@ -25,6 +25,9 @@ class SemanticGoldCase(StrictModel):
     portfolio_path: str
     expectations: list[SemanticGoldExpectation] = Field(min_length=1)
     forbid_unexpected_failures: bool = True
+    allowed_additional_fail_dimensions: list[SemanticDimension] = Field(
+        default_factory=list
+    )
 
 
 class SemanticGoldSuite(StrictModel):
@@ -71,16 +74,3 @@ class SemanticGoldComparisonReport(StrictModel):
     noncritical_mismatches: int
     missing_reviews: int
     case_results: list[SemanticGoldCaseComparison]
-
-class SemanticGoldCase(StrictModel):
-    case_id: str
-    description: str
-    context_path: str
-    portfolio_path: str
-    expectations: list[SemanticGoldExpectation] = Field(min_length=1)
-
-    forbid_unexpected_failures: bool = True
-
-    allowed_additional_fail_dimensions: list[SemanticDimension] = Field(
-        default_factory=list
-    )

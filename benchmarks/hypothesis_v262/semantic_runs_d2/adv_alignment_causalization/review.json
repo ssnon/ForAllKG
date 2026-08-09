@@ -1,0 +1,130 @@
+{
+  "schema_version": "hypothesis-semantic-review-v262",
+  "review_id": "hypothesis_semantic_review:318bfe2d5b8e419b9c51",
+  "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+  "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+  "source_portfolio_id": "hypothesis_portfolio:e711760e546b08d4fd96",
+  "source_portfolio_sha256": "d5b722dbd65379c22ae133f084738b13a2ff69dc3178dbb6c6c3536498b5f45b",
+  "source_evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "source_hard_gate_passed": true,
+  "critic_prompt_version": "hypothesis-semantic-critic-prompt-v2.6.2-b1",
+  "critic_prompt_sha256": "2f51c2cb3774632dd3e8533ef1a4754c138c82b4ad03c91742b062fb1a5bca78",
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis uses the two supplied reported premises without restating either as stronger fact: s:water reports that water dissociation contributes to alkaline HER, and s:spill reports that hydrogen spillover contributes to HER. The coupling is presented as a hypothesis through “may,” not as a reported premise.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "There are no supplied research-gap statements, and the hypothesis does not present unresolved scope limits as established evidence.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "Neither supplied premise is candidate or provisional evidence. Both s:water and s:spill are explicitly reported and are used accordingly.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "fail",
+      "rationale": "The hypothesis statement itself is a bounded hypothetical inference, but the stated inferential bridge says that graph alignment “demonstrates” that water dissociation causes hydrogen spillover. The supplied evidence only reports separate contributions to HER in s:water and s:spill, so the bridge makes an unqualified causal claim not warranted by those premises or by alignment context.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "fail",
+      "rationale": "The inferential bridge silently upgrades the reported contribution statements in s:water and s:spill into the assertion that water dissociation causes hydrogen spillover. Although the hypothesis statement uses explicitly hypothetical language, the bridge presents causation as demonstrated.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The prediction is stated as a qualitative change in the hydrogen-spillover response when water-dissociation behavior changes. It does not assert an unsupported increase, decrease, or monotonic relationship.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The predicted coordinated change in water-dissociation behavior and hydrogen-spillover response directly follows from the proposed mechanistic-coupling hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "pass",
+      "rationale": "The criterion that water-dissociation behavior changes reproducibly while the hydrogen-spillover response remains unchanged would count against the proposed coupling, rather than merely restating it.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "fail",
+      "rationale": "The premises come from distinct papers, Kiwook_6 for s:water and Kiwook_4 for s:spill. Cross-paper synthesis is explicitly allowed, but the inferential bridge treats their graph alignment as demonstrating a causal mechanism. Alignment does not constitute mechanistic evidence, so the distinct-paper synthesis is not semantically controlled at that point.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains only one hypothesis, so distinctness between multiple hypotheses cannot be evaluated.",
+      "hypothesis_ids": [
+        "hypothesis:83afdc61596f8b4bce8b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has two eligible reported positive premises, s:water and s:spill, which are sufficient to motivate a bounded hypothesis about a possible connection. This supports non-abstention without implying that the connection is established.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:water",
+        "s:spill"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is appropriately motivated by two reported premises and states the proposed coupling hypothetically, with a linked qualitative prediction and an informative falsifier. However, its inferential bridge is semantically overstrong: it treats graph alignment as demonstrating causation, producing failures in inferential proportionality, causal strengthening, and cross-paper discipline."
+}

@@ -101,6 +101,12 @@ def _draft(
     gap_ids: list[str] | None = None,
     observable: str = "Catalytic response under the hypothesized mechanism",
     direction: str = "qualitative_change",
+    prediction_rationale: str = (
+        "The observation follows qualitatively from the proposed bridge."
+    ),
+    falsifying_outcome: str = (
+        "The predicted qualitative response is not observed."
+    ),
 ) -> HypothesisPortfolioDraft:
     return HypothesisPortfolioDraft(
         hypotheses=[
@@ -117,14 +123,14 @@ def _draft(
                         local_id="p1",
                         observable=observable,
                         expected_direction=direction,
-                        rationale="The observation follows qualitatively from the proposed bridge.",
+                        rationale=prediction_rationale,
                     )
                 ],
                 falsification_criteria=[
                     FalsificationCriterionDraft(
                         local_id="f1",
                         observable=observable,
-                        falsifying_outcome="The predicted qualitative response is not observed.",
+                        falsifying_outcome=falsifying_outcome,
                     )
                 ],
                 assumptions=[],
@@ -171,7 +177,34 @@ def build_cases(out_dir: Path) -> list[dict]:
         [_statement("s:reported", "Nitrogen coordination changes local hydrogen adsorption geometry.")],
         question="Can coordination motivate a falsifiable adsorption hypothesis?",
     )
-    p = compiler.compile(c, _draft("h-valid", ["s:reported"]))
+    p = compiler.compile(
+        c,
+        _draft(
+            "h-valid",
+            ["s:reported"],
+            statement=(
+                "Nitrogen coordination may define a reproducible local hydrogen-adsorption "
+                "geometry across coordination states."
+            ),
+            bridge=(
+                "If the reported geometry change is genuinely coordination-dependent, "
+                "distinct coordination states should reproducibly correspond to distinct "
+                "local hydrogen-adsorption geometries under otherwise comparable context."
+            ),
+            observable=(
+                "Hydrogen adsorption geometry across nitrogen coordination states"
+            ),
+            direction="qualitative_change",
+            prediction_rationale=(
+                "A reproducible coordination-dependent relation predicts distinct adsorption "
+                "geometries across distinct nitrogen-coordination states."
+            ),
+            falsifying_outcome=(
+                "Distinct nitrogen-coordination states are reproducibly established while "
+                "hydrogen adsorption geometry remains indistinguishable across those states."
+            ),
+        ),
+    )
     save_case(
         "canonical_valid", "canonical", "Valid reported-premise hypothesis.", c, p,
         {"hard_gate_pass": True, "expected_abstention": False},
@@ -414,7 +447,32 @@ def build_cases(out_dir: Path) -> list[dict]:
         ],
         question="Could the candidate relation explain behavior?",
     )
-    base = compiler.compile(c, _draft("h-base", ["s:reported", "s:candidate"]))
+    base = compiler.compile(
+        c,
+        _draft(
+            "h-base",
+            ["s:reported", "s:candidate"],
+            statement=(
+                "The provisional electronic-state relation may contribute to catalytic behavior."
+            ),
+            bridge=(
+                "If the provisional state transition is mechanistically relevant, states "
+                "showing the transition should exhibit a corresponding catalytic response."
+            ),
+            observable=(
+                "Catalytic behavior across electronic-state transition states"
+            ),
+            direction="qualitative_change",
+            prediction_rationale=(
+                "A mechanistically relevant electronic-state transition predicts a coupled "
+                "change in catalytic behavior."
+            ),
+            falsifying_outcome=(
+                "The electronic-state transition is reproducibly observed while catalytic "
+                "behavior remains unchanged across the corresponding states."
+            ),
+        ),
+    )
     p = _replace_card(
         base,
         hypothesis_statement="The candidate relation proves that the electronic transition controls catalytic behavior.",
@@ -445,7 +503,33 @@ def build_cases(out_dir: Path) -> list[dict]:
             )
         ],
     )
-    base = compiler.compile(c, _draft("h-base", ["s:water", "s:spill"]))
+    base = compiler.compile(
+        c,
+        _draft(
+            "h-base",
+            ["s:water", "s:spill"],
+            statement=(
+                "Water-dissociation behavior and hydrogen spillover may be "
+                "mechanistically coupled in HER."
+            ),
+            bridge=(
+                "A proposed coupling would predict that changes in water-dissociation "
+                "behavior are accompanied by changes in hydrogen-spillover response."
+            ),
+            observable=(
+                "Hydrogen spillover response when water-dissociation behavior changes"
+            ),
+            direction="qualitative_change",
+            prediction_rationale=(
+                "A genuine mechanistic coupling predicts coordinated changes in "
+                "water-dissociation behavior and hydrogen-spillover response."
+            ),
+            falsifying_outcome=(
+                "Water-dissociation behavior changes reproducibly while the "
+                "hydrogen-spillover response remains unchanged."
+            ),
+        ),
+    )
     p = _replace_card(
         base,
         inferential_bridge="The graph alignment demonstrates that water dissociation causes hydrogen spillover.",
@@ -504,6 +588,17 @@ def build_cases(out_dir: Path) -> list[dict]:
             ["s:assoc"],
             statement="Axial coordination causes improved catalytic activity.",
             bridge="Axial coordination directly leads to the activity increase.",
+            observable="Catalytic activity across axial-coordination states",
+            direction="increase",
+            prediction_rationale=(
+                "If axial coordination is causally responsible for the reported "
+                "association, states with stronger axial coordination should show "
+                "higher catalytic activity under comparable context."
+            ),
+            falsifying_outcome=(
+                "Axial coordination changes reproducibly across states while "
+                "catalytic activity does not change in the predicted direction."
+            ),
         ),
     )
     save_case(
@@ -521,16 +616,33 @@ def build_cases(out_dir: Path) -> list[dict]:
         question="Generate distinct mechanistic hypotheses.",
     )
     one = _draft(
-        "h1", ["s:reported"],
+        "h1",
+        ["s:reported"],
         statement="Charge redistribution may mediate hydrogen adsorption changes.",
-        bridge="Charge redistribution may alter the electronic interaction with adsorbed hydrogen.",
+        bridge=(
+            "If charge redistribution is mechanistically relevant to adsorption, "
+            "changes in charge redistribution should be accompanied by changes in "
+            "hydrogen-adsorption response."
+        ),
+        observable=(
+            "Hydrogen adsorption response across charge-redistribution states"
+        ),
+        direction="qualitative_change",
+        prediction_rationale=(
+            "A mediator role predicts coordinated variation between charge "
+            "redistribution and hydrogen-adsorption response."
+        ),
+        falsifying_outcome=(
+            "Charge redistribution changes reproducibly across states while the "
+            "hydrogen-adsorption response remains unchanged."
+        ),
     ).hypotheses[0]
     two = one.model_copy(
         update={
             "local_id": "h2",
             "title": "Near-duplicate hypothesis",
-            "hypothesis_statement": "Charge redistribution may mediate hydrogen adsorption changes.",
-            "inferential_bridge": "Charge redistribution may alter the electronic interaction with adsorbed hydrogen.",
+            "hypothesis_statement": one.hypothesis_statement,
+            "inferential_bridge": one.inferential_bridge,
         }
     )
     p = compiler.compile(

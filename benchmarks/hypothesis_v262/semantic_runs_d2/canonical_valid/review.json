@@ -1,0 +1,126 @@
+{
+  "schema_version": "hypothesis-semantic-review-v262",
+  "review_id": "hypothesis_semantic_review:d9d24833e8c1d6851bbd",
+  "source_context_id": "hypothesis_context:v262:b0658cd05029d6986074",
+  "source_context_sha256": "f6cb6f082d415db243b9c3f3f69abd8fc0a4cd661c96cee60cecf76a28d5fee8",
+  "source_portfolio_id": "hypothesis_portfolio:752fdf1ddfe32fa85f50",
+  "source_portfolio_sha256": "18214262972a37063ea9486b3f03c42444f14879dd7ed1cc468cbce4660938aa",
+  "source_evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "source_hard_gate_passed": true,
+  "critic_prompt_version": "hypothesis-semantic-critic-prompt-v2.6.2-b1",
+  "critic_prompt_sha256": "b561943910cff97aec9e04d252a83e28882e7ea806a3b8f65dc956d97239691f",
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis uses the reported premise that nitrogen coordination changes local hydrogen adsorption geometry (s:reported) without presenting the hypothesis as established fact. The added reproducibility and coordination-state comparison are stated as a proposed extension.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "No research-gap statements or scope-limit claims are present, and the hypothesis does not convert any unresolved gap into established evidence.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no candidate or provisional evidence premise; its sole premise is reported evidence.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The proposed bridge is bounded: it conditionally extends the reported coordination-related geometry change to a reproducible relationship between distinct coordination states and local adsorption geometries. It is presented as a hypothesis rather than as a multi-step established mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "The statement uses the qualified modal term \"may\" and frames coordination as a proposed determinant, while the inferential bridge is explicitly conditional. It does not silently convert the reported geometry change into established causation.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "pass",
+      "rationale": "The hypothesis predicts distinct or qualitative changes in adsorption geometry rather than an unsupported increase, decrease, or specific monotonic trend. This matches the level of directional detail in the reported premise.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The prediction of distinct adsorption geometries across distinct nitrogen-coordination states directly follows from the proposed coordination-dependent relationship and is aligned with the stated inferential bridge.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "pass",
+      "rationale": "The falsifier is informative because reproducibly distinct coordination states with indistinguishable hydrogen adsorption geometry would directly count against the hypothesized coordination-state/geometry relationship.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "The portfolio uses one source paper, Kiwook_9, and does not merge evidence from distinct papers, catalysts, or systems.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": [
+        "s:reported"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains a single hypothesis, so there are no multiple hypotheses to compare for semantic distinctness.",
+      "hypothesis_ids": [
+        "hypothesis:56a563a863643a50f53b"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has one eligible reported positive premise (s:reported), which is sufficient to motivate a bounded, explicitly hypothesized and falsifiable extension. Non-abstention is therefore appropriate, without implying that the hypothesis is proven.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "s:reported"
+      ]
+    }
+  ],
+  "overall_summary": "The single hypothesis is semantically well controlled. It faithfully uses the reported coordination-related geometry change while marking the reproducibility and coordination-state relationship as hypothetical, supplies linked predictions and an informative falsifier, and avoids candidate promotion, cross-paper conflation, unsupported directional detail, and unqualified causalization."
+}

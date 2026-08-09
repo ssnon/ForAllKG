@@ -20,20 +20,20 @@
         "s:reported"
       ],
       "gap_statement_ids": [],
-      "inferential_bridge": "Charge redistribution may alter the electronic interaction with adsorbed hydrogen.",
+      "inferential_bridge": "If charge redistribution is mechanistically relevant to adsorption, changes in charge redistribution should be accompanied by changes in hydrogen-adsorption response.",
       "predicted_observations": [
         {
-          "observation_id": "prediction:e4d77e88a45d9f77f51e",
-          "observable": "Catalytic response under the hypothesized mechanism",
+          "observation_id": "prediction:370fdc8421e7872dccdc",
+          "observable": "Hydrogen adsorption response across charge-redistribution states",
           "expected_direction": "qualitative_change",
-          "rationale": "The observation follows qualitatively from the proposed bridge."
+          "rationale": "A mediator role predicts coordinated variation between charge redistribution and hydrogen-adsorption response."
         }
       ],
       "falsification_criteria": [
         {
-          "criterion_id": "falsifier:091fd328c118c72b5a29",
-          "observable": "Catalytic response under the hypothesized mechanism",
-          "falsifying_outcome": "The predicted qualitative response is not observed."
+          "criterion_id": "falsifier:f187aa8a057aabb31e0c",
+          "observable": "Hydrogen adsorption response across charge-redistribution states",
+          "falsifying_outcome": "Charge redistribution changes reproducibly across states while the hydrogen-adsorption response remains unchanged."
         }
       ],
       "assumptions": [],
@@ -68,20 +68,20 @@
         "s:reported"
       ],
       "gap_statement_ids": [],
-      "inferential_bridge": "Charge redistribution may alter the electronic interaction with adsorbed hydrogen.",
+      "inferential_bridge": "If charge redistribution is mechanistically relevant to adsorption, changes in charge redistribution should be accompanied by changes in hydrogen-adsorption response.",
       "predicted_observations": [
         {
-          "observation_id": "prediction:d0f7b4e492cda7ed042d",
-          "observable": "Catalytic response under the hypothesized mechanism",
+          "observation_id": "prediction:ec21df85236be0db4b7c",
+          "observable": "Hydrogen adsorption response across charge-redistribution states",
           "expected_direction": "qualitative_change",
-          "rationale": "The observation follows qualitatively from the proposed bridge."
+          "rationale": "A mediator role predicts coordinated variation between charge redistribution and hydrogen-adsorption response."
         }
       ],
       "falsification_criteria": [
         {
-          "criterion_id": "falsifier:b67177a456f3696ddf28",
-          "observable": "Catalytic response under the hypothesized mechanism",
-          "falsifying_outcome": "The predicted qualitative response is not observed."
+          "criterion_id": "falsifier:a5c3c6dab4944dce2242",
+          "observable": "Hydrogen adsorption response across charge-redistribution states",
+          "falsifying_outcome": "Charge redistribution changes reproducibly across states while the hydrogen-adsorption response remains unchanged."
         }
       ],
       "assumptions": [],

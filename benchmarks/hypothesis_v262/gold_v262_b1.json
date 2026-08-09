@@ -24,7 +24,9 @@
           "critical": true,
           "note": "A usable eligible premise is present, so non-abstention is appropriate."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     },
     {
       "case_id": "canonical_candidate",
@@ -40,7 +42,9 @@
           "critical": true,
           "note": "The generated hypothesis is explicitly provisional."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     },
     {
       "case_id": "canonical_abstention",
@@ -64,7 +68,9 @@
           "critical": false,
           "note": "No hypotheses exist to compare."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     },
     {
       "case_id": "adv_candidate_overclaim",
@@ -81,6 +87,12 @@
           "critical": true,
           "note": "Pass/not_applicable would miss the candidate-to-fact overclaim."
         }
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": [
+        "premise_fidelity",
+        "inferential_proportionality",
+        "causal_strengthening"
       ]
     },
     {
@@ -106,6 +118,10 @@
           "critical": false,
           "note": "The bridge explicitly says alignment demonstrates causation."
         }
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": [
+        "inferential_proportionality"
       ]
     },
     {
@@ -122,7 +138,9 @@
           "critical": true,
           "note": "The direction is plausible but not established at that specificity."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     },
     {
       "case_id": "adv_causal_strengthening",
@@ -139,7 +157,9 @@
           "critical": true,
           "note": "Pass/not_applicable would miss unqualified causal strengthening."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     },
     {
       "case_id": "adv_redundancy",
@@ -156,7 +176,9 @@
           "critical": true,
           "note": "Pass/not_applicable would miss portfolio redundancy."
         }
-      ]
+      ],
+      "forbid_unexpected_failures": true,
+      "allowed_additional_fail_dimensions": []
     }
   ]
 }

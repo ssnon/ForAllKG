@@ -1,6 +1,6 @@
 {
   "schema_version": "hypothesis-portfolio-v1",
-  "portfolio_id": "hypothesis_portfolio:730db6725572c8c4bd76",
+  "portfolio_id": "hypothesis_portfolio:e711760e546b08d4fd96",
   "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
   "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
   "source_report_id": "report:v262:ae4f7e6c36770616b6be",
@@ -8,13 +8,13 @@
   "hypotheses": [
     {
       "schema_version": "hypothesis-card-v1",
-      "hypothesis_id": "hypothesis:f50f86f6062ce57377a5",
+      "hypothesis_id": "hypothesis:83afdc61596f8b4bce8b",
       "source_context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
       "source_context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
       "source_report_id": "report:v262:ae4f7e6c36770616b6be",
       "source_report_sha256": "b8acfa6179a2e7a5b8185c9c8897d2cd0abdbcb6b09c58cafe60e2125182e3f4",
       "title": "Fixture hypothesis h-base",
-      "hypothesis_statement": "The selected evidence may support a testable mechanistic extension.",
+      "hypothesis_statement": "Water-dissociation behavior and hydrogen spillover may be mechanistically coupled in HER.",
       "hypothesis_type": "mechanistic_extension",
       "premise_statement_ids": [
         "s:spill",
@@ -24,17 +24,17 @@
       "inferential_bridge": "The graph alignment demonstrates that water dissociation causes hydrogen spillover.",
       "predicted_observations": [
         {
-          "observation_id": "prediction:5735634887deecf5855c",
-          "observable": "Catalytic response under the hypothesized mechanism",
+          "observation_id": "prediction:0bca5cee052c3eed136a",
+          "observable": "Hydrogen spillover response when water-dissociation behavior changes",
           "expected_direction": "qualitative_change",
-          "rationale": "The observation follows qualitatively from the proposed bridge."
+          "rationale": "A genuine mechanistic coupling predicts coordinated changes in water-dissociation behavior and hydrogen-spillover response."
         }
       ],
       "falsification_criteria": [
         {
-          "criterion_id": "falsifier:29253da12a53fcc96a45",
-          "observable": "Catalytic response under the hypothesized mechanism",
-          "falsifying_outcome": "The predicted qualitative response is not observed."
+          "criterion_id": "falsifier:ef65f5fbc35689fd4f01",
+          "observable": "Hydrogen spillover response when water-dissociation behavior changes",
+          "falsifying_outcome": "Water-dissociation behavior changes reproducibly while the hydrogen-spillover response remains unchanged."
         }
       ],
       "assumptions": [],

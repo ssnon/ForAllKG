@@ -58,6 +58,11 @@ GOLD_CASES = [
     {
         "case_id": "adv_candidate_overclaim",
         "description": "Candidate-dependent relation is narrated as proven.",
+        "allowed_additional_fail_dimensions": [
+            "premise_fidelity",
+            "inferential_proportionality",
+            "causal_strengthening",
+        ],
         "expectations": [
             {
                 "dimension": "candidate_calibration",
@@ -70,6 +75,9 @@ GOLD_CASES = [
     {
         "case_id": "adv_alignment_causalization",
         "description": "Graph alignment is narrated as causal evidence.",
+        "allowed_additional_fail_dimensions": [
+            "inferential_proportionality",
+        ],
         "expectations": [
             {
                 "dimension": "cross_paper_discipline",
@@ -161,14 +169,8 @@ def main() -> None:
         context_abs = (benchmark_dir / source["context_path"]).resolve()
         portfolio_abs = (benchmark_dir / source["portfolio_path"]).resolve()
 
-        context_rel = os.path.relpath(
-            context_abs,
-            start=output.parent,
-        )
-        portfolio_rel = os.path.relpath(
-            portfolio_abs,
-            start=output.parent,
-        )
+        context_rel = os.path.relpath(context_abs, start=output.parent)
+        portfolio_rel = os.path.relpath(portfolio_abs, start=output.parent)
 
         gold_cases.append(
             {
@@ -177,6 +179,12 @@ def main() -> None:
                 "context_path": Path(context_rel).as_posix(),
                 "portfolio_path": Path(portfolio_rel).as_posix(),
                 "expectations": spec["expectations"],
+                "forbid_unexpected_failures": spec.get(
+                    "forbid_unexpected_failures", True
+                ),
+                "allowed_additional_fail_dimensions": spec.get(
+                    "allowed_additional_fail_dimensions", []
+                ),
             }
         )
 

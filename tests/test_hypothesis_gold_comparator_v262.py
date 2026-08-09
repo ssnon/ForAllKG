@@ -37,7 +37,12 @@ def review(verdict_overrides=None):
     )
 
 
-def suite(allowed, *, critical=True):
+def suite(
+    allowed,
+    *,
+    critical=True,
+    allowed_additional_fail_dimensions=None,
+):
     return SemanticGoldSuite.model_validate(
         {
             "suite_id": "gold",
@@ -54,6 +59,9 @@ def suite(allowed, *, critical=True):
                             "critical": critical,
                         }
                     ],
+                    "allowed_additional_fail_dimensions": list(
+                        allowed_additional_fail_dimensions or []
+                    ),
                 }
             ],
         }
@@ -86,32 +94,53 @@ def test_gold_comparator_allows_noncritical_mismatch():
     assert report.passed
     assert report.noncritical_mismatches == 1
 
-def test_gold_comparator_rejects_unexpected_fail():
-    r = review({
-        "directional_specificity": "warning",
-        "cross_paper_discipline": "fail",
-    })
 
+def test_gold_comparator_rejects_unexpected_fail():
+    r = review(
+        {
+            "directional_specificity": "warning",
+            "cross_paper_discipline": "fail",
+        }
+    )
     report = HypothesisSemanticGoldComparator().compare(
         suite(["warning"]),
         {"case": r},
     )
-
     assert not report.passed
     assert any(
-        m.kind == "unexpected_failure"
-        for m in report.case_results[0].mismatches
+        mismatch.kind == "unexpected_failure"
+        for mismatch in report.case_results[0].mismatches
     )
 
-def test_gold_comparator_allows_unexpected_warning():
-    r = review({
-        "directional_specificity": "warning",
-        "inferential_proportionality": "warning",
-    })
 
+def test_gold_comparator_allows_unexpected_warning():
+    r = review(
+        {
+            "directional_specificity": "warning",
+            "inferential_proportionality": "warning",
+        }
+    )
     report = HypothesisSemanticGoldComparator().compare(
         suite(["warning"]),
         {"case": r},
     )
-
     assert report.passed
+
+
+def test_gold_comparator_allows_explicit_additional_fail_dimension():
+    r = review(
+        {
+            "directional_specificity": "warning",
+            "cross_paper_discipline": "fail",
+        }
+    )
+    report = HypothesisSemanticGoldComparator().compare(
+        suite(
+            ["warning"],
+            allowed_additional_fail_dimensions=["cross_paper_discipline"],
+        ),
+        {"case": r},
+    )
+    assert report.passed
+    assert report.critical_mismatches == 0
+    assert not report.case_results[0].mismatches

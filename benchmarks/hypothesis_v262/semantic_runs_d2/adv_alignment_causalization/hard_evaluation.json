@@ -1,0 +1,24 @@
+{
+  "schema_version": "hypothesis-evaluation-report-v262",
+  "evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "context_id": "hypothesis_context:v262:ae4f7e6c36770616b6be",
+  "context_sha256": "9bb154f16462ae48286fb7647d492c362f7191d4cba871a1431edab298ccb57c",
+  "portfolio_id": "hypothesis_portfolio:e711760e546b08d4fd96",
+  "portfolio_sha256": "d5b722dbd65379c22ae133f084738b13a2ff69dc3178dbb6c6c3536498b5f45b",
+  "hard_gate_passed": true,
+  "hard_gate_errors": 0,
+  "hard_gate_warnings": 0,
+  "hard_gate_issues": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "layer": "diagnostic",
+      "code": "ALIGNMENT_CAUSALIZATION_LANGUAGE",
+      "location": "hypotheses[0]",
+      "message": "Generated text appears to use graph/alignment language as causal or mechanistic support. Alignment is navigation context only.",
+      "hypothesis_id": "hypothesis:83afdc61596f8b4bce8b",
+      "statement_ids": [],
+      "source": "hypothesis_semantic_checks_v262"
+    }
+  ]
+}
