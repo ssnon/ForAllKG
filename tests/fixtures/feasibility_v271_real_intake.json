@@ -1,0 +1,194 @@
+{
+  "schema_version": "feasibility-intake-v0",
+  "intake_id": "feasibility_intake:1b8f7f58d470bd4aa10a",
+  "intake_sha256": "b628e8b115fa62a0f22a860d2a7b78a4d6b447a7cf948565b5a75c24a1a36f6c",
+  "source_context_id": "hypothesis_context:ebe1b32ea6bae148cbac",
+  "source_context_sha256": "174c5214acecf25b7d80a31a00834942cd1a2e6a62e572219b215dcdf665350a",
+  "source_portfolio_id": "hypothesis_portfolio:b2a1f12b161f7be828ea",
+  "source_portfolio_sha256": "5122390ba95dd4cc4e10fc01821829210a65bcb60da11475c0626b1077384783",
+  "source_semantic_review_id": "hypothesis_semantic_review:d5bbed7d2edac01e9103",
+  "task_id": "task:827ef6f99e1f9552abe1",
+  "question": "How may nitrogen coordination influence hydrogen adsorption and HER activity?",
+  "corpus_id": "dac_her_10_v237",
+  "abstention_reason": null,
+  "hypotheses": [
+    {
+      "hypothesis_id": "hypothesis:dd869c34bca71796a46e",
+      "title": "An optimum-like coordination regime may arise from competing charge-transfer and adsorption effects",
+      "statement": "Within TM2@Nx-Gr dual-atom catalysts, hydrogen evolution activity may vary non-monotonically with nitrogen coordination number and local geometry because these variables jointly balance charge transfer against hydrogen adsorption thermodynamics.",
+      "hypothesis_type": "mechanistic_extension",
+      "inferential_bridge": "The supplied evidence links coordination number and local geometry to both charge transfer and hydrogen adsorption thermodynamics, but does not specify a universal adsorption direction. I infer that opposing effects of charge transfer and adsorption energetics could produce an intermediate coordination regime with more favorable HER activity rather than a uniformly increasing or decreasing trend.",
+      "assumptions": [
+        "The compared catalysts differ sufficiently in nitrogen coordination number or local geometry for their effects to be distinguishable.",
+        "Charge-transfer changes and hydrogen adsorption thermodynamics can jointly influence the observed HER activity."
+      ],
+      "premises": [
+        {
+          "statement_id": "stmt:051e7f65911dfe520780",
+          "text": "Within the TM2@Nx-Gr system, the packet-supported influence of nitrogen coordination on HER is expressed through regulation of charge transfer and hydrogen adsorption thermodynamics together with HER activity; the packet does not specify a universal direction for the adsorption change.",
+          "epistemic_role": "evidence_synthesis",
+          "claim_kind": "mechanism",
+          "paper_ids": [
+            "Kiwook_9"
+          ],
+          "requires_verification": false
+        },
+        {
+          "statement_id": "stmt:7b644a7567eaccbaaff2",
+          "text": "Kiwook_9 reports that nitrogen coordination number and local geometry regulate charge transfer, hydrogen adsorption thermodynamics, and HER activity in TM2@Nx-Gr dual-atom catalysts.",
+          "epistemic_role": "reported",
+          "claim_kind": "mechanism",
+          "paper_ids": [
+            "Kiwook_9"
+          ],
+          "requires_verification": false
+        }
+      ],
+      "source_paper_ids": [
+        "Kiwook_9"
+      ],
+      "candidate_dependency": "none",
+      "predictions": [
+        {
+          "observation_id": "prediction:ac02a81852e588230d4e",
+          "observable": "HER activity as a function of nitrogen coordination number and local geometry within TM2@Nx-Gr",
+          "expected_direction": "non_monotonic",
+          "rationale": "A balance between charge-transfer effects and hydrogen adsorption thermodynamics would be consistent with an optimum-like activity pattern across coordination environments."
+        }
+      ],
+      "falsifiers": [
+        {
+          "criterion_id": "falsifier:f819efe6df2e792642dc",
+          "observable": "HER activity as a function of nitrogen coordination number and local geometry within TM2@Nx-Gr",
+          "falsifying_outcome": "The activity changes monotonically across the compared coordination environments, with no intermediate or geometry-dependent optimum."
+        }
+      ],
+      "semantic_gate_status": "eligible_with_warnings",
+      "semantic_warning_dimensions": [
+        "directional_specificity",
+        "falsifier_informativeness",
+        "inferential_proportionality"
+      ],
+      "semantic_fail_dimensions": []
+    },
+    {
+      "hypothesis_id": "hypothesis:b4d2ea70f6bf7f262361",
+      "title": "Local geometry may mediate coordination effects independently of coordination number",
+      "statement": "At a given nitrogen coordination number in TM2@Nx-Gr dual-atom catalysts, changing the local nitrogen coordination geometry may alter charge transfer, hydrogen adsorption thermodynamics, and HER activity.",
+      "hypothesis_type": "descriptor_mediation",
+      "inferential_bridge": "Because nitrogen coordination number and local geometry are identified together as design variables linked to charge transfer, adsorption thermodynamics, and HER, I infer that geometry is not merely a proxy for coordination number and can mediate these properties when coordination number is held comparable.",
+      "assumptions": [
+        "Catalysts with comparable coordination number but different local geometries can be meaningfully compared.",
+        "Other structural or compositional differences do not fully dominate the observed changes."
+      ],
+      "premises": [
+        {
+          "statement_id": "stmt:051e7f65911dfe520780",
+          "text": "Within the TM2@Nx-Gr system, the packet-supported influence of nitrogen coordination on HER is expressed through regulation of charge transfer and hydrogen adsorption thermodynamics together with HER activity; the packet does not specify a universal direction for the adsorption change.",
+          "epistemic_role": "evidence_synthesis",
+          "claim_kind": "mechanism",
+          "paper_ids": [
+            "Kiwook_9"
+          ],
+          "requires_verification": false
+        },
+        {
+          "statement_id": "stmt:6e43733937ed47fb6b12",
+          "text": "Kiwook_9 explicitly identifies nitrogen coordination number and local geometry as reported design variables linked to charge transfer, hydrogen adsorption thermodynamics, and HER activity in TM2@Nx-Gr.",
+          "epistemic_role": "reported",
+          "claim_kind": "mechanism",
+          "paper_ids": [
+            "Kiwook_9"
+          ],
+          "requires_verification": false
+        }
+      ],
+      "source_paper_ids": [
+        "Kiwook_9"
+      ],
+      "candidate_dependency": "none",
+      "predictions": [
+        {
+          "observation_id": "prediction:07f7601e9803208d3e6b",
+          "observable": "Charge transfer, hydrogen adsorption thermodynamics, and HER activity across TM2@Nx-Gr catalysts with comparable nitrogen coordination number but different local geometries",
+          "expected_direction": "qualitative_change",
+          "rationale": "If local geometry acts as an independent mediator, geometry changes should produce distinguishable changes in these three linked observables even without changing coordination number."
+        }
+      ],
+      "falsifiers": [
+        {
+          "criterion_id": "falsifier:e88acc2d9819eba92219",
+          "observable": "Charge transfer, hydrogen adsorption thermodynamics, and HER activity across TM2@Nx-Gr catalysts with comparable nitrogen coordination number but different local geometries",
+          "falsifying_outcome": "Changing local geometry produces no distinguishable change in these observables once nitrogen coordination number is comparable."
+        }
+      ],
+      "semantic_gate_status": "eligible_with_warnings",
+      "semantic_warning_dimensions": [
+        "directional_specificity",
+        "falsifier_informativeness",
+        "inferential_proportionality"
+      ],
+      "semantic_fail_dimensions": []
+    },
+    {
+      "hypothesis_id": "hypothesis:bb5cc23b0145f1220881",
+      "title": "The coordination–adsorption–HER relationship may depend on catalyst context and reaction environment",
+      "statement": "The influence of nitrogen coordination on hydrogen adsorption and HER activity may extend to nitrogen-coordinated single-atom catalysts, but the resulting charge-transfer and adsorption response may differ between acidic and alkaline environments.",
+      "hypothesis_type": "context_dependency",
+      "inferential_bridge": "One supplied example establishes a nitrogen-coordinated single-atom catalyst evaluated for HER in acidic and alkaline environments, while another links nitrogen coordination variables to charge transfer, hydrogen adsorption thermodynamics, and HER in TM2@Nx-Gr dual-atom catalysts. I infer, as a context-dependent extension, that the same coordination-mediated chain may operate in the single-atom context but be modulated by reaction environment.",
+      "assumptions": [
+        "The coordination variables relevant to TM2@Nx-Gr can be defined comparably for the nitrogen-coordinated single-atom catalyst.",
+        "Reaction environment can modify the relationship between charge transfer, hydrogen adsorption thermodynamics, and HER activity."
+      ],
+      "premises": [
+        {
+          "statement_id": "stmt:0768b4266d68acd9fb45",
+          "text": "Kiwook_6 describes a single-atom catalyst in which isolated metal atoms are coordinated with nitrogen in a carbon support, and connects this catalyst to the hydrogen evolution reaction evaluated in acidic and alkaline environments.",
+          "epistemic_role": "reported",
+          "claim_kind": "observation",
+          "paper_ids": [
+            "Kiwook_6"
+          ],
+          "requires_verification": false
+        },
+        {
+          "statement_id": "stmt:7b644a7567eaccbaaff2",
+          "text": "Kiwook_9 reports that nitrogen coordination number and local geometry regulate charge transfer, hydrogen adsorption thermodynamics, and HER activity in TM2@Nx-Gr dual-atom catalysts.",
+          "epistemic_role": "reported",
+          "claim_kind": "mechanism",
+          "paper_ids": [
+            "Kiwook_9"
+          ],
+          "requires_verification": false
+        }
+      ],
+      "source_paper_ids": [
+        "Kiwook_6",
+        "Kiwook_9"
+      ],
+      "candidate_dependency": "none",
+      "predictions": [
+        {
+          "observation_id": "prediction:03d3705764e4f0114773",
+          "observable": "Coordination-linked changes in charge transfer, hydrogen adsorption thermodynamics, and HER activity in the nitrogen-coordinated single-atom catalyst across acidic and alkaline environments",
+          "expected_direction": "qualitative_change",
+          "rationale": "Different reaction environments may alter interfacial charge balance and hydrogen-binding conditions, causing the coordination-linked response to differ between the two environments."
+        }
+      ],
+      "falsifiers": [
+        {
+          "criterion_id": "falsifier:bdb3cc0b20a5a6649724",
+          "observable": "Coordination-linked changes in charge transfer, hydrogen adsorption thermodynamics, and HER activity in the nitrogen-coordinated single-atom catalyst across acidic and alkaline environments",
+          "falsifying_outcome": "The coordination-linked response is indistinguishable between acidic and alkaline environments across all three observables."
+        }
+      ],
+      "semantic_gate_status": "eligible_with_warnings",
+      "semantic_warning_dimensions": [
+        "directional_specificity",
+        "falsifier_informativeness",
+        "inferential_proportionality"
+      ],
+      "semantic_fail_dimensions": []
+    }
+  ]
+}

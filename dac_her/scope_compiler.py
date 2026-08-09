@@ -27,6 +27,66 @@ _SINGLE_TERMS = (
     "sac",
 )
 
+# Explicit element symbols/names accepted as concrete metal identities.
+# C/N/O/H are intentionally absent so coordination/support formulas such as N4
+# do not become false "metal" hits. Generic TM/TM2 is also intentionally absent.
+_METAL_SYMBOLS = (
+    "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
+    "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd",
+    "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
+)
+
+_METAL_NAMES = {
+    "scandium": "Sc",
+    "titanium": "Ti",
+    "vanadium": "V",
+    "chromium": "Cr",
+    "manganese": "Mn",
+    "iron": "Fe",
+    "cobalt": "Co",
+    "nickel": "Ni",
+    "copper": "Cu",
+    "zinc": "Zn",
+    "yttrium": "Y",
+    "zirconium": "Zr",
+    "niobium": "Nb",
+    "molybdenum": "Mo",
+    "technetium": "Tc",
+    "ruthenium": "Ru",
+    "rhodium": "Rh",
+    "palladium": "Pd",
+    "silver": "Ag",
+    "cadmium": "Cd",
+    "hafnium": "Hf",
+    "tantalum": "Ta",
+    "tungsten": "W",
+    "rhenium": "Re",
+    "osmium": "Os",
+    "iridium": "Ir",
+    "platinum": "Pt",
+    "gold": "Au",
+    "mercury": "Hg",
+}
+
+_CANDIDATE_FAMILY_TERMS = (
+    "as a function",
+    "series",
+    "across",
+    "multiple structures",
+    "coordination number",
+    "different local geometries",
+    "vary non-monotonically",
+    "trend",
+)
+
+_CANDIDATE_CONTEXT_TERMS = (
+    "extend to",
+    "may extend",
+    "between acidic and alkaline",
+    "across acidic and alkaline",
+    "reaction environments",
+)
+
 _ENVIRONMENT_TERMS = {
     "acidic": ("acidic", "acid electrolyte"),
     "alkaline": ("alkaline", "basic electrolyte", "koh"),
@@ -120,11 +180,60 @@ def _extract_observables(text: str) -> list[str]:
 
 
 def _extract_metals(text: str) -> list[str]:
-    # Conservative extraction: only hyphenated element-symbol pairs and explicit
-    # single symbols followed by site/atom are accepted. Generic TM2 is excluded.
-    symbols = re.findall(r"\b([A-Z][a-z]?)[-–]([A-Z][a-z]?)\b", text)
-    rows = {symbol for pair in symbols for symbol in pair}
+    """Extract explicit metal identities without treating N/C/O/H as metals.
+
+    v2.7.0 only recovered hyphenated symbol pairs (e.g. Fe-Ru), which made
+    candidate-specific SAC targets effectively invisible. v2.7.1 accepts
+    standalone transition-metal symbols and common element names while
+    deliberately excluding generic TM/TM2 placeholders.
+    """
+    symbol_pattern = "|".join(sorted(_METAL_SYMBOLS, key=len, reverse=True))
+    rows = set(re.findall(rf"\b(?:{symbol_pattern})\b", text))
+
+    lowered = text.lower()
+    for name, symbol in _METAL_NAMES.items():
+        if re.search(rf"\b{re.escape(name)}\b", lowered):
+            rows.add(symbol)
+
     return sorted(rows)
+
+
+def _candidate_identity_is_concrete(
+    *,
+    catalyst_class: str,
+    metals: list[str],
+) -> bool:
+    if catalyst_class == "dual_atom":
+        return len(metals) >= 2
+    if catalyst_class == "single_atom":
+        return len(metals) >= 1
+    if catalyst_class == "mixed_atomic_site":
+        return len(metals) >= 2
+    return False
+
+
+def _candidate_specific_from_claim(
+    *,
+    text: str,
+    catalyst_class: str,
+    metals: list[str],
+) -> bool:
+    """Conservatively identify a single explicit target rather than a family.
+
+    This is intentionally narrower than merely seeing a metal name. A claim that
+    explicitly compares environments/geometries or describes a family/trend stays
+    comparative/material-family even when concrete metals are mentioned.
+    """
+    if not _candidate_identity_is_concrete(
+        catalyst_class=catalyst_class,
+        metals=metals,
+    ):
+        return False
+    if _contains_any(text, _CANDIDATE_CONTEXT_TERMS):
+        return False
+    if _contains_any(text, _CANDIDATE_FAMILY_TERMS):
+        return False
+    return True
 
 
 class HypothesisScopeCompiler:
@@ -166,6 +275,7 @@ class HypothesisScopeCompiler:
             confidence = "low"
             warnings.append("catalyst_class_not_explicit")
 
+        metals = _extract_metals(hypothesis.statement)
         htype = hypothesis.hypothesis_type.lower()
         if htype == "context_dependency" or any(
             phrase in text
@@ -191,6 +301,16 @@ class HypothesisScopeCompiler:
         ):
             level = "material_family"
             level_reason = "The hypothesis concerns a trend across a catalyst family rather than one fully specified candidate."
+        elif _candidate_specific_from_claim(
+            text=text,
+            catalyst_class=catalyst_class,
+            metals=metals,
+        ):
+            level = "candidate_specific"
+            level_reason = (
+                "The hypothesis targets an explicit metal/site identity without "
+                "requiring a family, controlled-comparison, or context-extension design."
+            )
         elif htype in {"mechanistic_extension", "mechanism"}:
             level = "mechanism"
             level_reason = "The hypothesis proposes a mechanistic extension without a fully specified comparison matrix."
@@ -202,7 +322,6 @@ class HypothesisScopeCompiler:
         environments = _extract_environments(text)
         variables = _extract_variables(text)
         observables = _extract_observables(text)
-        metals = _extract_metals(hypothesis.statement)
 
         # Distinguish controlled versus varied variables downstream; scope records
         # the variables present without over-interpreting the design.
