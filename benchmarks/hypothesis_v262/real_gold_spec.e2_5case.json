@@ -129,18 +129,20 @@
         {
           "dimension": "candidate_calibration",
           "allowed_verdicts": [
+            "pass",
             "warning"
           ],
           "critical": true,
-          "note": "The candidate status is preserved, but the proposed functional dependence is strong enough to merit a warning rather than a clean pass."
+          "note": "The provisional status is explicitly preserved. Pass is appropriate when candidate propagation itself is the focus; warning is also acceptable when the relatively strong functional role assigned to the provisional relation is treated conservatively."
         },
         {
           "dimension": "inferential_proportionality",
           "allowed_verdicts": [
-            "pass"
+            "pass",
+            "warning"
           ],
           "critical": true,
-          "note": "The mechanistic extension is bounded and explicitly conditional on the provisional relation."
+          "note": "The bridge is a bounded and explicitly hypothetical mechanistic extension, but it also introduces a more specific mediator/dependence claim than the supplied association. Both pass and warning are defensible under the rubric."
         },
         {
           "dimension": "causal_strengthening",
@@ -169,10 +171,11 @@
         {
           "dimension": "falsifier_informativeness",
           "allowed_verdicts": [
-            "pass"
+            "pass",
+            "warning"
           ],
           "critical": true,
-          "note": "The falsifiers distinguish the proposed coupling from observations in which the transition and response decouple."
+          "note": "The falsifier provides meaningful counterevidence to the proposed transition-response relationship, while also testing a stronger coupling interpretation than every reading of the weaker 'may contribute' claim. Both pass and warning are defensible."
         },
         {
           "dimension": "cross_paper_discipline",

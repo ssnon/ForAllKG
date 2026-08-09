@@ -1,0 +1,146 @@
+{
+  "schema_version": "hypothesis-semantic-review-v262",
+  "review_id": "hypothesis_semantic_review:63de269ac5ca1111c692",
+  "source_context_id": "hypothesis_context:365930331e516067a041",
+  "source_context_sha256": "4ebb09f5809003e202c9915fe492d0a531dcb7ee0c43ce7f9a4aa412aee73d96",
+  "source_portfolio_id": "hypothesis_portfolio:9ebc041739912d11d9d5",
+  "source_portfolio_sha256": "a4128929235b6a1d3eb3a0535eacc8bb5bc9aa911916189dcc13430c5a28a4f4",
+  "source_evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "source_hard_gate_passed": true,
+  "critic_prompt_version": "hypothesis-semantic-critic-prompt-v2.6.2-b2",
+  "critic_prompt_sha256": "14144836cde95dcb3f9e12c05d31e38e3a9d1abd32e25352d42f9c8797f6d43e",
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "Both hypotheses represent the selected reported premises without distorting them: stmt:809392b651b703bc10c5 supports coordination-dependent bridge-site prevalence and adsorption geometry, stmt:34167fd9414ab3e233f5 supports near-optimal adsorption at intermediate coordination, and stmt:551704b8b737f0ffd78b supports the volcano relation between adsorption free energy and exchange current density. The additional charge-transfer relation is presented as a hypothesis rather than as a reported premise.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:809392b651b703bc10c5",
+        "stmt:34167fd9414ab3e233f5",
+        "stmt:551704b8b737f0ffd78b"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "The unresolved direct charge-transfer relation is retained as a research gap rather than treated as established evidence. Both hypotheses are marked hypothesized, and the first hypothesis explicitly states that the charge-transfer relation is not established in the supplied evidence, consistent with stmt:6b1d3fd66dc06c5dbc46.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:6b1d3fd66dc06c5dbc46"
+      ]
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains no candidate or provisional evidence premises; both hypotheses have candidate_dependency set to none.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "warning",
+      "rationale": "The first hypothesis makes a plausible but multi-step bridge from coordination-dependent geometry to charge transfer and then to adsorption thermodynamics and activity. That bridge is explicitly identified as inferred, but its charge-transfer component is not directly supported in the packet. The second hypothesis further asserts primary mediation and exclusion of an independent activity effect, which is a stronger extension than the reported adsorption-activity sequence clearly warrants.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:b2f9edb8964c2135a708",
+        "stmt:6b1d3fd66dc06c5dbc46"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "The causal language is used within explicitly hypothesized mechanisms rather than silently recasting the reported association as established fact. The supplied evidence synthesis in stmt:b2f9edb8964c2135a708 is distinguished from the proposed charge-transfer mechanism.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:b2f9edb8964c2135a708"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "warning",
+      "rationale": "The non-monotonic HER activity prediction is supported by the reported volcano relation in stmt:551704b8b737f0ffd78b, and the decrease away from the optimum in the second hypothesis is likewise supported. However, the first hypothesis additionally predicts non-monotonic charge transfer across coordination environments, for which the supplied premises do not provide an ordered trend or shape. This is an unsupported specificity rather than a wholesale failure of the hypothesis.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:551704b8b737f0ffd78b",
+        "stmt:34167fd9414ab3e233f5",
+        "stmt:809392b651b703bc10c5"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The predictions are connected to the stated hypothesis mechanisms. The first hypothesis predicts charge-transfer variation and corresponding adsorption and activity changes; the second tests whether charge transfer adds activity ordering when adsorption free energy is comparable and whether activity declines away from the adsorption optimum.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "pass",
+      "rationale": "The proposed outcomes would materially challenge the central claims. For the first hypothesis, unchanged charge transfer despite substantial geometry and adsorption changes challenges the proposed charge-transfer contribution, while absent activity changes despite adsorption shifts challenges the proposed downstream relationship. For the second, systematic activity ordering at comparable adsorption free energy challenges mediation, and failure of the reported away-from-optimum activity decrease challenges its thermodynamic mediation account.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "The portfolio uses a single source paper, Kiwook_9, and does not merge distinct papers, catalysts, or systems across sources. The synthesis remains within the supplied graphene-supported TM2@Nx-Gr catalyst context.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": [
+        "stmt:34167fd9414ab3e233f5",
+        "stmt:551704b8b737f0ffd78b",
+        "stmt:809392b651b703bc10c5"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "pass",
+      "rationale": "The two hypotheses are scientifically distinct. hypothesis:79df3bc0d3062b049244 proposes a charge-redistribution mechanism linking coordination to adsorption and activity, whereas hypothesis:5900d847f4deee058ee0 specifies a stronger mediation claim about whether adsorption thermodynamics accounts for the activity effect rather than charge transfer acting independently.",
+      "hypothesis_ids": [
+        "hypothesis:79df3bc0d3062b049244",
+        "hypothesis:5900d847f4deee058ee0"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "Non-abstention is appropriate because the portfolio has multiple eligible reported premises linking nitrogen coordination, adsorption geometry, adsorption free energy, and HER activity, including stmt:809392b651b703bc10c5, stmt:34167fd9414ab3e233f5, and stmt:551704b8b737f0ffd78b. These support bounded hypotheses even though the direct charge-transfer relation remains unresolved.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "stmt:809392b651b703bc10c5",
+        "stmt:34167fd9414ab3e233f5",
+        "stmt:551704b8b737f0ffd78b",
+        "stmt:6b1d3fd66dc06c5dbc46"
+      ]
+    }
+  ],
+  "overall_summary": "The portfolio is semantically usable: its reported premises and unresolved charge-transfer gap are clearly distinguished from the proposed mechanisms, predictions are linked to the hypotheses, falsifiers are informative, and the two hypotheses are distinct. The main concerns are the strength of the multi-step charge-transfer and primary-mediation inferences and the unsupported non-monotonic specificity assigned to charge transfer itself."
+}

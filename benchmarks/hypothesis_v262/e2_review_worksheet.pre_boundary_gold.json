@@ -1,0 +1,504 @@
+{
+  "schema_version": "hypothesis-e2-human-review-worksheet-v262",
+  "suite_id": "hypothesis-v262-e2-human-review",
+  "cases": [
+    {
+      "case_id": "e2_candidate_live",
+      "scenario": "candidate",
+      "description": "Fresh live Hypothesis Maker output that should preserve candidate/provisional dependence.",
+      "review_hint": "Human review focus: candidate_calibration should recognize the provisional premise; causal wording must remain hypothetical.",
+      "source_kind": "controlled_context_live_output",
+      "context_path": "data_dac/hypothesis_e2/contexts/e2_candidate_live.context.json",
+      "portfolio_path": "data_dac/hypothesis_e2/live_outputs/e2_candidate_live/portfolio.json",
+      "review_path": "benchmarks/hypothesis_v262/e2_review_runs/e2_candidate_live/review.json",
+      "generator_version": "hypothesis-maker-v2.6.1",
+      "approval_status": "approved",
+      "dimensions": [
+        {
+          "dimension": "premise_fidelity",
+          "critic_verdict": "pass",
+          "critic_rationale": "The hypothesis uses the reported premise that hydrogen adsorption changes local active-site electronic structure and retains the provisional status of the association with catalytic response. It does not represent the provisional association as an established fact.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The reported electronic-structure premise is preserved, while the provisional relation is not rewritten as an established result."
+        },
+        {
+          "dimension": "gap_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The unresolved issue that the provisional transition is not established to causally control catalytic response is used as motivation for testing the hypothesis, rather than being presented as supplied evidence.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The unresolved causal-control question remains motivational/gap content rather than a positive premise."
+        },
+        {
+          "dimension": "candidate_calibration",
+          "critic_verdict": "warning",
+          "critic_rationale": "The hypothesis and inferential bridge explicitly use tentative language such as \"may,\" \"could,\" and \"provisional,\" but the statement that catalytic response depends on whether the transition occurs gives the candidate relation a relatively strong functional role. This is usable as a hypothesis but remains susceptible to reading the candidate relation as more established than supplied.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The provisional relation remains explicitly provisional throughout the hypothesis and inferential bridge. Mechanistic strength is evaluated separately under inferential_proportionality."
+        },
+        {
+          "dimension": "inferential_proportionality",
+          "critic_verdict": "pass",
+          "critic_rationale": "The bridge makes a bounded mechanistic inference from the reported electronic-structure effect and the provisional response association. It explicitly states that mediation is motivated but not established and identifies assumptions concerning localization or functional coupling to the active site.",
+          "human_allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "human_note": "The bridge is a plausible bounded mechanistic extension, but the specific mediator/dependence claim is stronger than the supplied reported and provisional association alone clearly warrants."
+        },
+        {
+          "dimension": "causal_strengthening",
+          "critic_verdict": "pass",
+          "critic_rationale": "The proposed causal role is framed as a hypothesis using \"may contribute\" and \"could be a causal mediator,\" while the bridge expressly denies that causation has been established. This is an explicitly hypothetical causal mechanism rather than a silent conversion of association into fact.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Causal language is clearly framed as hypothetical/proposed, not as a reported causal finding."
+        },
+        {
+          "dimension": "directional_specificity",
+          "critic_verdict": "pass",
+          "critic_rationale": "The hypothesis and prediction specify a qualitative dependence or change in catalytic response, not an unsupported increase, decrease, magnitude, or monotonic trend. That level of directional specificity is consistent with the supplied evidence.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The prediction remains qualitative and does not introduce an unsupported monotonic direction or magnitude."
+        },
+        {
+          "dimension": "prediction_linkage",
+          "critic_verdict": "pass",
+          "critic_rationale": "The prediction that catalytic behavior should track occurrence of the hydrogen-adsorption-related transition directly follows from the proposed mediating or dependence relationship. It is not an unrelated addition.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The predicted catalytic response follows directly from the proposed electronic-state mediation/dependence."
+        },
+        {
+          "dimension": "falsifier_informativeness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The falsification criterion identifies outcomes that would meaningfully count against the proposed coupling: comparable responses despite presence or absence of the transition, or occurrence of the transition without a corresponding response. These outcomes are more informative than merely restating the hypothesis.",
+          "human_allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "human_note": "The falsifier provides meaningful counterevidence to transition-response coupling, but primarily tests a stronger necessary-coupling interpretation than the weaker 'may contribute' hypothesis, so residual contributory effects could remain."
+        },
+        {
+          "dimension": "cross_paper_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The portfolio uses one source paper, E2_Controlled_Candidate, and does not merge evidence across distinct papers, catalysts, or systems. No cross-paper mechanistic alignment is asserted.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "This is a single-source controlled case and contains no cross-paper conflation."
+        },
+        {
+          "dimension": "hypothesis_distinctness",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains a single hypothesis, so there are no multiple hypotheses to assess for scientific distinctness.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "Only one hypothesis is present, so portfolio-level distinctness is not applicable."
+        },
+        {
+          "dimension": "abstention_appropriateness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The eligible evidence includes one reported mechanistic premise and one explicitly provisional association, which is sufficient to motivate a bounded mechanistic hypothesis while not proving it. Non-abstention is therefore appropriate.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "There is sufficient eligible evidence, including an explicitly provisional premise, to justify a bounded non-abstaining hypothesis."
+        }
+      ]
+    },
+    {
+      "case_id": "e2_alignment_live",
+      "scenario": "alignment",
+      "description": "Fresh live cross-paper output with an alignment-bearing route that must not become mechanistic evidence.",
+      "review_hint": "Human review focus: cross_paper_discipline and causal_strengthening must distinguish reported premises from alignment/navigation.",
+      "source_kind": "controlled_context_live_output",
+      "context_path": "data_dac/hypothesis_e2/contexts/e2_alignment_live.context.json",
+      "portfolio_path": "data_dac/hypothesis_e2/live_outputs/e2_alignment_live/portfolio.json",
+      "review_path": "benchmarks/hypothesis_v262/e2_review_runs/e2_alignment_live/review.json",
+      "generator_version": "hypothesis-maker-v2.6.1",
+      "approval_status": "approved",
+      "dimensions": [
+        {
+          "dimension": "premise_fidelity",
+          "critic_verdict": "pass",
+          "critic_rationale": "The hypothesis represents both supplied reported premises without distortion: water dissociation contributes to alkaline HER behavior and hydrogen spillover contributes to HER behavior. These are used as premises rather than upgraded into evidence of coupling.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The water-dissociation and spillover statements remain separate reported premises and are not rewritten as evidence of coupling."
+        },
+        {
+          "dimension": "gap_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The unresolved absence of established causal coupling is treated as the motivation for a hypothesis, not as an established finding. The inferential bridge explicitly states that coupling is being proposed rather than concluded from the supplied context.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The missing causal coupling remains an unresolved gap and is not promoted to evidence."
+        },
+        {
+          "dimension": "candidate_calibration",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains no candidate or provisional premises; both selected premises are reported evidence.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No candidate/provisional positive premise is used."
+        },
+        {
+          "dimension": "inferential_proportionality",
+          "critic_verdict": "pass",
+          "critic_rationale": "The proposed bridge is a bounded cross-paper inference: it proposes functional dependence of the spillover-associated contribution on water-dissociation activity and identifies a possible interfacial connection. It is explicitly labeled as an inference and is accompanied by assumptions limiting the comparison.",
+          "human_allowed_verdicts": [
+            "pass",
+            "warning"
+          ],
+          "critical": true,
+          "human_note": "The cross-paper coupling is explicitly hypothetical and bounded by assumptions, making pass reasonable. However, functional coupling, directional dependence, and possible intermediate mechanistic steps are more specific than the separate reported premises, making warning reasonable. Fail is not acceptable."
+        },
+        {
+          "dimension": "causal_strengthening",
+          "critic_verdict": "pass",
+          "critic_rationale": "Although the hypothesis proposes a mechanistic dependence, it uses qualified language such as \"may\" and explicitly states that the bridge is not a causal conclusion derived from graph alignment. The proposed causal mechanism is therefore presented as hypothetical rather than established evidence.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The proposed dependence is qualified as hypothetical and the alignment route is explicitly not treated as causal evidence."
+        },
+        {
+          "dimension": "directional_specificity",
+          "critic_verdict": "warning",
+          "critic_rationale": "The proposed decrease in spillover-associated HER behavior when water-dissociation contribution is reduced is a clear, testable directional prediction, but the supplied premises only report contributions to HER behavior and do not establish this monotonic dependence. The direction is acceptable as a hypothesis but stronger and more specific than the evidence itself warrants.",
+          "human_allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "human_note": "The predicted decrease under reduced water-dissociation contribution is more directionally specific than the two source premises establish."
+        },
+        {
+          "dimension": "prediction_linkage",
+          "critic_verdict": "pass",
+          "critic_rationale": "The prediction directly follows from the proposed gating relationship: if water-dissociation activity enables the spillover-associated contribution, reducing it should reduce the associated HER behavior. The prediction is not an unrelated addition.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The directional prediction follows from the proposed gating/dependence hypothesis."
+        },
+        {
+          "dimension": "falsifier_informativeness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The falsifying outcome is meaningfully opposed to the hypothesis: unchanged or increased spillover-associated HER behavior despite reduced water-dissociation contribution would count against the proposed dependence. The criterion therefore provides a discriminating outcome rather than merely restating the hypothesis.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Unchanged or increased spillover-associated behavior despite reduced water-dissociation contribution would directly challenge the proposed dependence."
+        },
+        {
+          "dimension": "cross_paper_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The portfolio explicitly identifies a cross-paper synthesis and keeps the two reported contributions as distinct premises. It does not treat the alignment route as mechanistic evidence; instead, the inferential bridge is presented as a new hypothesis beyond the separate reports.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Cross-paper synthesis is explicit and the graph alignment is kept organizational/navigation-only rather than evidential."
+        },
+        {
+          "dimension": "hypothesis_distinctness",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains only one hypothesis, so distinctness among multiple hypotheses cannot be assessed.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "Only one hypothesis is present."
+        },
+        {
+          "dimension": "abstention_appropriateness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The portfolio has two eligible reported positive premises and an explicit unresolved gap concerning their causal coupling. This is sufficient to motivate a bounded cross-paper hypothesis, even though it does not establish that hypothesis as true.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Two eligible reported premises plus an unresolved coupling gap are enough to motivate a bounded cross-paper hypothesis."
+        }
+      ]
+    },
+    {
+      "case_id": "e2_partial_live",
+      "scenario": "partial",
+      "description": "Fresh live output using positive evidence from a partial Kiwook_10 context without unsafe absence claims.",
+      "review_hint": "Human review focus: positive Kiwook_10 evidence is allowed; paper-level claims that Kiwook_10 lacks/does not report a relation are unsafe.",
+      "source_kind": "controlled_context_live_output",
+      "context_path": "data_dac/hypothesis_e2/contexts/e2_partial_live.context.json",
+      "portfolio_path": "data_dac/hypothesis_e2/live_outputs/e2_partial_live/portfolio.json",
+      "review_path": "benchmarks/hypothesis_v262/e2_review_runs/e2_partial_live/review.json",
+      "generator_version": "hypothesis-maker-v2.6.1",
+      "approval_status": "approved",
+      "dimensions": [
+        {
+          "dimension": "premise_fidelity",
+          "critic_verdict": "pass",
+          "critic_rationale": "The hypothesis and inferential bridge preserve the supplied association that axial Co-O coordination relates to catalytic activity and charge transfer without representing that association itself as a reported causal finding.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The Kiwook_10 association is preserved as an association and is not silently upgraded to a reported causal result."
+        },
+        {
+          "dimension": "gap_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The unresolved statement about hydrogen spillover remains unused and is not promoted into evidence or a premise. The hypothesis instead focuses on the eligible positive evidence.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The unresolved spillover question is not used as a positive premise or as evidence of absence."
+        },
+        {
+          "dimension": "candidate_calibration",
+          "critic_verdict": "pass",
+          "critic_rationale": "No candidate or provisional premise is used. The hypothesis is explicitly marked as hypothesized and does not promote candidate evidence to established fact.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No candidate/provisional premise is present. I classify this as not_applicable rather than pass; this is the one deliberate correction to the critic scaffold."
+        },
+        {
+          "dimension": "inferential_proportionality",
+          "critic_verdict": "warning",
+          "critic_rationale": "The proposed mediation bridge is a plausible bounded leap from the reported association, and the hypothesis states explicit assumptions. However, inferring that charge transfer partially mediates the coordination-activity relationship is more specific and stronger than the supplied association alone clearly warrants.",
+          "critical": true,
+          "human_allowed_verdicts": [
+            "pass",
+            "warning"
+          ],
+          "human_note": "The association-to-partial-mediation step is stronger than the supplied premise and may reasonably merit a warning, but it is also a bounded, explicitly hypothetical inference with stated assumptions, so pass is acceptable. Fail is not acceptable."
+        },
+        {
+          "dimension": "causal_strengthening",
+          "critic_verdict": "pass",
+          "critic_rationale": "Although the hypothesis uses functional and mediation language, the causal mechanism is explicitly presented as a proposed inference in the inferential bridge and the hypothesis status is hypothesized. It is not described as an established causal result.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Mediation/functional language is explicitly hypothetical rather than represented as established causation."
+        },
+        {
+          "dimension": "directional_specificity",
+          "critic_verdict": "warning",
+          "critic_rationale": "The supplied evidence reports association but does not specify an increasing or monotonic relationship. The predictions nevertheless state that a more pronounced axial Co-O coordination should produce stronger charge transfer and increased activity, making the directional claims more specific than the premise clearly supports.",
+          "human_allowed_verdicts": [
+            "warning"
+          ],
+          "critical": true,
+          "human_note": "The predicted stronger charge transfer and increased activity introduce directions not established by the association-only premise."
+        },
+        {
+          "dimension": "prediction_linkage",
+          "critic_verdict": "pass",
+          "critic_rationale": "Both predictions are directly linked to the proposed mechanism: enhanced coordination is predicted to accompany charge transfer, and the proposed charge-transfer mediation is used to link coordination to activity. They are not unrelated additions.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Both predictions are logically tied to the proposed coordination → charge-transfer → activity mechanism."
+        },
+        {
+          "dimension": "falsifier_informativeness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The criteria specify observable outcomes that would count against the proposed coordination-to-charge-transfer or coordination-to-activity relationships. Unchanged or oppositely moving charge transfer, and unchanged or decreased activity under the stated coordination and charge-transfer conditions, would meaningfully challenge the hypothesis.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The stated contrary or uncoupled outcomes would meaningfully challenge the proposed mediation chain."
+        },
+        {
+          "dimension": "cross_paper_discipline",
+          "critic_verdict": "pass",
+          "critic_rationale": "The portfolio uses evidence from only Kiwook_10, identifies a single source paper, and does not merge distinct papers, catalysts, or systems.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "The case stays within Kiwook_10 and does not conflate independent papers or catalysts."
+        },
+        {
+          "dimension": "hypothesis_distinctness",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains only one hypothesis, so there are no multiple hypotheses to compare for scientific distinctness.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "Only one hypothesis is present."
+        },
+        {
+          "dimension": "abstention_appropriateness",
+          "critic_verdict": "pass",
+          "critic_rationale": "The nonempty eligible premise e2:partial:k10_positive provides enough evidence to motivate a bounded, explicitly hypothetical mechanism linking axial Co-O coordination, charge transfer, and activity. This supports non-abstention without establishing the hypothesis as proven.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Positive Kiwook_10 evidence is available, so a bounded hypothesis is preferable to abstention."
+        }
+      ]
+    },
+    {
+      "case_id": "e2_abstention_live",
+      "scenario": "abstention",
+      "description": "Fresh live output with no eligible positive premise; the Hypothesis Maker should abstain.",
+      "review_hint": "Human review focus: abstention_appropriateness should accept abstention and no restricted navigation note may become a premise.",
+      "source_kind": "controlled_context_live_output",
+      "context_path": "data_dac/hypothesis_e2/contexts/e2_abstention_live.context.json",
+      "portfolio_path": "data_dac/hypothesis_e2/live_outputs/e2_abstention_live/portfolio.json",
+      "review_path": "benchmarks/hypothesis_v262/e2_review_runs/e2_abstention_live/review.json",
+      "generator_version": "hypothesis-maker-v2.6.1",
+      "approval_status": "approved",
+      "dimensions": [
+        {
+          "dimension": "premise_fidelity",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains no hypotheses or selected positive premises to evaluate for faithful representation.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "There is no hypothesis and no selected positive premise to assess for fidelity."
+        },
+        {
+          "dimension": "gap_discipline",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No research gaps or hypotheses are supplied, so there is no gap content whose evidential status could be misrepresented.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No hypothesis or research-gap use is present."
+        },
+        {
+          "dimension": "candidate_calibration",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains no candidate or provisional evidence used in a hypothesis.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No candidate premise is used."
+        },
+        {
+          "dimension": "inferential_proportionality",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypothesis or proposed inferential bridge is present for evaluation.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No inferential bridge is proposed."
+        },
+        {
+          "dimension": "causal_strengthening",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypothesis makes a causal claim or converts an observation into established causation.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No causal hypothesis is proposed."
+        },
+        {
+          "dimension": "directional_specificity",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypothesis contains an increase, decrease, shift, or other directional claim.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No directional prediction is proposed."
+        },
+        {
+          "dimension": "prediction_linkage",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypothesis or predictions are present to assess for logical linkage.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No predictions are present."
+        },
+        {
+          "dimension": "falsifier_informativeness",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypothesis or falsifying outcome is supplied.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No falsification criterion is present because the portfolio abstains."
+        },
+        {
+          "dimension": "cross_paper_discipline",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "No hypotheses, papers, mechanistic routes, or cross-paper synthesis are present. The only statement is explicitly navigation-only and does not assert a scientific relation.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "No scientific cross-paper synthesis is proposed; the only supplied item is navigation-only."
+        },
+        {
+          "dimension": "hypothesis_distinctness",
+          "critic_verdict": "not_applicable",
+          "critic_rationale": "The portfolio contains no hypotheses to compare for scientific distinctness.",
+          "human_allowed_verdicts": [
+            "not_applicable"
+          ],
+          "critical": true,
+          "human_note": "There are no hypotheses to compare."
+        },
+        {
+          "dimension": "abstention_appropriateness",
+          "critic_verdict": "pass",
+          "critic_rationale": "Abstention is appropriate because there are no eligible positive premises, research gaps, or mechanistic routes. The sole supplied statement is explicitly a navigation-only note and is not eligible as a premise or gap.",
+          "human_allowed_verdicts": [
+            "pass"
+          ],
+          "critical": true,
+          "human_note": "Abstention is the correct behavior because the controlled context contains no eligible positive premise."
+        }
+      ]
+    }
+  ]
+}

@@ -2,15 +2,15 @@
 
 - Lineage preflight: **PASS**
 - Overall: **FAIL**
-- Cases: 3 passed / 2 failed
-- Critical mismatches: 2
+- Cases: 4 passed / 1 failed
+- Critical mismatches: 0
 - Noncritical mismatches: 0
-- Missing reviews: 0
+- Missing reviews: 11
 
 | Case | Result | Agreements | Mismatches |
 |---|---:|---:|---|
-| `real_k9_coordination_charge_transfer` | FAIL | 10 | candidate_calibration:pass |
-| `e2_candidate_live` | PASS | 11 | - |
+| `real_k9_coordination_charge_transfer` | PASS | 11 | - |
+| `e2_candidate_live` | FAIL | 0 | premise_fidelity:missing, gap_discipline:missing, candidate_calibration:missing, inferential_proportionality:missing, causal_strengthening:missing, directional_specificity:missing, prediction_linkage:missing, falsifier_informativeness:missing, cross_paper_discipline:missing, hypothesis_distinctness:missing, abstention_appropriateness:missing |
 | `e2_alignment_live` | PASS | 11 | - |
-| `e2_partial_live` | FAIL | 10 | inferential_proportionality:pass |
+| `e2_partial_live` | PASS | 11 | - |
 | `e2_abstention_live` | PASS | 11 | - |

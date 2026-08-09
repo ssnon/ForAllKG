@@ -1,0 +1,19 @@
+{
+  "schema_version": "hypothesis-semantic-gold-comparison-v262",
+  "suite_id": "hypothesis-real-output-gold-v262-candidate-stability",
+  "passed": true,
+  "case_count": 1,
+  "passed_cases": 1,
+  "failed_cases": 0,
+  "critical_mismatches": 0,
+  "noncritical_mismatches": 0,
+  "missing_reviews": 0,
+  "case_results": [
+    {
+      "case_id": "e2_candidate_live",
+      "passed": true,
+      "exact_or_allowed_agreements": 11,
+      "mismatches": []
+    }
+  ]
+}

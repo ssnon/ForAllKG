@@ -1,0 +1,138 @@
+{
+  "schema_version": "hypothesis-semantic-review-v262",
+  "review_id": "hypothesis_semantic_review:8d9a92880498c7a73c7b",
+  "source_context_id": "hypothesis_context:e2:5ee8abde5ecfb4eab1f2",
+  "source_context_sha256": "638d8e46ab7b61498e4b7d233a2dc10e476de93d07ad3ac3029f6e414d8f6720",
+  "source_portfolio_id": "hypothesis_portfolio:787743ea6293a70330b5",
+  "source_portfolio_sha256": "a5c1a9aafcbe8732f8defb57570ddd509c6d7fbde1dce3ec2d26123b3ab8822a",
+  "source_evaluator_version": "hypothesis-benchmark-evaluator-v2.6.2-a1",
+  "source_hard_gate_passed": true,
+  "critic_prompt_version": "hypothesis-semantic-critic-prompt-v2.6.2-b1",
+  "critic_prompt_sha256": "ef5464e1e72bee105ef37b066ca23ac9d2cf0d024cbcc5b064a6ef9dac2aef5a",
+  "dimensions": [
+    {
+      "dimension": "premise_fidelity",
+      "verdict": "pass",
+      "rationale": "The hypothesis uses the reported claim that hydrogen adsorption changes local active-site electronic structure and retains the provisional status of the associated electronic-state transition rather than presenting it as established fact.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:reported",
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "gap_discipline",
+      "verdict": "pass",
+      "rationale": "The unresolved causal relationship is not promoted to evidence. The hypothesis and inferential bridge explicitly state that causal mediation is motivated but not established, consistent with the supplied scope-limit gap.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:gap"
+      ]
+    },
+    {
+      "dimension": "candidate_calibration",
+      "verdict": "pass",
+      "rationale": "The candidate-dependent evidence is explicitly labeled provisional, and the hypothesis uses tentative language such as may contribute and could be a causal mediator. The bridge also expressly distinguishes motivation from establishment.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "inferential_proportionality",
+      "verdict": "pass",
+      "rationale": "The proposed bridge is a bounded mechanistic extension from an adsorption-related electronic-structure change and a provisional association with catalytic response. It states assumptions and does not claim that the mediation is proven.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:reported",
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "causal_strengthening",
+      "verdict": "pass",
+      "rationale": "Although the hypothesis proposes a causal mediator, that causal relation is explicitly framed as hypothetical through may contribute, depending on, and motivates—but does not establish—the inference. The association is therefore not silently converted into established causation.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:provisional",
+        "e2:candidate:gap"
+      ]
+    },
+    {
+      "dimension": "directional_specificity",
+      "verdict": "warning",
+      "rationale": "The hypothesis avoids unsupported increase or decrease claims, but the statement that catalytic response depends on whether the transition occurs specifies a binary dependency stronger than the supplied provisional association alone clearly warrants. It remains framed as a hypothesis, but its directional and dependency specificity is relatively strong.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "prediction_linkage",
+      "verdict": "pass",
+      "rationale": "The prediction that catalytic behavior tracks occurrence of the hydrogen-adsorption-related transition directly follows from the proposed mediation and conditional-dependence hypothesis rather than being an unrelated addition.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:provisional",
+        "e2:candidate:reported"
+      ]
+    },
+    {
+      "dimension": "falsifier_informativeness",
+      "verdict": "warning",
+      "rationale": "The falsification criterion provides meaningful counterevidence by identifying comparable responses despite transition presence or absence, and transition occurrence without corresponding response. However, it primarily tests necessary coupling, whereas the hypothesis is phrased as possible contribution, so the criterion is somewhat stronger and not fully exhaustive of that weaker claim.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "cross_paper_discipline",
+      "verdict": "pass",
+      "rationale": "The portfolio uses evidence from only E2_Controlled_Candidate and does not merge distinct papers, catalysts, or systems.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": [
+        "e2:candidate:reported",
+        "e2:candidate:provisional"
+      ]
+    },
+    {
+      "dimension": "hypothesis_distinctness",
+      "verdict": "not_applicable",
+      "rationale": "The portfolio contains a single hypothesis, so there are no multiple hypotheses to compare for scientific distinctness.",
+      "hypothesis_ids": [
+        "hypothesis:04c0303cba4bb00f0b39"
+      ],
+      "statement_ids": []
+    },
+    {
+      "dimension": "abstention_appropriateness",
+      "verdict": "pass",
+      "rationale": "The portfolio has eligible positive evidence consisting of one reported mechanism claim and one explicitly provisional association, which is sufficient to motivate a bounded hypothesis while not establishing it. Non-abstention is therefore appropriate.",
+      "hypothesis_ids": [],
+      "statement_ids": [
+        "e2:candidate:reported",
+        "e2:candidate:provisional"
+      ]
+    }
+  ],
+  "overall_summary": "The single hypothesis is semantically controlled overall: it preserves the reported and provisional status of the premises, maintains the causal relationship as hypothetical, and makes a bounded mechanistic extension. The main cautions concern the relatively strong dependency wording and a falsifier that more directly tests necessary coupling than the weaker possibility of contribution."
+}

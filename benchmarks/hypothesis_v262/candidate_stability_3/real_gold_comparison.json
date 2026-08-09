@@ -1,0 +1,42 @@
+{
+  "schema_version": "hypothesis-semantic-gold-comparison-v262",
+  "suite_id": "hypothesis-real-output-gold-v262-candidate-stability",
+  "passed": false,
+  "case_count": 1,
+  "passed_cases": 0,
+  "failed_cases": 1,
+  "critical_mismatches": 2,
+  "noncritical_mismatches": 0,
+  "missing_reviews": 0,
+  "case_results": [
+    {
+      "case_id": "e2_candidate_live",
+      "passed": false,
+      "exact_or_allowed_agreements": 9,
+      "mismatches": [
+        {
+          "case_id": "e2_candidate_live",
+          "dimension": "premise_fidelity",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "actual_verdict": "warning",
+          "critical": true,
+          "kind": "critical_mismatch",
+          "note": "The reported electronic-structure premise is preserved, while the provisional relation is not rewritten as an established result."
+        },
+        {
+          "case_id": "e2_candidate_live",
+          "dimension": "falsifier_informativeness",
+          "allowed_verdicts": [
+            "pass"
+          ],
+          "actual_verdict": "warning",
+          "critical": true,
+          "kind": "critical_mismatch",
+          "note": "The falsifiers distinguish the proposed coupling from observations in which the transition and response decouple."
+        }
+      ]
+    }
+  ]
+}

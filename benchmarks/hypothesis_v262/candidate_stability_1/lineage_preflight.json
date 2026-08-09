@@ -1,0 +1,14 @@
+{
+  "schema_version": "hypothesis-real-gold-lineage-preflight-v262",
+  "suite_id": "hypothesis-real-output-gold-v262-candidate-stability",
+  "passed": true,
+  "case_count": 1,
+  "failed_cases": 0,
+  "case_results": [
+    {
+      "case_id": "e2_candidate_live",
+      "passed": true,
+      "issues": []
+    }
+  ]
+}
