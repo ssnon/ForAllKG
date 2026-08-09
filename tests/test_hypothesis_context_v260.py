@@ -29,3 +29,46 @@ def test_context_hash_is_deterministic():
     b = HypothesisContextBuilder().build(packet, report)
     assert a.context_id == b.context_id
     assert a.context_sha256 == b.context_sha256
+
+def test_scope_limit_synthesis_is_not_positive_premise():
+    from dac_her.explorer_contracts import ExplorerStatement
+    from dac_her.hypothesis_context import HypothesisContextBuilder
+
+    packet, report = make_packet_and_report()
+
+    scope_statement = ExplorerStatement(
+        statement_id="s:scope_synthesis",
+        text=(
+            "The packet supports a coordination-to-adsorption connection, "
+            "but not a charge-transfer-mediated explanation."
+        ),
+        epistemic_role="evidence_synthesis",
+        claim_kind="scope_limit",
+        support_node_ids=["n:reported"],
+        paper_ids=["Kiwook_1"],
+    )
+
+    modified_report = report.model_copy(
+        update={
+            "statements": report.statements + [scope_statement]
+        }
+    )
+
+    context = HypothesisContextBuilder().build(
+        packet,
+        modified_report,
+    )
+
+    index = {
+        statement.statement_id: statement
+        for statement in context.evidence_statements
+    }
+
+    row = index["s:scope_synthesis"]
+
+    assert row.eligible_as_premise is False
+    assert row.eligible_as_gap is False
+    assert (
+        "scope_limit_not_positive_premise"
+        in row.premise_restrictions
+    )
