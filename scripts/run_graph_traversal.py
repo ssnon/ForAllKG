@@ -314,6 +314,14 @@ def parse_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
+        "--include-candidate-paths",
+        action="store_true",
+        help=(
+            "Persist the full pre-bundle candidate path pool in traversal JSON. "
+            "Useful for DiscoveryBundle construction; disabled by default to keep artifacts compact."
+        ),
+    )
+    parser.add_argument(
         "--output",
         default=None,
     )
@@ -1023,6 +1031,12 @@ def main() -> None:
         ),
         "candidate_path_groups": (
             candidate_path_groups
+        ),
+        "candidate_paths_included": bool(
+            args.include_candidate_paths
+        ),
+        "candidate_paths": (
+            all_paths if args.include_candidate_paths else []
         ),
         "returned_path_groups": (
             returned_path_groups
