@@ -5,11 +5,13 @@ import json
 from pathlib import Path
 
 from dac_her.candidate_decision import CandidateDecisionEngine
-from dac_her.domains.feasibility_registry import get_feasibility_adapter
-from dac_her.domains.registry import get_domain_profile
+from dac_her.experimental_runtime import ExperimentalRealizabilityRuntime
 from dac_her.feasibility_intake import FeasibilityIntakeBuilder
 from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from dac_her.hypothesis_semantic_contracts import HypothesisSemanticReview
+from dac_her.physics_runtime import PhysicsFeasibilityRuntime
+from dac_her.scope_compiler import HypothesisScopeCompiler
+from dac_her.validation_specification import ValidationSpecificationCompiler
 
 
 def _load(path: Path, model):
@@ -30,32 +32,24 @@ def main() -> int:
         )
     )
     parser.add_argument("--context", type=Path, required=True)
-    parser.add_argument(
-        "--domain-profile",
-        default="dac_her",
-        help="Scientific domain profile whose feasibility adapter must be used.",
-    )
     parser.add_argument("--portfolio", type=Path, required=True)
     parser.add_argument("--semantic-review", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
-
-    domain_profile = get_domain_profile(args.domain_profile)
-    adapter = get_feasibility_adapter(domain_profile.profile_id)
 
     context = _load(args.context, HypothesisContext)
     portfolio = _load(args.portfolio, HypothesisPortfolio)
     semantic_review = _load(args.semantic_review, HypothesisSemanticReview)
 
     intake = FeasibilityIntakeBuilder().build(context, portfolio, semantic_review)
-    scopes = adapter.compile_scopes(intake)
-    specifications = adapter.compile_specifications(intake, scopes)
-    physics_reports = adapter.run_physics(
+    scopes = HypothesisScopeCompiler().compile_intake(intake)
+    specifications = ValidationSpecificationCompiler().compile_intake(intake, scopes)
+    physics_reports = PhysicsFeasibilityRuntime().run_intake(
         intake,
         scopes,
         specifications,
     )
-    experimental_reports = adapter.run_experimental(
+    experimental_reports = ExperimentalRealizabilityRuntime().run_intake(
         intake,
         physics_reports,
         scopes,
@@ -91,8 +85,6 @@ def main() -> int:
         "schema_version": "feasibility-e2e-manifest-v02",
         "experimental_scope": "laboratory_agnostic",
         "scope_aware_planning": True,
-        "domain_profile_id": domain_profile.profile_id,
-        "feasibility_adapter_id": adapter.adapter_id,
         "source_context": str(args.context),
         "source_portfolio": str(args.portfolio),
         "source_semantic_review": str(args.semantic_review),
@@ -109,8 +101,6 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print("Domain profile:", domain_profile.profile_id)
-    print("Feasibility adapter:", adapter.adapter_id)
     print(decisions.model_dump_json(indent=2))
     return 0
 

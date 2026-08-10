@@ -17,20 +17,33 @@ from dac_her.chemistry_signatures import (
     METAL_NAMES,
     metal_signature,
 )
-from dac_her.domains import get_domain_profile
 
-_DOMAIN_PROFILE = get_domain_profile("dac_her")
-
-RESOLVABLE_NODE_TYPES: frozenset[str] = _DOMAIN_PROFILE.resolution.resolvable_node_types
+RESOLVABLE_NODE_TYPES: frozenset[str] = frozenset({
+    "Paper", "Catalyst", "CatalystModel", "Metal", "Support",
+    "CoordinationMotif", "SynthesisMethod", "Precursor", "Reaction",
+    "ReactionStep", "Intermediate", "Material", "Experiment", "Calculation",
+})
 CLAIM_NODE_TYPES: frozenset[str] = frozenset({"ObservationClaim", "MechanismClaim"})
-AUTO_MERGE_TYPES: frozenset[str] = _DOMAIN_PROFILE.resolution.auto_merge_types
+AUTO_MERGE_TYPES: frozenset[str] = frozenset({"Metal", "Reaction"})
 
 _ELEMENT_NAMES = {
     name: symbol.lower()
     for name, symbol in METAL_NAMES.items()
 }
 
-_REACTION_ALIASES = dict(_DOMAIN_PROFILE.resolution.reaction_aliases)
+_REACTION_ALIASES = {
+    "her": "hydrogen_evolution_reaction",
+    "hydrogen evolution": "hydrogen_evolution_reaction",
+    "hydrogen evolution reaction": "hydrogen_evolution_reaction",
+    "oer": "oxygen_evolution_reaction",
+    "oxygen evolution reaction": "oxygen_evolution_reaction",
+    "orr": "oxygen_reduction_reaction",
+    "oxygen reduction reaction": "oxygen_reduction_reaction",
+    "co2rr": "carbon_dioxide_reduction_reaction",
+    "co2 reduction reaction": "carbon_dioxide_reduction_reaction",
+    "nrr": "nitrogen_reduction_reaction",
+    "nitrogen reduction reaction": "nitrogen_reduction_reaction",
+}
 _STATE_RE = re.compile(r"\b(?:[a-z]{1,2}\()?\d+h\)?\b", re.I)
 
 
@@ -40,7 +53,17 @@ def normalize_scientific_text(value: Any) -> str:
     text = text.lower().strip()
     for name, symbol in _ELEMENT_NAMES.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
-    replacements = dict(_DOMAIN_PROFILE.resolution.text_replacements)
+    replacements = {
+        "hydrogen evolution reaction": "her",
+        "oxygen evolution reaction": "oer",
+        "oxygen reduction reaction": "orr",
+        "nitrogen doped": "n doped",
+        "n-doped": "n doped",
+        "dual atoms": "dual atom",
+        "single atoms": "single atom",
+        "dimers": "dimer",
+        "nanotubes": "nanotube",
+    }
     for source, target in replacements.items():
         text = text.replace(source, target)
     text = re.sub(r"<[^>]+>", " ", text)
@@ -158,10 +181,15 @@ def _type_signature(graph: nx.Graph, node_id: str) -> tuple[Any, ...]:
         return (node_type, _reaction_signature(label))
     if node_type in {"Catalyst", "CatalystModel"}:
         tokens = normalized_tokens(label)
-        nuclearity = _DOMAIN_PROFILE.resolution.catalyst_nuclearity(tokens)
-        support_tokens = tuple(sorted(
-            tokens & _DOMAIN_PROFILE.resolution.support_signature_tokens
-        ))
+        nuclearity = (
+            "dual_atom" if {"dual", "atom"} <= tokens or "dimer" in tokens
+            else "single_atom" if {"single", "atom"} <= tokens
+            else "nanoparticle" if "nanoparticle" in tokens
+            else "unspecified"
+        )
+        support_tokens = tuple(sorted(tokens & {
+            "graphene", "nanotube", "ncnt", "carbon", "nitrogen", "doped", "ng"
+        }))
         return (
             node_type,
             tuple(sorted(_metals(label))),

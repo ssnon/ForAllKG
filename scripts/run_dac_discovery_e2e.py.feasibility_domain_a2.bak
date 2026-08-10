@@ -11,9 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from dac_her.domains.feasibility_registry import get_feasibility_adapter
-from dac_her.domains.registry import get_domain_profile
-
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -104,7 +101,6 @@ class PipelineRunner:
             "started_at_utc": _now(),
             "status": "initializing",
             "corpus_id": args.corpus_id,
-            "domain_profile_id": args.domain_profile,
             "source": args.source,
             "stop": args.stop,
             "target": args.target,
@@ -213,11 +209,6 @@ def run_pipeline(args: argparse.Namespace) -> int:
     runner = PipelineRunner(args)
     runner.prepare()
     _check_alpha6_available()
-    domain_profile = get_domain_profile(args.domain_profile)
-    feasibility_adapter = get_feasibility_adapter(domain_profile.profile_id)
-    runner.manifest["domain_profile_id"] = domain_profile.profile_id
-    runner.manifest["feasibility_adapter_id"] = feasibility_adapter.adapter_id
-    runner._save_manifest()
     run = runner.run_dir
 
     # ------------------------------------------------------------------
@@ -363,7 +354,6 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.run_candidate_unit_traversal",
         [
             "--corpus-id", args.corpus_id,
-            "--domain-profile", domain_profile.profile_id,
             "--source", args.source,
             "--target", args.target,
             "--node-map-k", str(args.node_map_k),
@@ -466,7 +456,6 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.run_external_novelty",
         [
             "--portfolio", str(axis_portfolio),
-            "--domain-profile", domain_profile.profile_id,
             "--lineage", str(lineage),
             *_base_model_args(args, critic=True),
             "--providers", args.providers,
@@ -495,7 +484,6 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.run_novelty_refinement",
         [
             "--dual-context", str(dual_context),
-            "--domain-profile", domain_profile.profile_id,
             "--axis-plan", str(axis_plan),
             "--portfolio", str(axis_portfolio),
             "--lineage", str(lineage),
@@ -555,7 +543,6 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.run_feasibility_e2e",
         [
             "--context", str(context),
-            "--domain-profile", domain_profile.profile_id,
             "--portfolio", str(refined_portfolio),
             "--semantic-review", str(semantic_final_review),
             "--output-dir", str(feasibility_dir),
@@ -592,11 +579,6 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--corpus-id", default="dac_her_expanded_v1")
-    parser.add_argument(
-        "--domain-profile",
-        default="dac_her",
-        help="Scientific domain profile propagated through discovery, novelty, refinement, and feasibility.",
-    )
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument("--stop", default=None)

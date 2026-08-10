@@ -53,13 +53,12 @@ class ExternalNoveltyAssessor:
         ranker: PriorArtRanker,
         review_backend: ClaimReviewBackend,
         policy: ExternalNoveltyPolicy | None = None,
-        compiler: ClaimPriorArtCompiler | None = None,
     ) -> None:
         self.decomposer = decomposer
         self.ranker = ranker
         self.review_backend = review_backend
         self.policy = policy or ExternalNoveltyPolicy()
-        self.compiler = compiler or ClaimPriorArtCompiler(
+        self.compiler = ClaimPriorArtCompiler(
             min_match_confidence=self.policy.min_match_confidence,
             direct_match_confidence=self.policy.direct_match_confidence,
             require_abstract_for_strong_match=(

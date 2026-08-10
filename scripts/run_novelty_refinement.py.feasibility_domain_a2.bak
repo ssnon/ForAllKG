@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 
 from dac_her.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
-from dac_her.domains.registry import get_domain_profile
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from dac_her.external_novelty_contracts import (
@@ -27,7 +26,7 @@ from dac_her.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransf
 from dac_her.novelty_claim_decomposition import NoveltyClaimDecomposer
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
-from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
+from dac_her.prior_art_matching import PriorArtRanker
 from dac_her.targeted_novelty_retrieval import TargetedNoveltyRetriever
 
 
@@ -52,11 +51,6 @@ def parse_args() -> argparse.Namespace:
         )
     )
     p.add_argument("--dual-context", required=True, type=Path)
-    p.add_argument(
-        "--domain-profile",
-        default="dac_her",
-        help="Scientific domain profile for all targeted/final prior-art checks.",
-    )
     p.add_argument("--axis-plan", required=True, type=Path)
     p.add_argument("--portfolio", required=True, type=Path)
     p.add_argument("--lineage", required=True, type=Path)
@@ -87,7 +81,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    domain_profile = get_domain_profile(args.domain_profile)
     dual = DualHypothesisContext.model_validate_json(
         args.dual_context.read_text(encoding="utf-8")
     )
@@ -156,26 +149,14 @@ def main() -> int:
         max_claims_per_hypothesis=policy.max_claims_per_hypothesis,
         max_queries_per_claim=policy.max_queries_per_claim,
     )
-    ranker = PriorArtRanker(
-        encoder,
-        max_ranked_works_per_claim=policy.max_ranked_works_per_claim,
-        domain_profile=domain_profile,
-    )
-    compiler = ClaimPriorArtCompiler(
-        min_match_confidence=policy.min_match_confidence,
-        direct_match_confidence=policy.direct_match_confidence,
-        require_abstract_for_strong_match=policy.require_abstract_for_strong_match,
-        require_abstract_for_partial_match=policy.require_abstract_for_partial_match,
-        min_reaction_domain_for_conflict=policy.min_reaction_domain_for_conflict,
-        min_catalyst_scope_for_conflict=policy.min_catalyst_scope_for_conflict,
-        domain_profile=domain_profile,
-    )
     external_assessor = ExternalNoveltyAssessor(
         decomposer=decomposer,
-        ranker=ranker,
+        ranker=PriorArtRanker(
+            encoder,
+            max_ranked_works_per_claim=policy.max_ranked_works_per_claim,
+        ),
         review_backend=external_backend,
         policy=policy,
-        compiler=compiler,
     )
 
     index_dir = (
@@ -231,7 +212,6 @@ def main() -> int:
 
     print()
     print("Targeted novelty refinement complete")
-    print("Domain profile:", domain_profile.profile_id)
     print("Final hypotheses:", len(outcome.portfolio.hypotheses))
     print("Accepted refinements:", outcome.report.accepted_refinement_count)
     print("Kept originals:", outcome.report.kept_original_count)

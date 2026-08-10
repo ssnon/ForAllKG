@@ -9,9 +9,19 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-# Alpha3: check identifiers are domain-extensible. The existing HER identifiers
-# remain valid strings and their runtime behavior is unchanged.
-PhysicsCheckType = str
+PhysicsCheckType = Literal[
+    "structural_validity",
+    "pair_stability",
+    "isolated_site_stability",
+    "aggregation_risk",
+    "thermodynamic_stability",
+    "operating_state_stability",
+    "hydrogen_adsorption",
+    "water_dissociation",
+    "oh_binding",
+    "reaction_pathway",
+    "electronic_structure",
+]
 
 PhysicsCheckStatus = Literal[
     "pass",
@@ -46,8 +56,6 @@ class PhysicsCheckRequest(StrictModel):
     source_validation_specification_id: str
     check_type: PhysicsCheckType
     reason: str
-    scientific_domain: str = "unknown"
-    backend_class: str | None = None
     relevant_terms: list[str] = Field(default_factory=list)
 
 
@@ -59,8 +67,6 @@ class PhysicsCheckResult(StrictModel):
     status: PhysicsCheckStatus
     basis: PhysicsCheckBasis
     rationale: str
-    scientific_domain: str = "unknown"
-    backend_class: str | None = None
 
     value: float | None = None
     unit: str | None = None
@@ -72,22 +78,20 @@ class PhysicsCheckResult(StrictModel):
 
 
 class PhysicsFeasibilityReport(StrictModel):
-    schema_version: Literal[
-        "physics-feasibility-report-v02",
-        "physics-feasibility-report-v03",
-    ] = "physics-feasibility-report-v02"
+    schema_version: Literal["physics-feasibility-report-v02"] = (
+        "physics-feasibility-report-v02"
+    )
     report_id: str
     source_intake_id: str
     source_intake_sha256: str
     source_scope_id: str
     source_validation_specification_id: str
     hypothesis_id: str
-    scientific_domain: str = "unknown"
     disposition: PhysicsDisposition
     confidence: Literal["high", "medium", "low"]
 
     checks: list[PhysicsCheckResult] = Field(default_factory=list)
-    blocking_checks: list[str] = Field(default_factory=list)
-    unresolved_checks: list[str] = Field(default_factory=list)
-    not_applicable_checks: list[str] = Field(default_factory=list)
+    blocking_checks: list[PhysicsCheckType] = Field(default_factory=list)
+    unresolved_checks: list[PhysicsCheckType] = Field(default_factory=list)
+    not_applicable_checks: list[PhysicsCheckType] = Field(default_factory=list)
     next_required_computations: list[str] = Field(default_factory=list)

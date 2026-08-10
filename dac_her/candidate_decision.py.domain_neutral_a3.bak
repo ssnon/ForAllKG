@@ -79,10 +79,7 @@ class CandidateDecisionEngine:
                     source_validation_specification_id=specification.specification_id,
                     source_physics_report_id=physics.report_id,
                     source_experimental_report_id=experimental.report_id,
-                    system_class=scope.system_class,
-                    scientific_domain=scope.scientific_domain,
-                    process=scope.process,
-                    catalyst_class=scope.catalyst_class,  # legacy compatibility
+                    catalyst_class=scope.catalyst_class,
                     hypothesis_level=scope.hypothesis_level,
                     validation_strategy=specification.validation_strategy,
                     requires_candidate_concretization=specification.requires_candidate_concretization,
@@ -103,9 +100,6 @@ class CandidateDecisionEngine:
                         experimental.required_synthesis_capabilities
                     ),
                     required_characterization=list(experimental.required_characterization),
-                    required_performance_tests=list(
-                        experimental.required_performance_tests
-                    ),
                     required_electrochemical_tests=list(
                         experimental.required_electrochemical_tests
                     ),

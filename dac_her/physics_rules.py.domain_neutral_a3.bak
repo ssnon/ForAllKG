@@ -147,8 +147,7 @@ class PhysicsCheckPlanner:
                     hypothesis_id=hypothesis.hypothesis_id,
                     source_scope_id=scope.scope_id,
                     source_validation_specification_id=specification.specification_id,
-                    check_type=check_type,
-                    scientific_domain=scope.scientific_domain,
+                    check_type=check_type,  # type: ignore[arg-type]
                     reason=(
                         f"Scope-aware validation requires {check_type} for "
                         f"catalyst_class={scope.catalyst_class}, "

@@ -66,8 +66,6 @@ class EvidenceSignalPhysicsTool:
             request_id=request.request_id,
             hypothesis_id=hypothesis.hypothesis_id,
             check_type=request.check_type,
-            scientific_domain=request.scientific_domain,
-            backend_class=self.tool_name,
             status="conditional",
             basis="reported_evidence",
             rationale=(
@@ -115,8 +113,6 @@ class DeferredComputationPhysicsTool:
             request_id=request.request_id,
             hypothesis_id=hypothesis.hypothesis_id,
             check_type=request.check_type,
-            scientific_domain=request.scientific_domain,
-            backend_class=self.tool_name,
             status="requires_computation" if needs_computation else "unknown",
             basis="unavailable",
             rationale=(
@@ -188,7 +184,6 @@ class PhysicsFeasibilityRuntime:
                 source_scope_id=scope.scope_id,
                 source_validation_specification_id=specification.specification_id,
                 hypothesis_id=hypothesis.hypothesis_id,
-                scientific_domain=scope.scientific_domain,
                 disposition="human_review_required",
                 confidence="low",
                 checks=[],
@@ -265,7 +260,6 @@ class PhysicsFeasibilityRuntime:
             source_scope_id=scope.scope_id,
             source_validation_specification_id=specification.specification_id,
             hypothesis_id=hypothesis.hypothesis_id,
-            scientific_domain=scope.scientific_domain,
             disposition=disposition,  # type: ignore[arg-type]
             confidence=confidence,  # type: ignore[arg-type]
             checks=results,

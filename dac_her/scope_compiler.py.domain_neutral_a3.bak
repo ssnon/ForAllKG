@@ -347,20 +347,12 @@ class HypothesisScopeCompiler:
                 ",".join(variables),
             ),
             hypothesis_id=hypothesis.hypothesis_id,
-            catalyst_class=catalyst_class,  # legacy compatibility
-            system_class=catalyst_class,
-            scientific_domain="electrocatalysis",
-            hypothesis_level=level,
-            reaction=reaction,  # legacy compatibility
-            process=reaction,
+            catalyst_class=catalyst_class,  # type: ignore[arg-type]
+            hypothesis_level=level,  # type: ignore[arg-type]
+            reaction=reaction,  # type: ignore[arg-type]
             environments=environments,
             metals=metals,
-            components=metals,
             coordination_variables=[
-                row for row in variables
-                if row in {"nitrogen_coordination_number", "local_coordination_geometry"}
-            ],
-            structural_variables=[
                 row for row in variables
                 if row in {"nitrogen_coordination_number", "local_coordination_geometry"}
             ],

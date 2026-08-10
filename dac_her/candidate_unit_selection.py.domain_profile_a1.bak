@@ -8,8 +8,6 @@ from typing import Any, Iterable, Mapping
 
 import networkx as nx
 
-from dac_her.domain_profile import DiscoverySemantics, ScientificDomainProfile
-from dac_her.domains import get_domain_profile
 from dac_her.candidate_units import (
     CandidateAnchor,
     CandidateUnit,
@@ -22,12 +20,48 @@ from dac_her.candidate_units import (
 )
 
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_DEFAULT_DISCOVERY_SEMANTICS = _DEFAULT_DOMAIN_PROFILE.discovery
-_GENERIC_ENTITY_TYPES = set(_DEFAULT_DISCOVERY_SEMANTICS.generic_entity_types)
-_MECHANISM_NODE_MARKERS = _DEFAULT_DISCOVERY_SEMANTICS.mechanism_node_markers
-_MECHANISM_RELATION_MARKERS = _DEFAULT_DISCOVERY_SEMANTICS.mechanism_relation_markers
-_SCAFFOLD_RELATIONS = set(_DEFAULT_DISCOVERY_SEMANTICS.scaffold_relations)
+_GENERIC_ENTITY_TYPES = {
+    "CATALYST",
+    "CATALYSTMODEL",
+    "MATERIAL",
+    "SUPPORT",
+    "METAL",
+    "REACTION",
+}
+_MECHANISM_NODE_MARKERS = ("MECHANISM", "MECHANISTIC")
+_MECHANISM_RELATION_MARKERS = (
+    "MECHANISM",
+    "INTERPRETED_AS",
+    "INFLUENC",
+    "MODULAT",
+    "FACILITAT",
+    "PROMOT",
+    "REGULAT",
+    "CONTROL",
+    "CORRELAT",
+    "CAUSE",
+    "ENABLE",
+    "ENHANC",
+    "LOWER",
+    "STABIL",
+    "TRANSFER",
+    "SPILLOVER",
+    "TUN",
+)
+_SCAFFOLD_RELATIONS = {
+    "APPLIES_TO",
+    "SUPPORTED_ON",
+    "CATALYZES",
+    "ALIGNS_TO_REGISTRY_ENTITY",
+    "HAS_PAPER_MENTION",
+    "INVOLVES_INTERMEDIATE",
+    "PART_OF",
+    "HAS_COMPONENT",
+    "HAS_SUPPORT",
+    "HAS_METAL",
+    "HAS_MOTIF",
+    "MODEL_OF",
+}
 
 
 def _clip01(value: float) -> float:
@@ -53,30 +87,26 @@ def _is_alignment_node(attrs: Mapping[str, Any]) -> bool:
     )
 
 
-def _is_mechanism_node(node_id: str, attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
+def _is_mechanism_node(node_id: str, attrs: Mapping[str, Any]) -> bool:
     node_type = _normalized_type(attrs)
-    if any(marker in node_type for marker in semantics.mechanism_node_markers):
+    if any(marker in node_type for marker in _MECHANISM_NODE_MARKERS):
         return True
     return str(node_id).split("::")[-1].strip().lower().startswith("mech_")
 
 
-def _is_generic_node(node_id: str, attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    if _is_alignment_node(attrs) or _is_mechanism_node(node_id, attrs, semantics=semantics):
+def _is_generic_node(node_id: str, attrs: Mapping[str, Any]) -> bool:
+    if _is_alignment_node(attrs) or _is_mechanism_node(node_id, attrs):
         return False
-    return _normalized_type(attrs) in semantics.generic_entity_types
+    return _normalized_type(attrs) in _GENERIC_ENTITY_TYPES
 
 
-def _edge_is_mechanistic(attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
+def _edge_is_mechanistic(attrs: Mapping[str, Any]) -> bool:
     relation = str(attrs.get("relation", "")).strip().upper()
-    return any(marker in relation for marker in semantics.mechanism_relation_markers)
+    return any(marker in relation for marker in _MECHANISM_RELATION_MARKERS)
 
 
-def _edge_is_scaffold(attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    return str(attrs.get("relation", "")).strip().upper() in semantics.scaffold_relations
+def _edge_is_scaffold(attrs: Mapping[str, Any]) -> bool:
+    return str(attrs.get("relation", "")).strip().upper() in _SCAFFOLD_RELATIONS
 
 
 def _match_similarity(match: Mapping[str, Any]) -> float:
@@ -249,13 +279,10 @@ class CandidateUnitSelector:
         policy: CandidateUnitSelectionPolicy | None = None,
         unit_relevance: Mapping[str, float] | None = None,
         unit_vectors: Mapping[str, Any] | None = None,
-        domain_profile: ScientificDomainProfile | None = None,
     ) -> None:
         self.graph = graph
         self.confirmed_graph = confirmed_graph
         self.policy = policy or CandidateUnitSelectionPolicy()
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
-        self.discovery_semantics = self.domain_profile.discovery
         self.unit_relevance = {str(k): _clip01(float(v)) for k, v in dict(unit_relevance or {}).items()}
         self.unit_vectors = dict(unit_vectors or {})
 
@@ -286,11 +313,11 @@ class CandidateUnitSelector:
         right_nodes = nodes[candidate_index + 1 :]
         left_edges = steps[: max(0, candidate_index - 1)]
         right_edges = steps[candidate_index + 1 :]
-        left_mech = any(_edge_is_mechanistic(step, semantics=self.discovery_semantics) for step in left_edges) or any(
-            node in self.graph and _is_mechanism_node(node, dict(self.graph.nodes[node]), semantics=self.discovery_semantics)
+        left_mech = any(_edge_is_mechanistic(step) for step in left_edges) or any(
+            node in self.graph and _is_mechanism_node(node, dict(self.graph.nodes[node]))
             for node in left_nodes
         )
-        right_mech = any(_edge_is_mechanistic(step, semantics=self.discovery_semantics) for step in right_edges) or any(
+        right_mech = any(_edge_is_mechanistic(step) for step in right_edges) or any(
             node in self.graph and _is_mechanism_node(node, dict(self.graph.nodes[node]))
             for node in right_nodes
         )
@@ -303,7 +330,7 @@ class CandidateUnitSelector:
             attrs = dict(self.graph.nodes[node])
             if _is_alignment_node(attrs):
                 continue
-            generic_flags.append(_is_generic_node(node, attrs, semantics=self.discovery_semantics))
+            generic_flags.append(_is_generic_node(node, attrs))
         generic_penalty = _clip01(sum(generic_flags) / len(generic_flags)) if generic_flags else 0.0
 
         alignment_count = sum(edge_is_alignment(step) for step in confirmed_steps)
@@ -311,19 +338,16 @@ class CandidateUnitSelector:
         reverse_count = sum(edge_is_reverse(step) for step in confirmed_steps)
         reverse_penalty = _clip01(reverse_count / len(confirmed_steps)) if confirmed_steps else 0.0
 
-        scaffold_count = sum(_edge_is_scaffold(step, semantics=self.discovery_semantics) or edge_is_alignment(step) for step in confirmed_steps)
+        scaffold_count = sum(_edge_is_scaffold(step) or edge_is_alignment(step) for step in confirmed_steps)
         scientific_density = _clip01(1.0 - scaffold_count / len(confirmed_steps)) if confirmed_steps else 0.0
 
         reaction_labels: list[str] = []
-        context_types = self.discovery_semantics.normalized_context_node_types()
         for node in confirmed_nodes:
             if node not in self.graph:
                 continue
             attrs = dict(self.graph.nodes[node])
-            if _normalized_type(attrs) in context_types:
+            if _normalized_type(attrs) == "REACTION":
                 reaction_labels.append(node_label(self.graph, node))
-        # v1 artifact field names remain reaction_* for backward compatibility;
-        # semantically these are profile-configured scientific-context switches.
         unique_reactions = tuple(sorted(set(reaction_labels)))
         reaction_switch_penalty = _clip01(max(0, len(unique_reactions) - 1) / 2.0)
 

@@ -169,8 +169,7 @@ class ValidationSpecificationCompiler:
             ),
             hypothesis_id=hypothesis.hypothesis_id,
             source_scope_id=scope.scope_id,
-            scientific_domain=scope.scientific_domain,
-            validation_strategy=_strategy(scope),
+            validation_strategy=_strategy(scope),  # type: ignore[arg-type]
             requires_candidate_concretization=scope.requires_candidate_concretization,
             controlled_variables=controlled,
             varied_variables=varied,
@@ -181,10 +180,8 @@ class ValidationSpecificationCompiler:
             ],
             required_comparisons=comparisons,
             candidate_concretization_requirements=concretization,
-            required_scientific_checks=required,
-            not_applicable_scientific_checks=not_applicable,
-            required_physics_checks=required,  # legacy compatibility
-            not_applicable_physics_checks=not_applicable,  # legacy compatibility
+            required_physics_checks=required,
+            not_applicable_physics_checks=not_applicable,
             not_applicable_experimental_capabilities=exp_not_applicable,
             success_patterns=success_patterns,
             falsification_patterns=falsification_patterns,

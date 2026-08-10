@@ -5,8 +5,6 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from dac_her.domain_profile import ScientificDomainProfile
-from dac_her.domains import get_domain_profile
 from dac_her.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReview,
@@ -70,8 +68,30 @@ def _lexical_coverage(claim: NoveltyClaim, document: str) -> float:
     return len(concept_tokens & haystack) / len(concept_tokens)
 
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_REACTION_PATTERNS = _DEFAULT_DOMAIN_PROFILE.novelty.compiled_domain_patterns()
+_REACTION_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    "HER": (
+        re.compile(r"\bher\b", re.I),
+        re.compile(r"hydrogen\s+evolution", re.I),
+    ),
+    "OER": (
+        re.compile(r"\boer\b", re.I),
+        re.compile(r"oxygen\s+evolution", re.I),
+    ),
+    "ORR": (
+        re.compile(r"\borr\b", re.I),
+        re.compile(r"oxygen\s+reduction", re.I),
+    ),
+    "CO2RR": (
+        re.compile(r"\bco2rr\b", re.I),
+        re.compile(r"co2\s+(?:electro)?reduction", re.I),
+        re.compile(r"carbon\s+dioxide\s+(?:electro)?reduction", re.I),
+    ),
+    "NRR": (
+        re.compile(r"\bnrr\b", re.I),
+        re.compile(r"nitrogen\s+reduction", re.I),
+        re.compile(r"nitrogen\s+fixation", re.I),
+    ),
+}
 
 
 def _reaction_domains(text: str) -> set[str]:
@@ -83,10 +103,53 @@ def _reaction_domains(text: str) -> set[str]:
 
 
 def _reaction_domain_relevance(claim_text: str, document: str) -> float:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.domain_relevance(claim_text, document)
+    claim_domains = _reaction_domains(claim_text)
+    doc_domains = _reaction_domains(document)
+    if not claim_domains:
+        return 0.5
+    if claim_domains & doc_domains:
+        score = 1.0
+    elif doc_domains:
+        score = 0.05
+    else:
+        score = 0.35
+
+    claim_electro = bool(
+        re.search(r"electrocatal|exchange\s+current|\bher\b", claim_text, re.I)
+    )
+    doc_photo = bool(re.search(r"photocatal|photoelectro", document, re.I))
+    doc_electro = bool(re.search(r"electrocatal|exchange\s+current", document, re.I))
+    if claim_electro and doc_photo and not doc_electro:
+        score *= 0.55
+    return max(0.0, min(1.0, score))
 
 
-_SCOPE_PATTERNS = _DEFAULT_DOMAIN_PROFILE.novelty.compiled_scope_patterns()
+_SCOPE_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    "nitrogen_coordination": (
+        re.compile(r"nitrogen.{0,35}coordin", re.I),
+        re.compile(r"coordin.{0,35}nitrogen", re.I),
+        re.compile(r"\bmn\s*4\b", re.I),
+        re.compile(r"\bm[\-–—]?n\s*4\b", re.I),
+        re.compile(r"\bn\s*[23456]\b", re.I),
+    ),
+    "dual_atom": (
+        re.compile(r"dual[ -]?atom", re.I),
+        re.compile(r"diatomic", re.I),
+        re.compile(r"\bdimer", re.I),
+        re.compile(r"metal[ -]?pair", re.I),
+        re.compile(r"paired\s+metal", re.I),
+    ),
+    "d_band": (
+        re.compile(r"d[ -]?band", re.I),
+    ),
+    "hydrogen_adsorption": (
+        re.compile(r"hydrogen\s+(?:adsorption|binding)", re.I),
+        re.compile(r"\bdelta\s*g.{0,8}h\b", re.I),
+    ),
+    "exchange_current": (
+        re.compile(r"exchange\s+current", re.I),
+    ),
+}
 
 
 def _scope_features(text: str) -> set[str]:
@@ -98,7 +161,11 @@ def _scope_features(text: str) -> set[str]:
 
 
 def _catalyst_scope_relevance(claim_text: str, document: str) -> float:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.scope_relevance(claim_text, document)
+    claim_features = _scope_features(claim_text)
+    if not claim_features:
+        return 0.5
+    doc_features = _scope_features(document)
+    return len(claim_features & doc_features) / len(claim_features)
 
 
 def _strong_scope_compatibility(
@@ -108,9 +175,28 @@ def _strong_scope_compatibility(
     min_reaction: float,
     min_scope: float,
 ) -> tuple[bool, float, float, list[str]]:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.strong_scope_compatibility(
-        claim_text, document, min_domain=min_reaction, min_scope=min_scope
-    )
+    reaction = _reaction_domain_relevance(claim_text, document)
+    scope = _catalyst_scope_relevance(claim_text, document)
+    claim_features = _scope_features(claim_text)
+    doc_features = _scope_features(document)
+    reasons: list[str] = []
+
+    if reaction < min_reaction:
+        reasons.append("reaction_domain_mismatch")
+
+    # Distinctive structural qualifiers are hard requirements for a strong
+    # direct/conflicting match. This is what keeps a general AuPt alloy d-band
+    # counterexample contextual rather than a direct contradiction of an
+    # N-coordination-specific hypothesis.
+    for critical in ("nitrogen_coordination", "dual_atom"):
+        if critical in claim_features and critical not in doc_features:
+            reasons.append(f"missing_critical_scope:{critical}")
+
+    if scope < min_scope:
+        reasons.append("low_catalyst_scope_overlap")
+
+    compatible = not reasons
+    return compatible, reaction, scope, reasons
 
 
 class EncoderProtocol(Protocol):
@@ -132,11 +218,9 @@ class PriorArtRanker:
         encoder: EncoderProtocol,
         *,
         max_ranked_works_per_claim: int = 8,
-        domain_profile: ScientificDomainProfile | None = None,
     ) -> None:
         self.encoder = encoder
         self.max_ranked = int(max_ranked_works_per_claim)
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
 
     def rank(
         self,
@@ -178,8 +262,8 @@ class PriorArtRanker:
         for work, document, vector in zip(candidate_rows, documents, encoded, strict=True):
             semantic = max(0.0, min(1.0, float(np.dot(query, _normalize_vector(vector)))))
             lexical = _lexical_coverage(claim, document)
-            reaction = self.domain_profile.novelty.domain_relevance(claim.text, document)
-            scope = self.domain_profile.novelty.scope_relevance(claim.text, document)
+            reaction = _reaction_domain_relevance(claim.text, document)
+            scope = _catalyst_scope_relevance(claim.text, document)
             score = max(
                 0.0,
                 min(
@@ -227,10 +311,8 @@ class ClaimPriorArtCompiler:
         require_abstract_for_partial_match: bool = True,
         min_reaction_domain_for_conflict: float = 0.75,
         min_catalyst_scope_for_conflict: float = 0.75,
-        domain_profile: ScientificDomainProfile | None = None,
     ) -> None:
         self.min_match_confidence = float(min_match_confidence)
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
         self.direct_match_confidence = float(direct_match_confidence)
         self.require_abstract = bool(require_abstract_for_strong_match)
         self.require_abstract_for_partial = bool(require_abstract_for_partial_match)
@@ -272,13 +354,11 @@ class ClaimPriorArtCompiler:
             ranked = ranking[row.work_id]
             relationship: PriorArtRelationship = row.relationship
             document = "\n".join(x for x in [work.title, work.abstract or ""] if x)
-            compatible, reaction, scope, scope_reasons = (
-                self.domain_profile.novelty.strong_scope_compatibility(
-                    claim.text,
-                    document,
-                    min_domain=self.min_reaction_for_conflict,
-                    min_scope=self.min_scope_for_conflict,
-                )
+            compatible, reaction, scope, scope_reasons = _strong_scope_compatibility(
+                claim.text,
+                document,
+                min_reaction=self.min_reaction_for_conflict,
+                min_scope=self.min_scope_for_conflict,
             )
 
             if not work.abstract:

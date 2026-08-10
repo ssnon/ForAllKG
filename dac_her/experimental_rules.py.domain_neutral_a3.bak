@@ -91,11 +91,10 @@ class GenericExperimentalRequirementPlanner:
                         category,
                         capability,
                     ),
-                    category=category,
+                    category=category,  # type: ignore[arg-type]
                     capability=capability,
                     necessity=necessity,  # type: ignore[arg-type]
                     rationale=rationale,
-                    scientific_domain=scope.scientific_domain,
                 )
             )
 
