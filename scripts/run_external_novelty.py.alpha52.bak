@@ -120,12 +120,6 @@ def main() -> None:
         plan = LiteratureQueryPlanner().build(portfolio, decompositions)
 
     prefix = Path(args.output_prefix)
-    report_path = prefix.with_suffix(".report.json")
-    # Remove a stale final report before the assessment starts. If the
-    # assessment crashes, downstream stages cannot accidentally consume a
-    # report from an older portfolio/run.
-    if report_path.exists():
-        report_path.unlink()
     _write(prefix.with_suffix(".claims_queries.json"), plan)
 
     if args.reuse_prior_art:
@@ -171,7 +165,7 @@ def main() -> None:
         packet,
         lineage=lineage,
     )
-    _write(report_path, report)
+    _write(prefix.with_suffix(".report.json"), report)
 
     if args.save_prompts:
         prompt_dir = prefix.parent / (prefix.name + ".prompts")
@@ -240,7 +234,7 @@ def main() -> None:
 
     print("Saved query plan:", prefix.with_suffix(".claims_queries.json"))
     print("Saved prior art:", prefix.with_suffix(".prior_art.json"))
-    print("Saved report:", report_path)
+    print("Saved report:", prefix.with_suffix(".report.json"))
 
 
 if __name__ == "__main__":

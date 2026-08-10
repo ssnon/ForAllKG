@@ -331,25 +331,14 @@ class ClaimPriorArtCompiler:
         ranking = {row.work_id: row for row in candidates.ranked_works}
         allowed = set(ranking)
         unknown = sorted({row.work_id for row in draft.matches} - allowed)
-        valid_draft_matches = [
-            row
-            for row in draft.matches
-            if row.work_id in allowed
-        ]
+        if unknown:
+            raise ValueError(
+                "prior-art reviewer returned unknown/unranked work IDs: " + ",".join(unknown)
+            )
 
         matches: list[PriorArtMatch] = []
         reason_codes: list[str] = []
-        if unknown:
-            # Never fuzzy-match an unknown model-returned ID to a real paper.
-            # The invalid match is unusable evidence, but it should not abort
-            # the entire external-novelty assessment.
-            reason_codes.append("reviewer_unknown_work_id_dropped")
-            reason_codes.extend(
-                f"reviewer_unknown_work_id_dropped:{work_id}"
-                for work_id in unknown
-            )
-
-        for row in valid_draft_matches:
+        for row in draft.matches:
             work = works[row.work_id]
             ranked = ranking[row.work_id]
             relationship: PriorArtRelationship = row.relationship
@@ -465,13 +454,6 @@ class ClaimPriorArtCompiler:
         elif title_only:
             status = "TITLE_ONLY_NEIGHBORS"
             reason_codes.append("title_only_neighboring_prior_art")
-        elif unknown:
-            # Because the reviewer produced unusable IDs, absence of a valid
-            # match cannot be interpreted as "no direct prior art found".
-            status = "INSUFFICIENT_METADATA"
-            reason_codes.append(
-                "reviewer_unknown_work_id_prevents_absence_inference"
-            )
         elif not candidates.ranked_works or abstract_count == 0:
             status = "INSUFFICIENT_METADATA"
             reason_codes.append("insufficient_ranked_abstract_evidence")
@@ -495,6 +477,5 @@ class ClaimPriorArtCompiler:
             matches=matches,
             coverage=coverage,
             reason_codes=sorted(set(reason_codes)),
-            reviewer_unknown_work_ids=unknown,
             interpretation=draft.interpretation,
         )

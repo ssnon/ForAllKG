@@ -229,7 +229,6 @@ class ClaimPriorArtReview(StrictModel):
     matches: list[PriorArtMatch] = Field(default_factory=list)
     coverage: ClaimSearchCoverage
     reason_codes: list[str] = Field(default_factory=list)
-    reviewer_unknown_work_ids: list[str] = Field(default_factory=list)
     interpretation: str
 
 
