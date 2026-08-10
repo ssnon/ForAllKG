@@ -26,6 +26,7 @@ def main() -> int:
     print("DualHypothesisContext built")
     print("Dual context ID:", dual.dual_context_id)
     print("Dual context SHA256:", dual.dual_context_sha256)
+    print("Domain profile:", dual.domain_profile_id)
     print("Grounded context:", context.context_id)
     print("Discovery bundle:", bundle.bundle_id)
     print("Discovery inspirations:", len(bundle.inspirations))

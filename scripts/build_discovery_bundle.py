@@ -9,6 +9,7 @@ from dac_her.discovery_bundle import (
     load_semantic_index_for_traversal,
     load_traversal_with_graph,
 )
+from dac_her.domains import get_domain_profile
 
 
 def main() -> int:
@@ -82,6 +83,23 @@ def main() -> int:
         help="Disable node-embedding/lexical semantic deduplication (diagnostic ablation only).",
     )
     parser.add_argument("--project-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--domain-profile",
+        default=None,
+        help=(
+            "Scientific domain profile. If omitted, infer from traversal "
+            "artifacts and fall back to dac_her for legacy artifacts."
+        ),
+    )
+    parser.add_argument(
+        "--data-root",
+        type=Path,
+        default=None,
+        help=(
+            "Optional explicit domain data root. Overrides traversal data_root "
+            "and the extraction adapter default."
+        ),
+    )
     args = parser.parse_args()
 
     if not 0.0 <= args.semantic_similarity_threshold <= 1.0:
@@ -96,9 +114,33 @@ def main() -> int:
         raise ValueError("--min-exploration-score must be between 0 and 1")
 
     payloads = [
-        load_traversal_with_graph(path, project_root=args.project_root)
+        load_traversal_with_graph(
+            path,
+            project_root=args.project_root,
+            domain_profile_id=args.domain_profile,
+            data_root=args.data_root,
+        )
         for path in args.traversal
     ]
+
+    if args.domain_profile:
+        domain_profile = get_domain_profile(args.domain_profile)
+    else:
+        explicit_domains = {
+            str(payload.get("domain_profile_id", "")).strip()
+            for _, payload, _ in payloads
+            if str(payload.get("domain_profile_id", "")).strip()
+        }
+        if len(explicit_domains) > 1:
+            raise ValueError(
+                "traversal artifacts contain multiple domain profiles: "
+                f"{sorted(explicit_domains)}"
+            )
+        domain_profile = get_domain_profile(
+            next(iter(explicit_domains))
+            if explicit_domains
+            else "dac_her"
+        )
 
     semantic_indexes = {}
     if not args.disable_semantic_diversity:
@@ -106,6 +148,8 @@ def main() -> int:
             index = load_semantic_index_for_traversal(
                 payload,
                 project_root=args.project_root,
+                domain_profile_id=domain_profile.profile_id,
+                data_root=args.data_root,
             )
             if index is not None:
                 semantic_indexes[source_name] = index
@@ -125,7 +169,8 @@ def main() -> int:
             max_grounding_semantic_similarity=args.max_grounding_semantic_similarity,
             min_exploration_score=args.min_exploration_score,
             force_fill=args.force_fill,
-        )
+        ),
+        domain_profile=domain_profile,
     ).build(
         payloads,
         semantic_indexes=semantic_indexes,
@@ -135,6 +180,7 @@ def main() -> int:
     args.output.write_text(bundle.model_dump_json(indent=2) + "\n", encoding="utf-8")
 
     print("DiscoveryBundle built")
+    print("Domain profile:", domain_profile.profile_id)
     print("Bundle ID:", bundle.bundle_id)
     print("Bundle SHA256:", bundle.bundle_sha256)
     print("Corpus:", bundle.corpus_id)

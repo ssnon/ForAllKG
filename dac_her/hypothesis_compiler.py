@@ -122,6 +122,7 @@ class HypothesisCompiler:
 
             hypothesis_id = _stable_id(
                 "hypothesis",
+                context.domain_profile_id,
                 context.context_sha256,
                 hypothesis.local_id,
                 hypothesis.hypothesis_statement,
@@ -159,6 +160,7 @@ class HypothesisCompiler:
             cards.append(
                 HypothesisCard(
                     hypothesis_id=hypothesis_id,
+                    domain_profile_id=context.domain_profile_id,
                     source_context_id=context.context_id,
                     source_context_sha256=context.context_sha256,
                     source_report_id=context.source_report_id,
@@ -193,12 +195,14 @@ class HypothesisCompiler:
 
         portfolio_id = _stable_id(
             "hypothesis_portfolio",
+            context.domain_profile_id,
             context.context_sha256,
             *(card.hypothesis_id for card in cards),
             draft.abstention_reason or "",
         )
         return HypothesisPortfolio(
             portfolio_id=portfolio_id,
+            domain_profile_id=context.domain_profile_id,
             source_context_id=context.context_id,
             source_context_sha256=context.context_sha256,
             source_report_id=context.source_report_id,

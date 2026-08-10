@@ -25,8 +25,9 @@ def main() -> int:
         type=Path,
         default=None,
         help=(
-            "Optional feasibility output directory. If omitted, the script searches "
-            "the run root for feasibility_v02/, feasibility/, or another feasibility*."
+            "Optional feasibility output directory. If omitted, the script first "
+            "searches the run root for feasibility artifacts and otherwise builds the "
+            "domain-neutral core hypothesis/semantic/novelty/refinement viewer."
         ),
     )
     parser.add_argument(

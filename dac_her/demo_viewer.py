@@ -93,6 +93,299 @@ def _decision_by_hypothesis(portfolio: dict[str, Any]) -> dict[str, dict[str, An
     return rows
 
 
+def find_feasibility_dir(run_dir: Path) -> Path | None:
+    """Return feasibility artifacts when present, otherwise None."""
+    try:
+        return discover_feasibility_dir(run_dir)
+    except DemoViewerError:
+        return None
+
+
+def _first_json(
+    run_dir: Path,
+    names: tuple[str, ...],
+    *,
+    required: bool = False,
+) -> tuple[Path | None, dict[str, Any]]:
+    for name in names:
+        path = run_dir / name
+        value = _read_json_if_exists(path)
+        if value is not None:
+            return path, value
+    if required:
+        raise DemoViewerError(
+            "Could not locate required core viewer artifact. Tried: "
+            + ", ".join(str(run_dir / name) for name in names)
+        )
+    return None, {}
+
+
+def _semantic_rows_for_hypothesis(
+    review: dict[str, Any],
+    hypothesis_id: str,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for row in _list(review.get("dimensions")):
+        if not isinstance(row, dict):
+            continue
+        ids = [
+            str(value)
+            for value in _list(row.get("hypothesis_ids"))
+            if str(value).strip()
+        ]
+        if ids and hypothesis_id not in ids:
+            continue
+        rows.append(dict(row))
+    return rows
+
+
+def _semantic_summary(rows: list[dict[str, Any]]) -> tuple[str, list[str], list[str]]:
+    warnings = [
+        _text(row.get("dimension"))
+        for row in rows
+        if _text(row.get("verdict")).lower() == "warning"
+    ]
+    failures = [
+        _text(row.get("dimension"))
+        for row in rows
+        if _text(row.get("verdict")).lower() == "fail"
+    ]
+    warnings = [value for value in warnings if value]
+    failures = [value for value in failures if value]
+    if failures:
+        status = "fail"
+    elif warnings:
+        status = "eligible_with_warnings"
+    elif rows:
+        status = "pass"
+    else:
+        status = "not_assessed"
+    return status, warnings, failures
+
+
+def _refinement_attempt_by_final_hypothesis(
+    report: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for attempt in _list(report.get("attempts")):
+        if not isinstance(attempt, dict):
+            continue
+        final_id = _text(attempt.get("final_hypothesis_id"))
+        original_id = _text(attempt.get("original_hypothesis_id"))
+        if final_id:
+            result[final_id] = dict(attempt)
+        if original_id and original_id not in result:
+            result[original_id] = dict(attempt)
+    return result
+
+
+def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
+    """Build a domain-neutral viewer payload from core discovery artifacts."""
+    run_dir = run_dir.resolve()
+    _, context = _first_json(
+        run_dir,
+        ("hypothesis.context.json",),
+        required=True,
+    )
+    portfolio_path, portfolio = _first_json(
+        run_dir,
+        (
+            "novelty_refinement_a6.portfolio.json",
+            "hypothesis_axis_a4.portfolio.json",
+        ),
+        required=True,
+    )
+    semantic_path, semantic_review = _first_json(
+        run_dir,
+        (
+            "semantic_final.review.json",
+            "semantic_axis_a4.review.json",
+        ),
+    )
+    external_path, external_report = _first_json(
+        run_dir,
+        ("external_novelty_a52.report.json",),
+    )
+    refinement_path, refinement_report = _first_json(
+        run_dir,
+        ("novelty_refinement_a6.report.json",),
+    )
+    _, runner_manifest = _first_json(
+        run_dir,
+        ("e2e_runner.manifest.json", "manifest.json"),
+    )
+
+    evidence_by_id = {
+        _text(row.get("statement_id")): row
+        for row in _list(context.get("evidence_statements"))
+        if isinstance(row, dict) and _text(row.get("statement_id"))
+    }
+    novelty_by_hypothesis = {
+        _text(card.get("hypothesis_id")): card
+        for card in _list(external_report.get("cards"))
+        if isinstance(card, dict) and _text(card.get("hypothesis_id"))
+    }
+    refinement_by_hypothesis = _refinement_attempt_by_final_hypothesis(
+        refinement_report
+    )
+
+    hypotheses: list[dict[str, Any]] = []
+    all_papers: set[str] = set()
+    for card in _list(portfolio.get("hypotheses")):
+        if not isinstance(card, dict):
+            continue
+        hypothesis_id = _text(card.get("hypothesis_id"))
+        if not hypothesis_id:
+            continue
+
+        premises: list[dict[str, Any]] = []
+        for statement_id in _list(card.get("premise_statement_ids")):
+            statement = evidence_by_id.get(str(statement_id))
+            if not isinstance(statement, dict):
+                continue
+            premise = {
+                "statement_id": _text(statement.get("statement_id")),
+                "text": _text(statement.get("text")),
+                "epistemic_role": _text(statement.get("epistemic_role"), "premise"),
+                "claim_kind": _text(statement.get("claim_kind"), "claim"),
+                "paper_ids": [
+                    str(value)
+                    for value in _list(statement.get("paper_ids"))
+                    if str(value).strip()
+                ],
+                "requires_verification": bool(
+                    statement.get("requires_verification", False)
+                ),
+            }
+            premises.append(premise)
+
+        semantic_rows = _semantic_rows_for_hypothesis(
+            semantic_review,
+            hypothesis_id,
+        )
+        semantic_status, semantic_warnings, semantic_failures = (
+            _semantic_summary(semantic_rows)
+        )
+
+        refinement = refinement_by_hypothesis.get(hypothesis_id, {})
+        original_id = _text(refinement.get("original_hypothesis_id"))
+        novelty = novelty_by_hypothesis.get(hypothesis_id)
+        if novelty is None and original_id:
+            novelty = novelty_by_hypothesis.get(original_id)
+        novelty = dict(novelty or {})
+
+        novelty_status = (
+            _text(refinement.get("final_external_status"))
+            or _text(novelty.get("status"))
+            or _text(card.get("novelty_status"), "not_assessed")
+        )
+
+        source_papers = [
+            str(value)
+            for value in _list(card.get("source_paper_ids"))
+            if str(value).strip()
+        ]
+        all_papers.update(source_papers)
+        for premise in premises:
+            all_papers.update(premise["paper_ids"])
+
+        predictions = [
+            {
+                "observation_id": _text(row.get("observation_id")),
+                "observable": _text(row.get("observable")),
+                "expected_direction": _text(row.get("expected_direction")),
+                "rationale": _text(row.get("rationale")),
+            }
+            for row in _list(card.get("predicted_observations"))
+            if isinstance(row, dict)
+        ]
+        falsifiers = [
+            {
+                "criterion_id": _text(row.get("criterion_id")),
+                "observable": _text(row.get("observable")),
+                "falsifying_outcome": _text(row.get("falsifying_outcome")),
+            }
+            for row in _list(card.get("falsification_criteria"))
+            if isinstance(row, dict)
+        ]
+
+        hypotheses.append(
+            {
+                "hypothesis": {
+                    "hypothesis_id": hypothesis_id,
+                    "title": _text(card.get("title"), hypothesis_id),
+                    "statement": _text(card.get("hypothesis_statement")),
+                    "hypothesis_type": _text(card.get("hypothesis_type"), "hypothesis"),
+                    "inferential_bridge": _text(card.get("inferential_bridge")),
+                    "assumptions": [
+                        str(value)
+                        for value in _list(card.get("assumptions"))
+                    ],
+                    "source_paper_ids": source_papers,
+                    "premises": premises,
+                    "predictions": predictions,
+                    "falsifiers": falsifiers,
+                    "semantic_gate_status": semantic_status,
+                    "semantic_warning_dimensions": semantic_warnings,
+                    "semantic_fail_dimensions": semantic_failures,
+                    "novelty_status": novelty_status,
+                    "candidate_dependency": _text(
+                        card.get("candidate_dependency"),
+                        "none",
+                    ),
+                    "cross_paper_synthesis": bool(
+                        card.get("cross_paper_synthesis", False)
+                    ),
+                    "evidence_profile": (
+                        card.get("evidence_profile")
+                        if isinstance(card.get("evidence_profile"), dict)
+                        else {}
+                    ),
+                },
+                "semantic": semantic_rows,
+                "novelty": novelty,
+                "refinement": dict(refinement),
+            }
+        )
+
+    domain_profile_id = (
+        _text(portfolio.get("domain_profile_id"))
+        or _text(context.get("domain_profile_id"))
+        or _text(runner_manifest.get("domain_profile_id"))
+        or "dac_her"
+    )
+
+    return {
+        "viewer_schema": "graphagents-core-demo-viewer-v1",
+        "viewer_mode": "core",
+        "feasibility_available": False,
+        "question": _text(context.get("question"), "GraphAgents scientific discovery"),
+        "corpus_id": _text(context.get("corpus_id"), "unknown"),
+        "domain_profile_id": domain_profile_id,
+        "task_id": _text(context.get("task_id")),
+        "context_id": _text(context.get("context_id")),
+        "portfolio_id": _text(portfolio.get("portfolio_id")),
+        "abstention_reason": portfolio.get("abstention_reason"),
+        "paper_ids": sorted(all_papers),
+        "source_manifest": runner_manifest,
+        "artifact_paths": {
+            "portfolio": str(portfolio_path) if portfolio_path else None,
+            "semantic_review": str(semantic_path) if semantic_path else None,
+            "external_novelty": str(external_path) if external_path else None,
+            "refinement_report": str(refinement_path) if refinement_path else None,
+        },
+        "semantic_overall_summary": _text(
+            semantic_review.get("overall_summary")
+        ),
+        "external_status_counts": (
+            external_report.get("status_counts")
+            if isinstance(external_report.get("status_counts"), dict)
+            else {}
+        ),
+        "hypotheses": hypotheses,
+    }
+
+
 def load_demo_payload(
     feasibility_dir: Path,
     *,
@@ -384,6 +677,63 @@ renderHeader(); renderTabs(); renderAll();
 </html>"""
 
 
+def render_core_demo_html(
+    payload: dict[str, Any],
+    *,
+    title: str = "GraphAgents Scientific Discovery Viewer",
+) -> str:
+    data_json = _json_for_script(payload)
+    safe_title = html.escape(title)
+    template = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root { --bg:#f5f7fb; --panel:#fff; --text:#172033; --muted:#667085; --border:#d9e0ea; --accent:#315efb; --good:#18794e; --warn:#9a6700; --bad:#b42318; --soft:#eef2ff; }
+@media (prefers-color-scheme: dark) { :root { --bg:#10131a; --panel:#171b24; --text:#eef2f7; --muted:#a8b0be; --border:#303848; --accent:#7c9cff; --soft:#202b4d; --good:#72d5a4; --warn:#f5c45b; --bad:#ff8c82; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+header { background:var(--panel); border-bottom:1px solid var(--border); padding:18px 22px; }
+h1 { margin:0 0 5px; font-size:19px; }.meta,.muted { color:var(--muted); }
+.metrics { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }.metric { border:1px solid var(--border); border-radius:10px; padding:7px 10px; min-width:110px; }.metric b { display:block; font-size:16px; }
+.layout { display:grid; grid-template-columns:300px minmax(0,1fr); min-height:calc(100vh - 120px); } aside { background:var(--panel); border-right:1px solid var(--border); padding:14px; } main { padding:18px 20px 36px; min-width:0; }
+.hyp-btn { width:100%; text-align:left; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:11px; padding:10px; margin-bottom:8px; cursor:pointer; }.hyp-btn.active { border-color:var(--accent); background:var(--soft); }
+.badge { display:inline-block; border:1px solid var(--border); border-radius:999px; padding:2px 7px; margin:2px 4px 2px 0; font-size:11px; }.badge.good { color:var(--good); }.badge.warn { color:var(--warn); }.badge.bad { color:var(--bad); }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:13px; padding:14px; margin-bottom:12px; }.card h3 { margin:0 0 9px; font-size:14px; }.hero { margin-bottom:14px; }.hero h2 { margin:0 0 6px; font-size:18px; }
+.tabs { display:flex; gap:5px; border-bottom:1px solid var(--border); margin-bottom:14px; overflow:auto; }.tab { border:0; background:transparent; color:var(--muted); padding:9px 10px; cursor:pointer; }.tab.active { color:var(--text); border-bottom:2px solid var(--accent); }.panel { display:none; }.panel.active { display:block; }
+.flow { display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:10px; overflow:auto; }.stage { border:1px solid var(--border); border-radius:11px; padding:10px; min-height:125px; }.stage h4 { margin:0 0 7px; font-size:11px; text-transform:uppercase; color:var(--muted); }.item { border-left:3px solid var(--accent); padding:7px 8px; background:var(--soft); margin-bottom:7px; border-radius:6px; }
+pre { white-space:pre-wrap; word-break:break-word; font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; } table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--border); padding:8px; text-align:left; vertical-align:top; } th { color:var(--muted); font-size:11px; } ul { margin:5px 0; padding-left:20px; }
+.notice { border:1px solid var(--border); border-radius:10px; padding:10px; background:var(--soft); margin-bottom:12px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; } aside { border-right:0; border-bottom:1px solid var(--border); } .flow { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header><h1>__TITLE__</h1><div id="question"></div><div class="meta" id="meta"></div><div class="metrics" id="metrics"></div></header>
+<div class="layout"><aside><div class="muted" style="margin-bottom:8px">Hypotheses</div><div id="hypList"></div></aside><main>
+<div class="notice">Core scientific pipeline view. This domain has no feasibility adapter, so no domain-specific feasibility rules were borrowed or fabricated.</div>
+<div class="hero"><h2 id="title"></h2><div id="statement"></div><div id="badges" style="margin-top:8px"></div></div>
+<div class="tabs"><button class="tab active" data-tab="lineage">Lineage</button><button class="tab" data-tab="semantic">Semantic review</button><button class="tab" data-tab="novelty">Novelty & refinement</button><button class="tab" data-tab="provenance">Provenance</button></div>
+<section class="panel active" id="panel-lineage"></section><section class="panel" id="panel-semantic"></section><section class="panel" id="panel-novelty"></section><section class="panel" id="panel-provenance"></section>
+</main></div>
+<script id="demo-data" type="application/json">__DATA__</script>
+<script>
+const DATA=JSON.parse(document.getElementById('demo-data').textContent); let selected=0;
+const arr=v=>Array.isArray(v)?v:[]; const text=(v,d='')=>typeof v==='string'?v:d; const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); const human=s=>text(s).replaceAll('_',' ');
+function cls(s){s=text(s).toLowerCase(); if(s==='pass'||s.includes('novel'))return'good'; if(s.includes('fail')||s.includes('conflict')||s.includes('reject'))return'bad'; if(s.includes('warning')||s.includes('insufficient'))return'warn'; return'';} const badge=(v,label=null)=>`<span class="badge ${cls(v)}">${esc(label??human(v||'not assessed'))}</span>`; const list=xs=>arr(xs).length?`<ul>${arr(xs).map(x=>`<li>${esc(typeof x==='string'?x:JSON.stringify(x))}</li>`).join('')}</ul>`:'<span class="muted">None</span>';
+function header(){const hs=arr(DATA.hypotheses); document.getElementById('question').textContent=DATA.question||'Scientific discovery run'; document.getElementById('meta').textContent=`Domain: ${DATA.domain_profile_id||'unknown'} · Corpus: ${DATA.corpus_id||'unknown'} · Portfolio: ${DATA.portfolio_id||'n/a'}`; document.getElementById('metrics').innerHTML=[['Hypotheses',hs.length],['Source papers',arr(DATA.paper_ids).length],['Feasibility','Not configured'],['Viewer mode','Core']].map(([k,v])=>`<div class="metric"><b>${esc(v)}</b><span class="muted">${esc(k)}</span></div>`).join('');}
+function sidebar(){document.getElementById('hypList').innerHTML=arr(DATA.hypotheses).map((row,i)=>{const h=row.hypothesis||{}; return `<button class="hyp-btn ${i===selected?'active':''}" data-i="${i}"><div class="muted">H${i+1} · ${esc(h.hypothesis_type||'hypothesis')}</div><b>${esc(h.title||h.hypothesis_id)}</b><div>${badge(h.semantic_gate_status)}${badge(h.novelty_status)}</div></button>`;}).join(''); document.querySelectorAll('.hyp-btn').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.i); render();});}
+function lineage(row){const h=row.hypothesis||{}; const premises=arr(h.premises).map(p=>`<div class="item"><b>${esc(p.claim_kind||'premise')}</b><br>${esc(p.text||'')}<div class="muted">${esc(arr(p.paper_ids).join(', '))}</div></div>`).join('')||'<span class="muted">No premise records</span>'; const preds=arr(h.predictions).map(p=>`<div class="item"><b>${esc(human(p.expected_direction))}</b><br>${esc(p.observable||'')}</div>`).join('')||'<span class="muted">None</span>'; const fals=arr(h.falsifiers).map(f=>`<div class="item">${esc(f.falsifying_outcome||'')}</div>`).join('')||'<span class="muted">None</span>'; document.getElementById('panel-lineage').innerHTML=`<div class="card"><h3>Evidence → hypothesis → falsifiable output → review boundary</h3><div class="flow"><div class="stage"><h4>Evidence</h4>${premises}</div><div class="stage"><h4>Hypothesis</h4><div class="item">${esc(h.statement||'')}</div><div class="muted">${esc(h.inferential_bridge||'')}</div></div><div class="stage"><h4>Predictions</h4>${preds}</div><div class="stage"><h4>Falsifiers</h4>${fals}</div><div class="stage"><h4>Review</h4>${badge(h.semantic_gate_status,'semantic: '+human(h.semantic_gate_status))}${badge(h.novelty_status,'novelty: '+human(h.novelty_status))}<div class="muted" style="margin-top:8px">Feasibility not supported for this domain profile.</div></div></div></div>`;}
+function semantic(row){const rows=arr(row.semantic); const body=rows.map(r=>`<tr><td>${esc(human(r.dimension||''))}</td><td>${badge(r.verdict)}</td><td>${esc(r.rationale||'')}</td></tr>`).join(''); document.getElementById('panel-semantic').innerHTML=`<div class="card"><h3>Semantic critic</h3><div class="muted">${esc(DATA.semantic_overall_summary||'')}</div><table><thead><tr><th>Dimension</th><th>Verdict</th><th>Rationale</th></tr></thead><tbody>${body||'<tr><td colspan="3">No semantic review artifact</td></tr>'}</tbody></table></div>`;}
+function novelty(row){const n=row.novelty||{}, r=row.refinement||{}; const claims=arr(n.claim_reviews).map(x=>`${x.claim_text||x.claim_id||''}: ${x.status||''}`); document.getElementById('panel-novelty').innerHTML=`<div class="card"><h3>External novelty</h3>${badge(n.status||row.hypothesis?.novelty_status)}<p>${esc(n.interpretation||'No direct external-novelty card for this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(n.reason_codes)}<div class="muted">Claim reviews</div>${list(claims)}</div><div class="card"><h3>Targeted refinement</h3>${badge(r.decision||'not_applicable')}<p>${esc(r.interpretation||'No refinement attempt associated with this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(r.reason_codes)}</div>`;}
+function provenance(row){const h=row.hypothesis||{}; document.getElementById('panel-provenance').innerHTML=`<div class="card"><h3>Artifact lineage</h3><pre>${esc(JSON.stringify({domain_profile_id:DATA.domain_profile_id,corpus_id:DATA.corpus_id,task_id:DATA.task_id,context_id:DATA.context_id,portfolio_id:DATA.portfolio_id,hypothesis_id:h.hypothesis_id,artifacts:DATA.artifact_paths},null,2))}</pre></div><div class="card"><h3>Hypothesis evidence profile</h3><pre>${esc(JSON.stringify(h.evidence_profile||{},null,2))}</pre><div class="muted">Source papers</div>${list(h.source_paper_ids)}<div class="muted">Assumptions</div>${list(h.assumptions)}</div>`;}
+function main(){const row=arr(DATA.hypotheses)[selected]; if(!row)return; const h=row.hypothesis||{}; document.getElementById('title').textContent=`H${selected+1} · ${h.title||h.hypothesis_id||'Hypothesis'}`; document.getElementById('statement').textContent=h.statement||''; document.getElementById('badges').innerHTML=badge(h.semantic_gate_status)+badge(h.novelty_status)+badge(h.candidate_dependency,'candidate: '+human(h.candidate_dependency)); lineage(row); semantic(row); novelty(row); provenance(row);}
+function tabs(){document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active')); t.classList.add('active'); document.getElementById('panel-'+t.dataset.tab).classList.add('active');});} function render(){sidebar();main();} header();tabs();render();
+</script></body></html>"""
+    return template.replace("__TITLE__", safe_title).replace("__DATA__", data_json)
+
+
 def build_demo_viewer(
     *,
     run_dir: Path,
@@ -392,9 +742,22 @@ def build_demo_viewer(
     title: str = "GraphAgentsDAC Hypothesis Lineage & Validation Viewer",
 ) -> Path:
     run_dir = run_dir.resolve()
-    feasibility_dir = (feasibility_dir or discover_feasibility_dir(run_dir)).resolve()
-    payload = load_demo_payload(feasibility_dir, run_dir=run_dir)
+    if feasibility_dir is not None:
+        resolved_feasibility = feasibility_dir.resolve()
+    else:
+        resolved_feasibility = find_feasibility_dir(run_dir)
+
+    if resolved_feasibility is not None:
+        payload = load_demo_payload(
+            resolved_feasibility,
+            run_dir=run_dir,
+        )
+        rendered = render_demo_html(payload, title=title)
+    else:
+        payload = load_core_demo_payload(run_dir)
+        rendered = render_core_demo_html(payload, title=title)
+
     output = output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render_demo_html(payload, title=title), encoding="utf-8")
+    output.write_text(rendered, encoding="utf-8")
     return output

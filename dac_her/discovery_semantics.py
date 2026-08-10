@@ -125,6 +125,25 @@ def edge_has_strong_causal_semantics(
     )
 
 
+def is_generic_entity_node(
+    node_id: str,
+    node: Any,
+    semantics: DiscoverySemantics,
+) -> bool:
+    # Shared source of truth for domain-configured generic scientific entities.
+    # Alignment hubs and mechanism-bearing nodes are deliberately excluded.
+    if is_alignment_node(node) or is_mechanism_node(node_id, node, semantics):
+        return False
+    generic_types = {
+        "".join(
+            ch for ch in str(value).upper()
+            if ch.isalnum()
+        )
+        for value in semantics.generic_entity_types
+    }
+    return normalized_node_type(node) in generic_types
+
+
 def is_shared_entity_node(
     node_id: str,
     node: Any,

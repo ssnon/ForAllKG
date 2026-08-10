@@ -47,6 +47,7 @@ def main() -> int:
     print("Context ID:", context.context_id)
     print("Context SHA256:", context.context_sha256)
     print("Source report:", context.source_report_id)
+    print("Domain profile:", context.domain_profile_id)
     print("Evidence statements:", len(context.evidence_statements))
     print("Eligible positive premises:", eligible)
     print("Eligible research gaps:", gaps)

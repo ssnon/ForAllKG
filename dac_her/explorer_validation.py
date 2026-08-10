@@ -17,6 +17,7 @@ from dac_her.discovery_semantics import (
 )
 from dac_her.domain_profile import DiscoverySemantics
 from dac_her.domains import get_domain_profile
+from dac_her.explorer_text_safety import contains_absence_language
 from dac_her.explorer_contracts import (
     ExplorationReport,
     ExplorerStatement,
@@ -24,16 +25,6 @@ from dac_her.explorer_contracts import (
 )
 
 
-
-_ABSENCE_PATTERNS = (
-    re.compile(r"\bnot reported\b", re.I),
-    re.compile(r"\bno evidence\b", re.I),
-    re.compile(r"\bno support\b", re.I),
-    re.compile(r"\babsent\b", re.I),
-    re.compile(r"\babsence\b", re.I),
-    re.compile(r"\bnot observed\b", re.I),
-    re.compile(r"\bdoes not contain\b", re.I),
-)
 
 _HYPOTHESIS_PATTERNS = (
     re.compile(r"\bwe propose\b", re.I),
@@ -66,10 +57,6 @@ class ExplorationValidationResult(BaseModel):
 
 def _numbers(text: str) -> set[str]:
     return {" ".join(match.group(0).split()).lower() for match in _NUMBER_RE.finditer(text)}
-
-
-def _contains_absence_language(text: str) -> bool:
-    return any(pattern.search(text) for pattern in _ABSENCE_PATTERNS)
 
 
 def _contains_hypothesis_language(text: str) -> bool:
@@ -545,7 +532,7 @@ class ExplorationReportValidator:
                     "Numeric values are absent from cited evidence text: " + ", ".join(sorted(missing_numbers)),
                 )
 
-        if _contains_absence_language(statement.text):
+        if contains_absence_language(statement.text):
             for paper_id in statement.paper_ids:
                 paper = papers.get(paper_id)
                 if paper is None:

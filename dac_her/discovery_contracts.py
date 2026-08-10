@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
@@ -54,9 +54,23 @@ class DiscoveryScoreBreakdown(StrictModel):
     # v2.8.0-alpha3 candidate-unit dimensions. These are traversal/discovery
     # quality heuristics, never novelty or evidentiary confidence scores.
     candidate_unit_quality: float = 0.0
+    context_switch_penalty: float = 0.0
     reaction_domain_switch_penalty: float = 0.0
 
     total: float
+
+    @model_validator(mode="after")
+    def _synchronize_context_switch_alias(self) -> "DiscoveryScoreBreakdown":
+        canonical = float(self.context_switch_penalty)
+        legacy = float(self.reaction_domain_switch_penalty)
+        if canonical and legacy and abs(canonical - legacy) > 1e-12:
+            raise ValueError(
+                "context_switch_penalty and reaction_domain_switch_penalty disagree"
+            )
+        value = canonical if canonical else legacy
+        self.context_switch_penalty = value
+        self.reaction_domain_switch_penalty = value
+        return self
 
 
 class DiscoveryInspiration(StrictModel):
@@ -98,7 +112,21 @@ class DiscoveryInspiration(StrictModel):
     candidate_proposed_relation: str = ""
     candidate_proposed_object: str = ""
     candidate_unit_score: float = 0.0
+    context_switch_penalty: float = 0.0
     reaction_domain_switch_penalty: float = 0.0
+
+    @model_validator(mode="after")
+    def _synchronize_context_switch_alias(self) -> "DiscoveryInspiration":
+        canonical = float(self.context_switch_penalty)
+        legacy = float(self.reaction_domain_switch_penalty)
+        if canonical and legacy and abs(canonical - legacy) > 1e-12:
+            raise ValueError(
+                "context_switch_penalty and reaction_domain_switch_penalty disagree"
+            )
+        value = canonical if canonical else legacy
+        self.context_switch_penalty = value
+        self.reaction_domain_switch_penalty = value
+        return self
 
 
 class DiscoveryBundle(StrictModel):
@@ -106,6 +134,9 @@ class DiscoveryBundle(StrictModel):
     bundle_id: str
     bundle_sha256: str
     corpus_id: str
+    # Legacy bundles without this field are interpreted as DAC-HER only.
+    # New multidomain builders always write the explicit profile.
+    domain_profile_id: str = "dac_her"
     query_signature: str
     inspirations: list[DiscoveryInspiration] = Field(default_factory=list)
     source_traversal_files: list[str] = Field(default_factory=list)

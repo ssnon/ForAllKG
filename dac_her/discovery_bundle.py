@@ -17,38 +17,21 @@ from dac_her.discovery_contracts import (
     DiscoveryInspiration,
     DiscoveryScoreBreakdown,
 )
+from dac_her.discovery_semantics import (
+    is_alignment_node as domain_is_alignment_node,
+    is_mechanism_edge as domain_is_mechanism_edge,
+    is_mechanism_node as domain_is_mechanism_node,
+    normalized_node_type,
+)
+from dac_her.domain_profile import (
+    DiscoverySemantics,
+    ScientificDomainProfile,
+)
+from dac_her.domains import get_domain_profile
+from dac_her.domains.extraction_registry import get_extraction_adapter
 
 
 _ALIGNMENT_CLASSES = {"registry_alignment", "pattern_alignment"}
-_ALIGNMENT_NODE_TYPES = {"CorpusAlignment", "CorpusPattern"}
-_GENERIC_ENTITY_TYPES = {
-    "CATALYST",
-    "CATALYSTMODEL",
-    "MATERIAL",
-    "SUPPORT",
-    "METAL",
-    "REACTION",
-}
-_MECHANISM_NODE_MARKERS = ("MECHANISM", "MECHANISTIC")
-_MECHANISM_RELATION_MARKERS = (
-    "MECHANISM",
-    "INTERPRETED_AS",
-    "INFLUENC",
-    "MODULAT",
-    "FACILITAT",
-    "PROMOT",
-    "REGULAT",
-    "CONTROL",
-    "CORRELAT",
-    "CAUSE",
-    "ENABLE",
-    "ENHANC",
-    "LOWER",
-    "STABIL",
-    "TRANSFER",
-    "SPILLOVER",
-    "TUN",
-)
 _TOKEN_RE = re.compile(r"[A-Za-z0-9Δδ*+./_-]+")
 
 
@@ -126,42 +109,61 @@ def _node_label(graph: nx.DiGraph, node_id: str) -> str:
 
 
 def _normalized_type(attrs: Mapping[str, Any]) -> str:
-    return "".join(
-        character
-        for character in str(attrs.get("type", "")).upper()
-        if character.isalnum()
-    )
+    return normalized_node_type(attrs)
 
 
 def _is_alignment_node(attrs: Mapping[str, Any]) -> bool:
-    return (
-        str(attrs.get("corpus_node_kind", "")) == "alignment_hub"
-        or str(attrs.get("type", "")) in _ALIGNMENT_NODE_TYPES
-        or str(attrs.get("graph_layer", "")) == "corpus_alignment"
+    return domain_is_alignment_node(attrs)
+
+
+def _is_mechanism_node(
+    node_id: str,
+    attrs: Mapping[str, Any],
+    *,
+    semantics: DiscoverySemantics,
+) -> bool:
+    return domain_is_mechanism_node(
+        node_id,
+        attrs,
+        semantics,
     )
 
 
-def _is_mechanism_node(node_id: str, attrs: Mapping[str, Any]) -> bool:
-    node_type = _normalized_type(attrs)
-    if any(marker in node_type for marker in _MECHANISM_NODE_MARKERS):
-        return True
-    local_id = str(node_id).split("::")[-1].strip().lower()
-    return local_id.startswith("mech_")
-
-
-def _is_mechanism_step(step: Mapping[str, Any]) -> bool:
-    relation = str(step.get("relation", "")).strip().upper()
-    return any(marker in relation for marker in _MECHANISM_RELATION_MARKERS)
+def _is_mechanism_step(
+    step: Mapping[str, Any],
+    *,
+    semantics: DiscoverySemantics,
+) -> bool:
+    return domain_is_mechanism_edge(
+        step,
+        semantics,
+    )
 
 
 def _is_alignment_step(step: Mapping[str, Any]) -> bool:
     return str(step.get("edge_class", "")) in _ALIGNMENT_CLASSES
 
 
-def _is_generic_entity_node(node_id: str, attrs: Mapping[str, Any]) -> bool:
-    if _is_alignment_node(attrs) or _is_mechanism_node(node_id, attrs):
+def _is_generic_entity_node(
+    node_id: str,
+    attrs: Mapping[str, Any],
+    *,
+    semantics: DiscoverySemantics,
+) -> bool:
+    if _is_alignment_node(attrs) or _is_mechanism_node(
+        node_id,
+        attrs,
+        semantics=semantics,
+    ):
         return False
-    return _normalized_type(attrs) in _GENERIC_ENTITY_TYPES
+    generic_types = {
+        "".join(
+            ch for ch in str(value).upper()
+            if ch.isalnum()
+        )
+        for value in semantics.generic_entity_types
+    }
+    return _normalized_type(attrs) in generic_types
 
 
 def _scientific_subgraph(graph: nx.DiGraph) -> nx.Graph:
@@ -375,11 +377,21 @@ def _segment_has_mechanism(
     graph: nx.DiGraph,
     nodes: list[str],
     steps: list[dict[str, Any]],
+    *,
+    semantics: DiscoverySemantics,
 ) -> bool:
-    if any(_is_mechanism_step(step) for step in steps):
+    if any(
+        _is_mechanism_step(step, semantics=semantics)
+        for step in steps
+    ):
         return True
     return any(
-        node_id in graph and _is_mechanism_node(node_id, dict(graph.nodes[node_id]))
+        node_id in graph
+        and _is_mechanism_node(
+            node_id,
+            dict(graph.nodes[node_id]),
+            semantics=semantics,
+        )
         for node_id in nodes
     )
 
@@ -400,7 +412,12 @@ def _alignment_blocks(steps: list[dict[str, Any]]) -> list[tuple[int, int]]:
     return blocks
 
 
-def _mechanistic_continuity(graph: nx.DiGraph, row: dict[str, Any]) -> MechanisticContinuity:
+def _mechanistic_continuity(
+    graph: nx.DiGraph,
+    row: dict[str, Any],
+    *,
+    semantics: DiscoverySemantics,
+) -> MechanisticContinuity:
     nodes = [str(x) for x in row.get("nodes", [])]
     steps = [dict(step) for step in row.get("steps", []) if isinstance(step, dict)]
     blocks = _alignment_blocks(steps)
@@ -423,8 +440,12 @@ def _mechanistic_continuity(graph: nx.DiGraph, row: dict[str, Any]) -> Mechanist
         right_steps = steps[end + 1 : next_start]
         right_nodes = nodes[end + 1 : next_start + 1]
 
-        before = _segment_has_mechanism(graph, left_nodes, left_steps)
-        after = _segment_has_mechanism(graph, right_nodes, right_steps)
+        before = _segment_has_mechanism(
+            graph, left_nodes, left_steps, semantics=semantics
+        )
+        after = _segment_has_mechanism(
+            graph, right_nodes, right_steps, semantics=semantics
+        )
         score = 1.0 if before and after else (0.25 if before or after else 0.0)
         candidate = (score, before, after)
         if candidate > best:
@@ -448,7 +469,12 @@ class GenericHopDiagnostics:
     registry_hop_fraction: float
 
 
-def _generic_hop_diagnostics(graph: nx.DiGraph, row: dict[str, Any]) -> GenericHopDiagnostics:
+def _generic_hop_diagnostics(
+    graph: nx.DiGraph,
+    row: dict[str, Any],
+    *,
+    semantics: DiscoverySemantics,
+) -> GenericHopDiagnostics:
     nodes = [str(x) for x in row.get("nodes", [])]
     internal = nodes[1:-1] if len(nodes) >= 3 else []
     flags: list[bool] = []
@@ -459,7 +485,11 @@ def _generic_hop_diagnostics(graph: nx.DiGraph, row: dict[str, Any]) -> GenericH
         if _is_alignment_node(attrs):
             # Alignment hubs are separately penalized and do not reset an entity run.
             continue
-        flags.append(_is_generic_entity_node(node_id, attrs))
+        flags.append(
+            _is_generic_entity_node(
+                node_id, attrs, semantics=semantics
+            )
+        )
 
     generic_count = sum(flags)
     generic_fraction = _clip01(generic_count / len(flags)) if flags else 0.0
@@ -523,7 +553,12 @@ class DiscoveryPolicy:
     # Alpha3: reward candidate-unit routes that survived the dedicated
     # (source, unit, target) selector and suppress unrelated reaction detours.
     candidate_unit_quality_weight: float = 0.16
-    reaction_switch_penalty_weight: float = 0.10
+    context_switch_penalty_weight: float = 0.10
+
+    @property
+    def reaction_switch_penalty_weight(self) -> float:
+        # Deprecated v2.8 compatibility alias.
+        return self.context_switch_penalty_weight
 
 
 class DiscoveryBundleBuilder:
@@ -538,8 +573,18 @@ class DiscoveryBundleBuilder:
     These are exploration heuristics, not scientific novelty claims.
     """
 
-    def __init__(self, policy: DiscoveryPolicy | None = None) -> None:
+    def __init__(
+        self,
+        policy: DiscoveryPolicy | None = None,
+        *,
+        domain_profile: ScientificDomainProfile | None = None,
+    ) -> None:
         self.policy = policy or DiscoveryPolicy()
+        self.domain_profile = (
+            domain_profile
+            or get_domain_profile("dac_her")
+        )
+        self.discovery_semantics = self.domain_profile.discovery
 
     def _score(
         self,
@@ -565,8 +610,16 @@ class DiscoveryBundleBuilder:
         community = _community_span(row, community_by_node)
         rarity = _path_relation_rarity(row, relation_counts)
         exploratory_bonus = 1.0 if mode == "exploratory" else 0.0
-        continuity = _mechanistic_continuity(graph, row)
-        generic = _generic_hop_diagnostics(graph, row)
+        continuity = _mechanistic_continuity(
+            graph,
+            row,
+            semantics=self.discovery_semantics,
+        )
+        generic = _generic_hop_diagnostics(
+            graph,
+            row,
+            semantics=self.discovery_semantics,
+        )
 
         own_edges = _edge_set(row)
         redundancy = max(
@@ -581,8 +634,14 @@ class DiscoveryBundleBuilder:
             else {}
         )
         candidate_unit_quality = _clip01(float(candidate_selection.get("total", 0.0) or 0.0))
-        reaction_switch_penalty = _clip01(
-            float(candidate_selection.get("reaction_switch_penalty", 0.0) or 0.0)
+        context_switch_penalty = _clip01(
+            float(
+                candidate_selection.get(
+                    "context_switch_penalty",
+                    candidate_selection.get("reaction_switch_penalty", 0.0),
+                )
+                or 0.0
+            )
         )
 
         p = self.policy
@@ -601,7 +660,7 @@ class DiscoveryBundleBuilder:
             - p.generic_entity_penalty_weight * generic.generic_burden
             - p.registry_hop_penalty_weight * generic.registry_hop_fraction
             + p.candidate_unit_quality_weight * candidate_unit_quality
-            - p.reaction_switch_penalty_weight * reaction_switch_penalty
+            - p.context_switch_penalty_weight * context_switch_penalty
         )
         total = _clip01(total)
 
@@ -641,8 +700,10 @@ class DiscoveryBundleBuilder:
             reasons.append("candidate_unit_traversal")
         if candidate_unit_quality >= self.policy.min_reserved_candidate_unit_score:
             reasons.append("candidate_unit_quality_supported")
-        if reaction_switch_penalty > 0.0:
-            reasons.append("reaction_domain_switch")
+        if context_switch_penalty > 0.0:
+            reasons.append("scientific_context_switch")
+            if self.domain_profile.profile_id == "dac_her":
+                reasons.append("reaction_domain_switch")
 
         return (
             DiscoveryScoreBreakdown(
@@ -660,7 +721,8 @@ class DiscoveryBundleBuilder:
                 generic_entity_burden_penalty=generic.generic_burden,
                 registry_hop_penalty=generic.registry_hop_fraction,
                 candidate_unit_quality=candidate_unit_quality,
-                reaction_domain_switch_penalty=reaction_switch_penalty,
+                context_switch_penalty=context_switch_penalty,
+                reaction_domain_switch_penalty=context_switch_penalty,
                 total=total,
             ),
             reasons,
@@ -682,6 +744,26 @@ class DiscoveryBundleBuilder:
         if len(corpus_ids) != 1:
             raise ValueError(f"all traversals must use one corpus_id, got: {sorted(corpus_ids)}")
         corpus_id = next(iter(corpus_ids))
+
+        explicit_domain_ids = {
+            str(payload.get("domain_profile_id", "")).strip()
+            for _, payload, _ in payloads
+            if str(payload.get("domain_profile_id", "")).strip()
+        }
+        if len(explicit_domain_ids) > 1:
+            raise ValueError(
+                "all traversals must use one domain_profile_id, got: "
+                f"{sorted(explicit_domain_ids)}"
+            )
+        if (
+            explicit_domain_ids
+            and self.domain_profile.profile_id not in explicit_domain_ids
+        ):
+            raise ValueError(
+                "DiscoveryBundleBuilder domain profile does not match traversal "
+                f"artifacts: builder={self.domain_profile.profile_id!r}, "
+                f"traversal={next(iter(explicit_domain_ids))!r}"
+            )
 
         semantic_indexes = dict(semantic_indexes or {})
         warnings: list[str] = []
@@ -1050,8 +1132,19 @@ class DiscoveryBundleBuilder:
                     candidate_proposed_relation=str(candidate_unit.get("proposed_relation", "")),
                     candidate_proposed_object=str(candidate_unit.get("proposed_object", "")),
                     candidate_unit_score=float(candidate_selection.get("total", 0.0) or 0.0),
+                    context_switch_penalty=float(
+                        candidate_selection.get(
+                            "context_switch_penalty",
+                            candidate_selection.get("reaction_switch_penalty", 0.0),
+                        )
+                        or 0.0
+                    ),
                     reaction_domain_switch_penalty=float(
-                        candidate_selection.get("reaction_switch_penalty", 0.0) or 0.0
+                        candidate_selection.get(
+                            "context_switch_penalty",
+                            candidate_selection.get("reaction_switch_penalty", 0.0),
+                        )
+                        or 0.0
                     ),
                 )
             )
@@ -1059,6 +1152,7 @@ class DiscoveryBundleBuilder:
         query_signature = " || ".join(sorted(set(query_parts)))
         bundle_id = _stable_id(
             "discovery_bundle",
+            self.domain_profile.profile_id,
             corpus_id,
             query_signature,
             *[x.inspiration_id for x in inspirations],
@@ -1067,6 +1161,7 @@ class DiscoveryBundleBuilder:
             "schema_version": "discovery-bundle-v1",
             "bundle_id": bundle_id,
             "corpus_id": corpus_id,
+            "domain_profile_id": self.domain_profile.profile_id,
             "query_signature": query_signature,
             "inspirations": [x.model_dump(mode="json") for x in inspirations],
             "source_traversal_files": source_files,
@@ -1082,10 +1177,46 @@ class DiscoveryBundleBuilder:
         return DiscoveryBundle(**payload, bundle_sha256=_sha256_json(payload))
 
 
+def _resolve_traversal_data_root(
+    payload: Mapping[str, Any],
+    *,
+    project_root: str | Path,
+    domain_profile_id: str | None = None,
+    data_root: str | Path | None = None,
+) -> tuple[ScientificDomainProfile, Path]:
+    traversal_domain = str(
+        payload.get("domain_profile_id") or ""
+    ).strip()
+    requested_domain = str(
+        domain_profile_id
+        or traversal_domain
+        or "dac_her"
+    ).strip()
+    if traversal_domain and requested_domain != traversal_domain:
+        raise ValueError(
+            "Requested discovery domain profile does not match traversal "
+            f"artifact: requested={requested_domain!r}, "
+            f"traversal={traversal_domain!r}"
+        )
+
+    profile = get_domain_profile(requested_domain)
+    extraction_adapter = get_extraction_adapter(profile.profile_id)
+    root = Path(
+        data_root
+        or payload.get("data_root")
+        or extraction_adapter.default_data_root
+    )
+    if not root.is_absolute():
+        root = Path(project_root) / root
+    return profile, root
+
+
 def load_traversal_with_graph(
     path: str | Path,
     *,
     project_root: str | Path = ".",
+    domain_profile_id: str | None = None,
+    data_root: str | Path | None = None,
 ) -> tuple[str, dict[str, Any], nx.DiGraph]:
     path = Path(path)
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -1095,9 +1226,15 @@ def load_traversal_with_graph(
     mode = str(payload.get("mode", "")).strip()
     if not corpus_id or not mode:
         raise ValueError(f"traversal is missing corpus_id/mode: {path}")
+
+    _, root = _resolve_traversal_data_root(
+        payload,
+        project_root=project_root,
+        domain_profile_id=domain_profile_id,
+        data_root=data_root,
+    )
     graph_path = (
-        Path(project_root)
-        / "data_dac"
+        root
         / "corpus"
         / corpus_id
         / mode
@@ -1112,15 +1249,23 @@ def load_semantic_index_for_traversal(
     payload: dict[str, Any],
     *,
     project_root: str | Path = ".",
+    domain_profile_id: str | None = None,
+    data_root: str | Path | None = None,
 ) -> Any | None:
     """Load the existing node embedding index without instantiating a model."""
     corpus_id = str(payload.get("corpus_id", "")).strip()
     mode = str(payload.get("mode", "")).strip()
     if not corpus_id or not mode:
         return None
+
+    _, root = _resolve_traversal_data_root(
+        payload,
+        project_root=project_root,
+        domain_profile_id=domain_profile_id,
+        data_root=data_root,
+    )
     index_dir = (
-        Path(project_root)
-        / "data_dac"
+        root
         / "corpus"
         / corpus_id
         / mode

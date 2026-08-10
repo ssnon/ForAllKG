@@ -8,8 +8,16 @@ from typing import Any, Iterable, Mapping
 
 import networkx as nx
 
-from dac_her.domain_profile import DiscoverySemantics, ScientificDomainProfile
+from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains import get_domain_profile
+from dac_her.discovery_semantics import (
+    is_alignment_node,
+    is_generic_entity_node,
+    is_mechanism_edge,
+    is_mechanism_node,
+    is_scaffold_edge,
+    normalized_node_type,
+)
 from dac_her.candidate_units import (
     CandidateAnchor,
     CandidateUnit,
@@ -23,11 +31,6 @@ from dac_her.candidate_units import (
 
 
 _DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_DEFAULT_DISCOVERY_SEMANTICS = _DEFAULT_DOMAIN_PROFILE.discovery
-_GENERIC_ENTITY_TYPES = set(_DEFAULT_DISCOVERY_SEMANTICS.generic_entity_types)
-_MECHANISM_NODE_MARKERS = _DEFAULT_DISCOVERY_SEMANTICS.mechanism_node_markers
-_MECHANISM_RELATION_MARKERS = _DEFAULT_DISCOVERY_SEMANTICS.mechanism_relation_markers
-_SCAFFOLD_RELATIONS = set(_DEFAULT_DISCOVERY_SEMANTICS.scaffold_relations)
 
 
 def _clip01(value: float) -> float:
@@ -37,46 +40,6 @@ def _clip01(value: float) -> float:
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
     raw = "|".join(str(part) for part in parts).encode("utf-8")
     return f"{prefix}:{hashlib.sha256(raw).hexdigest()[:length]}"
-
-
-def _normalized_type(attrs: Mapping[str, Any]) -> str:
-    return "".join(
-        char for char in str(attrs.get("type", "")).upper() if char.isalnum()
-    )
-
-
-def _is_alignment_node(attrs: Mapping[str, Any]) -> bool:
-    return (
-        str(attrs.get("corpus_node_kind", "")).strip().lower() == "alignment_hub"
-        or _normalized_type(attrs) in {"CORPUSALIGNMENT", "CORPUSPATTERN"}
-        or str(attrs.get("graph_layer", "")).strip().lower() == "corpus_alignment"
-    )
-
-
-def _is_mechanism_node(node_id: str, attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    node_type = _normalized_type(attrs)
-    if any(marker in node_type for marker in semantics.mechanism_node_markers):
-        return True
-    return str(node_id).split("::")[-1].strip().lower().startswith("mech_")
-
-
-def _is_generic_node(node_id: str, attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    if _is_alignment_node(attrs) or _is_mechanism_node(node_id, attrs, semantics=semantics):
-        return False
-    return _normalized_type(attrs) in semantics.generic_entity_types
-
-
-def _edge_is_mechanistic(attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    relation = str(attrs.get("relation", "")).strip().upper()
-    return any(marker in relation for marker in semantics.mechanism_relation_markers)
-
-
-def _edge_is_scaffold(attrs: Mapping[str, Any], *, semantics: DiscoverySemantics | None = None) -> bool:
-    semantics = semantics or _DEFAULT_DISCOVERY_SEMANTICS
-    return str(attrs.get("relation", "")).strip().upper() in semantics.scaffold_relations
 
 
 def _match_similarity(match: Mapping[str, Any]) -> float:
@@ -161,12 +124,19 @@ class CandidateUnitScore:
     generic_entity_penalty: float
     alignment_penalty: float
     reverse_penalty: float
-    reaction_switch_penalty: float
+    context_switch_penalty: float
     path_length_penalty: float
     total: float
 
+    @property
+    def reaction_switch_penalty(self) -> float:
+        # Deprecated v2.8 compatibility alias.
+        return self.context_switch_penalty
+
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["reaction_switch_penalty"] = self.context_switch_penalty
+        return payload
 
 
 @dataclass(frozen=True)
@@ -181,8 +151,13 @@ class CandidateUnitRoute:
     total_cost: float
     hop_count: int
     score: CandidateUnitScore
-    reaction_node_labels: tuple[str, ...]
+    context_node_labels: tuple[str, ...]
     visited_paper_ids: tuple[str, ...]
+
+    @property
+    def reaction_node_labels(self) -> tuple[str, ...]:
+        # Deprecated v2.8 compatibility alias.
+        return self.context_node_labels
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -206,7 +181,8 @@ class CandidateUnitRoute:
             "candidate_unit_count": 1,
             "candidate_edge_count": 2,
             "candidate_unit_selection": self.score.to_dict(),
-            "reaction_node_labels": list(self.reaction_node_labels),
+            "context_node_labels": list(self.context_node_labels),
+            "reaction_node_labels": list(self.context_node_labels),
             "visited_paper_ids": list(self.visited_paper_ids),
         }
 
@@ -229,8 +205,18 @@ class CandidateUnitSelectionPolicy:
     generic_penalty_weight: float = 0.16
     alignment_penalty_weight: float = 0.10
     reverse_penalty_weight: float = 0.05
-    reaction_switch_penalty_weight: float = 0.18
+    context_switch_penalty_weight: float = 0.18
     path_length_penalty_weight: float = 0.08
+
+    @property
+    def reaction_switch_penalty_weight(self) -> float:
+        # Deprecated v2.8 compatibility alias.
+        return self.context_switch_penalty_weight
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["reaction_switch_penalty_weight"] = self.context_switch_penalty_weight
+        return payload
 
 
 class CandidateUnitSelector:
@@ -286,15 +272,15 @@ class CandidateUnitSelector:
         right_nodes = nodes[candidate_index + 1 :]
         left_edges = steps[: max(0, candidate_index - 1)]
         right_edges = steps[candidate_index + 1 :]
-        left_mech = any(_edge_is_mechanistic(step, semantics=self.discovery_semantics) for step in left_edges) or any(
-            node in self.graph and _is_mechanism_node(node, dict(self.graph.nodes[node]), semantics=self.discovery_semantics)
+        left_mech = any(is_mechanism_edge(step, self.discovery_semantics) for step in left_edges) or any(
+            node in self.graph and is_mechanism_node(node, dict(self.graph.nodes[node]), self.discovery_semantics)
             for node in left_nodes
         )
-        right_mech = any(_edge_is_mechanistic(step, semantics=self.discovery_semantics) for step in right_edges) or any(
-            node in self.graph and _is_mechanism_node(
+        right_mech = any(is_mechanism_edge(step, self.discovery_semantics) for step in right_edges) or any(
+            node in self.graph and is_mechanism_node(
                 node,
                 dict(self.graph.nodes[node]),
-                semantics=self.discovery_semantics,
+                self.discovery_semantics,
             )
             for node in right_nodes
         )
@@ -305,9 +291,9 @@ class CandidateUnitSelector:
             if node not in self.graph:
                 continue
             attrs = dict(self.graph.nodes[node])
-            if _is_alignment_node(attrs):
+            if is_alignment_node(attrs):
                 continue
-            generic_flags.append(_is_generic_node(node, attrs, semantics=self.discovery_semantics))
+            generic_flags.append(is_generic_entity_node(node, attrs, self.discovery_semantics))
         generic_penalty = _clip01(sum(generic_flags) / len(generic_flags)) if generic_flags else 0.0
 
         alignment_count = sum(edge_is_alignment(step) for step in confirmed_steps)
@@ -315,21 +301,37 @@ class CandidateUnitSelector:
         reverse_count = sum(edge_is_reverse(step) for step in confirmed_steps)
         reverse_penalty = _clip01(reverse_count / len(confirmed_steps)) if confirmed_steps else 0.0
 
-        scaffold_count = sum(_edge_is_scaffold(step, semantics=self.discovery_semantics) or edge_is_alignment(step) for step in confirmed_steps)
+        scaffold_count = sum(is_scaffold_edge(step, self.discovery_semantics) or edge_is_alignment(step) for step in confirmed_steps)
         scientific_density = _clip01(1.0 - scaffold_count / len(confirmed_steps)) if confirmed_steps else 0.0
 
-        reaction_labels: list[str] = []
+        # Context dimensions are typed. Multiple complementary context types
+        # (for example SERS Analyte + RamanReporter + OpticalCondition) do not
+        # constitute a switch. A switch occurs only when a route traverses more
+        # than one distinct value *within the same configured context type*.
+        context_labels_by_type: dict[str, set[str]] = {}
         context_types = self.discovery_semantics.normalized_context_node_types()
         for node in confirmed_nodes:
             if node not in self.graph:
                 continue
             attrs = dict(self.graph.nodes[node])
-            if _normalized_type(attrs) in context_types:
-                reaction_labels.append(node_label(self.graph, node))
-        # v1 artifact field names remain reaction_* for backward compatibility;
-        # semantically these are profile-configured scientific-context switches.
-        unique_reactions = tuple(sorted(set(reaction_labels)))
-        reaction_switch_penalty = _clip01(max(0, len(unique_reactions) - 1) / 2.0)
+            node_type = normalized_node_type(attrs)
+            if node_type in context_types:
+                context_labels_by_type.setdefault(node_type, set()).add(
+                    node_label(self.graph, node)
+                )
+
+        unique_contexts = tuple(
+            sorted(
+                label
+                for labels in context_labels_by_type.values()
+                for label in labels
+            )
+        )
+        context_switch_count = sum(
+            max(0, len(labels) - 1)
+            for labels in context_labels_by_type.values()
+        )
+        context_switch_penalty = _clip01(context_switch_count / 2.0)
 
         papers: set[str] = set()
         for node in nodes:
@@ -341,7 +343,8 @@ class CandidateUnitSelector:
             generic_penalty,
             alignment_penalty,
             reverse_penalty,
-            unique_reactions,
+            unique_contexts,
+            context_switch_penalty,
             tuple(sorted(papers)),
         )
 
@@ -363,7 +366,8 @@ class CandidateUnitSelector:
             generic_penalty,
             alignment_penalty,
             reverse_penalty,
-            reaction_labels,
+            context_labels,
+            context_penalty,
             papers,
         ) = self._route_diagnostics(
             nodes,
@@ -371,7 +375,6 @@ class CandidateUnitSelector:
             entry_id=entry_id,
             exit_id=exit_id,
         )
-        reaction_penalty = _clip01(max(0, len(reaction_labels) - 1) / 2.0)
         length_penalty = _clip01((len(nodes) - 1) / max(1, self.policy.max_depth))
         cross_paper_span = _clip01((len(papers) - 1) / 2.0) if papers else 0.0
         p = self.policy
@@ -384,7 +387,7 @@ class CandidateUnitSelector:
             - p.generic_penalty_weight * generic_penalty
             - p.alignment_penalty_weight * alignment_penalty
             - p.reverse_penalty_weight * reverse_penalty
-            - p.reaction_switch_penalty_weight * reaction_penalty
+            - p.context_switch_penalty_weight * context_penalty
             - p.path_length_penalty_weight * length_penalty
         )
         return (
@@ -397,11 +400,11 @@ class CandidateUnitSelector:
                 generic_entity_penalty=generic_penalty,
                 alignment_penalty=alignment_penalty,
                 reverse_penalty=reverse_penalty,
-                reaction_switch_penalty=reaction_penalty,
+                context_switch_penalty=context_penalty,
                 path_length_penalty=length_penalty,
                 total=total,
             ),
-            reaction_labels,
+            context_labels,
             papers,
         )
 
@@ -492,7 +495,7 @@ class CandidateUnitSelector:
                             if best_route is None:
                                 continue
                             total_cost, hop_count, nodes = best_route
-                            score, reactions, papers = self._score(
+                            score, contexts, papers = self._score(
                                 source_match=source_match,
                                 target_match=target_match,
                                 unit=unit,
@@ -523,7 +526,7 @@ class CandidateUnitSelector:
                                     total_cost=total_cost,
                                     hop_count=hop_count,
                                     score=score,
-                                    reaction_node_labels=reactions,
+                                    context_node_labels=contexts,
                                     visited_paper_ids=papers,
                                 )
                             )
@@ -531,7 +534,7 @@ class CandidateUnitSelector:
             key=lambda route: (
                 -route.score.total,
                 -route.score.unit_relevance,
-                route.score.reaction_switch_penalty,
+                route.score.context_switch_penalty,
                 route.total_cost,
                 route.hop_count,
                 route.route_id,

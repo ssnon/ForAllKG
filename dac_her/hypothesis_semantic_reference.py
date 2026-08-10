@@ -60,6 +60,41 @@ def _filter_known(
     return kept, dropped
 
 
+_REQUIRED_STATEMENT_REFERENCE_DIMENSIONS = frozenset({
+    "premise_fidelity",
+    "gap_discipline",
+    "candidate_calibration",
+    "cross_paper_discipline",
+})
+
+_REQUIRED_HYPOTHESIS_REFERENCE_DIMENSIONS = frozenset({
+    "inferential_proportionality",
+    "causal_strengthening",
+    "directional_specificity",
+    "prediction_linkage",
+    "falsifier_informativeness",
+})
+
+
+def _all_dropped_is_fatal(
+    *,
+    dimension: str,
+    verdict: str,
+    namespace: str,
+) -> bool:
+    # A not-applicable judgment needs no object-level anchor. For applicable
+    # dimensions, require only the namespace that is semantically essential to
+    # that dimension. This prevents an optional hallucinated statement ID from
+    # invalidating a hypothesis-anchored directional/prediction review.
+    if verdict == "not_applicable":
+        return False
+    if namespace == "statement_ids":
+        return dimension in _REQUIRED_STATEMENT_REFERENCE_DIMENSIONS
+    if namespace == "hypothesis_ids":
+        return dimension in _REQUIRED_HYPOTHESIS_REFERENCE_DIMENSIONS
+    raise ValueError(f"unknown semantic reference namespace: {namespace}")
+
+
 class HypothesisSemanticReferenceSanitizer:
     """Exact-ID safe-drop sanitizer.
 
@@ -112,10 +147,15 @@ class HypothesisSemanticReferenceSanitizer:
                         ),
                     )
                 )
-                if all_dropped:
+                if all_dropped and _all_dropped_is_fatal(
+                    dimension=row.dimension,
+                    verdict=row.verdict,
+                    namespace="hypothesis_ids",
+                ):
                     fatal_reasons.append(
-                        f"{location}: every supplied "
-                        "hypothesis reference was unknown"
+                        f"{location}: every supplied hypothesis reference was "
+                        f"unknown for dimension {row.dimension!r}, which requires "
+                        "a hypothesis anchor"
                     )
 
             if s_dropped:
@@ -140,10 +180,15 @@ class HypothesisSemanticReferenceSanitizer:
                         ),
                     )
                 )
-                if all_dropped:
+                if all_dropped and _all_dropped_is_fatal(
+                    dimension=row.dimension,
+                    verdict=row.verdict,
+                    namespace="statement_ids",
+                ):
                     fatal_reasons.append(
-                        f"{location}: every supplied "
-                        "statement reference was unknown"
+                        f"{location}: every supplied statement reference was "
+                        f"unknown for dimension {row.dimension!r}, which requires "
+                        "an evidence-statement anchor"
                     )
 
             dimensions.append(

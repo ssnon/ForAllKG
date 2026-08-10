@@ -250,7 +250,12 @@ def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualit
             ]
             if part.strip()
         ),
-        "reaction_node_labels": list(base.get("reaction_node_labels", [])),
+        "context_node_labels": list(
+            base.get("context_node_labels", base.get("reaction_node_labels", []))
+        ),
+        "reaction_node_labels": list(
+            base.get("context_node_labels", base.get("reaction_node_labels", []))
+        ),
     }
     row["path_quality"] = quality_scorer.score(row).to_dict()
     return row
@@ -397,9 +402,7 @@ def main() -> None:
         "path_count": len(paths),
         "path_type_counts": {"CANDIDATE_EXPLORATION": len(paths)},
         "path_groups": returned_groups,
-        "selection_policy": {
-            key: getattr(policy, key) for key in policy.__dataclass_fields__
-        },
+        "selection_policy": policy.to_dict(),
         "candidate_paths_included": bool(args.include_candidate_paths),
         "candidate_paths": all_paths if args.include_candidate_paths else [],
         "paths": paths,
@@ -420,7 +423,7 @@ def main() -> None:
         score = row["candidate_unit_selection"]
         print(
             f"[{rank}] score={score['total']:.3f} unit_rel={score['unit_relevance']:.3f} "
-            f"mech={score['mechanistic_continuity']:.2f} reaction_penalty={score['reaction_switch_penalty']:.2f} "
+            f"mech={score['mechanistic_continuity']:.2f} context_penalty={score['context_switch_penalty']:.2f} "
             f"hops={row['hop_count']} cost={row['total_cost']:.2f}"
         )
         print("     unit:", unit["label"])

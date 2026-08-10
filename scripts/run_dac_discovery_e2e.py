@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from dac_her.domains.feasibility_registry import get_feasibility_adapter
+from dac_her.domain_profile import ScientificDomainProfile
+from dac_her.domains.feasibility_registry import resolve_feasibility_adapter
 from dac_her.domains.registry import get_domain_profile
+from dac_her.feasibility_domain import FeasibilityDomainAdapter
 
 
 def _now() -> str:
@@ -70,6 +72,18 @@ def _external_source_portfolio_id(path: Path) -> str:
     if not value:
         raise RuntimeError(f"source_portfolio_id missing from {path}")
     return str(value)
+
+
+def _resolve_feasibility_capability(
+    profile: ScientificDomainProfile,
+) -> FeasibilityDomainAdapter | None:
+    # Missing capability is a valid multidomain state. A profile that
+    # explicitly names an adapter still resolves strictly, so unknown or
+    # cross-domain adapters remain errors rather than being silently skipped.
+    adapter_id = (profile.feasibility_adapter_id or "").strip()
+    if not adapter_id:
+        return None
+    return resolve_feasibility_adapter(profile)
 
 
 _ALPHA6_DEGRADED_DECISIONS = {
@@ -166,6 +180,23 @@ class PipelineRunner:
         record["finished_at_utc"] = _now()
         self._save_manifest()
 
+    def skip_stage(self, name: str, *, reason: str) -> None:
+        record: dict[str, Any] = {
+            "name": name,
+            "module": None,
+            "started_at_utc": _now(),
+            "finished_at_utc": _now(),
+            "status": "skipped",
+            "reason": reason,
+        }
+        self.manifest["stages"].append(record)
+        print()
+        print("=" * 72)
+        print(name)
+        print("=" * 72)
+        print("SKIPPED:", reason)
+        self._save_manifest()
+
     def fail(self, exc: BaseException) -> None:
         self.manifest["status"] = "failed"
         self.manifest["finished_at_utc"] = _now()
@@ -214,9 +245,21 @@ def run_pipeline(args: argparse.Namespace) -> int:
     runner.prepare()
     _check_alpha6_available()
     domain_profile = get_domain_profile(args.domain_profile)
-    feasibility_adapter = get_feasibility_adapter(domain_profile.profile_id)
+    feasibility_adapter = _resolve_feasibility_capability(domain_profile)
     runner.manifest["domain_profile_id"] = domain_profile.profile_id
-    runner.manifest["feasibility_adapter_id"] = feasibility_adapter.adapter_id
+    runner.manifest["capabilities"] = {
+        "feasibility": feasibility_adapter is not None,
+    }
+    runner.manifest["feasibility_status"] = (
+        "available"
+        if feasibility_adapter is not None
+        else "not_supported_for_domain"
+    )
+    runner.manifest["feasibility_adapter_id"] = (
+        feasibility_adapter.adapter_id
+        if feasibility_adapter is not None
+        else None
+    )
     runner._save_manifest()
     run = runner.run_dir
 
@@ -385,6 +428,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         [
             "--traversal", str(final_traversal),
             "--traversal", str(candidate_traversal),
+            "--domain-profile", domain_profile.profile_id,
             "--top-k", str(args.discovery_top_k),
             "--output", str(bundle),
         ],
@@ -552,38 +596,65 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
 
     feasibility_dir = run / "feasibility_final"
-    feasibility_manifest = feasibility_dir / "manifest.json"
-    runner.run_stage(
-        "[13a/13] Feasibility",
-        "scripts.run_feasibility_e2e",
-        [
-            "--context", str(context),
-            "--domain-profile", domain_profile.profile_id,
-            "--portfolio", str(refined_portfolio),
-            "--semantic-review", str(semantic_final_review),
-            "--output-dir", str(feasibility_dir),
-        ],
-        expected=[feasibility_manifest],
-    )
-
     viewer = run / "demo" / "index.html"
+
+    if feasibility_adapter is not None:
+        feasibility_manifest = feasibility_dir / "manifest.json"
+        runner.run_stage(
+            "[13a/13] Feasibility",
+            "scripts.run_feasibility_e2e",
+            [
+                "--context", str(context),
+                "--domain-profile", domain_profile.profile_id,
+                "--portfolio", str(refined_portfolio),
+                "--semantic-review", str(semantic_final_review),
+                "--output-dir", str(feasibility_dir),
+            ],
+            expected=[feasibility_manifest],
+        )
+        runner.manifest["feasibility_status"] = "complete"
+        runner._save_manifest()
+    else:
+        runner.skip_stage(
+            "[13a/13] Feasibility",
+            reason=(
+                f"Scientific domain profile {domain_profile.profile_id!r} does not "
+                "declare a feasibility adapter. Core discovery/refinement output is "
+                "still complete; another domain's feasibility rules will not be used."
+            ),
+        )
+
+    viewer_args = [
+        "--run-dir", str(run),
+        "--title", args.title,
+    ]
+    if feasibility_adapter is not None:
+        viewer_args += ["--feasibility-dir", str(feasibility_dir)]
+
     runner.run_stage(
         "[13b/13] Demo viewer",
         "scripts.build_demo_viewer",
-        [
-            "--run-dir", str(run),
-            "--feasibility-dir", str(feasibility_dir),
-            "--title", args.title,
-        ],
+        viewer_args,
         expected=[viewer],
     )
+    runner.manifest["viewer_status"] = (
+        "complete_with_feasibility"
+        if feasibility_adapter is not None
+        else "complete_core_without_feasibility"
+    )
+    runner._save_manifest()
+
     runner.complete()
     print()
     print("Pipeline complete")
     print("Grounding algorithm:", runner.manifest["grounding_algorithm_used"])
     print("Initial hypotheses:", initial_hypotheses)
     print("Final hypotheses:", final_hypotheses)
-    print("Viewer:", viewer)
+    print("Feasibility:", runner.manifest["feasibility_status"])
+    print(
+        "Viewer:",
+        viewer if viewer.exists() else runner.manifest.get("viewer_status", "not_generated"),
+    )
     return 0
 
 

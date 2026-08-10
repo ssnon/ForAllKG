@@ -9,7 +9,7 @@ from dac_her.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 
 
-PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.1"
+PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.2"
 
 
 def _sha256(text: str) -> str:
@@ -73,6 +73,8 @@ You MUST NOT:
 - treat registry/pattern alignment as mechanistic or causal evidence,
 - reverse the scientific direction of an edge because graph navigation traversed it in reverse,
 - infer paper-specific absence unless the packet explicitly allows absence claims for that paper.
+
+Paper-specific absence is a strict extraction-completeness claim. If a paper has absence_claims_allowed=false, do NOT say that the paper "did not report", contains "no evidence", provides "no support", "did not observe", or otherwise lacks a relation/result. Incomplete extraction cannot establish a negative fact. If the missing relation matters, describe only the packet-level limitation (for example, that the supplied packet is insufficient to determine whether the relation was reported) without asserting absence from that paper.
 
 A graph path proves navigability, not causality.
 Cross-paper navigation through an alignment hub establishes a graph connection, not a reported cross-paper causal mechanism.
@@ -231,6 +233,7 @@ class ExplorerPromptAssembler:
                 "- Do not describe alignment edges as mechanism evidence.",
                 "- Use claim_kind='mechanism' only with mechanism-bearing node/edge/path support under the selected domain semantics.",
                 "- Do not create recurring_mechanistic_motifs without mechanism-bearing scientific node/edge support.",
+                "- Before writing any paper-specific absence statement, check PAPER COMPLETENESS. If absence_claims_allowed=false for any implicated paper, do not assert absence; express only a packet-scoped uncertainty/limitation without negative factual wording.",
                 "- Do not turn a multi-paper navigation route into a causal chain.",
                 "- If the packet only connects two mechanisms through registry/alignment navigation, say that explicitly and add an unresolved scope-limit statement rather than filling the missing causal link.",
                 "- Keep reported design levers to relationships explicitly supported in this packet; do not recommend a new composition, catalyst, or experiment.",
@@ -257,6 +260,7 @@ class ExplorerPromptAssembler:
                 "The previous draft failed deterministic compilation/validation.",
                 "Revise only what is necessary to address the exact issues below.",
                 "Do not add new scientific content, new IDs, new numbers, hypotheses, predictions, or experiments.",
+                "For PAPER_ABSENCE_CLAIM_NOT_ALLOWED, do not preserve or paraphrase the unsupported paper-specific negative claim. Remove that claim or replace it only with a non-negative packet-scoped limitation already justified by the supplied packet.",
                 "Return a complete replacement ExplorationDraft.",
                 "",
                 "ISSUES",

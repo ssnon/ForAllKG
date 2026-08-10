@@ -262,6 +262,7 @@ class HypothesisContextBuilder:
         report_sha = _sha256_json(report)
         context_id = _stable_id(
             "hypothesis_context",
+            packet.domain_profile_id,
             packet.packet_sha256,
             report.report_id,
             report_sha,
@@ -277,6 +278,7 @@ class HypothesisContextBuilder:
             "task_id": report.task_id,
             "question": packet.task.question,
             "corpus_id": packet.corpus.corpus_id,
+            "domain_profile_id": packet.domain_profile_id,
             "evidence_statements": [x.model_dump(mode="json") for x in evidence_statements],
             "mechanism_routes": [x.model_dump(mode="json") for x in route_contexts],
             "mechanistic_motifs": [x.model_dump(mode="json") for x in motif_contexts],
