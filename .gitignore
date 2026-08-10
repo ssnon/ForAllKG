@@ -1,6 +1,7 @@
 Notebooks/GRAPHDATA_OUTPUT_MATERIALPROPERTIES/pfas_and_domain_knowledge_graph.graphml
 .env
 data_dac/
+data_sers/
 os.environ[OPENROUTER_EXTRACT_MODEL]
 
 */__pycache__
