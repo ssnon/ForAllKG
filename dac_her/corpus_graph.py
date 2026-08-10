@@ -161,11 +161,14 @@ def load_projection_bundle(
     project_root: str | Path,
     paper_id: str,
     mode: ProjectionMode = "exploratory",
+    data_root: str | Path = "data_dac",
 ) -> ProjectionBundle:
     project_root = Path(project_root)
+    data_root_path = Path(data_root)
+    if not data_root_path.is_absolute():
+        data_root_path = project_root / data_root_path
     root = (
-        project_root
-        / "data_dac"
+        data_root_path
         / "extracted"
         / paper_id
         / "graphagents"

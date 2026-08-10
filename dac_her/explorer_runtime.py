@@ -14,6 +14,10 @@ from dac_her.explorer_compiler import (
 from dac_her.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_llm import DraftGeneration, ExplorationDraftBackend
+from dac_her.explorer_normalization import (
+    ExplorerDraftNormalizer,
+    ExplorerNormalizationAudit,
+)
 from dac_her.explorer_prompt import ExplorerPrompt, ExplorerPromptAssembler
 from dac_her.explorer_run_record import GraphExplorerRunRecord
 from dac_her.explorer_validation import ExplorationReportValidator, ExplorationValidationResult
@@ -38,6 +42,8 @@ class GraphExplorerRunOutcome:
     last_report: ExplorationReport | None
     validation: ExplorationValidationResult | None
     final_draft: ExplorationDraft | None
+    normalized_draft: ExplorationDraft | None
+    normalization_audit: ExplorerNormalizationAudit
     draft_history: tuple[ExplorationDraft, ...]
     compile_issues: tuple[CompileIssue, ...]
     run_record: GraphExplorerRunRecord
@@ -80,6 +86,7 @@ class GraphExplorerAgentRuntime:
         prompt_assembler: ExplorerPromptAssembler | None = None,
         compiler: ExplorationReportCompiler | None = None,
         validator: ExplorationReportValidator | None = None,
+        normalizer: ExplorerDraftNormalizer | None = None,
         max_repairs: int = 1,
     ) -> None:
         if max_repairs not in {0, 1}:
@@ -88,6 +95,7 @@ class GraphExplorerAgentRuntime:
         self.prompt_assembler = prompt_assembler or ExplorerPromptAssembler()
         self.compiler = compiler or ExplorationReportCompiler()
         self.validator = validator or ExplorationReportValidator()
+        self.normalizer = normalizer or ExplorerDraftNormalizer()
         self.max_repairs = int(max_repairs)
 
     def run(self, packet: GraphExplorerPacket) -> GraphExplorerRunOutcome:
@@ -99,6 +107,10 @@ class GraphExplorerAgentRuntime:
         last_report: ExplorationReport | None = None
         validation: ExplorationValidationResult | None = None
         failure_stage = "none"
+        normalization_audit = ExplorerNormalizationAudit(
+            domain_profile_id=packet.domain_profile_id,
+        )
+        normalized_draft: ExplorationDraft | None = None
 
         try:
             generation = self.draft_backend.generate(prompt)
@@ -112,6 +124,7 @@ class GraphExplorerAgentRuntime:
                 generations=generations,
                 repair_attempts=0,
                 compile_issues=compile_issues,
+                normalization_audit=normalization_audit,
                 failure_stage="generation",
                 elapsed_seconds=elapsed,
             )
@@ -163,6 +176,39 @@ class GraphExplorerAgentRuntime:
             repair_attempts += 1
 
         accepted_report = last_report if validation is not None and validation.passes else None
+
+        # After bounded LLM repair is exhausted, allow only deterministic
+        # one-way weakening/removal. The normalizer never rewrites scientific
+        # text or evidence references.
+        if accepted_report is None:
+            normalized = self.normalizer.normalize(
+                packet,
+                current_draft,
+            )
+            normalization_audit = normalized.audit
+            if normalized.audit.applied:
+                normalized_draft = normalized.draft
+                try:
+                    last_report = self.compiler.compile(
+                        packet,
+                        normalized_draft,
+                    )
+                    compile_issues = []
+                    validation = self.validator.validate(
+                        packet,
+                        last_report,
+                    )
+                    if validation.passes:
+                        accepted_report = last_report
+                        failure_stage = "none"
+                    else:
+                        failure_stage = "validation"
+                except ExplorationCompileError as exc:
+                    last_report = None
+                    validation = None
+                    compile_issues = list(exc.issues)
+                    failure_stage = "compile"
+
         elapsed = time.perf_counter() - started
         record = self._run_record(
             packet=packet,
@@ -172,6 +218,7 @@ class GraphExplorerAgentRuntime:
             generations=generations,
             repair_attempts=repair_attempts,
             compile_issues=compile_issues,
+            normalization_audit=normalization_audit,
             failure_stage=failure_stage if accepted_report is None else "none",
             elapsed_seconds=elapsed,
         )
@@ -179,7 +226,13 @@ class GraphExplorerAgentRuntime:
             accepted_report=accepted_report,
             last_report=last_report,
             validation=validation,
-            final_draft=current_draft,
+            final_draft=(
+                normalized_draft
+                if normalized_draft is not None
+                else current_draft
+            ),
+            normalized_draft=normalized_draft,
+            normalization_audit=normalization_audit,
             draft_history=tuple(drafts),
             compile_issues=tuple(compile_issues),
             run_record=record,
@@ -196,6 +249,7 @@ class GraphExplorerAgentRuntime:
         generations: list[DraftGeneration],
         repair_attempts: int,
         compile_issues: list[CompileIssue],
+        normalization_audit: ExplorerNormalizationAudit,
         failure_stage: str,
         elapsed_seconds: float,
     ) -> GraphExplorerRunRecord:
@@ -236,6 +290,9 @@ class GraphExplorerAgentRuntime:
             validation_errors=(validation.errors if validation is not None else 0),
             validation_warnings=(validation.warnings if validation is not None else 0),
             compile_issue_count=len(compile_issues),
+            normalization_applied=normalization_audit.applied,
+            normalization_action_count=normalization_audit.action_count,
+            normalization_blocked_count=normalization_audit.blocked_count,
             input_tokens=(sum(input_tokens_values) if input_tokens_values else None),
             output_tokens=(sum(output_tokens_values) if output_tokens_values else None),
             elapsed_seconds=elapsed_seconds,

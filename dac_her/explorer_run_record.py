@@ -25,6 +25,9 @@ class GraphExplorerRunRecord(BaseModel):
     validation_errors: int = 0
     validation_warnings: int = 0
     compile_issue_count: int = 0
+    normalization_applied: bool = False
+    normalization_action_count: int = 0
+    normalization_blocked_count: int = 0
     input_tokens: int | None = None
     output_tokens: int | None = None
     elapsed_seconds: float | None = None

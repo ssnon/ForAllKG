@@ -187,3 +187,63 @@ metrics:
     match_patterns:
       - '(?i)\bEPR\b.*\bg\s*(?:=|value|factor)\b'
       - '(?i)\bg\s*=\s*[0-9]+(?:\.[0-9]+)?\b'
+  sers_enhancement_factor:
+    label: SERS enhancement factor
+    canonical_unit: null
+    parameters: [analyte]
+    aliases: [SERS EF, enhancement factor, EF]
+  analytical_enhancement_factor:
+    label: Analytical enhancement factor
+    canonical_unit: null
+    parameters: [analyte]
+    aliases: [AEF, analytical EF]
+  detection_limit:
+    label: Detection limit
+    canonical_unit: null
+    parameters: [analyte]
+    aliases: [limit of detection, LOD]
+  relative_standard_deviation:
+    label: Relative standard deviation
+    canonical_unit: '%'
+    parameters: []
+    aliases: [RSD, relative standard deviation]
+  raman_intensity:
+    label: Raman intensity
+    canonical_unit: null
+    parameters: [analyte, raman_shift]
+    aliases: [SERS intensity, Raman signal intensity]
+  lspr_wavelength:
+    label: LSPR wavelength
+    canonical_unit: nm
+    parameters: []
+    aliases: [LSPR peak, localized surface plasmon resonance wavelength]
+  extinction_peak_wavelength:
+    label: Extinction peak wavelength
+    canonical_unit: nm
+    parameters: []
+    aliases: [extinction maximum, extinction peak]
+  nanogap_size:
+    label: Nanogap size
+    canonical_unit: nm
+    parameters: []
+    aliases: [nanogap width, gap size, interior gap, interparticle gap]
+  shell_thickness:
+    label: Shell thickness
+    canonical_unit: nm
+    parameters: [component]
+    aliases: [Ag shell thickness, Au shell thickness]
+  particle_size:
+    label: Particle size
+    canonical_unit: nm
+    parameters: []
+    aliases: [nanoparticle size, particle diameter]
+  local_field_enhancement:
+    label: Local electromagnetic field enhancement
+    canonical_unit: null
+    parameters: []
+    aliases: [electric-field enhancement, local field enhancement, E/E0]
+  signal_retention:
+    label: Signal retention
+    canonical_unit: '%'
+    parameters: []
+    aliases: [SERS signal retention, Raman signal retention]

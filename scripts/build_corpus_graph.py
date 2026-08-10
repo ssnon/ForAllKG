@@ -10,6 +10,8 @@ from dac_her.corpus_graph import (
     load_projection_bundle,
     write_jsonl,
 )
+from dac_her.domains.extraction_registry import get_extraction_adapter
+from dac_her.domains.registry import get_domain_profile
 from dac_her.graph_io import save_graphml
 
 
@@ -24,6 +26,8 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--corpus-id", required=True)
+    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--data-root", default=None)
     parser.add_argument(
         "--paper-ids",
         nargs="+",
@@ -60,6 +64,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    domain_profile = get_domain_profile(args.domain_profile)
+    extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
+    data_root = Path(args.data_root or extraction_adapter.default_data_root)
     if len(set(args.paper_ids)) != len(args.paper_ids):
         raise ValueError("--paper-ids contains duplicates.")
 
@@ -68,6 +75,7 @@ def main() -> None:
             project_root=PROJECT_ROOT,
             paper_id=paper_id,
             mode=args.mode,
+            data_root=data_root,
         )
         for paper_id in args.paper_ids
     ]
@@ -115,8 +123,7 @@ def main() -> None:
         Path(args.output_dir)
         if args.output_dir
         else (
-            PROJECT_ROOT
-            / "data_dac"
+            (data_root if data_root.is_absolute() else PROJECT_ROOT / data_root)
             / "corpus"
             / args.corpus_id
             / args.mode
@@ -172,6 +179,8 @@ def main() -> None:
 
     print("Corpus graph built")
     print("Corpus ID:", args.corpus_id)
+    print("Domain profile:", domain_profile.profile_id)
+    print("Data root:", data_root)
     print("Mode:", args.mode)
     print("Papers:", len(args.paper_ids))
     print(

@@ -8,10 +8,12 @@ from pydantic import ValidationError
 
 from dac_her.chunking import ChunkSpec, count_tokens
 from dac_her.draft_schema import KnowledgeGraphDraft
+from dac_her.extraction_domain import ExtractionDomainAdapter
 from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.llm_openrouter import OpenRouterLLM
 from dac_her.lossless_normalization import normalize_knowledge_graph_payload
-from dac_her.prompts import SYSTEM_PROMPT, build_extraction_prompt
+from dac_her.prompts import build_extraction_prompt
 from dac_her.recovery_policy import RecoveryAction, decide_recovery
 from dac_her.schemas import KnowledgeGraph
 from dac_her.semantic_patch import PatchRejected, apply_semantic_patch
@@ -223,7 +225,9 @@ def extract_one_chunk(
     metric_registry: VocabularyRegistry,
     vocabulary_context: str,
     force: bool = False,
+    extraction_adapter: ExtractionDomainAdapter | None = None,
 ) -> dict[str, Any]:
+    extraction_adapter = extraction_adapter or get_extraction_adapter("dac_her")
     output_path = chunk_output_path(chunk, chunk_output_dir)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -273,7 +277,7 @@ def extract_one_chunk(
         raw_debug_path = debug_dir / f"{safe_chunk_id}__generation_{generation_attempt}.json"
         try:
             draft = llm.generate_structured(
-                system_prompt=SYSTEM_PROMPT,
+                system_prompt=extraction_adapter.system_prompt,
                 prompt=build_extraction_prompt(
                     paper_id=chunk.paper_id,
                     chunk_id=chunk.chunk_id,
@@ -298,6 +302,7 @@ def extract_one_chunk(
                 draft,
                 chunk=chunk,
             )
+            extraction_adapter.validate_draft_vocabulary(draft)
             usage = dict(llm.last_call_metadata or {})
             usage["max_completion_tokens"] = policy.max_completion_tokens
             usage["call_kind"] = "graph_generation"
@@ -534,7 +539,7 @@ def extract_one_chunk(
 
             try:
                 patch = llm.generate_structured(
-                    system_prompt=PATCH_SYSTEM_PROMPT,
+                    system_prompt=extraction_adapter.patch_system_prompt,
                     prompt=build_semantic_patch_prompt(
                         paper_id=chunk.paper_id,
                         chunk_id=chunk.chunk_id,
@@ -764,7 +769,7 @@ def extract_one_chunk(
             try:
                 micro_draft = llm.generate_structured(
                     system_prompt=(
-                        MICRO_REEXTRACT_SYSTEM_PROMPT
+                        extraction_adapter.micro_reextract_system_prompt
                     ),
                     prompt=build_micro_reextract_prompt(
                         paper_id=chunk.paper_id,
@@ -793,6 +798,7 @@ def extract_one_chunk(
                     micro_draft,
                     chunk=chunk,
                 )
+                extraction_adapter.validate_draft_vocabulary(micro_draft)
 
                 usage = dict(
                     llm.last_call_metadata or {}

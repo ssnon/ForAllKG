@@ -291,7 +291,11 @@ class CandidateUnitSelector:
             for node in left_nodes
         )
         right_mech = any(_edge_is_mechanistic(step, semantics=self.discovery_semantics) for step in right_edges) or any(
-            node in self.graph and _is_mechanism_node(node, dict(self.graph.nodes[node]))
+            node in self.graph and _is_mechanism_node(
+                node,
+                dict(self.graph.nodes[node]),
+                semantics=self.discovery_semantics,
+            )
             for node in right_nodes
         )
         mechanistic_continuity = 1.0 if left_mech and right_mech else (0.55 if left_mech or right_mech else 0.0)

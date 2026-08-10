@@ -77,6 +77,10 @@ def compute_run_metadata(
     chunking_path: str | Path,
     runtime_options: dict[str, Any] | None = None,
     implementation_paths: tuple[str | Path, ...,] = (),
+    prompt_version: str = PROMPT_VERSION,
+    system_prompt: str = SYSTEM_PROMPT,
+    domain_profile_id: str = "dac_her",
+    data_root: str | Path = "data_dac",
 ) -> dict[str, Any]:
     project_root = Path(project_root).resolve()
     schemas_path = Path(schemas_path).resolve()
@@ -86,8 +90,10 @@ def compute_run_metadata(
         "run_state_version": RUN_STATE_VERSION,
         "paper": paper_config_fingerprint_payload(paper),
         "document_sources": document_source_fingerprints(paper),
-        "prompt_version": PROMPT_VERSION,
-        "prompt_sha256": sha256_text(SYSTEM_PROMPT),
+        "domain_profile_id": domain_profile_id,
+        "data_root": str(data_root),
+        "prompt_version": prompt_version,
+        "prompt_sha256": sha256_text(system_prompt),
         "schema_sha256": sha256_file(schemas_path),
         "chunking_sha256": sha256_file(chunking_path),
         "policy": asdict(policy),
@@ -141,21 +147,23 @@ def compute_run_metadata(
 def paper_output_root(
     project_root: str | Path,
     paper_id: str,
+    data_root: str | Path = "data_dac",
 ) -> Path:
-    return (
-        Path(project_root).resolve()
-        / "data_dac"
-        / "extracted"
-        / paper_id
-    )
+    data_root_path = Path(data_root)
+    if not data_root_path.is_absolute():
+        data_root_path = Path(project_root).resolve() / data_root_path
+    return data_root_path.resolve() / "extracted" / paper_id
 
 
 def run_directory(
     project_root: str | Path,
     paper_id: str,
     run_id: str,
+    data_root: str | Path = "data_dac",
 ) -> Path:
-    return paper_output_root(project_root, paper_id) / "runs" / run_id
+    return paper_output_root(
+        project_root, paper_id, data_root=data_root
+    ) / "runs" / run_id
 
 
 def write_json(
@@ -185,8 +193,9 @@ def write_latest_run_pointer(
     project_root: str | Path,
     paper_id: str,
     run_metadata: dict[str, Any],
+    data_root: str | Path = "data_dac",
 ) -> Path:
-    root = paper_output_root(project_root, paper_id)
+    root = paper_output_root(project_root, paper_id, data_root=data_root)
     return write_json(
         root / "latest_run.json",
         {
@@ -198,6 +207,7 @@ def write_latest_run_pointer(
                     project_root,
                     paper_id,
                     str(run_metadata["run_id"]),
+                    data_root=data_root,
                 )
             ),
             "updated_at_utc": datetime.now(
@@ -212,12 +222,15 @@ def resolve_run_directory(
     project_root: str | Path,
     paper_id: str,
     run_id: str | None,
+    data_root: str | Path = "data_dac",
 ) -> Path:
     if run_id:
-        path = run_directory(project_root, paper_id, run_id)
+        path = run_directory(
+            project_root, paper_id, run_id, data_root=data_root
+        )
     else:
         pointer_path = (
-            paper_output_root(project_root, paper_id)
+            paper_output_root(project_root, paper_id, data_root=data_root)
             / "latest_run.json"
         )
         if not pointer_path.exists():

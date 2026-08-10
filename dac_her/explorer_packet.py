@@ -415,6 +415,24 @@ class GraphExplorerPacketBuilder:
         if mode not in {"evidence", "mechanism", "exploratory"}:
             raise ValueError(f"Unsupported traversal mode: {mode!r}")
 
+        traversal_domain = traversal_payload.get("domain_profile_id")
+        manifest_domain = corpus_manifest.get("domain_profile_id")
+        if (
+            traversal_domain
+            and manifest_domain
+            and str(traversal_domain) != str(manifest_domain)
+        ):
+            raise ValueError(
+                "Explicit traversal/corpus domain profile mismatch: "
+                f"traversal={traversal_domain!r}, "
+                f"corpus={manifest_domain!r}"
+            )
+        domain_profile_id = str(
+            traversal_domain
+            or manifest_domain
+            or "dac_her"
+        ).strip()
+
         papers, paper_by_id = _paper_scope(corpus_manifest)
         node_index = {
             str(row.get("node_id", "")): row
@@ -430,6 +448,7 @@ class GraphExplorerPacketBuilder:
         task_question = question or _question_from_payload(traversal_payload)
         task_id = _stable_id(
             "task",
+            domain_profile_id,
             corpus_id,
             mode,
             traversal_payload.get("source_query") or "",
@@ -803,6 +822,7 @@ class GraphExplorerPacketBuilder:
 
         packet_id = _stable_id(
             "packet",
+            domain_profile_id,
             task_id,
             corpus_id,
             mode,
@@ -810,6 +830,7 @@ class GraphExplorerPacketBuilder:
             *[hit.hit_id for hit in direct_hits],
         )
         packet = GraphExplorerPacket(
+            domain_profile_id=domain_profile_id,
             packet_id=packet_id,
             packet_sha256="",
             task=task,

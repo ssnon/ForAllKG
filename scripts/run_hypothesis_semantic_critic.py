@@ -109,6 +109,15 @@ def main() -> None:
 
     if outcome.generation is not None:
         _write_json(Path(str(prefix) + ".draft.json"), outcome.generation.draft)
+    _write_json(
+        Path(str(prefix) + ".reference_audit.json"),
+        outcome.reference_audit,
+    )
+    if outcome.sanitized_draft is not None:
+        _write_json(
+            Path(str(prefix) + ".sanitized.draft.json"),
+            outcome.sanitized_draft,
+        )
     if outcome.review is not None:
         _write_json(Path(str(prefix) + ".review.json"), outcome.review)
 
@@ -116,6 +125,14 @@ def main() -> None:
     print("Hard gate:", "PASS" if outcome.evaluation.hard_gate_passed else "FAIL")
     print("Generated:", outcome.run_record.generated)
     print("Accepted review:", outcome.accepted)
+    print(
+        "Reference sanitizer:",
+        outcome.run_record.reference_sanitization_applied,
+        "dropped=",
+        outcome.run_record.reference_drop_count,
+        "fatal=",
+        outcome.run_record.reference_integrity_failure,
+    )
     print("Failure stage:", outcome.run_record.failure_stage)
     print("Prompt:", outcome.run_record.critic_prompt_version, outcome.run_record.critic_prompt_sha256)
     if outcome.review is not None:

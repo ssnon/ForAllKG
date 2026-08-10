@@ -22,6 +22,10 @@ from dac_her.hypothesis_semantic_prompt import (
     HypothesisSemanticPrompt,
     HypothesisSemanticPromptAssembler,
 )
+from dac_her.hypothesis_semantic_reference import (
+    HypothesisSemanticReferenceSanitizer,
+    SemanticReferenceAudit,
+)
 
 
 def _canonical_json(value: Any) -> str:
@@ -103,6 +107,8 @@ class HypothesisSemanticOutcome:
     prompt: HypothesisSemanticPrompt
     generation: HypothesisSemanticGeneration | None
     review: HypothesisSemanticReview | None
+    sanitized_draft: HypothesisSemanticReviewDraft | None
+    reference_audit: SemanticReferenceAudit
     run_record: HypothesisSemanticRunRecord
     review_validation_issues: tuple[str, ...]
 
@@ -119,11 +125,16 @@ class HypothesisSemanticCriticRuntime:
         evaluator: HypothesisBenchmarkEvaluator | None = None,
         prompt_assembler: HypothesisSemanticPromptAssembler | None = None,
         compiler: HypothesisSemanticReviewCompiler | None = None,
+        reference_sanitizer: HypothesisSemanticReferenceSanitizer | None = None,
     ) -> None:
         self.backend = backend
         self.evaluator = evaluator or HypothesisBenchmarkEvaluator()
         self.prompt_assembler = prompt_assembler or HypothesisSemanticPromptAssembler()
         self.compiler = compiler or HypothesisSemanticReviewCompiler()
+        self.reference_sanitizer = (
+            reference_sanitizer
+            or HypothesisSemanticReferenceSanitizer()
+        )
 
     def run(
         self,
@@ -150,6 +161,7 @@ class HypothesisSemanticCriticRuntime:
                     sort_keys=True,
                 ),
             )
+            reference_audit = SemanticReferenceAudit()
             record = self._record(
                 context=context,
                 evaluation=evaluation,
@@ -157,6 +169,7 @@ class HypothesisSemanticCriticRuntime:
                 generation=None,
                 review=None,
                 accepted=False,
+                reference_audit=reference_audit,
                 failure_stage="hard_gate",
                 elapsed_seconds=0.0,
             )
@@ -165,6 +178,8 @@ class HypothesisSemanticCriticRuntime:
                 prompt=prompt,
                 generation=None,
                 review=None,
+                sanitized_draft=None,
+                reference_audit=reference_audit,
                 run_record=record,
                 review_validation_issues=(),
             )
@@ -177,22 +192,44 @@ class HypothesisSemanticCriticRuntime:
             raise
         elapsed = time.perf_counter() - started
 
-        try:
-            review = self.compiler.compile(
-                context=context,
-                portfolio=portfolio,
-                evaluation=evaluation,
-                prompt=prompt,
-                draft=generation.draft,
-            )
-            issues: tuple[str, ...] = ()
-            accepted = True
-            failure_stage = "none"
-        except SemanticReviewValidationError as exc:
+        valid_hypothesis_ids = {
+            row.hypothesis_id
+            for row in portfolio.hypotheses
+        }
+        valid_statement_ids = {
+            row.statement_id
+            for row in context.evidence_statements
+        }
+        sanitized = self.reference_sanitizer.sanitize(
+            generation.draft,
+            valid_hypothesis_ids=valid_hypothesis_ids,
+            valid_statement_ids=valid_statement_ids,
+        )
+        reference_audit = sanitized.audit
+        sanitized_draft = sanitized.draft
+
+        if reference_audit.fatal:
             review = None
-            issues = tuple(exc.issues)
+            issues = tuple(reference_audit.fatal_reasons)
             accepted = False
             failure_stage = "review_validation"
+        else:
+            try:
+                review = self.compiler.compile(
+                    context=context,
+                    portfolio=portfolio,
+                    evaluation=evaluation,
+                    prompt=prompt,
+                    draft=sanitized_draft,
+                )
+                issues = ()
+                accepted = True
+                failure_stage = "none"
+            except SemanticReviewValidationError as exc:
+                review = None
+                issues = tuple(exc.issues)
+                accepted = False
+                failure_stage = "review_validation"
 
         record = self._record(
             context=context,
@@ -201,6 +238,7 @@ class HypothesisSemanticCriticRuntime:
             generation=generation,
             review=review,
             accepted=accepted,
+            reference_audit=reference_audit,
             failure_stage=failure_stage,
             elapsed_seconds=elapsed,
         )
@@ -209,6 +247,8 @@ class HypothesisSemanticCriticRuntime:
             prompt=prompt,
             generation=generation,
             review=review,
+            sanitized_draft=sanitized_draft,
+            reference_audit=reference_audit,
             run_record=record,
             review_validation_issues=issues,
         )
@@ -222,6 +262,7 @@ class HypothesisSemanticCriticRuntime:
         generation: HypothesisSemanticGeneration | None,
         review: HypothesisSemanticReview | None,
         accepted: bool,
+        reference_audit: SemanticReferenceAudit,
         failure_stage: str,
         elapsed_seconds: float,
     ) -> HypothesisSemanticRunRecord:
@@ -253,6 +294,9 @@ class HypothesisSemanticCriticRuntime:
             generated=generation is not None,
             accepted=accepted,
             failure_stage=failure_stage,  # type: ignore[arg-type]
+            reference_sanitization_applied=reference_audit.applied,
+            reference_drop_count=reference_audit.drop_count,
+            reference_integrity_failure=reference_audit.fatal,
             input_tokens=(generation.input_tokens if generation is not None else None),
             output_tokens=(generation.output_tokens if generation is not None else None),
             elapsed_seconds=elapsed_seconds,

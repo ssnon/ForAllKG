@@ -105,6 +105,9 @@ class HypothesisSemanticRunRecord(StrictModel):
     generated: bool
     accepted: bool
     failure_stage: Literal["none", "hard_gate", "generation", "review_validation"]
+    reference_sanitization_applied: bool = False
+    reference_drop_count: int = 0
+    reference_integrity_failure: bool = False
     input_tokens: int | None = None
     output_tokens: int | None = None
     elapsed_seconds: float | None = None

@@ -100,3 +100,19 @@ methods:
     family: stability_test
     label: Storage stability test
     aliases: [storage test, shelf stability]
+  sers_spectroscopy:
+    family: spectroscopy
+    label: Surface-enhanced Raman spectroscopy
+    aliases: [SERS, surface-enhanced Raman scattering, surface enhanced Raman spectroscopy]
+  raman_mapping:
+    family: spectroscopy
+    label: Raman mapping
+    aliases: [SERS mapping, Raman intensity mapping, spatial Raman mapping]
+  uv_vis_spectroscopy:
+    family: spectroscopy
+    label: UV-visible spectroscopy
+    aliases: [UV-vis, UV-visible absorption, extinction spectroscopy]
+  dark_field_scattering:
+    family: spectroscopy
+    label: Dark-field scattering spectroscopy
+    aliases: [dark-field scattering, dark field scattering, scattering spectrum]

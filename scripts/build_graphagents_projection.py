@@ -7,6 +7,8 @@ from pathlib import Path
 import networkx as nx
 from collections import Counter
 
+from dac_her.domains.extraction_registry import get_extraction_adapter
+from dac_her.domains.registry import get_domain_profile
 from dac_her.graph_io import save_graphml
 from dac_her.extraction_quality import projection_quality_summary
 from dac_her.graphagents_adapter import (
@@ -26,6 +28,8 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--paper-id", required=True)
+    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--data-root", default=None)
     parser.add_argument(
         "--mode",
         choices=("evidence", "mechanism", "exploratory"),
@@ -49,7 +53,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    paper_root = PROJECT_ROOT / "data_dac" / "extracted" / args.paper_id
+    domain_profile = get_domain_profile(args.domain_profile)
+    extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
+    data_root = Path(args.data_root or extraction_adapter.default_data_root)
+    if not data_root.is_absolute():
+        data_root = PROJECT_ROOT / data_root
+    paper_root = data_root / "extracted" / args.paper_id
     canonical_path = (
         Path(args.canonical_graphml)
         if args.canonical_graphml
@@ -228,6 +237,8 @@ def main() -> None:
 
     summary = {
         "paper_id": args.paper_id,
+        "domain_profile_id": domain_profile.profile_id,
+        "data_root": str(data_root),
         "mode": args.mode,
         **projection_quality_summary(projection),
         "canonical_graphml": str(canonical_path),

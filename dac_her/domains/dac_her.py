@@ -65,6 +65,11 @@ DAC_HER_PROFILE = ScientificDomainProfile(
             'HAS_SUPPORT', 'HAS_METAL', 'HAS_MOTIF', 'MODEL_OF',
         }),
         context_node_types=frozenset({'REACTION'}),
+        shared_entity_types=frozenset({
+            'CATALYST', 'CATALYSTMODEL', 'MATERIAL', 'SUPPORT',
+            'METAL', 'COORDINATIONMOTIF',
+        }),
+        legacy_mechanism_id_prefixes=('mech_',),
     ),
     novelty=NoveltySemantics(
         domain_patterns=(
@@ -100,5 +105,6 @@ DAC_HER_PROFILE = ScientificDomainProfile(
         domain_mismatch_reason='reaction_domain_mismatch',
         low_scope_reason='low_catalyst_scope_overlap',
     ),
+    extraction_adapter_id='dac_her',
     feasibility_adapter_id='dac_her',
 )

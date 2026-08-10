@@ -9,7 +9,7 @@ from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from dac_her.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
 
 
-CRITIC_PROMPT_VERSION = "hypothesis-semantic-critic-prompt-v2.6.2-b2"
+CRITIC_PROMPT_VERSION = "hypothesis-semantic-critic-prompt-v2.6.2-b3"
 
 
 def _compact_json(value: object) -> str:
@@ -76,6 +76,7 @@ Reference namespace discipline:
 - hypothesis_ids refer only to hypothesis_portfolio.hypotheses[*].hypothesis_id.
 - statement_ids refer only to HypothesisContext evidence_statements[*].statement_id.
 - Prediction observation IDs, falsification criterion IDs, route IDs, and paper IDs are never statement_ids.
+- Copy permitted IDs character-for-character from the supplied payload. Never synthesize, abbreviate, translate, renumber, or guess an ID. If no exact permitted ID is needed, leave that reference list empty.
 
 Dimension definitions:
 - premise_fidelity: whether selected positive premises are represented without
@@ -187,6 +188,8 @@ class HypothesisSemanticPromptAssembler:
             "shown under eligible_positive_premises, research_gaps, or restricted_nonpremise_statements.\n"
             "- NEVER place observation_id, prediction IDs, criterion_id, falsifier IDs, route_id, paper IDs, "
             "or any other identifier in statement_ids.\n"
+            "- Copy IDs exactly character-for-character. Do not invent an ID from a nearby label or object.\n"
+            "- If you cannot identify an exact permitted reference, leave that list empty rather than guessing.\n"
             "- For prediction_linkage, directional_specificity, or falsifier_informativeness, use hypothesis_ids "
             "to identify the hypothesis being evaluated. Leave statement_ids empty unless a specific context "
             "evidence statement is directly relevant to the rationale.\n"

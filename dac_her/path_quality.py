@@ -5,6 +5,18 @@ from typing import Any
 
 import networkx as nx
 
+from dac_her.discovery_semantics import (
+    is_alignment_edge,
+    is_alignment_node,
+    is_mechanism_edge,
+    is_mechanism_node,
+    is_scaffold_edge,
+    is_shared_entity_node,
+    normalized_node_type,
+)
+from dac_her.domain_profile import DiscoverySemantics
+from dac_her.domains import get_domain_profile
+
 
 PATH_TYPE_CANDIDATE = "CANDIDATE_EXPLORATION"
 PATH_TYPE_SHARED_ENTITY = "SHARED_ENTITY_BRIDGE"
@@ -19,46 +31,8 @@ _ALIGNMENT_CLASSES = {
     "pattern_alignment",
 }
 
-_SCAFFOLD_RELATIONS = {
-    "APPLIES_TO",
-    "SUPPORTED_ON",
-    "CATALYZES",
-    "ALIGNS_TO_REGISTRY_ENTITY",
-    "HAS_PAPER_MENTION",
-    "INVOLVES_INTERMEDIATE",
-    "PART_OF",
-    "HAS_COMPONENT",
-    "HAS_SUPPORT",
-}
 
-_SHARED_ENTITY_TYPES = {
-    "Catalyst",
-    "CatalystModel",
-    "Material",
-    "Support",
-    "Metal",
-    "CoordinationMotif",
-}
 
-_MECHANISM_MARKERS = (
-    "MECHANISM",
-    "INTERPRETED_AS",
-    "INFLUENC",
-    "MODULAT",
-    "FACILITAT",
-    "PROMOT",
-    "REGULAT",
-    "CONTROL",
-    "CORRELAT",
-    "CAUSE",
-    "ENABLE",
-    "ENHANC",
-    "LOWER",
-    "STABIL",
-    "TRANSFER",
-    "SPILLOVER",
-    "TUN",
-)
 
 _OBSERVATION_MARKERS = (
     "OBSERVATION",
@@ -67,15 +41,7 @@ _OBSERVATION_MARKERS = (
     "QUANTIF",
 )
 
-_MECHANISM_NODE_TYPE_MARKERS = (
-    "MECHANISM",
-    "MECHANISTIC",
-)
 
-_ALIGNMENT_NODE_TYPES = {
-    "CORPUSALIGNMENT",
-    "CORPUSPATTERN",
-}
 
 
 def _as_bool(value: Any) -> bool:
@@ -112,90 +78,54 @@ def _band(
 
 def relation_role(
     step: dict[str, Any],
+    discovery_semantics: DiscoverySemantics | None = None,
 ) -> str:
-    edge_class = str(
-        step.get("edge_class", "")
-    ).strip().lower()
+    semantics = (
+        discovery_semantics
+        or get_domain_profile("dac_her").discovery
+    )
+    if is_alignment_edge(step):
+        return "alignment"
+    if is_scaffold_edge(step, semantics):
+        return "scaffold"
+    if is_mechanism_edge(step, semantics):
+        return "mechanism"
+
     relation = str(
         step.get("relation", "")
     ).strip().upper()
-
-    if edge_class in _ALIGNMENT_CLASSES:
-        return "alignment"
-
-    if relation in _SCAFFOLD_RELATIONS:
-        return "scaffold"
-
-    if any(
-        marker in relation
-        for marker in _MECHANISM_MARKERS
-    ):
-        return "mechanism"
-
     if any(
         marker in relation
         for marker in _OBSERVATION_MARKERS
     ):
         return "observation"
-
     return "scientific_other"
 
 
 def _normalized_node_type(
     attrs: dict[str, Any],
 ) -> str:
-    return "".join(
-        character
-        for character in str(
-            attrs.get("type", "")
-        ).upper()
-        if character.isalnum()
-    )
+    return normalized_node_type(attrs)
 
 
 def _is_alignment_node(
     attrs: dict[str, Any],
 ) -> bool:
-    node_type = _normalized_node_type(
-        attrs
-    )
-    corpus_kind = str(
-        attrs.get(
-            "corpus_node_kind",
-            "",
-        )
-    ).strip().lower()
-
-    return (
-        node_type in _ALIGNMENT_NODE_TYPES
-        or corpus_kind == "alignment_hub"
-    )
+    return is_alignment_node(attrs)
 
 
 def _is_mechanism_node(
     node_id: str,
     attrs: dict[str, Any],
+    *,
+    semantics: DiscoverySemantics | None = None,
 ) -> bool:
-    """Conservative detector for mechanism-bearing graph nodes.
-
-    Prefer explicit node type. The ``mech_`` ID fallback exists because the
-    current strict/canonical projections preserve semantically named source
-    IDs even when a generic graph node type is retained. We intentionally do
-    not infer mechanism status from free-form labels.
-    """
-    node_type = _normalized_node_type(
-        attrs
+    return is_mechanism_node(
+        node_id,
+        attrs,
+        semantics
+        or get_domain_profile("dac_her").discovery,
     )
-    if any(
-        marker in node_type
-        for marker in _MECHANISM_NODE_TYPE_MARKERS
-    ):
-        return True
-
-    local_id = str(node_id).split(
-        "::"
-    )[-1].strip().lower()
-    return local_id.startswith("mech_")
 
 
 @dataclass(frozen=True)
@@ -269,8 +199,14 @@ class PathQualityScorer:
     def __init__(
         self,
         graph: nx.DiGraph,
+        *,
+        discovery_semantics: DiscoverySemantics | None = None,
     ) -> None:
         self.graph = graph
+        self.discovery_semantics = (
+            discovery_semantics
+            or get_domain_profile("dac_her").discovery
+        )
 
     def _shared_entity_bridge(
         self,
@@ -286,13 +222,11 @@ class PathQualityScorer:
 
         internal = nodes[1:-1]
         return any(
-            str(
-                self.graph.nodes[node_id].get(
-                    "type",
-                    "",
-                )
+            is_shared_entity_node(
+                node_id,
+                dict(self.graph.nodes[node_id]),
+                self.discovery_semantics,
             )
-            in _SHARED_ENTITY_TYPES
             for node_id in internal
             if node_id in self.graph
         )
@@ -316,7 +250,7 @@ class PathQualityScorer:
         }
 
         for step in steps:
-            role = relation_role(step)
+            role = relation_role(step, self.discovery_semantics)
             role_counts[role] += 1
 
         path_nodes = [
@@ -339,6 +273,7 @@ class PathQualityScorer:
             if _is_mechanism_node(
                 node_id,
                 attrs,
+                semantics=self.discovery_semantics,
             ):
                 mechanism_node_ids.append(
                     node_id

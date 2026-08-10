@@ -7,6 +7,16 @@ from typing import Any, Iterable, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from dac_her.discovery_semantics import (
+    contains_strong_causal_language,
+    edge_has_strong_causal_semantics,
+    is_alignment_edge,
+    is_alignment_node,
+    is_mechanism_edge,
+    is_mechanism_node,
+)
+from dac_her.domain_profile import DiscoverySemantics
+from dac_her.domains import get_domain_profile
 from dac_her.explorer_contracts import (
     ExplorationReport,
     ExplorerStatement,
@@ -14,25 +24,6 @@ from dac_her.explorer_contracts import (
 )
 
 
-_MECHANISM_MARKERS = (
-    "MECHANISM",
-    "INTERPRETED_AS",
-    "INFLUENC",
-    "MODULAT",
-    "FACILITAT",
-    "PROMOT",
-    "REGULAT",
-    "CONTROL",
-    "CORRELAT",
-    "CAUSE",
-    "ENABLE",
-    "ENHANC",
-    "LOWER",
-    "STABIL",
-    "TRANSFER",
-    "SPILLOVER",
-    "TUN",
-)
 
 _ABSENCE_PATTERNS = (
     re.compile(r"\bnot reported\b", re.I),
@@ -53,32 +44,7 @@ _HYPOTHESIS_PATTERNS = (
 
 _NUMBER_RE = re.compile(r"(?<![A-Za-z0-9_])[-+]?\d+(?:\.\d+)?(?:\s*(?:eV|meV|V|mV|A|mA|K|°C|C|%|nm|Å|pm|cm|mm|s|ms|h|mol|M|pH))?", re.I)
 
-_STRONG_CAUSAL_PATTERNS = (
-    re.compile(r"\bcauses?\b", re.I),
-    re.compile(r"\bcaused by\b", re.I),
-    re.compile(r"\bdrives?\b", re.I),
-    re.compile(r"\bleads? to\b", re.I),
-    re.compile(r"\bresults? in\b", re.I),
-    re.compile(r"\bpromotes?\b", re.I),
-    re.compile(r"\benhances?\b", re.I),
-    re.compile(r"\bfacilitates?\b", re.I),
-    re.compile(r"\benables?\b", re.I),
-    re.compile(r"\bimproves?\b", re.I),
-    re.compile(r"\baccelerates?\b", re.I),
-    re.compile(r"\blowers?\b", re.I),
-    re.compile(r"\breduces?\b", re.I),
-    re.compile(r"\bincreases?\b", re.I),
-    re.compile(r"\bdecreases?\b", re.I),
-    re.compile(r"\bmodulates?\b", re.I),
-    re.compile(r"\bregulates?\b", re.I),
-    re.compile(r"\bcontrols?\b", re.I),
-)
 
-_CAUSAL_EDGE_MARKERS = (
-    "CAUSE", "DRIVE", "LEAD", "RESULT", "PROMOT", "ENHANC",
-    "FACILITAT", "ENABLE", "IMPROV", "ACCELERAT", "LOWER",
-    "REDUC", "INCREAS", "DECREAS", "MODULAT", "REGULAT", "CONTROL",
-)
 
 
 
@@ -98,32 +64,6 @@ class ExplorationValidationResult(BaseModel):
     issues: list[ValidationIssue]
 
 
-def _is_alignment_node(node: Any) -> bool:
-    return (
-        str(getattr(node, "graph_layer", "")) == "corpus_alignment"
-        or str(getattr(node, "node_type", "")) in {"CorpusAlignment", "CorpusPattern"}
-    )
-
-
-def _is_alignment_edge(edge: Any) -> bool:
-    return (
-        str(getattr(edge, "graph_layer", "")) == "corpus_alignment"
-        or str(getattr(edge, "evidence_status", "")) == "derived_corpus_alignment"
-    )
-
-
-def _is_mechanism_node(node_id: str, node: Any) -> bool:
-    normalized = "".join(ch for ch in str(getattr(node, "node_type", "")).upper() if ch.isalnum())
-    if "MECHANISM" in normalized or "MECHANISTIC" in normalized:
-        return True
-    return node_id.split("::")[-1].lower().startswith("mech_")
-
-
-def _is_mechanism_edge(edge: Any) -> bool:
-    relation = str(getattr(edge, "relation", "")).upper()
-    return any(marker in relation for marker in _MECHANISM_MARKERS)
-
-
 def _numbers(text: str) -> set[str]:
     return {" ".join(match.group(0).split()).lower() for match in _NUMBER_RE.finditer(text)}
 
@@ -136,17 +76,9 @@ def _contains_hypothesis_language(text: str) -> bool:
     return any(pattern.search(text) for pattern in _HYPOTHESIS_PATTERNS)
 
 
-def _contains_strong_causal_language(text: str) -> bool:
-    return any(pattern.search(text) for pattern in _STRONG_CAUSAL_PATTERNS)
-
-
-def _edge_has_strong_causal_semantics(edge: Any) -> bool:
-    relation = str(getattr(edge, "relation", "")).upper()
-    return any(marker in relation for marker in _CAUSAL_EDGE_MARKERS)
-
-
 def _label_has_grounded_causal_support(
     *,
+    semantics: DiscoverySemantics,
     statement_ids: Iterable[str],
     node_ids: Iterable[str],
     edge_ids: Iterable[str],
@@ -169,20 +101,20 @@ def _label_has_grounded_causal_support(
             hit = hits.get(hit_id)
             if hit is not None:
                 candidate_node_ids.add(hit.node_evidence_ref)
-    if any(_contains_strong_causal_language(text) for text in candidate_statement_texts):
+    if any(contains_strong_causal_language(text, semantics) for text in candidate_statement_texts):
         return True
     for node_id in candidate_node_ids:
         node = nodes.get(node_id)
-        if node is None or _is_alignment_node(node):
+        if node is None or is_alignment_node(node):
             continue
         text = f"{getattr(node, 'label', '')}\n{getattr(node, 'node_text', '')}"
-        if _contains_strong_causal_language(text):
+        if contains_strong_causal_language(text, semantics):
             return True
     for edge_id in candidate_edge_ids:
         edge = edges.get(edge_id)
-        if edge is None or _is_alignment_edge(edge):
+        if edge is None or is_alignment_edge(edge):
             continue
-        if _edge_has_strong_causal_semantics(edge):
+        if edge_has_strong_causal_semantics(edge, semantics):
             return True
     return False
 
@@ -194,6 +126,9 @@ class ExplorationReportValidator:
         report: ExplorationReport,
     ) -> ExplorationValidationResult:
         issues: list[ValidationIssue] = []
+        semantics = get_domain_profile(
+            packet.domain_profile_id
+        ).discovery
 
         def error(code: str, location: str, message: str) -> None:
             issues.append(ValidationIssue(severity="error", code=code, location=location, message=message))
@@ -241,6 +176,7 @@ class ExplorationReportValidator:
             self._validate_statement(
                 statement,
                 location=location,
+                semantics=semantics,
                 nodes=nodes,
                 edges=edges,
                 paths=paths,
@@ -263,13 +199,13 @@ class ExplorationReportValidator:
                 node = nodes.get(node_id)
                 if node is None:
                     error("UNKNOWN_NODE_REF", location + ".mechanism_node_ids", f"Unknown node ID: {node_id}")
-                elif not _is_mechanism_node(node_id, node):
+                elif not is_mechanism_node(node_id, node, semantics):
                     error("NON_MECHANISM_NODE", location + ".mechanism_node_ids", f"Node is not mechanism-bearing: {node_id}")
             for edge_id in route.mechanism_edge_ids:
                 edge = edges.get(edge_id)
                 if edge is None:
                     error("UNKNOWN_EDGE_REF", location + ".mechanism_edge_ids", f"Unknown edge ID: {edge_id}")
-                elif not _is_mechanism_edge(edge):
+                elif not is_mechanism_edge(edge, semantics):
                     error("NON_MECHANISM_EDGE", location + ".mechanism_edge_ids", f"Edge is not mechanism-bearing: {edge_id}")
             if route.structural_type.startswith("CROSS_PAPER") and len(set(route.paper_ids)) < 2:
                 error("CROSS_PAPER_REQUIRES_TWO_PAPERS", location + ".paper_ids", "Cross-paper route must name at least two papers.")
@@ -312,11 +248,11 @@ class ExplorationReportValidator:
                 node = nodes.get(node_id)
                 if node is None:
                     error("UNKNOWN_NODE_REF", location + ".mechanism_node_ids", f"Unknown node ID: {node_id}")
-                elif not _is_mechanism_node(node_id, node):
+                elif not is_mechanism_node(node_id, node, semantics):
                     error("NON_MECHANISM_NODE", location + ".mechanism_node_ids", f"Node is not mechanism-bearing: {node_id}")
                 else:
                     valid_mechanism_evidence_count += 1
-                    if not _is_alignment_node(node):
+                    if not is_alignment_node(node):
                         if node.source_paper_id:
                             motif_scientific_papers.add(str(node.source_paper_id))
                         motif_scientific_papers.update(
@@ -327,11 +263,11 @@ class ExplorationReportValidator:
                 edge = edges.get(edge_id)
                 if edge is None:
                     error("UNKNOWN_EDGE_REF", location + ".mechanism_edge_ids", f"Unknown edge ID: {edge_id}")
-                elif not _is_mechanism_edge(edge):
+                elif not is_mechanism_edge(edge, semantics):
                     error("NON_MECHANISM_EDGE", location + ".mechanism_edge_ids", f"Edge is not mechanism-bearing: {edge_id}")
                 else:
                     valid_mechanism_evidence_count += 1
-                    if not _is_alignment_edge(edge):
+                    if not is_alignment_edge(edge):
                         motif_scientific_papers.update(
                             str(x) for x in edge.source_paper_ids if str(x).strip()
                         )
@@ -367,6 +303,7 @@ class ExplorationReportValidator:
                 )
 
             self._validate_free_text_label(
+                semantics=semantics,
                 label=motif.label,
                 location=location + ".label",
                 statement_ids=motif.statement_ids,
@@ -413,6 +350,7 @@ class ExplorationReportValidator:
                 if node_id not in nodes:
                     error("UNKNOWN_NODE_REF", location, f"Unknown node ID: {node_id}")
             self._validate_free_text_label(
+                semantics=semantics,
                 label=lever.label,
                 location=location + ".label",
                 statement_ids=lever.statement_ids,
@@ -437,6 +375,7 @@ class ExplorationReportValidator:
     def _validate_free_text_label(
         self,
         *,
+        semantics: DiscoverySemantics,
         label: str,
         location: str,
         statement_ids: Iterable[str],
@@ -454,7 +393,8 @@ class ExplorationReportValidator:
                 location,
                 "Graph Explorer labels may summarize supplied evidence but may not introduce hypothesis language.",
             )
-        if _contains_strong_causal_language(label) and not _label_has_grounded_causal_support(
+        if contains_strong_causal_language(label, semantics) and not _label_has_grounded_causal_support(
+            semantics=semantics,
             statement_ids=statement_ids,
             node_ids=node_ids,
             edge_ids=edge_ids,
@@ -474,6 +414,7 @@ class ExplorationReportValidator:
         statement: ExplorerStatement,
         *,
         location: str,
+        semantics: DiscoverySemantics,
         nodes: dict[str, Any],
         edges: dict[str, Any],
         paths: dict[str, Any],
@@ -526,7 +467,7 @@ class ExplorationReportValidator:
                 support_nodes.append((hit.node_evidence_ref, node))
 
         if statement.epistemic_role == "reported":
-            grounded_non_alignment = any(not _is_alignment_node(node) for _, node in support_nodes) or any(not _is_alignment_edge(edge) for _, edge in support_edges)
+            grounded_non_alignment = any(not is_alignment_node(node) for _, node in support_nodes) or any(not is_alignment_edge(edge) for _, edge in support_edges)
             if not grounded_non_alignment:
                 error(
                     "REPORTED_REQUIRES_SOURCE_GROUNDED_EVIDENCE",
@@ -535,8 +476,8 @@ class ExplorationReportValidator:
                 )
 
         if statement.claim_kind == "mechanism":
-            mechanism_support = any(_is_mechanism_node(node_id, node) for node_id, node in support_nodes)
-            mechanism_support = mechanism_support or any(_is_mechanism_edge(edge) for _, edge in support_edges)
+            mechanism_support = any(is_mechanism_node(node_id, node, semantics) for node_id, node in support_nodes)
+            mechanism_support = mechanism_support or any(is_mechanism_edge(edge, semantics) for _, edge in support_edges)
             mechanism_support = mechanism_support or any(path.quality.mechanism_bearing for path in support_paths)
             if not mechanism_support:
                 error("MECHANISM_REQUIRES_MECHANISM_EVIDENCE", location, "Mechanism claim lacks mechanism-bearing node, edge, or path support.")

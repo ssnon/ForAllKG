@@ -234,6 +234,7 @@ class ExplorerPath(StrictModel):
 
 class GraphExplorerPacket(StrictModel):
     schema_version: Literal["graph-explorer-input-v1"] = "graph-explorer-input-v1"
+    domain_profile_id: str = "dac_her"
     packet_id: str
     packet_sha256: str
     task: ExplorerTask

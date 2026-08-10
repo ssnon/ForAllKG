@@ -18,28 +18,16 @@ from dac_her.explorer_contracts import (
     ReportedDesignLever,
     UnresolvedConnection,
 )
+from dac_her.discovery_semantics import (
+    is_alignment_edge,
+    is_alignment_node,
+    is_mechanism_edge,
+    is_mechanism_node,
+)
+from dac_her.domains import get_domain_profile
 from dac_her.explorer_draft import ExplorationDraft
 
 
-_MECHANISM_MARKERS = (
-    "MECHANISM",
-    "INTERPRETED_AS",
-    "INFLUENC",
-    "MODULAT",
-    "FACILITAT",
-    "PROMOT",
-    "REGULAT",
-    "CONTROL",
-    "CORRELAT",
-    "CAUSE",
-    "ENABLE",
-    "ENHANC",
-    "LOWER",
-    "STABIL",
-    "TRANSFER",
-    "SPILLOVER",
-    "TUN",
-)
 
 _ALLOWED_ROUTE_TYPES = {
     "DIRECT_MECHANISTIC",
@@ -86,30 +74,6 @@ def _sorted_unique(values: Iterable[str]) -> list[str]:
     return sorted({str(value) for value in values if str(value).strip()})
 
 
-def _is_alignment_node(node: Any) -> bool:
-    return (
-        str(getattr(node, "graph_layer", "")) == "corpus_alignment"
-        or str(getattr(node, "node_type", "")) in {"CorpusAlignment", "CorpusPattern"}
-    )
-
-
-def _is_alignment_edge(edge: Any) -> bool:
-    return (
-        str(getattr(edge, "graph_layer", "")) == "corpus_alignment"
-        or str(getattr(edge, "evidence_status", "")) == "derived_corpus_alignment"
-    )
-
-
-def _is_mechanism_node(node_id: str, node: Any) -> bool:
-    normalized = "".join(ch for ch in str(getattr(node, "node_type", "")).upper() if ch.isalnum())
-    return "MECHANISM" in normalized or "MECHANISTIC" in normalized or node_id.split("::")[-1].lower().startswith("mech_")
-
-
-def _is_mechanism_edge(edge: Any) -> bool:
-    relation = str(getattr(edge, "relation", "")).upper()
-    return any(marker in relation for marker in _MECHANISM_MARKERS)
-
-
 def _path_requires_verification(path: Any) -> bool:
     return bool(
         float(path.quality.candidate_fraction or 0.0) > 0.0
@@ -149,6 +113,9 @@ class ExplorationReportCompiler:
 
     def compile(self, packet: GraphExplorerPacket, draft: ExplorationDraft) -> ExplorationReport:
         issues: list[CompileIssue] = []
+        semantics = get_domain_profile(
+            packet.domain_profile_id
+        ).discovery
         paths = {path.path_id: path for path in packet.paths}
         nodes = packet.evidence_catalog.nodes
         edges = packet.evidence_catalog.edges
@@ -216,14 +183,14 @@ class ExplorationReportCompiler:
             papers: set[str] = set()
             for node_id in statement.support_node_ids:
                 node = nodes.get(node_id)
-                if node is None or _is_alignment_node(node):
+                if node is None or is_alignment_node(node):
                     continue
                 if node.source_paper_id:
                     papers.add(str(node.source_paper_id))
                 papers.update(str(x) for x in node.source_paper_ids if str(x).strip())
             for edge_id in statement.support_edge_ids:
                 edge = edges.get(edge_id)
-                if edge is None or _is_alignment_edge(edge):
+                if edge is None or is_alignment_edge(edge):
                     continue
                 papers.update(str(x) for x in edge.source_paper_ids if str(x).strip())
             if include_paths:
@@ -237,7 +204,7 @@ class ExplorationReportCompiler:
                 if hit is None:
                     continue
                 node = nodes.get(hit.node_evidence_ref)
-                if node is not None and not _is_alignment_node(node):
+                if node is not None and not is_alignment_node(node):
                     if node.source_paper_id:
                         papers.add(str(node.source_paper_id))
                     papers.update(str(x) for x in node.source_paper_ids if str(x).strip())
@@ -313,13 +280,13 @@ class ExplorationReportCompiler:
                 node_id
                 for path in route_paths
                 for node_id in path.quality.mechanism_node_ids
-                if node_id in nodes and _is_mechanism_node(node_id, nodes[node_id])
+                if node_id in nodes and is_mechanism_node(node_id, nodes[node_id], semantics)
             )
             mechanism_edge_ids = _sorted_unique(
                 step.edge_evidence_ref
                 for path in route_paths
                 for step in path.steps
-                if step.edge_evidence_ref in edges and _is_mechanism_edge(edges[step.edge_evidence_ref])
+                if step.edge_evidence_ref in edges and is_mechanism_edge(edges[step.edge_evidence_ref], semantics)
             )
             paper_ids = _sorted_unique(
                 paper_id
@@ -386,12 +353,12 @@ class ExplorationReportCompiler:
             mechanism_node_ids = {
                 node_id
                 for node_id in supported_node_ids
-                if node_id in nodes and _is_mechanism_node(node_id, nodes[node_id])
+                if node_id in nodes and is_mechanism_node(node_id, nodes[node_id], semantics)
             }
             mechanism_edge_ids = {
                 edge_id
                 for edge_id in supported_edge_ids
-                if edge_id in edges and _is_mechanism_edge(edges[edge_id])
+                if edge_id in edges and is_mechanism_edge(edges[edge_id], semantics)
             }
 
             # A MechanisticMotif's paper scope is defined by its actual
@@ -401,14 +368,14 @@ class ExplorationReportCompiler:
             paper_ids: set[str] = set()
             for node_id in mechanism_node_ids:
                 node = nodes.get(node_id)
-                if node is None or _is_alignment_node(node):
+                if node is None or is_alignment_node(node):
                     continue
                 if node.source_paper_id:
                     paper_ids.add(str(node.source_paper_id))
                 paper_ids.update(str(x) for x in node.source_paper_ids if str(x).strip())
             for edge_id in mechanism_edge_ids:
                 edge = edges.get(edge_id)
-                if edge is None or _is_alignment_edge(edge):
+                if edge is None or is_alignment_edge(edge):
                     continue
                 paper_ids.update(str(x) for x in edge.source_paper_ids if str(x).strip())
 
@@ -494,7 +461,7 @@ class ExplorationReportCompiler:
             paper_ids = referenced_statement_papers(row.statement_local_ids)
             for node_id in [*mechanism_node_ids, *outcome_node_ids]:
                 node = nodes.get(node_id)
-                if node is None or _is_alignment_node(node):
+                if node is None or is_alignment_node(node):
                     continue
                 if node.source_paper_id:
                     paper_ids.add(str(node.source_paper_id))

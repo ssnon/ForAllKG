@@ -6,6 +6,9 @@ from typing import Any, Iterable
 
 import networkx as nx
 
+from dac_her.discovery_semantics import is_mechanism_node
+from dac_her.domain_profile import DiscoverySemantics
+from dac_her.domains import get_domain_profile
 from dac_her.waypoint_selection import match_tier
 
 
@@ -60,22 +63,6 @@ def _jsonish_papers(value: Any) -> tuple[str, ...]:
     return ()
 
 
-def _mechanism_bearing(
-    node_id: str,
-    node_type: str,
-) -> bool:
-    normalized = "".join(
-        character
-        for character in node_type.upper()
-        if character.isalnum()
-    )
-    if (
-        "MECHANISM" in normalized
-        or "MECHANISTIC" in normalized
-    ):
-        return True
-    local_id = node_id.split("::")[-1].lower()
-    return local_id.startswith("mech_")
 
 
 @dataclass(frozen=True)
@@ -118,10 +105,15 @@ class DirectConceptHitSelector:
         graph: nx.DiGraph,
         *,
         min_similarity: float = 0.60,
+        discovery_semantics: DiscoverySemantics | None = None,
     ) -> None:
         self.graph = graph
         self.min_similarity = float(
             min_similarity
+        )
+        self.discovery_semantics = (
+            discovery_semantics
+            or get_domain_profile("dac_her").discovery
         )
 
     def _similarity(
@@ -399,9 +391,10 @@ class DirectConceptHitSelector:
                         source_paper_ids
                     ),
                     mechanism_bearing=(
-                        _mechanism_bearing(
+                        is_mechanism_node(
                             node_id,
-                            node_type,
+                            dict(attrs, type=node_type),
+                            self.discovery_semantics,
                         )
                     ),
                     quality_basis=basis,

@@ -5,6 +5,36 @@ from dataclasses import dataclass
 from typing import Iterable
 
 
+DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS: tuple[str, ...] = (
+    r"\bcauses?\b",
+    r"\bcaused by\b",
+    r"\bdrives?\b",
+    r"\bleads? to\b",
+    r"\bresults? in\b",
+    r"\bpromotes?\b",
+    r"\benhances?\b",
+    r"\bfacilitates?\b",
+    r"\benables?\b",
+    r"\bimproves?\b",
+    r"\baccelerates?\b",
+    r"\blowers?\b",
+    r"\breduces?\b",
+    r"\bincreases?\b",
+    r"\bdecreases?\b",
+    r"\bmodulates?\b",
+    r"\bregulates?\b",
+    r"\bcontrols?\b",
+    r"\bstabiliz(?:e|es|ed|ing)\b",
+    r"\binduc(?:e|es|ed|ing)\b",
+)
+
+DEFAULT_STRONG_CAUSAL_RELATION_MARKERS: tuple[str, ...] = (
+    "CAUSE", "DRIVE", "LEAD", "RESULT", "PROMOT", "ENHANC",
+    "FACILITAT", "ENABLE", "IMPROV", "ACCELERAT", "LOWER",
+    "REDUC", "INCREAS", "DECREAS", "MODULAT", "REGULAT",
+    "CONTROL", "STABIL", "INDUC",
+)
+
 PatternRows = tuple[tuple[str, tuple[str, ...]], ...]
 
 
@@ -54,6 +84,14 @@ class DiscoverySemantics:
     mechanism_relation_markers: tuple[str, ...]
     scaffold_relations: frozenset[str]
     context_node_types: frozenset[str]
+    shared_entity_types: frozenset[str] = frozenset()
+    legacy_mechanism_id_prefixes: tuple[str, ...] = ("mech_",)
+    strong_causal_text_patterns: tuple[str, ...] = (
+        DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS
+    )
+    strong_causal_relation_markers: tuple[str, ...] = (
+        DEFAULT_STRONG_CAUSAL_RELATION_MARKERS
+    )
 
     def normalized_context_node_types(self) -> frozenset[str]:
         return frozenset(
@@ -150,4 +188,5 @@ class ScientificDomainProfile:
     resolution: ResolutionSemantics
     discovery: DiscoverySemantics
     novelty: NoveltySemantics
+    extraction_adapter_id: str | None = None
     feasibility_adapter_id: str | None = None

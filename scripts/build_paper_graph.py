@@ -10,6 +10,8 @@ from pathlib import Path
 import networkx as nx
 
 from dac_her.config import get_paper_config
+from dac_her.domains.extraction_registry import get_extraction_adapter
+from dac_her.domains.registry import get_domain_profile
 from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
@@ -64,6 +66,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--paper-id", required=True)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
+    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--data-root", default=None)
     parser.add_argument(
         "--run-id",
         default=None,
@@ -405,6 +409,9 @@ def _candidate_summary(run_dir: Path) -> dict[str, object]:
 
 def main() -> None:
     args = parse_args()
+    domain_profile = get_domain_profile(args.domain_profile)
+    extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
+    data_root = args.data_root or extraction_adapter.default_data_root
     paper = get_paper_config(
         args.config,
         project_root=PROJECT_ROOT,
@@ -414,6 +421,7 @@ def main() -> None:
         project_root=PROJECT_ROOT,
         paper_id=paper.paper_id,
         run_id=args.run_id,
+        data_root=data_root,
     )
 
     run_metadata = read_json(run_dir / "run.json")
@@ -576,7 +584,9 @@ def main() -> None:
     raw_graphml_path = run_dir / "raw_merged.graphml"
     save_graphml(merged, raw_graphml_path)
 
-    paper_root = paper_output_root(PROJECT_ROOT, paper.paper_id)
+    paper_root = paper_output_root(
+        PROJECT_ROOT, paper.paper_id, data_root=data_root
+    )
     resolution_dir = run_dir / "resolution"
     resolution_dir.mkdir(parents=True, exist_ok=True)
 

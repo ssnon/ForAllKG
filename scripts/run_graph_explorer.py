@@ -128,6 +128,15 @@ def main() -> None:
         suffix = ".draft.json" if index == 0 else f".repair{index}.draft.json"
         _write_json(Path(str(prefix) + suffix), draft)
     _write_json(Path(str(prefix) + ".run.json"), outcome.run_record)
+    _write_json(
+        Path(str(prefix) + ".normalization.json"),
+        outcome.normalization_audit,
+    )
+    if outcome.normalized_draft is not None:
+        _write_json(
+            Path(str(prefix) + ".normalized.draft.json"),
+            outcome.normalized_draft,
+        )
 
     if outcome.validation is not None:
         _write_json(Path(str(prefix) + ".validation.json"), outcome.validation)
@@ -153,6 +162,14 @@ def main() -> None:
     print("Backend/model:", outcome.run_record.backend, outcome.run_record.model)
     print("Generation attempts:", outcome.run_record.generation_attempts)
     print("Repair attempts:", outcome.run_record.repair_attempts)
+    print(
+        "Normalization:",
+        outcome.run_record.normalization_applied,
+        "actions=",
+        outcome.run_record.normalization_action_count,
+        "blocked=",
+        outcome.run_record.normalization_blocked_count,
+    )
     print("Accepted:", outcome.accepted)
     print("Failure stage:", outcome.run_record.failure_stage)
     print("Validation errors/warnings:", outcome.run_record.validation_errors, outcome.run_record.validation_warnings)

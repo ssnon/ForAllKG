@@ -1,0 +1,153 @@
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from typing import Iterable
+
+
+PatternRows = tuple[tuple[str, tuple[str, ...]], ...]
+
+
+def _compiled(rows: PatternRows) -> dict[str, tuple[re.Pattern[str], ...]]:
+    return {
+        name: tuple(re.compile(pattern, re.I) for pattern in patterns)
+        for name, patterns in rows
+    }
+
+
+def _matches_any(text: str, patterns: Iterable[str]) -> bool:
+    return any(re.search(pattern, text, re.I) for pattern in patterns)
+
+
+@dataclass(frozen=True)
+class ResolutionSemantics:
+    resolvable_node_types: frozenset[str]
+    auto_merge_types: frozenset[str]
+    text_replacements: tuple[tuple[str, str], ...]
+    reaction_aliases: tuple[tuple[str, str], ...]
+    dual_atom_terms: tuple[str, ...] = ('dual atom', 'dimer')
+    single_atom_terms: tuple[str, ...] = ('single atom',)
+    nanoparticle_terms: tuple[str, ...] = ('nanoparticle',)
+    support_signature_tokens: frozenset[str] = frozenset()
+
+    def catalyst_nuclearity(self, tokens: frozenset[str]) -> str:
+        joined = ' '.join(sorted(tokens))
+        if {'dual', 'atom'} <= tokens or 'dimer' in tokens or any(
+            term in joined for term in self.dual_atom_terms
+        ):
+            return 'dual_atom'
+        if {'single', 'atom'} <= tokens or any(
+            term in joined for term in self.single_atom_terms
+        ):
+            return 'single_atom'
+        if 'nanoparticle' in tokens or any(
+            term in joined for term in self.nanoparticle_terms
+        ):
+            return 'nanoparticle'
+        return 'unspecified'
+
+
+@dataclass(frozen=True)
+class DiscoverySemantics:
+    generic_entity_types: frozenset[str]
+    mechanism_node_markers: tuple[str, ...]
+    mechanism_relation_markers: tuple[str, ...]
+    scaffold_relations: frozenset[str]
+    context_node_types: frozenset[str]
+
+    def normalized_context_node_types(self) -> frozenset[str]:
+        return frozenset(
+            ''.join(ch for ch in value.upper() if ch.isalnum())
+            for value in self.context_node_types
+        )
+
+
+@dataclass(frozen=True)
+class NoveltySemantics:
+    domain_patterns: PatternRows
+    scope_patterns: PatternRows
+    critical_scope_features: frozenset[str]
+    claim_context_patterns: tuple[str, ...] = ()
+    document_mismatch_patterns: tuple[str, ...] = ()
+    document_compatible_patterns: tuple[str, ...] = ()
+    mismatch_multiplier: float = 1.0
+    domain_mismatch_reason: str = 'domain_mismatch'
+    low_scope_reason: str = 'low_system_scope_overlap'
+
+    def compiled_domain_patterns(self) -> dict[str, tuple[re.Pattern[str], ...]]:
+        return _compiled(self.domain_patterns)
+
+    def compiled_scope_patterns(self) -> dict[str, tuple[re.Pattern[str], ...]]:
+        return _compiled(self.scope_patterns)
+
+    def domains(self, text: str) -> set[str]:
+        return {
+            name
+            for name, patterns in self.compiled_domain_patterns().items()
+            if any(pattern.search(text) for pattern in patterns)
+        }
+
+    def scope_features(self, text: str) -> set[str]:
+        return {
+            name
+            for name, patterns in self.compiled_scope_patterns().items()
+            if any(pattern.search(text) for pattern in patterns)
+        }
+
+    def domain_relevance(self, claim_text: str, document: str) -> float:
+        claim_domains = self.domains(claim_text)
+        doc_domains = self.domains(document)
+        if not claim_domains:
+            score = 0.5
+        elif claim_domains & doc_domains:
+            score = 1.0
+        elif doc_domains:
+            score = 0.05
+        else:
+            score = 0.35
+
+        claim_context = _matches_any(claim_text, self.claim_context_patterns)
+        mismatch = _matches_any(document, self.document_mismatch_patterns)
+        compatible = _matches_any(document, self.document_compatible_patterns)
+        if claim_context and mismatch and not compatible:
+            score *= self.mismatch_multiplier
+        return max(0.0, min(1.0, score))
+
+    def scope_relevance(self, claim_text: str, document: str) -> float:
+        claim_features = self.scope_features(claim_text)
+        if not claim_features:
+            return 0.5
+        doc_features = self.scope_features(document)
+        return len(claim_features & doc_features) / len(claim_features)
+
+    def strong_scope_compatibility(
+        self,
+        claim_text: str,
+        document: str,
+        *,
+        min_domain: float,
+        min_scope: float,
+    ) -> tuple[bool, float, float, list[str]]:
+        domain = self.domain_relevance(claim_text, document)
+        scope = self.scope_relevance(claim_text, document)
+        claim_features = self.scope_features(claim_text)
+        doc_features = self.scope_features(document)
+        reasons: list[str] = []
+        if domain < min_domain:
+            reasons.append(self.domain_mismatch_reason)
+        for critical in self.critical_scope_features:
+            if critical in claim_features and critical not in doc_features:
+                reasons.append(f'missing_critical_scope:{critical}')
+        if scope < min_scope:
+            reasons.append(self.low_scope_reason)
+        return (not reasons, domain, scope, reasons)
+
+
+@dataclass(frozen=True)
+class ScientificDomainProfile:
+    profile_id: str
+    description: str
+    resolution: ResolutionSemantics
+    discovery: DiscoverySemantics
+    novelty: NoveltySemantics
+    feasibility_adapter_id: str | None = None

@@ -15,6 +15,9 @@ from dac_her.candidate_unit_selection import (
     endpoint_pair_payload,
 )
 from dac_her.domains import get_domain_profile
+from dac_her.domains.extraction_registry import (
+    get_extraction_adapter,
+)
 from dac_her.candidate_units import (
     CandidateUnitBuilder,
     candidate_unit_inventory,
@@ -63,6 +66,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--corpus-id", required=True)
     parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--data-root", default=None)
 
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--source", default=None)
@@ -255,12 +259,22 @@ def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualit
 def main() -> None:
     args = parse_args()
     domain_profile = get_domain_profile(args.domain_profile)
+    extraction_adapter = get_extraction_adapter(
+        domain_profile.profile_id
+    )
+    data_root = Path(
+        args.data_root
+        or extraction_adapter.default_data_root
+    )
+    if not data_root.is_absolute():
+        data_root = PROJECT_ROOT / data_root
+
     if args.max_depth < 2:
         raise ValueError("--max-depth must be >= 2 for a candidate unit traversal")
     if not 0.0 <= args.max_unit_semantic_similarity <= 1.0:
         raise ValueError("--max-unit-semantic-similarity must be between 0 and 1")
 
-    mode_root = PROJECT_ROOT / "data_dac" / "corpus" / args.corpus_id / "exploratory"
+    mode_root = data_root / "corpus" / args.corpus_id / "exploratory"
     navigation_root = mode_root / "navigation"
     graph_path = Path(args.navigation_graphml) if args.navigation_graphml else navigation_root / "graph.graphml"
     index_dir = Path(args.index_dir) if args.index_dir else navigation_root / "node_index"
@@ -339,7 +353,10 @@ def main() -> None:
     )
     routes = selector.enumerate_routes(units, source_matches, target_matches)
     selected_routes = selector.select(routes)
-    quality_scorer = PathQualityScorer(graph)
+    quality_scorer = PathQualityScorer(
+        graph,
+        discovery_semantics=domain_profile.discovery,
+    )
     all_paths = [_materialize_route(graph, route, quality_scorer) for route in routes]
     paths = [_materialize_route(graph, route, quality_scorer) for route in selected_routes]
 
@@ -350,6 +367,7 @@ def main() -> None:
         "schema_version": "candidate-unit-traversal-v1",
         "corpus_id": args.corpus_id,
         "domain_profile_id": domain_profile.profile_id,
+        "data_root": str(data_root),
         "mode": "exploratory",
         "algorithm": "candidate_unit_top_n",
         "source_query": args.source,

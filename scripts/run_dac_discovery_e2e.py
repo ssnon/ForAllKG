@@ -234,6 +234,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "scripts.run_graph_traversal",
             [
                 "--corpus-id", args.corpus_id,
+                "--domain-profile", domain_profile.profile_id,
                 "--mode", "mechanism",
                 "--algorithm", "semantic_stop",
                 "--source", args.source,
@@ -273,6 +274,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "scripts.run_graph_traversal",
             [
                 "--corpus-id", args.corpus_id,
+                "--domain-profile", domain_profile.profile_id,
                 "--mode", "mechanism",
                 "--algorithm", "top_n",
                 "--source", args.source,
@@ -305,6 +307,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.build_explorer_packet",
         [
             "--traversal-result", str(final_traversal),
+            "--domain-profile", domain_profile.profile_id,
             "--question", args.question,
             "--objective", args.objective,
             "--output", str(packet),

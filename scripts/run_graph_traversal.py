@@ -7,6 +7,10 @@ from pathlib import Path
 
 import networkx as nx
 
+from dac_her.domains import get_domain_profile
+from dac_her.domains.extraction_registry import (
+    get_extraction_adapter,
+)
 from dac_her.direct_concept import (
     DirectConceptHitSelector,
 )
@@ -64,6 +68,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--corpus-id",
         required=True,
+    )
+    parser.add_argument(
+        "--domain-profile",
+        default="dac_her",
+    )
+    parser.add_argument(
+        "--data-root",
+        default=None,
     )
     parser.add_argument(
         "--mode",
@@ -433,6 +445,18 @@ def _flag_was_explicit(
 
 def main() -> None:
     args = parse_args()
+    domain_profile = get_domain_profile(
+        args.domain_profile
+    )
+    extraction_adapter = get_extraction_adapter(
+        domain_profile.profile_id
+    )
+    data_root = Path(
+        args.data_root
+        or extraction_adapter.default_data_root
+    )
+    if not data_root.is_absolute():
+        data_root = PROJECT_ROOT / data_root
 
     semantic_stop_max_depth = resolve_semantic_stop_max_depth(
         base_max_depth=args.max_depth,
@@ -460,8 +484,7 @@ def main() -> None:
         )
 
     mode_root = (
-        PROJECT_ROOT
-        / "data_dac"
+        data_root
         / "corpus"
         / args.corpus_id
         / args.mode
@@ -489,7 +512,8 @@ def main() -> None:
         graph
     )
     quality_scorer = PathQualityScorer(
-        graph
+        graph,
+        discovery_semantics=domain_profile.discovery,
     )
 
     mapper: NodeMapper | None = None
@@ -591,6 +615,7 @@ def main() -> None:
                 min_similarity=(
                     args.direct_hit_min_similarity
                 ),
+                discovery_semantics=domain_profile.discovery,
             ).select(
                 source_matches,
                 target_matches,
@@ -950,6 +975,8 @@ def main() -> None:
 
     payload = {
         "corpus_id": args.corpus_id,
+        "domain_profile_id": domain_profile.profile_id,
+        "data_root": str(data_root),
         "mode": args.mode,
         "algorithm": args.algorithm,
         "source_query": args.source,

@@ -3,6 +3,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from dac_her.domains import get_domain_profile
+from dac_her.domains.extraction_registry import (
+    get_extraction_adapter,
+)
 from dac_her.explorer_packet import GraphExplorerPacketBuilder, write_packet
 
 
@@ -14,6 +18,8 @@ def parse_args() -> argparse.Namespace:
         description="Build a provenance-complete, agent-facing GraphExplorerPacket from a frozen traversal result."
     )
     parser.add_argument("--traversal-result", required=True)
+    parser.add_argument("--domain-profile", default=None)
+    parser.add_argument("--data-root", default=None)
     parser.add_argument("--corpus-dir", default=None)
     parser.add_argument("--question", default=None)
     parser.add_argument(
@@ -46,10 +52,42 @@ def main() -> None:
     if not corpus_id or not mode:
         raise ValueError("Traversal result must contain corpus_id and mode.")
 
+    traversal_domain = str(
+        traversal.get("domain_profile_id")
+        or "dac_her"
+    )
+    requested_domain = (
+        str(args.domain_profile)
+        if args.domain_profile
+        else traversal_domain
+    )
+    if (
+        traversal.get("domain_profile_id")
+        and requested_domain != traversal_domain
+    ):
+        raise ValueError(
+            "Requested domain profile does not match traversal artifact: "
+            f"requested={requested_domain!r}, "
+            f"traversal={traversal_domain!r}"
+        )
+    domain_profile = get_domain_profile(
+        requested_domain
+    )
+    extraction_adapter = get_extraction_adapter(
+        domain_profile.profile_id
+    )
+    data_root = Path(
+        args.data_root
+        or traversal.get("data_root")
+        or extraction_adapter.default_data_root
+    )
+    if not data_root.is_absolute():
+        data_root = PROJECT_ROOT / data_root
+
     corpus_dir = (
         Path(args.corpus_dir)
         if args.corpus_dir
-        else PROJECT_ROOT / "data_dac" / "corpus" / corpus_id / mode
+        else data_root / "corpus" / corpus_id / mode
     )
     output = (
         Path(args.output)
@@ -72,6 +110,7 @@ def main() -> None:
     print("Packet ID:", packet.packet_id)
     print("Packet SHA256:", packet.packet_sha256)
     print("Task ID:", packet.task.task_id)
+    print("Domain profile:", packet.domain_profile_id)
     print("Corpus:", packet.corpus.corpus_id, packet.corpus.projection_mode)
     print("Papers in scope:", len(packet.corpus.papers))
     print("Direct concept hits:", len(packet.direct_concept_hits))

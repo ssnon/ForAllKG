@@ -46,6 +46,8 @@ from dac_her.document_package import (
     select_document_sources,
 )
 from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existing_result
+from dac_her.domains.extraction_registry import get_extraction_adapter
+from dac_her.domains.registry import get_domain_profile
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
@@ -83,6 +85,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--paper-id", required=True)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
+    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--data-root", default=None)
     parser.add_argument("--model", default=None)
     parser.add_argument(
         "--provider",
@@ -250,6 +254,9 @@ def _document_manifest(
 
 def main() -> None:
     args = parse_args()
+    domain_profile = get_domain_profile(args.domain_profile)
+    extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
+    data_root = args.data_root or extraction_adapter.default_data_root
     model = args.model or os.getenv("OPENROUTER_EXTRACT_MODEL")
     if not model:
         raise RuntimeError(
@@ -297,7 +304,14 @@ def main() -> None:
             "vision_all": args.vision_all,
             "vision_assets": sorted(args.vision_asset),
             "vision_model_override": args.vision_model,
+            "domain_profile_id": domain_profile.profile_id,
+            "extraction_adapter_id": extraction_adapter.adapter_id,
+            "data_root": str(data_root),
         },
+        prompt_version=extraction_adapter.prompt_version,
+        system_prompt=extraction_adapter.system_prompt,
+        domain_profile_id=domain_profile.profile_id,
+        data_root=data_root,
         implementation_paths=(
             extraction_module.__file__,
             graph_normalization_module.__file__,
@@ -321,7 +335,9 @@ def main() -> None:
         ),
     )
     run_id = str(run_metadata["run_id"])
-    run_dir = run_directory(PROJECT_ROOT, paper.paper_id, run_id)
+    run_dir = run_directory(
+        PROJECT_ROOT, paper.paper_id, run_id, data_root=data_root
+    )
     chunk_output_dir = run_dir / "chunks"
     source_chunk_dir = run_dir / "source_chunks"
     debug_dir = run_dir / "debug"
@@ -346,6 +362,7 @@ def main() -> None:
         project_root=PROJECT_ROOT,
         paper_id=paper.paper_id,
         run_metadata=run_metadata,
+        data_root=data_root,
     )
 
     configs_by_id = {document.document_id: document for document in paper.documents}
@@ -521,7 +538,7 @@ def main() -> None:
 
     if args.import_legacy_cache:
         legacy_dir = (
-            PROJECT_ROOT / "data_dac" / "extracted" / paper.paper_id / "chunks"
+            Path(data_root) / "extracted" / paper.paper_id / "chunks"
         )
         imported = 0
         if legacy_dir.exists():
@@ -547,6 +564,9 @@ def main() -> None:
     quarantine_count = semantic_rechunk_count = 0
 
     print("Model:", model, flush=True)
+    print("Domain profile:", domain_profile.profile_id, flush=True)
+    print("Extraction adapter:", extraction_adapter.adapter_id, flush=True)
+    print("Data root:", data_root, flush=True)
     print("Paper ID:", paper.paper_id, flush=True)
     print("Run ID:", run_id, flush=True)
     print("Documents:", len(paper.documents), flush=True)
@@ -581,6 +601,7 @@ def main() -> None:
                     metric_registry=metric_registry,
                     vocabulary_context=vocabulary_context,
                     force=(args.force or args.force_vision),
+                    extraction_adapter=extraction_adapter,
                 ): chunk
                 for chunk in logical_batch
             }

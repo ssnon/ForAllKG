@@ -9,7 +9,7 @@ from dac_her.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 
 
-PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.0"
+PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.1"
 
 
 def _sha256(text: str) -> str:
@@ -80,6 +80,10 @@ Use epistemic_role='reported' only when the statement itself is directly source-
 
 Every substantive statement must cite exact packet IDs in its support_* fields. Never fabricate an ID. Prefer the smallest sufficient support set. If a scientific statement cites a path containing reverse navigation, also cite the original scientific node or edge that supports the assertion.
 
+Use claim_kind='mechanism' only when the cited support contains mechanism-bearing evidence under the packet's selected scientific domain. If the support establishes only an observation or association, use the weaker claim kind rather than labeling it mechanism. A recurring_mechanistic_motif must be backed by mechanism-bearing scientific node/edge evidence; navigation or alignment alone is insufficient.
+
+Do not use strong causal wording in motif/design-lever labels unless the cited scientific evidence itself supports that causal wording. When uncertain, preserve a weaker association/observation rather than strengthening it.
+
 Return only the structured ExplorationDraft requested by the caller. Local IDs are temporary labels for references inside the draft; use simple unique values such as s1, route1, motif1. Do not create final report IDs."""
 
 
@@ -96,6 +100,7 @@ class ExplorerPromptAssembler:
                 "TASK",
                 "====",
                 f"task_id: {task.task_id}",
+                f"domain_profile_id: {packet.domain_profile_id}",
                 f"question: {task.question}",
                 f"objective: {task.objective}",
                 f"traversal_mode: {task.traversal_mode}",
@@ -224,6 +229,8 @@ class ExplorerPromptAssembler:
                 "- Every statement needs at least one exact support ID from this prompt.",
                 "- Do not use a path alone as the only support for a scientific claim when that path contains reverse navigation; also cite original node/edge evidence.",
                 "- Do not describe alignment edges as mechanism evidence.",
+                "- Use claim_kind='mechanism' only with mechanism-bearing node/edge/path support under the selected domain semantics.",
+                "- Do not create recurring_mechanistic_motifs without mechanism-bearing scientific node/edge support.",
                 "- Do not turn a multi-paper navigation route into a causal chain.",
                 "- If the packet only connects two mechanisms through registry/alignment navigation, say that explicitly and add an unresolved scope-limit statement rather than filling the missing causal link.",
                 "- Keep reported design levers to relationships explicitly supported in this packet; do not recommend a new composition, catalyst, or experiment.",

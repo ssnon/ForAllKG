@@ -14,7 +14,7 @@ from pydantic import (
 # Controlled vocabularies
 # ============================================================
 
-EntityType = Literal[
+KnownEntityType = Literal[
     "Paper",
     "Catalyst",
     "CatalystModel",
@@ -28,6 +28,7 @@ EntityType = Literal[
     "Intermediate",
     "Material",
 ]
+EntityType = str
 
 
 ExperimentFamily = Literal[
@@ -48,7 +49,7 @@ ExperimentFamily = Literal[
 ExperimentType = str
 
 
-CalculationType = Literal[
+KnownCalculationType = Literal[
     "dft",
     "adsorption_energy",
     "gibbs_free_energy",
@@ -59,8 +60,9 @@ CalculationType = Literal[
     "exafs_fitting",
     "other",
 ]
+CalculationType = str
 
-ObservationClaimType = Literal[
+KnownObservationClaimType = Literal[
     "performance_comparison",
     "stability_observation",
     "structural_observation",
@@ -68,8 +70,9 @@ ObservationClaimType = Literal[
     "adsorption_site_preference",
     "other",
 ]
+ObservationClaimType = str
 
-MechanismClaimType = Literal[
+KnownMechanismClaimType = Literal[
     "active_site",
     "reaction_pathway",
     "adsorption_mechanism",
@@ -79,6 +82,7 @@ MechanismClaimType = Literal[
     "performance_mechanism",
     "other",
 ]
+MechanismClaimType = str
 
 
 MechanismBasis = Literal[
@@ -121,7 +125,7 @@ DocumentRole = Literal[
 ]
 
 
-RelationType = Literal[
+KnownRelationType = Literal[
     "STUDIES",
     "HAS_METAL",
     "SUPPORTED_ON",
@@ -149,6 +153,7 @@ RelationType = Literal[
     "COMPARED_WITH",
     "DERIVED_FROM",
 ]
+RelationType = str
 
 # ============================================================
 # Shared value object
