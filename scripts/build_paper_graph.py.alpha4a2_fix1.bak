@@ -669,13 +669,6 @@ def main() -> None:
             "relation contract issue(s); see "
             f"{run_dir / 'graph_semantics' / 'relation_contract_issues.csv'}"
         )
-    if graph_semantics_summary["node_role_issue_count"]:
-        print(
-            "[GRAPH SEMANTICS] "
-            f"{graph_semantics_summary['node_role_issue_count']} "
-            "node-role issue(s); see "
-            f"{run_dir / 'graph_semantics' / 'node_role_issues.csv'}"
-        )
     if graph_domain_canonicalization["paper_identity_merges"]:
         print(
             "[GRAPH DOMAIN CANONICALIZATION] "
@@ -834,10 +827,6 @@ def main() -> None:
     print(
         "Graph semantics relation issues:",
         graph_semantics_summary["relation_contract_issue_count"],
-    )
-    print(
-        "Graph semantics node-role issues:",
-        graph_semantics_summary["node_role_issue_count"],
     )
     print("Resolution report:", resolution_dir / "resolution_report.txt")
     print("Saved:", latest_graphml_path)

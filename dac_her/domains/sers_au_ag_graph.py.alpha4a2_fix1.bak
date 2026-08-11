@@ -54,9 +54,7 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "HAS_COMPONENT",
-        source_types=frozenset({
-            "PlasmonicSubstrate", "Nanostructure", "Support",
-        }),
+        source_types=frozenset({"PlasmonicSubstrate", "Nanostructure"}),
         target_types=frozenset({"Metal", "Material", "Nanostructure", "Support"}),
     ),
     RelationConstraint(
@@ -81,18 +79,13 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "PREPARED_BY",
-        source_types=_SUBSTRATE_LIKE | frozenset({"Support"}),
+        source_types=_SUBSTRATE_LIKE,
         target_types=frozenset({"SynthesisMethod"}),
     ),
     RelationConstraint(
         "USES_PRECURSOR",
         source_types=frozenset({"SynthesisMethod"}),
         target_types=frozenset({"Precursor"}),
-    ),
-    RelationConstraint(
-        "USES_MATERIAL",
-        source_types=frozenset({"SynthesisMethod"}),
-        target_types=frozenset({"Material"}),
     ),
     RelationConstraint(
         "TESTED_IN",
@@ -116,7 +109,7 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "USES_REPORTER",
-        source_types=frozenset({"Experiment", "SynthesisMethod"}),
+        source_types=frozenset({"Experiment"}),
         target_types=frozenset({"RamanReporter"}),
     ),
     RelationConstraint(

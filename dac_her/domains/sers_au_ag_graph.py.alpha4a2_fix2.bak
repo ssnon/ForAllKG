@@ -54,9 +54,7 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "HAS_COMPONENT",
-        source_types=frozenset({
-            "PlasmonicSubstrate", "Nanostructure", "Support",
-        }),
+        source_types=frozenset({"PlasmonicSubstrate", "Nanostructure"}),
         target_types=frozenset({"Metal", "Material", "Nanostructure", "Support"}),
     ),
     RelationConstraint(
@@ -81,7 +79,7 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "PREPARED_BY",
-        source_types=_SUBSTRATE_LIKE | frozenset({"Support"}),
+        source_types=_SUBSTRATE_LIKE,
         target_types=frozenset({"SynthesisMethod"}),
     ),
     RelationConstraint(

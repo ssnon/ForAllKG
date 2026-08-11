@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
 
@@ -21,38 +20,6 @@ class RecoveryDecision:
     action: RecoveryAction
     reason: str
     issue_codes: tuple[str, ...]
-
-UNDEFINED_ENDPOINT_CODES = {
-    IssueCode.UNDEFINED_EDGE_SOURCE,
-    IssueCode.UNDEFINED_EDGE_TARGET,
-}
-
-
-def has_common_undefined_endpoint_cluster(
-    report: ValidationReport,
-    *,
-    min_count: int = 2,
-) -> bool:
-    """True only for a homogeneous residual sharing one missing endpoint."""
-    error_issues = [
-        item
-        for item in report.issues
-        if item.severity.value == "error"
-    ]
-    if not error_issues:
-        return False
-    if any(item.code not in UNDEFINED_ENDPOINT_CODES for item in error_issues):
-        return False
-
-    endpoint_counts = Counter()
-    for item in error_issues:
-        if item.code == IssueCode.UNDEFINED_EDGE_SOURCE and item.source_id:
-            endpoint_counts[("source", item.source_id)] += 1
-        elif item.code == IssueCode.UNDEFINED_EDGE_TARGET and item.target_id:
-            endpoint_counts[("target", item.target_id)] += 1
-
-    return bool(endpoint_counts) and max(endpoint_counts.values()) >= min_count
-
 
 LOSSLESS_CODES = {
     IssueCode.DUPLICATE_NODE_ID,
@@ -131,30 +98,6 @@ def decide_recovery(
                 (
                     "Pre-micro semantic patch attempts were exhausted "
                     "for a small unsplittable source leaf."
-                ),
-                codes,
-            )
-
-        # ---------------------------------------------------------
-        # Phase 2b: one targeted micro retry for a common missing endpoint.
-        #
-        # A semantic patch cannot create a missing scientific node. If the
-        # first complete micro-reextract leaves only multiple dangling edges
-        # sharing one undefined endpoint, give complete re-extraction exactly
-        # one more chance with explicit endpoint-cluster guidance.
-        # ---------------------------------------------------------
-        if (
-            max_micro_reextract_attempts > 0
-            and micro_reextract_attempts == max_micro_reextract_attempts
-            and post_micro_patch_attempts == 0
-            and has_common_undefined_endpoint_cluster(report)
-        ):
-            return RecoveryDecision(
-                RecoveryAction.MICRO_REEXTRACT,
-                (
-                    "The first micro-reextract left only a common undefined "
-                    "endpoint cluster; allow one bounded targeted complete "
-                    "micro-reextract retry."
                 ),
                 codes,
             )

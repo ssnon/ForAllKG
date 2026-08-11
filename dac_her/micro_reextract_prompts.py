@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from typing import Any
 
 from dac_her.validation_issues import (
+    IssueCode,
     ValidationReport,
 )
 
 
 MICRO_REEXTRACT_PROMPT_VERSION = (
-    "dac-her-micro-reextract-v1"
+    "dac-her-micro-reextract-v1-alpha4a2-fix3"
 )
 
 
@@ -39,6 +41,135 @@ Rules:
     page_ids, and asset_ids exactly.
 11. Every edge must contain valid evidence_pointers within the
     supplied source scope.
+""".strip()
+
+
+def _common_undefined_endpoint_hints(
+    report: ValidationReport,
+) -> str:
+    source_counts = Counter(
+        item.source_id
+        for item in report.issues
+        if item.code == IssueCode.UNDEFINED_EDGE_SOURCE
+        and item.source_id
+    )
+    target_counts = Counter(
+        item.target_id
+        for item in report.issues
+        if item.code == IssueCode.UNDEFINED_EDGE_TARGET
+        and item.target_id
+    )
+
+    hints: list[str] = []
+    for endpoint_id, count in source_counts.most_common():
+        if count < 2:
+            continue
+        hints.append(
+            f"- Missing source endpoint {endpoint_id!r} is referenced by "
+            f"{count} invalid edges. If CORE_TEXT explicitly supports the "
+            "scientific object represented by this ID, emit that object once "
+            "in its correct top-level collection and connect only supported "
+            "relations. Otherwise omit the unsupported dangling edges."
+        )
+    for endpoint_id, count in target_counts.most_common():
+        if count < 2:
+            continue
+        hints.append(
+            f"- Missing target endpoint {endpoint_id!r} is referenced by "
+            f"{count} invalid edges. If CORE_TEXT explicitly supports the "
+            "scientific object represented by this ID, emit that object once "
+            "in its correct top-level collection and connect only supported "
+            "relations. Otherwise omit the unsupported dangling edges."
+        )
+
+    if not hints:
+        return "No common undefined-endpoint cluster was detected."
+
+    return (
+        "COMMON_UNDEFINED_ENDPOINT_RECOVERY_HINTS:\n"
+        + "\n".join(hints)
+        + "\nDo not preserve dangling edges merely to resemble the previous "
+        "graph. Do not invent a node solely because an ID appeared in an "
+        "invalid edge."
+    )
+
+
+def build_domain_gate_recovery_prompt(
+    *,
+    paper_id: str,
+    chunk_id: str,
+    document_id: str,
+    document_role: str,
+    section: str,
+    page_ids: list[int] | tuple[int, ...],
+    asset_ids: list[str] | tuple[str, ...],
+    core_text: str,
+    left_context: str,
+    right_context: str,
+    asset_context: str,
+    rejected_graph_payload: dict[str, Any],
+    domain_error: str,
+) -> str:
+    """Targeted full-draft repair after reserved-collection domain rejection."""
+    return f"""
+PAPER_ID:
+{paper_id}
+
+CHUNK_ID:
+{chunk_id}
+
+DOCUMENT_ID:
+{document_id}
+
+DOCUMENT_ROLE:
+{document_role}
+
+SECTION:
+{section}
+
+PAGE_IDS:
+{list(page_ids)}
+
+ASSET_IDS:
+{list(asset_ids)}
+
+LEFT_CONTEXT:
+{left_context}
+
+CORE_TEXT:
+{core_text}
+
+RIGHT_CONTEXT:
+{right_context}
+
+ASSET_CONTEXT:
+{asset_context or 'No linked assets.'}
+
+DOMAIN_GATE_ERROR:
+{domain_error}
+
+PREVIOUS_DOMAIN_REJECTED_GRAPH_JSON:
+{json.dumps(
+    rejected_graph_payload,
+    ensure_ascii=False,
+    indent=2,
+)}
+
+The previous object parsed as a KnowledgeGraphDraft but was rejected by the
+active scientific-domain gate. Return one complete corrected draft.
+
+Repair the collection/domain placement error explicitly identified above.
+Reserved structured objects such as Experiment, Calculation, Measurement,
+MeasurementGroup, ObservationClaim, and MechanismClaim belong in their
+dedicated top-level collections rather than entities[].
+
+Preserve only source-grounded facts. Do not invent new science to make the
+graph connected or valid. If an invalidly placed object cannot be represented
+in the correct collection using source-supported fields, omit that object and
+any dependent unsupported edges instead of fabricating fields.
+
+Every emitted edge endpoint must exist exactly once in the corrected draft.
+Preserve authoritative paper/chunk/document/page/asset metadata.
 """.strip()
 
 
@@ -108,6 +239,8 @@ STRUCTURED_VALIDATION_ISSUES_JSON:
     ensure_ascii=False,
     indent=2,
 )}
+
+{_common_undefined_endpoint_hints(report)}
 
 Re-extract CORE_TEXT as one complete corrected
 KnowledgeGraphDraft.

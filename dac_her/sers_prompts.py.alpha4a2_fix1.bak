@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a2-fix2"
+SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a1-fix1"
 
 SERS_SYSTEM_PROMPT = r"""
 You extract a provenance-preserving knowledge graph from scientific literature
@@ -56,20 +56,13 @@ MEASUREMENTS AND CONDITIONS:
 10. Use registry IDs from VOCABULARY_CONTEXT. If no suitable ID exists, use
     unregistered_<concise_slug>; never force a HER/electrochemistry metric.
 
-SYNTHESIS METHODS, EXPERIMENTS, AND CALCULATIONS:
-11. SynthesisMethod represents a protocol used to make, grow, reduce, coat,
-    functionalize, assemble, or reporter-load a material/nanostructure.
-    Synthesis/fabrication/growth/reduction procedures are NOT Experiment nodes
-    merely because they are laboratory procedures.
-12. Experiment represents a measurement, characterization, or performance test
-    that generates experimental observations or measurements: SERS/Raman,
-    Raman mapping, UV-vis/extinction, dark-field/scattering, microscopy,
-    composition analysis, and stability/reproducibility tests.
-13. Calculation represents a computational procedure. DDA/discrete-dipole
-    approximation, FDTD, FEM, BEM, electromagnetic-field simulation, DFT,
-    TDDFT, and charge analysis MUST be placed in calculations[], never
-    experiments[].
-13a. Numerical outcomes belong in Measurement objects.
+EXPERIMENTS AND CALCULATIONS:
+11. Experiments include SERS/Raman, Raman mapping, UV-vis/extinction,
+    dark-field/scattering, microscopy, composition analysis, fabrication, and
+    stability tests.
+12. Calculations may include FDTD, FEM, BEM, electromagnetic-field simulations,
+    DFT, TDDFT, or charge analysis when explicitly reported.
+13. Numerical outcomes belong in Measurement objects.
 
 CLAIMS:
 14. ObservationClaim contains directly supported structural observations,
@@ -91,7 +84,6 @@ RELATIONS — use only these:
 - HAS_SUPPORT
 - PREPARED_BY
 - USES_PRECURSOR
-- USES_MATERIAL
 - TESTED_IN
 - CHARACTERIZED_IN
 - SIMULATED_BY
@@ -110,36 +102,23 @@ RELATIONS — use only these:
 - DERIVED_FROM
 
 EDGE DIRECTIONS:
-19. PlasmonicSubstrate/Nanostructure --HAS_COMPONENT--> Metal, Material,
-    Nanostructure, or Support only when it is a physical constituent.
-19a. Support --HAS_COMPONENT--> Material only when the source explicitly states
-     that the support consists of / is made from that material.
-19b. HAS_COMPONENT must never target Analyte, RamanReporter, or OpticalCondition.
-     Use USES_ANALYTE, USES_REPORTER, or USES_OPTICAL_CONDITION through the
-     relevant Experiment/SynthesisMethod/Calculation instead.
+19. PlasmonicSubstrate/Nanostructure --HAS_COMPONENT--> Metal or component.
 20. PlasmonicSubstrate/Nanostructure --HAS_ARCHITECTURE-->
     StructuralMotif or Morphology.
 21. PlasmonicSubstrate/Nanostructure --HAS_STRUCTURAL_MOTIF-->
     StructuralMotif.
 21a. PlasmonicSubstrate/Nanostructure --HAS_MORPHOLOGY--> Morphology.
 22. PlasmonicSubstrate/Nanostructure --HAS_SUPPORT--> Support/Material.
-23. PlasmonicSubstrate/Nanostructure/Material/Support --PREPARED_BY-->
-    SynthesisMethod.
+23. PlasmonicSubstrate/Nanostructure/Material --PREPARED_BY--> SynthesisMethod.
 24. SynthesisMethod --USES_PRECURSOR--> Precursor.
-24a. SynthesisMethod --USES_MATERIAL--> Material for a non-precursor reagent,
-     reducing agent, stabilizer, structure-directing agent, solvent, or other
-     explicitly used synthesis material.
-24b. Do not use PREPARED_BY or HAS_COMPONENT from a SynthesisMethod to encode
-     synthesis inputs. Use USES_PRECURSOR or USES_MATERIAL according to role.
 25. PlasmonicSubstrate/Nanostructure/Material --TESTED_IN--> Experiment.
 26. Any explicitly characterized scientific Entity --CHARACTERIZED_IN-->
     Experiment.
 27. PlasmonicSubstrate/Nanostructure/Material --SIMULATED_BY--> Calculation.
 27a. Experiment --USES_ANALYTE--> Analyte when the source explicitly identifies
      the detected species.
-27b. Experiment/SynthesisMethod --USES_REPORTER--> RamanReporter when the
-     source explicitly identifies a Raman/SERS probe or reporter-loading
-     functionalization step.
+27b. Experiment --USES_REPORTER--> RamanReporter when the source explicitly
+     identifies a Raman/SERS probe.
 27c. Experiment/Calculation --USES_OPTICAL_CONDITION--> OpticalCondition when a
      condition node is explicitly represented.
 28. Experiment/Calculation --HAS_MEASUREMENT--> Measurement.
@@ -165,19 +144,6 @@ PROVENANCE AND GRAPH QUALITY:
     HAS_ANALYTE, INVOLVES_ANALYTE, EVALUATED_BY, IS_MATERIAL, or
     USED_IN_SYNTHESIS_OF. Express supported facts using the exact relation
     vocabulary above; omit a relation when no exact canonical relation fits.
-43. If a source describes PVP, ascorbic acid, citrate, a solvent, stabilizer,
-    reducing agent, or structure-directing agent as an input to a synthesis
-    method, represent it as Material and connect the SynthesisMethod with
-    USES_MATERIAL. Do not reverse PREPARED_BY.
-43a. USES_MATERIAL is never a composition relation. A Support or substrate does
-     not USE the material it is made from; use HAS_COMPONENT when explicitly
-     source-supported.
-43b. Analytes/reporters are not structural HAS_COMPONENT targets merely because
-     they are adsorbed, loaded, or used during SERS testing. Preserve their
-     scientific role with USES_ANALYTE / USES_REPORTER.
-44. A node whose method is DDA/FDTD/FEM/BEM/DFT/TDDFT or is explicitly called a
-    simulation/calculation belongs in calculations[], even if the source uses
-    experimental and computational work in the same section.
 """.strip()
 
 
@@ -202,29 +168,14 @@ SOURCE-GROUNDING RULES:
 
 EXACT SERS RELATION VOCABULARY:
 STUDIES, HAS_COMPONENT, HAS_ARCHITECTURE, HAS_STRUCTURAL_MOTIF,
-HAS_MORPHOLOGY, HAS_SUPPORT, PREPARED_BY, USES_PRECURSOR, USES_MATERIAL,
-TESTED_IN, CHARACTERIZED_IN, SIMULATED_BY, USES_ANALYTE, USES_REPORTER,
+HAS_MORPHOLOGY, HAS_SUPPORT, PREPARED_BY, USES_PRECURSOR, TESTED_IN,
+CHARACTERIZED_IN, SIMULATED_BY, USES_ANALYTE, USES_REPORTER,
 USES_OPTICAL_CONDITION, HAS_MEASUREMENT, MEASURED_FOR,
 IN_MEASUREMENT_GROUP, HAS_DESCRIPTOR, SUPPORTS_CLAIM, INTERPRETED_AS,
 PROPOSES_CLAIM, APPLIES_TO, COMPARED_WITH, DERIVED_FROM.
 
 Use exact names only. Never introduce COMPOSED_OF, HAS_ANALYTE,
 INVOLVES_ANALYTE, EVALUATED_BY, IS_MATERIAL, or USED_IN_SYNTHESIS_OF.
-
-SCIENTIFIC ROLE REPAIR GUIDANCE:
-- Synthesis/fabrication/growth/reduction/loading protocols belong to
-  SynthesisMethod, not Experiment merely because they occur in the lab.
-- DDA/FDTD/FEM/BEM/DFT/TDDFT and explicit field/simulation calculations belong
-  to Calculation, not Experiment.
-- SynthesisMethod inputs that are actual precursors use USES_PRECURSOR.
-- Other explicit synthesis inputs such as reducing agents, stabilizers, and
-  structure-directing materials use USES_MATERIAL.
-- Support may be PREPARED_BY SynthesisMethod.
-- Support may HAS_COMPONENT Material only for explicit composition/constituent
-  statements. Never use Support --USES_MATERIAL--> Material for composition.
-- USES_REPORTER may originate from Experiment or SynthesisMethod.
-- Never use HAS_COMPONENT to attach Analyte/RamanReporter/OpticalCondition.
-- Never reverse PREPARED_BY to encode a reagent used by a method.
 
 PATCH OPERATION SHAPE:
 Every operation uses the same flat object schema. Populate every field required
@@ -288,8 +239,8 @@ entities[].
 
 Use ONLY these relation names:
 STUDIES, HAS_COMPONENT, HAS_ARCHITECTURE, HAS_STRUCTURAL_MOTIF,
-HAS_MORPHOLOGY, HAS_SUPPORT, PREPARED_BY, USES_PRECURSOR, USES_MATERIAL,
-TESTED_IN, CHARACTERIZED_IN, SIMULATED_BY, USES_ANALYTE, USES_REPORTER,
+HAS_MORPHOLOGY, HAS_SUPPORT, PREPARED_BY, USES_PRECURSOR, TESTED_IN,
+CHARACTERIZED_IN, SIMULATED_BY, USES_ANALYTE, USES_REPORTER,
 USES_OPTICAL_CONDITION, HAS_MEASUREMENT, MEASURED_FOR,
 IN_MEASUREMENT_GROUP, HAS_DESCRIPTOR, SUPPORTS_CLAIM, INTERPRETED_AS,
 PROPOSES_CLAIM, APPLIES_TO, COMPARED_WITH, DERIVED_FROM.
@@ -298,21 +249,8 @@ Canonicalize common wording as follows:
 COMPOSED_OF -> HAS_COMPONENT;
 HAS_ANALYTE or INVOLVES_ANALYTE -> USES_ANALYTE;
 EVALUATED_BY -> TESTED_IN.
-Do not use IS_MATERIAL or USED_IN_SYNTHESIS_OF; type entities directly.
-Use PREPARED_BY only from the made substrate/material/nanostructure/support
-to a SynthesisMethod. Use USES_PRECURSOR from SynthesisMethod to an actual
-precursor, and USES_MATERIAL from SynthesisMethod to non-precursor synthesis
-inputs such as reducing agents, stabilizers, solvents, or structure-directing
-agents. A Support may HAS_COMPONENT Material for explicit composition, but
-Support --USES_MATERIAL--> Material is not a composition statement and is
-forbidden.
-
-Synthesis/fabrication/growth/reduction/loading protocols belong to
-SynthesisMethod. DDA/FDTD/FEM/BEM/DFT/TDDFT or explicitly named simulations and
-calculations belong to calculations[], never experiments[]. USES_REPORTER may
-originate from Experiment or SynthesisMethod when source-supported. Never use
-HAS_COMPONENT to attach Analyte or RamanReporter to a substrate merely because
-it was adsorbed/loaded/tested.
+Do not use IS_MATERIAL or USED_IN_SYNTHESIS_OF; type entities directly and use
+PREPARED_BY / USES_PRECURSOR only when the source supports those directions.
 
 Preserve scalar measurements and explicit SERS conditions, especially analyte,
 concentration, excitation wavelength, laser power, acquisition time, and Raman

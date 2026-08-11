@@ -14,10 +14,6 @@ from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.graph_registry import get_graph_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
-from dac_her.graph_semantics import (
-    apply_graph_domain_canonicalization,
-    write_graph_semantics_report,
-)
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
@@ -631,13 +627,6 @@ def main() -> None:
         aliases=resolution_plan.aliases,
         drop_node_ids=resolution_plan.drop_node_ids,
     )
-    canonical, graph_domain_canonicalization = (
-        apply_graph_domain_canonicalization(
-            canonical,
-            graph_adapter=graph_adapter,
-            paper_id=paper.paper_id,
-        )
-    )
     model_of_repairs = repair_model_of_targets(canonical)
     write_generic_rows_report(
         run_dir=run_dir,
@@ -656,33 +645,6 @@ def main() -> None:
             f"[SEMANTIC EDGE REPAIR] {len(model_of_repairs)} MODEL_OF "
             f"retarget(s); see {run_dir / 'semantic_edge_repairs.csv'}"
         )
-
-    graph_semantics_summary = write_graph_semantics_report(
-        run_dir,
-        canonical,
-        graph_adapter=graph_adapter,
-    )
-    if graph_semantics_summary["relation_contract_issue_count"]:
-        print(
-            "[GRAPH SEMANTICS] "
-            f"{graph_semantics_summary['relation_contract_issue_count']} "
-            "relation contract issue(s); see "
-            f"{run_dir / 'graph_semantics' / 'relation_contract_issues.csv'}"
-        )
-    if graph_semantics_summary["node_role_issue_count"]:
-        print(
-            "[GRAPH SEMANTICS] "
-            f"{graph_semantics_summary['node_role_issue_count']} "
-            "node-role issue(s); see "
-            f"{run_dir / 'graph_semantics' / 'node_role_issues.csv'}"
-        )
-    if graph_domain_canonicalization["paper_identity_merges"]:
-        print(
-            "[GRAPH DOMAIN CANONICALIZATION] "
-            f"{graph_domain_canonicalization['paper_identity_merges']} "
-            "same-paper node merge(s)."
-        )
-
     canonical.graph["graph_stage"] = "canonical"
     canonical.graph.update(quality_attrs)
     canonical.graph["resolution_file"] = (
@@ -788,8 +750,6 @@ def main() -> None:
         "asset_provenance_backfills": len(provenance_backfills),
         "locator_index_records": len(locator_index_records),
         "semantic_model_of_repairs": len(model_of_repairs),
-        "graph_domain_canonicalization": graph_domain_canonicalization,
-        "graph_semantics": graph_semantics_summary,
         "claim_overlap_audit": claim_audit_summary,
         "raw_graphml": str(raw_graphml_path),
         "canonical_graphml": str(canonical_graphml_path),
@@ -831,14 +791,6 @@ def main() -> None:
     print("Applied aliases:", resolution_plan.applied_aliases)
     print("Auto-approved safe candidates:", generated_candidate_summary.auto_approved_candidates)
     print("Claim-overlap review candidates:", claim_audit_summary["review_required"])
-    print(
-        "Graph semantics relation issues:",
-        graph_semantics_summary["relation_contract_issue_count"],
-    )
-    print(
-        "Graph semantics node-role issues:",
-        graph_semantics_summary["node_role_issue_count"],
-    )
     print("Resolution report:", resolution_dir / "resolution_report.txt")
     print("Saved:", latest_graphml_path)
 

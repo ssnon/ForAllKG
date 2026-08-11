@@ -32,7 +32,6 @@ from dac_her.validation_issues import ValidationReport
 from dac_her.vocab_registry import VocabularyRegistry
 from dac_her.micro_reextract_prompts import (
     MICRO_REEXTRACT_SYSTEM_PROMPT,
-    build_domain_gate_recovery_prompt,
     build_micro_reextract_prompt,
 )
 
@@ -139,16 +138,6 @@ def _domain_gate(
     draft = extraction_adapter.normalize_draft_vocabulary(draft)
     extraction_adapter.validate_draft_vocabulary(draft)
     return draft
-
-
-def _is_reserved_collection_domain_violation(error: Exception) -> bool:
-    message = str(error)
-    return (
-        isinstance(error, ValueError)
-        and "Extraction-domain vocabulary violation" in message
-        and "reserved structured node type(s)" in message
-        and "dedicated top-level collection" in message
-    )
 
 
 def _base_record(chunk: ChunkSpec) -> dict[str, Any]:
@@ -286,8 +275,6 @@ def extract_one_chunk(
     attempt_usages: list[dict[str, Any]] = []
     generation_feedback: str | None = None
     draft: KnowledgeGraphDraft | None = None
-    last_domain_rejected_draft: KnowledgeGraphDraft | None = None
-    last_domain_gate_error: ValueError | None = None
 
     # Full graph regeneration is reserved for malformed/node-schema output or
     # truncation. Cross-graph semantic errors are handled after a draft exists.
@@ -326,16 +313,10 @@ def extract_one_chunk(
                 draft,
                 chunk=chunk,
             )
-            try:
-                draft = _domain_gate(
-                    draft,
-                    extraction_adapter=extraction_adapter,
-                )
-            except ValueError as domain_error:
-                if _is_reserved_collection_domain_violation(domain_error):
-                    last_domain_rejected_draft = draft
-                    last_domain_gate_error = domain_error
-                raise
+            _domain_gate(
+                draft,
+                extraction_adapter=extraction_adapter,
+            )
             usage = dict(llm.last_call_metadata or {})
             usage["max_completion_tokens"] = policy.max_completion_tokens
             usage["call_kind"] = "graph_generation"
@@ -390,95 +371,6 @@ def extract_one_chunk(
                     )
                 continue
 
-            # A reserved structured node placed in entities[] is not a
-            # scientific-domain disagreement; it is a recoverable collection
-            # placement error in an otherwise parseable draft. Give exactly
-            # one targeted complete-draft repair before terminal quarantine.
-            if (
-                last_domain_rejected_draft is not None
-                and last_domain_gate_error is not None
-                and _is_reserved_collection_domain_violation(error)
-            ):
-                recovery_llm = OpenRouterLLM(
-                    model=model,
-                    provider=provider,
-                    reproducible=False,
-                    zdr=True,
-                )
-                domain_recovery_debug_path = (
-                    debug_dir
-                    / f"{safe_chunk_id}__domain_gate_recovery_0.json"
-                )
-                try:
-                    recovered_draft = recovery_llm.generate_structured(
-                        system_prompt=(
-                            extraction_adapter.micro_reextract_system_prompt
-                        ),
-                        prompt=build_domain_gate_recovery_prompt(
-                            paper_id=chunk.paper_id,
-                            chunk_id=chunk.chunk_id,
-                            document_id=chunk.document_id,
-                            document_role=chunk.document_role,
-                            section=chunk.section,
-                            page_ids=chunk.page_ids,
-                            asset_ids=chunk.asset_ids,
-                            core_text=chunk.core_text,
-                            left_context=chunk.left_context,
-                            right_context=chunk.right_context,
-                            asset_context=chunk.asset_context,
-                            rejected_graph_payload=(
-                                last_domain_rejected_draft.model_dump()
-                            ),
-                            domain_error=str(last_domain_gate_error),
-                        ),
-                        response_model=KnowledgeGraphDraft,
-                        temperature=0.0,
-                        max_tokens=policy.max_completion_tokens,
-                        debug_path=domain_recovery_debug_path,
-                    )
-                    recovered_draft = _enforce_chunk_metadata(
-                        recovered_draft,
-                        chunk=chunk,
-                    )
-                    recovered_draft = _domain_gate(
-                        recovered_draft,
-                        extraction_adapter=extraction_adapter,
-                    )
-
-                    recovery_usage = dict(
-                        recovery_llm.last_call_metadata or {}
-                    )
-                    recovery_usage["max_completion_tokens"] = (
-                        policy.max_completion_tokens
-                    )
-                    recovery_usage["call_kind"] = "domain_gate_recovery"
-                    recovery_usage["domain_gate_recovery_attempt"] = 0
-                    attempt_usages.append(recovery_usage)
-
-                    _write_json(
-                        candidate_dir
-                        / f"{safe_chunk_id}__domain_gate_recovery_0.json",
-                        recovered_draft.model_dump(),
-                    )
-                    draft = recovered_draft
-                    break
-                except Exception as recovery_error:
-                    recovery_usage = dict(
-                        recovery_llm.last_call_metadata or {}
-                    )
-                    recovery_usage["max_completion_tokens"] = (
-                        policy.max_completion_tokens
-                    )
-                    recovery_usage["call_kind"] = "domain_gate_recovery"
-                    recovery_usage["domain_gate_recovery_attempt"] = 0
-                    recovery_usage["error_type"] = (
-                        type(recovery_error).__name__
-                    )
-                    recovery_usage["error_message"] = str(recovery_error)
-                    attempt_usages.append(recovery_usage)
-                    error = recovery_error
-                    usage = recovery_usage
-
             quarantine_path = quarantine_dir / f"{safe_chunk_id}.json"
             _write_json(
                 quarantine_path,
@@ -487,9 +379,6 @@ def extract_one_chunk(
                     "error_type": type(error).__name__,
                     "error_message": str(error),
                     "debug_path": str(raw_debug_path),
-                    "domain_gate_recovery_attempted": (
-                        last_domain_rejected_draft is not None
-                    ),
                 },
             )
             return {

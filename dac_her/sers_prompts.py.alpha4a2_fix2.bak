@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a2-fix2"
+SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a2-fix1"
 
 SERS_SYSTEM_PROMPT = r"""
 You extract a provenance-preserving knowledge graph from scientific literature
@@ -110,21 +110,14 @@ RELATIONS — use only these:
 - DERIVED_FROM
 
 EDGE DIRECTIONS:
-19. PlasmonicSubstrate/Nanostructure --HAS_COMPONENT--> Metal, Material,
-    Nanostructure, or Support only when it is a physical constituent.
-19a. Support --HAS_COMPONENT--> Material only when the source explicitly states
-     that the support consists of / is made from that material.
-19b. HAS_COMPONENT must never target Analyte, RamanReporter, or OpticalCondition.
-     Use USES_ANALYTE, USES_REPORTER, or USES_OPTICAL_CONDITION through the
-     relevant Experiment/SynthesisMethod/Calculation instead.
+19. PlasmonicSubstrate/Nanostructure --HAS_COMPONENT--> Metal or component.
 20. PlasmonicSubstrate/Nanostructure --HAS_ARCHITECTURE-->
     StructuralMotif or Morphology.
 21. PlasmonicSubstrate/Nanostructure --HAS_STRUCTURAL_MOTIF-->
     StructuralMotif.
 21a. PlasmonicSubstrate/Nanostructure --HAS_MORPHOLOGY--> Morphology.
 22. PlasmonicSubstrate/Nanostructure --HAS_SUPPORT--> Support/Material.
-23. PlasmonicSubstrate/Nanostructure/Material/Support --PREPARED_BY-->
-    SynthesisMethod.
+23. PlasmonicSubstrate/Nanostructure/Material --PREPARED_BY--> SynthesisMethod.
 24. SynthesisMethod --USES_PRECURSOR--> Precursor.
 24a. SynthesisMethod --USES_MATERIAL--> Material for a non-precursor reagent,
      reducing agent, stabilizer, structure-directing agent, solvent, or other
@@ -169,12 +162,6 @@ PROVENANCE AND GRAPH QUALITY:
     reducing agent, or structure-directing agent as an input to a synthesis
     method, represent it as Material and connect the SynthesisMethod with
     USES_MATERIAL. Do not reverse PREPARED_BY.
-43a. USES_MATERIAL is never a composition relation. A Support or substrate does
-     not USE the material it is made from; use HAS_COMPONENT when explicitly
-     source-supported.
-43b. Analytes/reporters are not structural HAS_COMPONENT targets merely because
-     they are adsorbed, loaded, or used during SERS testing. Preserve their
-     scientific role with USES_ANALYTE / USES_REPORTER.
 44. A node whose method is DDA/FDTD/FEM/BEM/DFT/TDDFT or is explicitly called a
     simulation/calculation belongs in calculations[], even if the source uses
     experimental and computational work in the same section.
@@ -219,11 +206,7 @@ SCIENTIFIC ROLE REPAIR GUIDANCE:
 - SynthesisMethod inputs that are actual precursors use USES_PRECURSOR.
 - Other explicit synthesis inputs such as reducing agents, stabilizers, and
   structure-directing materials use USES_MATERIAL.
-- Support may be PREPARED_BY SynthesisMethod.
-- Support may HAS_COMPONENT Material only for explicit composition/constituent
-  statements. Never use Support --USES_MATERIAL--> Material for composition.
 - USES_REPORTER may originate from Experiment or SynthesisMethod.
-- Never use HAS_COMPONENT to attach Analyte/RamanReporter/OpticalCondition.
 - Never reverse PREPARED_BY to encode a reagent used by a method.
 
 PATCH OPERATION SHAPE:
@@ -299,20 +282,15 @@ COMPOSED_OF -> HAS_COMPONENT;
 HAS_ANALYTE or INVOLVES_ANALYTE -> USES_ANALYTE;
 EVALUATED_BY -> TESTED_IN.
 Do not use IS_MATERIAL or USED_IN_SYNTHESIS_OF; type entities directly.
-Use PREPARED_BY only from the made substrate/material/nanostructure/support
-to a SynthesisMethod. Use USES_PRECURSOR from SynthesisMethod to an actual
-precursor, and USES_MATERIAL from SynthesisMethod to non-precursor synthesis
-inputs such as reducing agents, stabilizers, solvents, or structure-directing
-agents. A Support may HAS_COMPONENT Material for explicit composition, but
-Support --USES_MATERIAL--> Material is not a composition statement and is
-forbidden.
+Use PREPARED_BY only from the made substrate/material/nanostructure to a
+SynthesisMethod. Use USES_PRECURSOR from SynthesisMethod to an actual precursor,
+and USES_MATERIAL from SynthesisMethod to non-precursor synthesis inputs such as
+reducing agents, stabilizers, solvents, or structure-directing agents.
 
 Synthesis/fabrication/growth/reduction/loading protocols belong to
 SynthesisMethod. DDA/FDTD/FEM/BEM/DFT/TDDFT or explicitly named simulations and
 calculations belong to calculations[], never experiments[]. USES_REPORTER may
-originate from Experiment or SynthesisMethod when source-supported. Never use
-HAS_COMPONENT to attach Analyte or RamanReporter to a substrate merely because
-it was adsorbed/loaded/tested.
+originate from Experiment or SynthesisMethod when source-supported.
 
 Preserve scalar measurements and explicit SERS conditions, especially analyte,
 concentration, excitation wavelength, laser power, acquisition time, and Raman
