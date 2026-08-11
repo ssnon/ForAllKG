@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import Any
 
 from dac_her.validation_issues import ValidationReport
 
 
-PATCH_PROMPT_VERSION = "dac-her-semantic-patch-v1.4-capability-routing"
+PATCH_PROMPT_VERSION = "dac-her-semantic-patch-v1.3-replace-edge"
 
 PATCH_SYSTEM_PROMPT = """
 You repair a provenance-preserving scientific knowledge-graph draft.
@@ -72,64 +71,6 @@ For CLAIM_MISSING_APPLICATION_TARGET:
 """.strip()
 
 
-_OPERATION_SHAPE_GUIDANCE = {
-    "add_edge": (
-        "NON-NULL: edge. The edge must be one complete source-grounded KGEdge. "
-        "All other operation-specific fields must be null."
-    ),
-    "remove_edge": (
-        "NON-NULL: edge_index, expected_source, expected_relation, "
-        "expected_target. All other operation-specific fields must be null."
-    ),
-    "replace_edge": (
-        "NON-NULL: edge, edge_index, expected_source, expected_relation, "
-        "expected_target. expected_* describes the complete CURRENT edge; "
-        "edge is the complete replacement KGEdge. All unrelated "
-        "operation-specific fields must be null."
-    ),
-    "change_entity_type": (
-        "NON-NULL: node_id, old_type, new_type. All other "
-        "operation-specific fields must be null."
-    ),
-    "replace_edge_endpoint": (
-        "NON-NULL: edge_index, expected_source, expected_relation, "
-        "expected_target, endpoint, old_id, new_id. All unrelated "
-        "operation-specific fields must be null."
-    ),
-    "rename_node_id": (
-        "NON-NULL: old_id, new_id. All other operation-specific fields "
-        "must be null."
-    ),
-}
-
-
-def build_patch_rejection_feedback(error: Exception) -> str:
-    """Turn provider/Pydantic operation-shape failures into actionable retry text."""
-    message = str(error)
-    match = re.search(
-        r"Operation '([^']+)' requires non-null fields: \[([^\]]+)\]",
-        message,
-    )
-    if match:
-        op = match.group(1)
-        missing = match.group(2)
-        guidance = _OPERATION_SHAPE_GUIDANCE.get(
-            op,
-            "Use the exact PATCH OPERATION SHAPE rules.",
-        )
-        return (
-            "The previous patch failed operation-shape validation. "
-            f"Selected op: {op!r}. Missing required field(s): [{missing}].\n"
-            f"Required shape for {op}: {guidance}\n"
-            "Before returning, self-check every operation: every field required "
-            "by the selected op is non-null, and every unrelated "
-            "operation-specific field is null. Do not change scientific "
-            "content merely to satisfy the schema."
-        )
-
-    return f"{type(error).__name__}: {error}"
-
-
 def build_semantic_patch_prompt(
     *,
     paper_id: str,
@@ -174,13 +115,6 @@ CURRENT_GRAPH_DRAFT_JSON:
 
 STRUCTURED_VALIDATION_ISSUES_JSON:
 {json.dumps([item.model_dump(mode='json') for item in report.issues], ensure_ascii=False, indent=2)}
-
-PATCH_OUTPUT_SELF_CHECK:
-For every operation, verify the selected op against PATCH OPERATION SHAPE before
-returning JSON. Required fields for that op must be non-null. Every unrelated
-operation-specific field must be null. A replace_edge must contain both the
-complete current-edge guards (edge_index + expected_source/relation/target) and
-one complete replacement KGEdge.
 """.strip()
 
     if previous_patch_feedback:

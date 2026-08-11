@@ -337,21 +337,17 @@ def decide_recovery(
                     "residual; allow one bounded complete micro-reextract "
                     "retry to rebuild the claim/relation subgraph as a unit."
                 )
-            elif has_common_undefined_endpoint_cluster(report):
-                # Preserve the more specific legacy classification for a
-                # pure undefined-endpoint residual. Such a residual also
-                # satisfies the broader dominant-cluster predicate introduced
-                # in fix5, so common must be checked first.
-                retry_reason = (
-                    "The first micro-reextract left only a common undefined "
-                    "endpoint cluster; allow one bounded targeted complete "
-                    "micro-reextract retry."
-                )
-            else:
+            elif has_dominant_undefined_endpoint_cluster(report):
                 retry_reason = (
                     "The first micro-reextract left a dominant missing-node "
                     "cluster inside a mixed residual; allow one bounded "
                     "targeted complete micro-reextract retry."
+                )
+            else:
+                retry_reason = (
+                    "The first micro-reextract left only a common undefined "
+                    "endpoint cluster; allow one bounded targeted complete "
+                    "micro-reextract retry."
                 )
             return RecoveryDecision(
                 RecoveryAction.MICRO_REEXTRACT,

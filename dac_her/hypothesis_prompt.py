@@ -8,7 +8,7 @@ from typing import Iterable
 from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolioDraft
 
 
-PROMPT_VERSION = "hypothesis-maker-prompt-v2.6.1.0"
+PROMPT_VERSION = "hypothesis-maker-prompt-v2.6.1.1"
 
 
 def _compact_json(value: object) -> str:
@@ -235,6 +235,8 @@ class HypothesisPromptAssembler:
                 "- gap_statement_ids may contain only exact RESEARCH GAPS IDs above.",
                 "- Write the inferential_bridge as the proposed inference, not as though it were reported evidence.",
                 "- Provide at least one qualitative predicted observation and at least one falsification criterion for each hypothesis.",
+                "- predicted_observations[].expected_direction MUST be exactly one of: increase, decrease, shift, non_monotonic, qualitative_change, unspecified.",
+                "- Do not use conditional, context_dependent, mixed, stable, no_change, or free-form text as expected_direction. Put conditionality in observable/rationale; use unspecified when no allowed directional category is justified.",
                 "- Make every falsification criterion refer to an observable that also appears among that hypothesis's predicted observations.",
                 "- Do not introduce a numeric value unless that exact value occurs in one of the selected positive-premise statements.",
                 "- Do not write an experimental protocol. State what should be observed, not how to synthesize, prepare, dose, heat, scan, or instrumentally measure it.",

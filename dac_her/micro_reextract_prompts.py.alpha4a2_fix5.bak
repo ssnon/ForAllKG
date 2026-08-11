@@ -11,7 +11,7 @@ from dac_her.validation_issues import (
 
 
 MICRO_REEXTRACT_PROMPT_VERSION = (
-    "dac-her-micro-reextract-v1-alpha4a2-fix5"
+    "dac-her-micro-reextract-v1-alpha4a2-fix4"
 )
 
 
@@ -104,152 +104,6 @@ def _common_undefined_endpoint_hints(
         "graph. Do not invent a node solely because an ID appeared in an "
         "invalid edge."
     )
-
-
-def _coupled_claim_subgraph_hints(
-    report: ValidationReport,
-) -> str:
-    claim_codes = {
-        IssueCode.CLAIM_MISSING_APPLICATION_TARGET,
-        IssueCode.OBSERVATION_MISSING_SUPPORT,
-        IssueCode.MECHANISM_MISSING_SUPPORT,
-        IssueCode.CLAIM_LIKE_ENTITY,
-    }
-    claim_relations = {
-        "SUPPORTS_CLAIM",
-        "INTERPRETED_AS",
-        "APPLIES_TO",
-    }
-
-    claim_issues = [
-        item
-        for item in report.issues
-        if item.code in claim_codes
-    ]
-    relation_issues = [
-        item
-        for item in report.issues
-        if (
-            item.code
-            in {
-                IssueCode.RELATION_SOURCE_TYPE_MISMATCH,
-                IssueCode.RELATION_TARGET_TYPE_MISMATCH,
-            }
-            and item.relation in claim_relations
-        )
-    ]
-
-    if not claim_issues or not relation_issues:
-        return "No coupled claim-subgraph residual was detected."
-
-    lines = [
-        "COUPLED_CLAIM_SUBGRAPH_RECOVERY_HINTS:",
-        (
-            "- Multiple claim and claim-relation validation errors appear "
-            "coupled. Rebuild the affected claim subgraph as one "
-            "source-grounded unit instead of preserving invalid edges."
-        ),
-        (
-            "- SUPPORTS_CLAIM must originate only from a validator-allowed "
-            "evidence-producing object and point to a supported claim."
-        ),
-        (
-            "- INTERPRETED_AS must follow the validator-required direction "
-            "between an observation and a mechanism claim; do not reverse it."
-        ),
-        (
-            "- APPLIES_TO must point from the claim to an explicit scientific "
-            "subject supported by CORE_TEXT. Never guess a target merely to "
-            "satisfy validation."
-        ),
-        (
-            "- If CORE_TEXT does not support a complete valid claim subgraph, "
-            "omit unsupported claims/relations rather than inventing evidence."
-        ),
-        "- Current coupled issues:",
-    ]
-
-    for item in [*claim_issues, *relation_issues]:
-        lines.append(
-            f"  * {item.code.value}: node={item.node_id!r}, "
-            f"edge_index={item.edge_index}, relation={item.relation!r}, "
-            f"source={item.source_id!r}, target={item.target_id!r}"
-        )
-
-    return "\n".join(lines)
-
-
-def _coupled_claim_subgraph_hints(
-    report: ValidationReport,
-) -> str:
-    claim_codes = {
-        IssueCode.CLAIM_MISSING_APPLICATION_TARGET,
-        IssueCode.OBSERVATION_MISSING_SUPPORT,
-        IssueCode.MECHANISM_MISSING_SUPPORT,
-        IssueCode.CLAIM_LIKE_ENTITY,
-    }
-    claim_relations = {
-        "SUPPORTS_CLAIM",
-        "INTERPRETED_AS",
-        "APPLIES_TO",
-    }
-
-    claim_issues = [
-        item
-        for item in report.issues
-        if item.code in claim_codes
-    ]
-    relation_issues = [
-        item
-        for item in report.issues
-        if (
-            item.code
-            in {
-                IssueCode.RELATION_SOURCE_TYPE_MISMATCH,
-                IssueCode.RELATION_TARGET_TYPE_MISMATCH,
-            }
-            and item.relation in claim_relations
-        )
-    ]
-
-    if not claim_issues or not relation_issues:
-        return "No coupled claim-subgraph residual was detected."
-
-    lines = [
-        "COUPLED_CLAIM_SUBGRAPH_RECOVERY_HINTS:",
-        (
-            "- Multiple claim and claim-relation validation errors appear "
-            "coupled. Rebuild the affected claim subgraph as one "
-            "source-grounded unit instead of preserving invalid edges."
-        ),
-        (
-            "- SUPPORTS_CLAIM must originate only from a validator-allowed "
-            "evidence-producing object and point to a supported claim."
-        ),
-        (
-            "- INTERPRETED_AS must follow the validator-required direction "
-            "between an observation and a mechanism claim; do not reverse it."
-        ),
-        (
-            "- APPLIES_TO must point from the claim to an explicit scientific "
-            "subject supported by CORE_TEXT. Never guess a target merely to "
-            "satisfy validation."
-        ),
-        (
-            "- If CORE_TEXT does not support a complete valid claim subgraph, "
-            "omit unsupported claims/relations rather than inventing evidence."
-        ),
-        "- Current coupled issues:",
-    ]
-
-    for item in [*claim_issues, *relation_issues]:
-        lines.append(
-            f"  * {item.code.value}: node={item.node_id!r}, "
-            f"edge_index={item.edge_index}, relation={item.relation!r}, "
-            f"source={item.source_id!r}, target={item.target_id!r}"
-        )
-
-    return "\n".join(lines)
 
 
 def build_domain_gate_recovery_prompt(
@@ -399,8 +253,6 @@ STRUCTURED_VALIDATION_ISSUES_JSON:
 )}
 
 {_common_undefined_endpoint_hints(report)}
-
-{_coupled_claim_subgraph_hints(report)}
 
 Re-extract CORE_TEXT as one complete corrected
 KnowledgeGraphDraft.

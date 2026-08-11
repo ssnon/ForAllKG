@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--api-key-env", default="OPENAI_API_KEY")
     parser.add_argument("--instructor-mode", default="JSON")
     parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--parse-retries", type=int, default=1)
+    parser.add_argument("--parse-retries", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--header", action="append", default=[], type=_header, metavar="KEY=VALUE")
     parser.add_argument("--device", default=None)

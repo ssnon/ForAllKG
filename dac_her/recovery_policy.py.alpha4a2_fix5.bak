@@ -54,160 +54,6 @@ def has_common_undefined_endpoint_cluster(
     return bool(endpoint_counts) and max(endpoint_counts.values()) >= min_count
 
 
-def has_dominant_undefined_endpoint_cluster(
-    report: ValidationReport,
-    *,
-    min_count: int = 3,
-    min_error_share: float = 0.5,
-) -> bool:
-    """Detect one missing node that dominates a mixed validation residual."""
-    error_issues = [
-        item
-        for item in report.issues
-        if item.severity.value == "error"
-    ]
-    if not error_issues:
-        return False
-
-    endpoint_counts: Counter[str] = Counter()
-    for item in error_issues:
-        if item.code == IssueCode.UNDEFINED_EDGE_SOURCE and item.source_id:
-            endpoint_counts[item.source_id] += 1
-        elif item.code == IssueCode.UNDEFINED_EDGE_TARGET and item.target_id:
-            endpoint_counts[item.target_id] += 1
-
-    if not endpoint_counts:
-        return False
-
-    dominant_count = max(endpoint_counts.values())
-    if dominant_count < min_count:
-        return False
-
-    return (dominant_count / len(error_issues)) >= min_error_share
-
-
-_CLAIM_SPECIFIC_CODES = {
-    IssueCode.CLAIM_MISSING_APPLICATION_TARGET,
-    IssueCode.OBSERVATION_MISSING_SUPPORT,
-    IssueCode.MECHANISM_MISSING_SUPPORT,
-    IssueCode.CLAIM_LIKE_ENTITY,
-}
-
-_CLAIM_RELATIONS = {
-    "SUPPORTS_CLAIM",
-    "INTERPRETED_AS",
-    "APPLIES_TO",
-}
-
-
-def has_coupled_claim_subgraph_residual(
-    report: ValidationReport,
-) -> bool:
-    """Detect a claim subgraph whose errors should be rebuilt as a unit."""
-    error_issues = [
-        item
-        for item in report.issues
-        if item.severity.value == "error"
-    ]
-    if not error_issues:
-        return False
-
-    has_claim_issue = any(
-        item.code in _CLAIM_SPECIFIC_CODES
-        for item in error_issues
-    )
-    has_claim_relation_issue = any(
-        (
-            item.code
-            in {
-                IssueCode.RELATION_SOURCE_TYPE_MISMATCH,
-                IssueCode.RELATION_TARGET_TYPE_MISMATCH,
-            }
-            and item.relation in _CLAIM_RELATIONS
-        )
-        for item in error_issues
-    )
-
-    return has_claim_issue and has_claim_relation_issue
-
-
-def has_dominant_undefined_endpoint_cluster(
-    report: ValidationReport,
-    *,
-    min_count: int = 3,
-    min_error_share: float = 0.5,
-) -> bool:
-    """Detect one missing node that dominates a mixed validation residual."""
-    error_issues = [
-        item
-        for item in report.issues
-        if item.severity.value == "error"
-    ]
-    if not error_issues:
-        return False
-
-    endpoint_counts: Counter[str] = Counter()
-    for item in error_issues:
-        if item.code == IssueCode.UNDEFINED_EDGE_SOURCE and item.source_id:
-            endpoint_counts[item.source_id] += 1
-        elif item.code == IssueCode.UNDEFINED_EDGE_TARGET and item.target_id:
-            endpoint_counts[item.target_id] += 1
-
-    if not endpoint_counts:
-        return False
-
-    dominant_count = max(endpoint_counts.values())
-    if dominant_count < min_count:
-        return False
-
-    return (dominant_count / len(error_issues)) >= min_error_share
-
-
-_CLAIM_SPECIFIC_CODES = {
-    IssueCode.CLAIM_MISSING_APPLICATION_TARGET,
-    IssueCode.OBSERVATION_MISSING_SUPPORT,
-    IssueCode.MECHANISM_MISSING_SUPPORT,
-    IssueCode.CLAIM_LIKE_ENTITY,
-}
-
-_CLAIM_RELATIONS = {
-    "SUPPORTS_CLAIM",
-    "INTERPRETED_AS",
-    "APPLIES_TO",
-}
-
-
-def has_coupled_claim_subgraph_residual(
-    report: ValidationReport,
-) -> bool:
-    """Detect a claim subgraph whose errors should be rebuilt as a unit."""
-    error_issues = [
-        item
-        for item in report.issues
-        if item.severity.value == "error"
-    ]
-    if not error_issues:
-        return False
-
-    has_claim_issue = any(
-        item.code in _CLAIM_SPECIFIC_CODES
-        for item in error_issues
-    )
-    has_claim_relation_issue = any(
-        (
-            item.code
-            in {
-                IssueCode.RELATION_SOURCE_TYPE_MISMATCH,
-                IssueCode.RELATION_TARGET_TYPE_MISMATCH,
-            }
-            and item.relation in _CLAIM_RELATIONS
-        )
-        for item in error_issues
-    )
-
-    return has_claim_issue and has_claim_relation_issue
-
-
 # These issue codes require a structural migration that the current
 # KnowledgeGraphPatch operation set cannot represent safely.
 SEMANTIC_PATCH_UNSUPPORTED_CODES = {
@@ -307,12 +153,10 @@ def decide_recovery(
         # ---------------------------------------------------------
         # Phase 2b: one bounded capability-aware complete re-extract retry.
         #
-        # Residual families routed here need whole-subgraph reconstruction
-        # more than another local semantic patch:
-        #   (a) pure common missing-node endpoint cluster;
-        #   (b) dominant missing-node cluster inside a mixed residual;
-        #   (c) semantic-patch-unsupported collection migration;
-        #   (d) coupled claim/relation subgraph.
+        # Two residual families specifically need a complete draft rather
+        # than the current patch operation set:
+        #   (a) a common missing-node endpoint cluster; or
+        #   (b) a structural collection migration such as CLAIM_LIKE_ENTITY.
         # ---------------------------------------------------------
         if (
             max_micro_reextract_attempts > 0
@@ -320,9 +164,7 @@ def decide_recovery(
             and post_micro_patch_attempts == 0
             and (
                 has_common_undefined_endpoint_cluster(report)
-                or has_dominant_undefined_endpoint_cluster(report)
                 or requires_complete_reextract(report)
-                or has_coupled_claim_subgraph_residual(report)
             )
         ):
             if requires_complete_reextract(report):
@@ -331,27 +173,11 @@ def decide_recovery(
                     "semantic patch cannot represent safely; allow one bounded "
                     "complete micro-reextract retry."
                 )
-            elif has_coupled_claim_subgraph_residual(report):
-                retry_reason = (
-                    "The first micro-reextract left a coupled claim subgraph "
-                    "residual; allow one bounded complete micro-reextract "
-                    "retry to rebuild the claim/relation subgraph as a unit."
-                )
-            elif has_common_undefined_endpoint_cluster(report):
-                # Preserve the more specific legacy classification for a
-                # pure undefined-endpoint residual. Such a residual also
-                # satisfies the broader dominant-cluster predicate introduced
-                # in fix5, so common must be checked first.
+            else:
                 retry_reason = (
                     "The first micro-reextract left only a common undefined "
                     "endpoint cluster; allow one bounded targeted complete "
                     "micro-reextract retry."
-                )
-            else:
-                retry_reason = (
-                    "The first micro-reextract left a dominant missing-node "
-                    "cluster inside a mixed residual; allow one bounded "
-                    "targeted complete micro-reextract retry."
                 )
             return RecoveryDecision(
                 RecoveryAction.MICRO_REEXTRACT,

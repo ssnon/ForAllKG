@@ -19,7 +19,6 @@ from dac_her.schemas import KnowledgeGraph
 from dac_her.semantic_patch import PatchRejected, apply_semantic_patch
 from dac_her.semantic_patch_prompts import (
     PATCH_SYSTEM_PROMPT,
-    build_patch_rejection_feedback,
     build_semantic_patch_prompt,
 )
 from dac_her.semantic_patch_schema import KnowledgeGraphPatch
@@ -883,8 +882,8 @@ def extract_one_chunk(
                 else:
                     patch_attempts += 1
 
-                patch_feedback = build_patch_rejection_feedback(
-                    error
+                patch_feedback = (
+                    f"{type(error).__name__}: {error}"
                 )
                 continue
 

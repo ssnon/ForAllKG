@@ -467,6 +467,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--dual-context", str(dual_context),
             *_base_model_args(args),
             "--max-axes", str(args.max_axes),
+            "--parse-retries", str(args.hypothesis_parse_retries),
             "--output-prefix", str(axis_prefix),
             "--save-prompts",
         ],
@@ -693,6 +694,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--discovery-top-k", type=int, default=8)
     parser.add_argument("--max-axes", type=int, default=5)
+    parser.add_argument(
+        "--hypothesis-parse-retries",
+        type=int,
+        default=3,
+        help=(
+            "Instructor structured-output retries for discovery-axis hypothesis "
+            "generation. Retries are used only when the model output fails the "
+            "strict HypothesisPortfolioDraft schema."
+        ),
+    )
     parser.add_argument(
         "--model",
         default=os.getenv("OPENROUTER_AGENT_MODEL"),
