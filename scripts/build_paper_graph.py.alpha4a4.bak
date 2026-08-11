@@ -676,20 +676,6 @@ def main() -> None:
             "node-role issue(s); see "
             f"{run_dir / 'graph_semantics' / 'node_role_issues.csv'}"
         )
-    if graph_semantics_summary.get("relation_direction_issue_count", 0):
-        print(
-            "[RELATION DIRECTION] "
-            f"{graph_semantics_summary['relation_direction_issue_count']} "
-            "review candidate(s); see "
-            f"{run_dir / 'graph_semantics' / 'relation_direction_issues.csv'}"
-        )
-    if graph_semantics_summary.get("integration_review_component_count", 0):
-        print(
-            "[GRAPH INTEGRATION] "
-            f"{graph_semantics_summary['integration_review_component_count']} "
-            "disconnected component(s) require review; see "
-            f"{run_dir / 'graph_semantics' / 'integration_components.csv'}"
-        )
     if graph_domain_canonicalization["paper_identity_merges"]:
         print(
             "[GRAPH DOMAIN CANONICALIZATION] "
@@ -852,18 +838,6 @@ def main() -> None:
     print(
         "Graph semantics node-role issues:",
         graph_semantics_summary["node_role_issue_count"],
-    )
-    print(
-        "Relation-direction review candidates:",
-        graph_semantics_summary.get("relation_direction_issue_count", 0),
-    )
-    print(
-        "Integration review components:",
-        graph_semantics_summary.get("integration_review_component_count", 0),
-    )
-    print(
-        "Component bridge candidates:",
-        graph_semantics_summary.get("component_bridge_candidate_count", 0),
     )
     print("Resolution report:", resolution_dir / "resolution_report.txt")
     print("Saved:", latest_graphml_path)

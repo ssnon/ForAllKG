@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a4"
+SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a2-fix2"
 
 SERS_SYSTEM_PROMPT = r"""
 You extract a provenance-preserving knowledge graph from scientific literature
@@ -49,11 +49,6 @@ ROLE RULES:
 MEASUREMENTS AND CONDITIONS:
 7. Every Measurement is scalar and subject-specific: one subject_id, one
    metric_id, one numeric/text result, and one coherent condition set.
-7a. Serialized Measurement values must satisfy exactly one of value_numeric or
-    value_text. For a numeric result, set value_numeric non-null and value_text
-    null. For a qualitative/text result, set value_text non-null and
-    value_numeric null. Never populate both and never leave both null.
-    Preserve the original source wording separately in source_expression.
 8. Preserve measurement context whenever supplied. Important SERS conditions:
    analyte/reporter, concentration, excitation wavelength, laser power,
    acquisition/integration time, Raman shift/peak, medium, substrate state.
@@ -154,82 +149,6 @@ EDGE DIRECTIONS:
 31. ObservationClaim --INTERPRETED_AS--> MechanismClaim.
 32. ObservationClaim/MechanismClaim --APPLIES_TO--> scientific Entity.
 
-EVIDENCE TOPOLOGY:
-32a. Scientific Entities are subjects, not evidence producers. Never use
-     PlasmonicSubstrate, Nanostructure, Metal, Material, Support,
-     StructuralMotif, Morphology, SynthesisMethod, Analyte, RamanReporter, or
-     OpticalCondition as a SUPPORTS_CLAIM source merely because a claim is
-     about that object.
-32b. The canonical measurement chain is:
-     Experiment/Calculation --HAS_MEASUREMENT--> Measurement
-     and Measurement --MEASURED_FOR--> the explicit scientific subject.
-32c. Measurement/Experiment/Calculation --SUPPORTS_CLAIM-->
-     ObservationClaim or MechanismClaim only when that evidence explicitly
-     supports the claim.
-32d. Every ObservationClaim requires BOTH:
-     (i) at least one source-grounded SUPPORTS_CLAIM evidence source, and
-     (ii) at least one explicit APPLIES_TO target.
-32e. A MechanismClaim requires either:
-     (i) direct SUPPORTS_CLAIM evidence from Measurement/Experiment/Calculation,
-     or (ii) a supported ObservationClaim --INTERPRETED_AS--> MechanismClaim.
-     It also requires an explicit APPLIES_TO target.
-32f. ObservationClaim --INTERPRETED_AS--> MechanismClaim is directional.
-     Never reverse this edge.
-32g. If the source contains a scientific subject and a claim about it, do NOT
-     encode subject --SUPPORTS_CLAIM--> claim. Encode valid evidence
-     --SUPPORTS_CLAIM--> claim and claim --APPLIES_TO--> subject.
-32h. A Measurement without an explicit source-grounded producer must not be
-     repaired by inventing a generic Experiment. If the current source does not
-     identify a defensible Experiment/Calculation producer, omit that
-     Measurement from this chunk rather than fabricate provenance.
-
-METHOD NODE COMPLETENESS:
-32i. Every PREPARED_BY target and every USES_PRECURSOR / USES_MATERIAL source
-     must exist exactly once as a SynthesisMethod in entities[].
-32j. Never emit an edge-only placeholder method ID. If a supported synthesis
-     step is referenced by several edges, emit the SynthesisMethod node once
-     and reuse that exact ID.
-32k. Do not leave a synthesis-method node with missing/null scientific type,
-     and do not retype a substrate/material as SynthesisMethod merely to make an
-     edge valid.
-
-RELATION DIRECTION AND SCOPE:
-- TESTED_IN is directional: scientific subject --TESTED_IN--> Experiment.
-  Never emit Experiment --TESTED_IN--> subject. A RamanReporter is not the
-  TESTED_IN source merely because it is measured; use
-  Experiment --USES_REPORTER--> RamanReporter when source-supported.
-- CHARACTERIZED_IN is directional:
-  scientific subject --CHARACTERIZED_IN--> Experiment. Never connect
-  Experiment --CHARACTERIZED_IN--> Paper.
-- SIMULATED_BY is directional:
-  scientific subject --SIMULATED_BY--> Calculation. Never emit
-  Calculation --SIMULATED_BY--> subject.
-- HAS_COMPONENT represents a physical constituent of a
-  PlasmonicSubstrate/Nanostructure/Support. StructuralMotif and Morphology are
-  descriptors/architectures and must not be HAS_COMPONENT sources.
-- PROPOSES_CLAIM is Paper-scoped. A SynthesisMethod, Experiment, Calculation,
-  substrate, or material does not PROPOSES_CLAIM.
-- PREPARED_BY describes a produced specimen/material/support/nanostructure.
-  Do not use an abstract Metal concept such as generic "Gold" or "Silver" as a
-  PREPARED_BY source; use the explicit produced Material/Nanostructure when the
-  source supports one.
-- USES_MATERIAL remains a synthesis-input relation:
-  SynthesisMethod --USES_MATERIAL--> Material. Do not use it from Calculation
-  to encode a modeled medium, and do not use Nanostructure/Metal as its target.
-  When the current ontology has no exact relation for model medium or
-  nanostructure feedstock, preserve that information in conditions/description
-  and omit the unsupported edge rather than widening semantics ad hoc.
-- Calculation --USES_REPORTER--> RamanReporter is valid when the reporter
-  explicitly parameterizes the calculation, for example an enhancement-factor
-  calculation.
-- SynthesisMethod --USES_OPTICAL_CONDITION--> OpticalCondition is valid when
-  illumination is explicitly part of synthesis/growth, for example LED-assisted
-  growth.
-- A biological sample represented as Material is not automatically an Analyte.
-  Do not use Experiment --USES_ANALYTE--> Material merely to connect cells or
-  tissue. When source-supported, Material --TESTED_IN--> Experiment may represent
-  the tested sample pending a dedicated biological-sample ontology.
-
 PROVENANCE AND GRAPH QUALITY:
 33. Every edge must contain at least one EvidencePointer using only supplied
     document/page/asset identifiers.
@@ -238,9 +157,7 @@ PROVENANCE AND GRAPH QUALITY:
 36. SI evidence must retain document_role=supporting_information.
 37. Every node must participate in at least one edge.
 38. Omit unsupported objects rather than returning isolated nodes.
-39. Claims require evidence and an application target. If either cannot
-    be source-grounded in the current chunk, omit the claim instead of using
-    its scientific subject as fake evidence.
+39. Claims require evidence and an application target.
 40. Prefer a smaller strict-valid graph over speculative extraction.
 41. Preserve paper_id, chunk_id, section, document_id, document_role, page_ids,
     and asset_ids exactly.
@@ -308,45 +225,6 @@ SCIENTIFIC ROLE REPAIR GUIDANCE:
 - USES_REPORTER may originate from Experiment or SynthesisMethod.
 - Never use HAS_COMPONENT to attach Analyte/RamanReporter/OpticalCondition.
 - Never reverse PREPARED_BY to encode a reagent used by a method.
-
-EVIDENCE-TOPOLOGY REPAIR:
-- Never retype a substrate, material, nanostructure, or SynthesisMethod into
-  Experiment, Calculation, or Measurement merely so it can become a
-  SUPPORTS_CLAIM source.
-- For RELATION_SOURCE_TYPE_MISMATCH on SUPPORTS_CLAIM, replace the source only
-  when CURRENT_GRAPH_DRAFT_JSON already contains a source-grounded
-  Measurement/Experiment/Calculation that actually supports the claim.
-  Otherwise remove the invalid edge only when removal is source-faithful, or
-  place the issue in unresolved_issue_ids.
-- For MISSING_MEASUREMENT_PRODUCER, add HAS_MEASUREMENT only from an existing
-  source-grounded Experiment/Calculation. Never invent a producer in a patch.
-- For OBSERVATION_MISSING_SUPPORT or MECHANISM_MISSING_SUPPORT, add support only
-  from existing source-grounded evidence. Do not use the claim subject itself
-  as evidence.
-- For CLAIM_MISSING_APPLICATION_TARGET, add APPLIES_TO only to an existing
-  explicit subject whose scope is supported by the source. Never guess a target.
-- If a required SynthesisMethod node is absent entirely, the current patch
-  schema cannot safely create that scientific node. Leave the affected issue in
-  unresolved_issue_ids so complete re-extraction can reconstruct it.
-
-RELATION-DIRECTION REPAIR:
-- For TESTED_IN, CHARACTERIZED_IN, and SIMULATED_BY, preserve the canonical
-  subject-to-procedure direction. Reverse an invalid edge only when CORE_TEXT
-  explicitly supports the reversed scientific statement.
-- Reporter/Analyte role mistakes should use USES_REPORTER/USES_ANALYTE from the
-  valid Experiment/Calculation endpoint rather than repurposing TESTED_IN.
-- Do not reattach HAS_COMPONENT from StructuralMotif/Morphology merely to make
-  validation pass; the physical owner must already be source-grounded.
-- PROPOSES_CLAIM must originate from Paper. Do not invent a Paper edge when the
-  current source does not explicitly support the claim scope.
-- USES_MATERIAL remains SynthesisMethod -> Material. Calculation media and
-  nanostructure/metal feedstocks are ontology-relation gaps, not reasons to
-  widen or fabricate an edge. Leave such issues unresolved if no source-faithful
-  canonical relation exists.
-- Calculation may USES_REPORTER when reporter-specific calculation context is
-  explicit. SynthesisMethod may USES_OPTICAL_CONDITION when illumination is
-  explicitly part of synthesis.
-- Never create or reverse an edge solely because endpoint types would validate.
 
 PATCH OPERATION SHAPE:
 Every operation uses the same flat object schema. Populate every field required
@@ -441,43 +319,6 @@ concentration, excitation wavelength, laser power, acquisition time, and Raman
 peak. Separate observations from mechanism interpretations. Do not invent LSPR,
 hotspot, local-field, charge-transfer, adsorption, or chemical-enhancement
 mechanisms unless the supplied source supports them.
-
-EVIDENCE TOPOLOGY:
-- A scientific subject is not itself evidence. Never use a substrate,
-  nanostructure, material, support, morphology, structural motif,
-  SynthesisMethod, analyte, reporter, or optical condition as a
-  SUPPORTS_CLAIM source.
-- A source-grounded Experiment/Calculation may produce Measurements with
-  HAS_MEASUREMENT. Each Measurement must MEASURED_FOR its explicit subject.
-- Every Measurement must populate exactly one of value_numeric or value_text;
-  use source_expression separately for the original wording. Never populate
-  both value fields and never leave both null.
-- Measurement/Experiment/Calculation may SUPPORTS_CLAIM only when the source
-  explicitly supports that claim.
-- An ObservationClaim requires source-grounded SUPPORTS_CLAIM evidence and an
-  APPLIES_TO target.
-- A MechanismClaim requires direct source-grounded evidence or a supported
-  ObservationClaim --INTERPRETED_AS--> MechanismClaim, plus APPLIES_TO.
-- Measurement without an explicit source-grounded producer must not trigger an
-  invented generic Experiment. Omit that Measurement if the local source does
-  not identify a defensible producer.
-- Every PREPARED_BY target and every USES_PRECURSOR/USES_MATERIAL source must
-  exist exactly once as a typed SynthesisMethod. Never leave an edge-only
-  method ID.
-
-RELATION DIRECTION:
-- subject --TESTED_IN/CHARACTERIZED_IN--> Experiment;
-- subject --SIMULATED_BY--> Calculation;
-- Experiment/Calculation --USES_REPORTER--> RamanReporter when explicit;
-- SynthesisMethod --USES_OPTICAL_CONDITION--> OpticalCondition when synthesis
-  illumination is explicit;
-- HAS_COMPONENT must originate from the physical owner, not StructuralMotif or
-  Morphology;
-- PROPOSES_CLAIM originates from Paper;
-- USES_MATERIAL remains SynthesisMethod -> Material. Preserve unsupported model
-  media/feedstock semantics in conditions/description rather than inventing a
-  relation.
-Do not reverse or replace relations merely to satisfy types.
 
 Return a complete source-grounded draft and preserve all supplied provenance.
 """.strip()

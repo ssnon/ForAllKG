@@ -1,4 +1,4 @@
-version: '2026-08-11-sers-alpha4a3.3'
+version: '2026-08-03'
 methods:
   cyclic_voltammetry:
     family: electrochemistry
@@ -116,15 +116,3 @@ methods:
     family: spectroscopy
     label: Dark-field scattering spectroscopy
     aliases: [dark-field scattering, dark field scattering, scattering spectrum]
-  dynamic_light_scattering:
-    family: other
-    label: Dynamic light scattering
-    aliases: [DLS, dynamic light-scattering, dynamic light scattering analysis]
-  energy_dispersive_x_ray_spectroscopy:
-    family: composition_analysis
-    label: Energy-dispersive X-ray spectroscopy
-    aliases:
-      - EDS
-      - EDX
-      - energy dispersive X-ray spectroscopy
-      - energy-dispersive X-ray analysis

@@ -10,9 +10,16 @@ from dac_her.hypothesis_contracts import (
     HypothesisPortfolioDraft,
 )
 from dac_her.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
+from dac_her.evidence_family_selection import (
+    EvidenceFamilyHierarchy,
+    render_family_hierarchy_guidance,
+)
 
 
 PROMPT_VERSION = "hypothesis-maker-discovery-axis-prompt-v2.8.0-a4"
+FAMILY_AWARE_PROMPT_VERSION = (
+    "hypothesis-maker-discovery-axis-prompt-v2.9.1-ec2c"
+)
 
 
 def _compact_json(value: object) -> str:
@@ -63,12 +70,14 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
         axis: DiscoveryAxis,
         *,
         statement_text_limit: int = 1100,
+        family_hierarchy: EvidenceFamilyHierarchy | None = None,
     ) -> None:
         super().__init__(
             statement_text_limit=statement_text_limit,
             max_hypotheses=1,
         )
         self.axis = axis
+        self.family_hierarchy = family_hierarchy
 
     def build(self, context: HypothesisContext) -> HypothesisPrompt:
         base = super().build(context)
@@ -106,16 +115,28 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
             "- If the axis cannot be integrated without overclaiming, return hypotheses=[] and a concise abstention_reason.",
         ]
         system_prompt = base.system_prompt.rstrip() + "\n\n" + _SYSTEM_APPENDIX + "\n"
-        user_prompt = base.user_prompt.rstrip() + "\n" + "\n".join(lines) + "\n"
+
+        user_sections = [base.user_prompt.rstrip()]
+        prompt_version = PROMPT_VERSION
+        if self.family_hierarchy is not None:
+            user_sections.append(
+                render_family_hierarchy_guidance(
+                    self.family_hierarchy
+                )
+            )
+            prompt_version = FAMILY_AWARE_PROMPT_VERSION
+        user_sections.append("\n".join(lines))
+        user_prompt = "\n\n".join(user_sections).rstrip() + "\n"
+
         canonical = _compact_json(
             {
-                "prompt_version": PROMPT_VERSION,
+                "prompt_version": prompt_version,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
             }
         )
         return HypothesisPrompt(
-            prompt_version=PROMPT_VERSION,
+            prompt_version=prompt_version,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             prompt_sha256=_sha256(canonical),

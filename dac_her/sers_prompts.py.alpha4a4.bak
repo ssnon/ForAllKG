@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a4"
+SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a3.3"
 
 SERS_SYSTEM_PROMPT = r"""
 You extract a provenance-preserving knowledge graph from scientific literature
@@ -193,43 +193,6 @@ METHOD NODE COMPLETENESS:
      and do not retype a substrate/material as SynthesisMethod merely to make an
      edge valid.
 
-RELATION DIRECTION AND SCOPE:
-- TESTED_IN is directional: scientific subject --TESTED_IN--> Experiment.
-  Never emit Experiment --TESTED_IN--> subject. A RamanReporter is not the
-  TESTED_IN source merely because it is measured; use
-  Experiment --USES_REPORTER--> RamanReporter when source-supported.
-- CHARACTERIZED_IN is directional:
-  scientific subject --CHARACTERIZED_IN--> Experiment. Never connect
-  Experiment --CHARACTERIZED_IN--> Paper.
-- SIMULATED_BY is directional:
-  scientific subject --SIMULATED_BY--> Calculation. Never emit
-  Calculation --SIMULATED_BY--> subject.
-- HAS_COMPONENT represents a physical constituent of a
-  PlasmonicSubstrate/Nanostructure/Support. StructuralMotif and Morphology are
-  descriptors/architectures and must not be HAS_COMPONENT sources.
-- PROPOSES_CLAIM is Paper-scoped. A SynthesisMethod, Experiment, Calculation,
-  substrate, or material does not PROPOSES_CLAIM.
-- PREPARED_BY describes a produced specimen/material/support/nanostructure.
-  Do not use an abstract Metal concept such as generic "Gold" or "Silver" as a
-  PREPARED_BY source; use the explicit produced Material/Nanostructure when the
-  source supports one.
-- USES_MATERIAL remains a synthesis-input relation:
-  SynthesisMethod --USES_MATERIAL--> Material. Do not use it from Calculation
-  to encode a modeled medium, and do not use Nanostructure/Metal as its target.
-  When the current ontology has no exact relation for model medium or
-  nanostructure feedstock, preserve that information in conditions/description
-  and omit the unsupported edge rather than widening semantics ad hoc.
-- Calculation --USES_REPORTER--> RamanReporter is valid when the reporter
-  explicitly parameterizes the calculation, for example an enhancement-factor
-  calculation.
-- SynthesisMethod --USES_OPTICAL_CONDITION--> OpticalCondition is valid when
-  illumination is explicitly part of synthesis/growth, for example LED-assisted
-  growth.
-- A biological sample represented as Material is not automatically an Analyte.
-  Do not use Experiment --USES_ANALYTE--> Material merely to connect cells or
-  tissue. When source-supported, Material --TESTED_IN--> Experiment may represent
-  the tested sample pending a dedicated biological-sample ontology.
-
 PROVENANCE AND GRAPH QUALITY:
 33. Every edge must contain at least one EvidencePointer using only supplied
     document/page/asset identifiers.
@@ -328,25 +291,6 @@ EVIDENCE-TOPOLOGY REPAIR:
 - If a required SynthesisMethod node is absent entirely, the current patch
   schema cannot safely create that scientific node. Leave the affected issue in
   unresolved_issue_ids so complete re-extraction can reconstruct it.
-
-RELATION-DIRECTION REPAIR:
-- For TESTED_IN, CHARACTERIZED_IN, and SIMULATED_BY, preserve the canonical
-  subject-to-procedure direction. Reverse an invalid edge only when CORE_TEXT
-  explicitly supports the reversed scientific statement.
-- Reporter/Analyte role mistakes should use USES_REPORTER/USES_ANALYTE from the
-  valid Experiment/Calculation endpoint rather than repurposing TESTED_IN.
-- Do not reattach HAS_COMPONENT from StructuralMotif/Morphology merely to make
-  validation pass; the physical owner must already be source-grounded.
-- PROPOSES_CLAIM must originate from Paper. Do not invent a Paper edge when the
-  current source does not explicitly support the claim scope.
-- USES_MATERIAL remains SynthesisMethod -> Material. Calculation media and
-  nanostructure/metal feedstocks are ontology-relation gaps, not reasons to
-  widen or fabricate an edge. Leave such issues unresolved if no source-faithful
-  canonical relation exists.
-- Calculation may USES_REPORTER when reporter-specific calculation context is
-  explicit. SynthesisMethod may USES_OPTICAL_CONDITION when illumination is
-  explicitly part of synthesis.
-- Never create or reverse an edge solely because endpoint types would validate.
 
 PATCH OPERATION SHAPE:
 Every operation uses the same flat object schema. Populate every field required
@@ -464,20 +408,6 @@ EVIDENCE TOPOLOGY:
 - Every PREPARED_BY target and every USES_PRECURSOR/USES_MATERIAL source must
   exist exactly once as a typed SynthesisMethod. Never leave an edge-only
   method ID.
-
-RELATION DIRECTION:
-- subject --TESTED_IN/CHARACTERIZED_IN--> Experiment;
-- subject --SIMULATED_BY--> Calculation;
-- Experiment/Calculation --USES_REPORTER--> RamanReporter when explicit;
-- SynthesisMethod --USES_OPTICAL_CONDITION--> OpticalCondition when synthesis
-  illumination is explicit;
-- HAS_COMPONENT must originate from the physical owner, not StructuralMotif or
-  Morphology;
-- PROPOSES_CLAIM originates from Paper;
-- USES_MATERIAL remains SynthesisMethod -> Material. Preserve unsupported model
-  media/feedstock semantics in conditions/description rather than inventing a
-  relation.
-Do not reverse or replace relations merely to satisfy types.
 
 Return a complete source-grounded draft and preserve all supplied provenance.
 """.strip()

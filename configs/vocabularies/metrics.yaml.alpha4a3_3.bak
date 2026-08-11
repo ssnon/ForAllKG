@@ -1,4 +1,4 @@
-version: '2026-08-11-sers-alpha4a3.3'
+version: '2026-08-11-sers-alpha4a3'
 metrics:
   overpotential:
     label: Overpotential
@@ -287,27 +287,3 @@ metrics:
     canonical_unit: null
     parameters: [component]
     aliases: [lattice constant, unit-cell lattice constant]
-  absorption_band_wavelength:
-    label: Absorption-band wavelength
-    canonical_unit: nm
-    parameters: []
-    aliases:
-      - absorption band wavelength
-      - absorption-band wavelength
-      - absorption maximum wavelength
-  absorption_shoulder_wavelength:
-    label: Absorption shoulder wavelength
-    canonical_unit: nm
-    parameters: []
-    aliases:
-      - absorption shoulder wavelength
-      - absorption shoulder
-  concentration_sers_intensity_correlation_r2:
-    label: Concentration-SERS intensity correlation R²
-    canonical_unit: null
-    parameters: [analyte]
-    aliases:
-      - concentration-SERS intensity correlation R2
-      - concentration–SERS intensity correlation R²
-      - SERS calibration R2
-      - SERS calibration R²

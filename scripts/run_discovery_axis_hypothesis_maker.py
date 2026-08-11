@@ -8,8 +8,18 @@ from pathlib import Path
 from dac_her.discovery_axis_planner import DiscoveryAxisPlanner
 from dac_her.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 from dac_her.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
+from dac_her.evidence_family_decomposition import (
+    EvidenceFamilyDecompositionReport,
+)
+from dac_her.evidence_family_selection import (
+    EvidenceFamilyHierarchy,
+    audit_family_premise_selection,
+)
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
+from dac_her.hypothesis_evidence_diversity import (
+    HypothesisEvidenceDiversityAssessor,
+)
 from dac_her.node_mapping import NodeMapper
 
 
@@ -41,6 +51,15 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--dual-context", required=True, type=Path)
+    parser.add_argument(
+        "--evidence-family-decomposition-report",
+        type=Path,
+        default=None,
+        help=(
+            "Optional EC2-B report. When supplied, Alpha4 receives "
+            "family-aware minimally-sufficient premise-selection guidance."
+        ),
+    )
     parser.add_argument(
         "--index-dir",
         type=Path,
@@ -87,6 +106,26 @@ def main() -> int:
     if not dual.discovery_bundle.inspirations:
         raise SystemExit(
             "DiscoveryBundle contains no inspirations. Alpha4 refuses to collapse back to canonical synthesis."
+        )
+
+    family_hierarchy = None
+    if args.evidence_family_decomposition_report is not None:
+        decomposition_report = (
+            EvidenceFamilyDecompositionReport.model_validate_json(
+                args.evidence_family_decomposition_report.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+        family_hierarchy = EvidenceFamilyHierarchy.from_decomposition_report(
+            decomposition_report,
+            dual.grounded_context,
+        )
+        print(
+            "EC2-C family hierarchy:",
+            family_hierarchy.hierarchy_id,
+            "groups=",
+            len(family_hierarchy.groups),
         )
 
     planner = DiscoveryAxisPlanner(
@@ -154,8 +193,15 @@ def main() -> int:
         max_compile_repairs=args.max_compile_repairs,
         max_fidelity_repairs=args.max_fidelity_repairs,
         max_novelty_repairs=args.max_novelty_repairs,
+        family_hierarchy=family_hierarchy,
     )
     outcome = runtime.run(dual, plan)
+    evidence_diversity = (
+        HypothesisEvidenceDiversityAssessor().assess(
+            dual.grounded_context,
+            outcome.portfolio,
+        )
+    )
 
     _write_json(Path(str(args.output_prefix) + ".draft.json"), outcome.final_draft)
     _write_json(Path(str(args.output_prefix) + ".portfolio.json"), outcome.portfolio)
@@ -164,6 +210,35 @@ def main() -> int:
         Path(str(args.output_prefix) + ".internal_novelty.json"),
         outcome.internal_novelty_report,
     )
+    _write_json(
+        Path(str(args.output_prefix) + ".evidence_diversity.json"),
+        evidence_diversity,
+    )
+
+    if family_hierarchy is not None:
+        _write_json(
+            Path(str(args.output_prefix) + ".family_hierarchy.json"),
+            family_hierarchy,
+        )
+        family_selection = audit_family_premise_selection(
+            family_hierarchy,
+            outcome.portfolio,
+        )
+        _write_json(
+            Path(str(args.output_prefix) + ".family_selection.json"),
+            family_selection,
+        )
+        print(
+            "EC2-C family selection:",
+            f"child_use={family_selection.hypotheses_using_any_child_count}/"
+            f"{family_selection.hypothesis_count}",
+            "parent_incidence=",
+            family_selection.parent_premise_incidence_count,
+            "child_incidence=",
+            family_selection.child_premise_incidence_count,
+            "redundant_parent_all_children=",
+            family_selection.potential_parent_all_children_redundancy_count,
+        )
 
     if args.save_prompts:
         prompt_dir = Path(str(args.output_prefix) + ".prompts")
@@ -218,6 +293,29 @@ def main() -> int:
     print(
         "Saved internal novelty:",
         Path(str(args.output_prefix) + ".internal_novelty.json"),
+    )
+    print(
+        "Evidence statement coverage:",
+        f"{evidence_diversity.used_statement_count}/"
+        f"{evidence_diversity.eligible_statement_count}",
+        f"({evidence_diversity.eligible_statement_coverage:.3f})",
+    )
+    print(
+        "Shared-core premise statements:",
+        evidence_diversity.shared_core_statement_count,
+    )
+    print(
+        "Exact duplicate premise-set groups:",
+        evidence_diversity.exact_premise_set_duplicate_group_count,
+    )
+    print(
+        "Mean/max pairwise statement Jaccard:",
+        f"{evidence_diversity.mean_pairwise_statement_jaccard:.3f}/"
+        f"{evidence_diversity.max_pairwise_statement_jaccard:.3f}",
+    )
+    print(
+        "Saved evidence diversity:",
+        Path(str(args.output_prefix) + ".evidence_diversity.json"),
     )
     return 0
 

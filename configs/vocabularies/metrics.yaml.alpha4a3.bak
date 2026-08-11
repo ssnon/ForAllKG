@@ -1,4 +1,4 @@
-version: '2026-08-11-sers-alpha4a3.3'
+version: '2026-08-04-semantic-si-assets-v4'
 metrics:
   overpotential:
     label: Overpotential
@@ -247,67 +247,3 @@ metrics:
     canonical_unit: '%'
     parameters: []
     aliases: [SERS signal retention, Raman signal retention]
-  particle_yield:
-    label: Particle yield
-    canonical_unit: '%'
-    parameters: []
-    aliases: [particle yield, nanoparticle yield, nanostructure yield]
-  hybridization_complex_formation:
-    label: Sandwich-hybridization complex formation
-    canonical_unit: null
-    parameters: []
-    aliases: [sandwich-hybridization complex formation, sandwich hybridization complex formation, complex formation observation]
-  log_concentration_log_sers_intensity_correlation_coefficient:
-    label: log concentration-log SERS intensity correlation coefficient
-    canonical_unit: null
-    parameters: [analyte]
-    aliases: [log concentration-log SERS intensity correlation coefficient, log concentration–log SERS intensity correlation coefficient, log concentration-log intensity correlation]
-  xrd_diffraction_peak_position:
-    label: XRD diffraction peak position
-    canonical_unit: degree
-    parameters: [reflection]
-    aliases: [XRD peak position, diffraction peak position, 2theta peak position]
-  raman_peak_position:
-    label: Raman peak position
-    canonical_unit: cm^-1
-    parameters: [analyte]
-    aliases: [Raman shift, SERS peak position, Raman band position]
-  aspect_ratio:
-    label: Aspect ratio
-    canonical_unit: null
-    parameters: []
-    aliases: [particle aspect ratio, nanoparticle aspect ratio]
-  lattice_plane_spacing:
-    label: Lattice-plane spacing
-    canonical_unit: null
-    parameters: [component, reflection]
-    aliases: [lattice-plane separation, lattice plane separation, lattice plane spacing, d-spacing, interplanar spacing]
-  crystal_lattice_constant:
-    label: Crystal lattice constant
-    canonical_unit: null
-    parameters: [component]
-    aliases: [lattice constant, unit-cell lattice constant]
-  absorption_band_wavelength:
-    label: Absorption-band wavelength
-    canonical_unit: nm
-    parameters: []
-    aliases:
-      - absorption band wavelength
-      - absorption-band wavelength
-      - absorption maximum wavelength
-  absorption_shoulder_wavelength:
-    label: Absorption shoulder wavelength
-    canonical_unit: nm
-    parameters: []
-    aliases:
-      - absorption shoulder wavelength
-      - absorption shoulder
-  concentration_sers_intensity_correlation_r2:
-    label: Concentration-SERS intensity correlation R²
-    canonical_unit: null
-    parameters: [analyte]
-    aliases:
-      - concentration-SERS intensity correlation R2
-      - concentration–SERS intensity correlation R²
-      - SERS calibration R2
-      - SERS calibration R²

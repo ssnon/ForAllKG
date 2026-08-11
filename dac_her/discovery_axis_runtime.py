@@ -14,6 +14,7 @@ from dac_her.discovery_axis_contracts import (
     DiscoveryHypothesisLineage,
 )
 from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
+from dac_her.evidence_family_selection import EvidenceFamilyHierarchy
 from dac_her.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
@@ -146,6 +147,7 @@ class DiscoveryAxisSynthesisRuntime:
             "reconstructs_existing_corpus_claim",
             "reconstructs_existing_corpus_chain",
         ),
+        family_hierarchy: EvidenceFamilyHierarchy | None = None,
     ) -> None:
         for name, value in {
             "max_compile_repairs": max_compile_repairs,
@@ -164,6 +166,7 @@ class DiscoveryAxisSynthesisRuntime:
         self.max_fidelity_repairs = int(max_fidelity_repairs)
         self.max_novelty_repairs = int(max_novelty_repairs)
         self.reject_novelty_statuses = tuple(reject_novelty_statuses)
+        self.family_hierarchy = family_hierarchy
 
     def _compile_validate(
         self,
@@ -213,7 +216,10 @@ class DiscoveryAxisSynthesisRuntime:
         prompt_records: list[AxisPromptRecord] = []
 
         for axis in plan.axes:
-            assembler = DiscoveryAxisHypothesisPromptAssembler(axis)
+            assembler = DiscoveryAxisHypothesisPromptAssembler(
+                axis,
+                family_hierarchy=self.family_hierarchy,
+            )
             initial_runtime = HypothesisMakerAgentRuntime(
                 self.backend,
                 prompt_assembler=assembler,

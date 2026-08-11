@@ -373,6 +373,18 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
 
     context = run / "hypothesis.context.json"
+    evidence_compression = (
+        run / "hypothesis_context.evidence_compression.json"
+    )
+    evidence_family_diagnostics = (
+        run / "hypothesis_context.evidence_family_diagnostics.json"
+    )
+    path_lineage_diagnostics = (
+        run / "hypothesis_context.path_lineage_diagnostics.json"
+    )
+    path_lineage_propagation = (
+        run / "hypothesis_context.path_lineage_propagation.json"
+    )
     runner.run_stage(
         "[4/13] Build grounded HypothesisContext",
         "scripts.build_hypothesis_context",
@@ -380,10 +392,43 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--packet", str(packet),
             "--report", str(explorer_report),
             "--output", str(context),
+            "--compression-output", str(evidence_compression),
+            "--family-diagnostics-output", str(evidence_family_diagnostics),
+            "--path-lineage-output", str(path_lineage_diagnostics),
+            *(
+                ["--disable-path-lineage-propagation"]
+                if args.disable_path_lineage_propagation
+                else [
+                    "--path-lineage-propagation-output",
+                    str(path_lineage_propagation),
+                ]
+            ),
         ],
-        expected=[context],
+        expected=[
+            context,
+            evidence_compression,
+            evidence_family_diagnostics,
+            path_lineage_diagnostics,
+            *(
+                []
+                if args.disable_path_lineage_propagation
+                else [path_lineage_propagation]
+            ),
+        ],
     )
     context_payload = _load_json(context)
+    compression_payload = _load_json(evidence_compression)
+    family_diagnostics_payload = _load_json(
+        evidence_family_diagnostics
+    )
+    path_lineage_payload = _load_json(
+        path_lineage_diagnostics
+    )
+    propagation_payload = (
+        {}
+        if args.disable_path_lineage_propagation
+        else _load_json(path_lineage_propagation)
+    )
     evidence_rows = context_payload.get("evidence_statements", [])
     evidence_count = len(evidence_rows) if isinstance(evidence_rows, list) else 0
     eligible_count = sum(
@@ -393,6 +438,112 @@ def run_pipeline(args: argparse.Namespace) -> int:
     ) if isinstance(evidence_rows, list) else 0
     runner.manifest["grounded_evidence_statement_count"] = evidence_count
     runner.manifest["eligible_positive_premise_count"] = eligible_count
+    runner.manifest["evidence_compression"] = {
+        "report_id": compression_payload.get("report_id"),
+        "selected_path_paper_count": compression_payload.get(
+            "selected_path_paper_count"
+        ),
+        "explorer_statement_paper_count": compression_payload.get(
+            "explorer_statement_paper_count"
+        ),
+        "eligible_premise_paper_count": compression_payload.get(
+            "eligible_premise_paper_count"
+        ),
+        "eligible_statement_count": compression_payload.get(
+            "eligible_statement_count"
+        ),
+        "eligible_multi_paper_statement_count": compression_payload.get(
+            "eligible_multi_paper_statement_count"
+        ),
+        "mean_papers_per_eligible_statement": compression_payload.get(
+            "mean_papers_per_eligible_statement"
+        ),
+        "eligible_papers_only_in_multi_paper_statements_count": compression_payload.get(
+            "eligible_papers_only_in_multi_paper_statements_count"
+        ),
+        "eligible_multi_paper_heterogeneous_profile_count": compression_payload.get(
+            "eligible_multi_paper_heterogeneous_profile_count"
+        ),
+        "statements_with_declared_support_mismatch_count": compression_payload.get(
+            "statements_with_declared_support_mismatch_count"
+        ),
+        "diagnostic_only": True,
+        "scientific_selection_changed": False,
+    }
+    runner.manifest["evidence_family_diagnostics"] = {
+        "report_id": family_diagnostics_payload.get("report_id"),
+        "decomposition_candidate_count": family_diagnostics_payload.get(
+            "decomposition_candidate_count"
+        ),
+        "decomposition_candidate_statement_ids": family_diagnostics_payload.get(
+            "decomposition_candidate_statement_ids"
+        ),
+        "eligible_homogeneous_multi_paper_statement_count": (
+            family_diagnostics_payload.get(
+                "eligible_homogeneous_multi_paper_statement_count"
+            )
+        ),
+        "eligible_heterogeneous_multi_paper_statement_count": (
+            family_diagnostics_payload.get(
+                "eligible_heterogeneous_multi_paper_statement_count"
+            )
+        ),
+        "eligible_statements_without_explicit_path_lineage_count": (
+            family_diagnostics_payload.get(
+                "eligible_statements_without_explicit_path_lineage_count"
+            )
+        ),
+        "eligible_statements_without_explicit_path_lineage_fraction": (
+            family_diagnostics_payload.get(
+                "eligible_statements_without_explicit_path_lineage_fraction"
+            )
+        ),
+        "diagnostic_only": True,
+        "scientific_selection_changed": False,
+        "automatic_statement_decomposition_allowed": False,
+    }
+    runner.manifest["path_lineage_diagnostics"] = {
+        "report_id": path_lineage_payload.get("report_id"),
+        "selected_path_count": path_lineage_payload.get(
+            "selected_path_count"
+        ),
+        "selected_mechanistic_path_count": path_lineage_payload.get(
+            "selected_mechanistic_path_count"
+        ),
+        "eligible_statement_count": path_lineage_payload.get(
+            "eligible_statement_count"
+        ),
+        "eligible_with_explicit_path_lineage_count": path_lineage_payload.get(
+            "eligible_with_explicit_path_lineage_count"
+        ),
+        "eligible_with_deterministic_attribution_count": path_lineage_payload.get(
+            "eligible_with_deterministic_attribution_count"
+        ),
+        "eligible_with_deterministic_mechanistic_attribution_count": path_lineage_payload.get(
+            "eligible_with_deterministic_mechanistic_attribution_count"
+        ),
+        "recoverable_missing_explicit_path_lineage_count": path_lineage_payload.get(
+            "recoverable_missing_explicit_path_lineage_count"
+        ),
+        "unrecoverable_missing_explicit_path_lineage_count": path_lineage_payload.get(
+            "unrecoverable_missing_explicit_path_lineage_count"
+        ),
+        "diagnostic_only": True,
+        "scientific_selection_changed": False,
+        "automatic_path_propagation_allowed": False,
+    }
+    runner.manifest["path_lineage_propagation"] = {
+        "enabled": not args.disable_path_lineage_propagation,
+        "report_id": propagation_payload.get("report_id"),
+        "propagated_statement_count": propagation_payload.get("propagated_statement_count"),
+        "eligible_statement_count": propagation_payload.get("eligible_statement_count"),
+        "total_propagated_path_id_count": propagation_payload.get("total_propagated_path_id_count"),
+        "pre_explicit_path_lineage_statement_count": propagation_payload.get("pre_explicit_path_lineage_statement_count"),
+        "post_explicit_path_lineage_statement_count": propagation_payload.get("post_explicit_path_lineage_statement_count"),
+        "scientific_support_changed_statement_count": propagation_payload.get("scientific_support_changed_statement_count"),
+        "premise_eligibility_changed_statement_count": propagation_payload.get("premise_eligibility_changed_statement_count"),
+        "mode": "minimal_deterministic_cover",
+    }
     runner._save_manifest()
     if evidence_count == 0:
         raise RuntimeError(
@@ -460,6 +611,9 @@ def run_pipeline(args: argparse.Namespace) -> int:
     axis_portfolio = run / "hypothesis_axis_a4.portfolio.json"
     axis_plan = run / "hypothesis_axis_a4.axis_plan.json"
     lineage = run / "hypothesis_axis_a4.lineage.json"
+    axis_evidence_diversity = (
+        run / "hypothesis_axis_a4.evidence_diversity.json"
+    )
     runner.run_stage(
         "[8/13] Discovery-axis hypothesis synthesis",
         "scripts.run_discovery_axis_hypothesis_maker",
@@ -471,10 +625,45 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--output-prefix", str(axis_prefix),
             "--save-prompts",
         ],
-        expected=[axis_portfolio, axis_plan, lineage],
+        expected=[
+            axis_portfolio,
+            axis_plan,
+            lineage,
+            axis_evidence_diversity,
+        ],
     )
     initial_hypotheses = _hypothesis_count(axis_portfolio)
+    diversity_payload = _load_json(axis_evidence_diversity)
     runner.manifest["initial_hypothesis_count"] = initial_hypotheses
+    runner.manifest["hypothesis_evidence_diversity"] = {
+        "report_id": diversity_payload.get("report_id"),
+        "eligible_statement_count": diversity_payload.get(
+            "eligible_statement_count"
+        ),
+        "used_statement_count": diversity_payload.get(
+            "used_statement_count"
+        ),
+        "eligible_statement_coverage": diversity_payload.get(
+            "eligible_statement_coverage"
+        ),
+        "shared_core_statement_count": diversity_payload.get(
+            "shared_core_statement_count"
+        ),
+        "distinct_premise_set_count": diversity_payload.get(
+            "distinct_premise_set_count"
+        ),
+        "exact_premise_set_duplicate_group_count": diversity_payload.get(
+            "exact_premise_set_duplicate_group_count"
+        ),
+        "mean_pairwise_statement_jaccard": diversity_payload.get(
+            "mean_pairwise_statement_jaccard"
+        ),
+        "max_pairwise_statement_jaccard": diversity_payload.get(
+            "max_pairwise_statement_jaccard"
+        ),
+        "diagnostic_only": True,
+        "scientific_selection_changed": False,
+    }
     runner._save_manifest()
     if initial_hypotheses == 0:
         print(
@@ -703,6 +892,11 @@ def parse_args() -> argparse.Namespace:
             "generation. Retries are used only when the model output fails the "
             "strict HypothesisPortfolioDraft schema."
         ),
+    )
+    parser.add_argument(
+        "--disable-path-lineage-propagation",
+        action="store_true",
+        help="Disable PL1-B minimal deterministic path-lineage repair.",
     )
     parser.add_argument(
         "--model",

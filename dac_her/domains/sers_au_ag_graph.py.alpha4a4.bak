@@ -116,14 +116,12 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "USES_REPORTER",
-        source_types=frozenset({"Experiment", "Calculation", "SynthesisMethod"}),
+        source_types=frozenset({"Experiment", "SynthesisMethod"}),
         target_types=frozenset({"RamanReporter"}),
     ),
     RelationConstraint(
         "USES_OPTICAL_CONDITION",
-        source_types=frozenset({
-            "Experiment", "Calculation", "Measurement", "SynthesisMethod",
-        }),
+        source_types=frozenset({"Experiment", "Calculation", "Measurement"}),
         target_types=frozenset({"OpticalCondition"}),
     ),
     RelationConstraint(
