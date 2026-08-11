@@ -164,6 +164,20 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--endpoint-paper-novelty-bonus",
+        type=float,
+        default=0.01,
+        help=(
+            "Per-side bounded bonus for a previously unseen source/target paper. "
+            "Semantic tier remains a hard priority."
+        ),
+    )
+    parser.add_argument(
+        "--disable-endpoint-paper-diversity",
+        action="store_true",
+        help="Disable RDP1 endpoint paper-diversity reranking for ablation.",
+    )
+    parser.add_argument(
         "--disable-endpoint-selector",
         action="store_true",
         help=(
@@ -238,6 +252,22 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Preferred maximum edge-set Jaccard overlap "
             "between returned paths before relaxation."
+        ),
+    )
+    parser.add_argument(
+        "--disable-path-quality-ranking",
+        action="store_true",
+        help=(
+            "Disable RDP3 mechanism-mode scientific path-quality ordering. "
+            "Endpoint relevance remains primary."
+        ),
+    )
+    parser.add_argument(
+        "--disable-bundle-coverage-first",
+        action="store_true",
+        help=(
+            "Disable RDP2 paper-coverage/signature-first strict passes while "
+            "retaining the existing PathBundleSelector caps and overlap rules."
         ),
     )
     parser.add_argument(
@@ -369,8 +399,73 @@ def _map(
     ]
 
 
+def _path_scientific_quality_key(
+    row: dict,
+) -> tuple:
+    quality = row.get(
+        "path_quality",
+        {},
+    )
+    if not isinstance(quality, dict):
+        quality = {}
+
+    mechanism_band = str(
+        quality.get(
+            "mechanistic_content",
+            "unknown",
+        )
+    ).strip().lower()
+    mechanism_rank = {
+        "high": 0,
+        "medium": 1,
+        "low": 2,
+    }.get(
+        mechanism_band,
+        3,
+    )
+
+    try:
+        mechanism_score = float(
+            quality.get(
+                "mechanistic_content_score",
+                0.0,
+            )
+        )
+    except (TypeError, ValueError):
+        mechanism_score = 0.0
+
+    try:
+        navigation_fraction = float(
+            quality.get(
+                "navigation_edge_fraction",
+                1.0,
+            )
+        )
+    except (TypeError, ValueError):
+        navigation_fraction = 1.0
+
+    try:
+        reverse_fraction = float(
+            quality.get(
+                "reverse_fraction",
+                1.0,
+            )
+        )
+    except (TypeError, ValueError):
+        reverse_fraction = 1.0
+
+    return (
+        mechanism_rank,
+        -mechanism_score,
+        navigation_fraction,
+        reverse_fraction,
+    )
+
+
 def _path_sort_key(
     row: dict,
+    *,
+    quality_aware: bool = False,
 ) -> tuple:
     waypoint = row.get("waypoint")
     if isinstance(waypoint, dict):
@@ -416,15 +511,26 @@ def _path_sort_key(
         tier = 99
         pair_score = 0.0
 
-    # If a semantic waypoint exists, its query relevance is a hard
-    # preference signal before endpoint/path cost. For ordinary traversal
-    # these leading fields are equal and the v2.4.5 ordering is preserved.
+    quality_key = (
+        _path_scientific_quality_key(
+            row
+        )
+        if quality_aware
+        else (
+            0,
+            0.0,
+            0.0,
+            0.0,
+        )
+    )
+
     return (
         waypoint_tier,
         -waypoint_similarity,
         waypoint_rank,
         tier,
         -pair_score,
+        *quality_key,
         float(row["total_cost"]),
         int(row["hop_count"]),
         str(row["path_id"]),
@@ -752,7 +858,12 @@ def main() -> None:
         ]
     else:
         selector = EndpointPairSelector(
-            graph
+            graph,
+            paper_novelty_bonus=(
+                0.0
+                if args.disable_endpoint_paper_diversity
+                else args.endpoint_paper_novelty_bonus
+            ),
         )
         (
             selected_pairs,
@@ -865,9 +976,19 @@ def main() -> None:
                     path.path_id
                 ] = row
 
+    path_quality_ranking_enabled = (
+        args.mode == "mechanism"
+        and not args.disable_path_quality_ranking
+    )
+
     all_paths = sorted(
         collected.values(),
-        key=_path_sort_key,
+        key=lambda row: _path_sort_key(
+            row,
+            quality_aware=(
+                path_quality_ranking_enabled
+            ),
+        ),
     )
 
     if (
@@ -912,7 +1033,10 @@ def main() -> None:
         }
     else:
         bundle_result = PathBundleSelector(
-            policy=bundle_policy
+            policy=bundle_policy,
+            coverage_first=(
+                not args.disable_bundle_coverage_first
+            ),
         ).select(
             bundle_candidate_paths,
             top_k=args.top_k,
@@ -922,6 +1046,9 @@ def main() -> None:
         )
         bundle_selection = {
             "enabled": True,
+            "coverage_first_enabled": (
+                not args.disable_bundle_coverage_first
+            ),
             **bundle_result.to_dict(),
         }
 
@@ -972,6 +1099,31 @@ def main() -> None:
         for path_type, path_ids
         in returned_path_groups.items()
     }
+
+    def path_paper_ids(
+        rows: list[dict],
+    ) -> list[str]:
+        paper_ids: set[str] = set()
+        for row in rows:
+            values = row.get(
+                "visited_paper_ids",
+                row.get(
+                    "source_paper_ids",
+                    [],
+                ),
+            )
+            for value in values:
+                paper_id = str(value).strip()
+                if paper_id:
+                    paper_ids.add(paper_id)
+        return sorted(paper_ids)
+
+    candidate_paper_ids = path_paper_ids(
+        bundle_candidate_paths
+    )
+    returned_paper_ids = path_paper_ids(
+        paths
+    )
 
     payload = {
         "corpus_id": args.corpus_id,
@@ -1029,6 +1181,17 @@ def main() -> None:
         "endpoint_selector_enabled": (
             not args.disable_endpoint_selector
         ),
+        "endpoint_pair_selection_policy": {
+            "paper_diversity_enabled": (
+                not args.disable_endpoint_paper_diversity
+                and not args.disable_endpoint_selector
+            ),
+            "paper_novelty_bonus": (
+                0.0 if args.disable_endpoint_paper_diversity
+                else args.endpoint_paper_novelty_bonus
+            ),
+            "semantic_tier_is_hard_priority": True,
+        },
         "endpoint_pair_count": len(
             endpoint_pairs
         ),
@@ -1071,6 +1234,37 @@ def main() -> None:
         "bundle_selection": (
             bundle_selection
         ),
+        "path_ranking_policy": {
+            "quality_ranking_enabled": (
+                path_quality_ranking_enabled
+            ),
+            "mechanism_mode_only": True,
+            "priority_order": [
+                "semantic_waypoint_relevance",
+                "endpoint_semantic_tier",
+                "endpoint_pair_score",
+                "mechanistic_content_band",
+                "mechanistic_content_score",
+                "navigation_edge_fraction",
+                "reverse_fraction",
+                "total_cost",
+                "hop_count",
+            ],
+        },
+        "path_paper_coverage": {
+            "candidate_distinct_paper_count": len(
+                candidate_paper_ids
+            ),
+            "candidate_paper_ids": (
+                candidate_paper_ids
+            ),
+            "returned_distinct_paper_count": len(
+                returned_paper_ids
+            ),
+            "returned_paper_ids": (
+                returned_paper_ids
+            ),
+        },
         # Backward-compatible aliases now refer to returned paths.
         "path_count": len(paths),
         "candidate_path_count_before_top_k": (

@@ -28,6 +28,24 @@ def _as_bool(value: Any) -> bool:
     }
 
 
+def _paper_id_for_node(
+    graph: nx.DiGraph,
+    node_id: str,
+) -> str | None:
+    """Resolve paper provenance without depending on one scientific domain."""
+    if node_id in graph:
+        attrs = graph.nodes[node_id]
+        for key in ("source_paper_id", "paper_id"):
+            value = str(attrs.get(key, "")).strip()
+            if value:
+                return value
+    if node_id.startswith("paper::"):
+        parts = node_id.split("::", 2)
+        if len(parts) >= 2 and parts[1].strip():
+            return parts[1].strip()
+    return None
+
+
 def _component_index(
     graph: nx.DiGraph,
 ) -> tuple[
@@ -89,6 +107,13 @@ class EndpointPairDiagnostic:
     pair_score: float
     selected: bool
     selection_reason: str
+    source_paper_id: str | None = None
+    target_paper_id: str | None = None
+    diversity_bonus: float = 0.0
+    selection_score: float | None = None
+    selection_rank: int | None = None
+    source_paper_novel: bool = False
+    target_paper_novel: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -110,6 +135,7 @@ class EndpointPairSelector:
         containment_bonus: float = 0.02,
         hop_penalty: float = 0.015,
         cost_penalty: float = 0.005,
+        paper_novelty_bonus: float = 0.01,
     ) -> None:
         if graph.is_multigraph():
             raise TypeError(
@@ -131,6 +157,9 @@ class EndpointPairSelector:
         )
         self.hop_penalty = hop_penalty
         self.cost_penalty = cost_penalty
+        if paper_novelty_bonus < 0:
+            raise ValueError("paper_novelty_bonus must be >= 0")
+        self.paper_novelty_bonus = float(paper_novelty_bonus)
         (
             self.node_to_component,
             self.component_sizes,
@@ -253,6 +282,7 @@ class EndpointPairSelector:
                     False,
                 )
             )
+            source_paper_id = _paper_id_for_node(self.graph, source_id)
             source_component = (
                 self.node_to_component.get(
                     source_id
@@ -318,6 +348,7 @@ class EndpointPairSelector:
                     )
                 )
 
+                target_paper_id = _paper_id_for_node(self.graph, target_id)
                 target_component = (
                     self.node_to_component.get(
                         target_id
@@ -464,6 +495,9 @@ class EndpointPairSelector:
                         ),
                         selected=False,
                         selection_reason=reason,
+                        source_paper_id=source_paper_id,
+                        target_paper_id=target_paper_id,
+                        selection_score=float(pair_score),
                     )
                 )
 
@@ -474,39 +508,90 @@ class EndpointPairSelector:
             == "eligible"
         ]
 
-        eligible.sort(
-            key=lambda item: (
+        def base_sort_key(item: EndpointPairDiagnostic) -> tuple:
+            return (
                 item.semantic_tier,
                 -item.pair_score,
-                -(
-                    item.source_similarity
-                    + item.target_similarity
-                ),
-                (
-                    item.shortest_hops
-                    if item.shortest_hops
-                    is not None
-                    else 10**9
-                ),
-                (
-                    item.shortest_weighted_cost
-                    if item.shortest_weighted_cost
-                    is not None
-                    else float("inf")
-                ),
+                -(item.source_similarity + item.target_similarity),
+                item.shortest_hops if item.shortest_hops is not None else 10**9,
+                item.shortest_weighted_cost if item.shortest_weighted_cost is not None else float("inf"),
                 item.source_node_id,
                 item.target_node_id,
             )
-        )
 
-        selected_keys = {
-            (
-                item.source_node_id,
-                item.target_node_id,
-            )
-            for item
-            in eligible[:top_k]
-        }
+        eligible.sort(key=base_sort_key)
+        selected_keys: set[tuple[str, str]] = set()
+        selection_metadata: dict[tuple[str, str], dict[str, Any]] = {}
+        used_source_papers: set[str] = set()
+        used_target_papers: set[str] = set()
+        remaining = list(eligible)
+
+        # Semantic tier remains a hard priority. Within that tier, reward
+        # bounded marginal paper coverage rather than forcing a quota.
+        while remaining and len(selected_keys) < top_k:
+            active_tier = min(item.semantic_tier for item in remaining)
+            tier_rows = [item for item in remaining if item.semantic_tier == active_tier]
+            scored = []
+            for item in tier_rows:
+                # RDP1.1: reward unique newly introduced papers rather than
+                # endpoint roles. A same-paper pair P -> P adds one paper,
+                # therefore it receives one novelty bonus instead of two.
+                selected_papers = (
+                    used_source_papers
+                    | used_target_papers
+                )
+                source_novel = bool(
+                    item.source_paper_id
+                    and item.source_paper_id
+                    not in selected_papers
+                )
+                target_novel = bool(
+                    item.target_paper_id
+                    and item.target_paper_id
+                    not in selected_papers
+                )
+                pair_papers = {
+                    paper_id
+                    for paper_id in (
+                        item.source_paper_id,
+                        item.target_paper_id,
+                    )
+                    if paper_id
+                }
+                new_paper_count = len(
+                    pair_papers - selected_papers
+                )
+                diversity_bonus = (
+                    self.paper_novelty_bonus
+                    * new_paper_count
+                )
+                selection_score = item.pair_score + diversity_bonus
+                score_key = (
+                    -selection_score,
+                    -item.pair_score,
+                    -(item.source_similarity + item.target_similarity),
+                    item.shortest_hops if item.shortest_hops is not None else 10**9,
+                    item.shortest_weighted_cost if item.shortest_weighted_cost is not None else float("inf"),
+                    item.source_node_id,
+                    item.target_node_id,
+                )
+                scored.append((score_key, item, diversity_bonus, selection_score, source_novel, target_novel))
+
+            _, chosen, bonus, score, source_novel, target_novel = min(scored, key=lambda row: row[0])
+            key = (chosen.source_node_id, chosen.target_node_id)
+            selected_keys.add(key)
+            selection_metadata[key] = {
+                "diversity_bonus": float(bonus),
+                "selection_score": float(score),
+                "selection_rank": len(selected_keys),
+                "source_paper_novel": source_novel,
+                "target_paper_novel": target_novel,
+            }
+            if chosen.source_paper_id:
+                used_source_papers.add(chosen.source_paper_id)
+            if chosen.target_paper_id:
+                used_target_papers.add(chosen.target_paper_id)
+            remaining.remove(chosen)
 
         selected: list[
             EndpointPairDiagnostic
@@ -525,7 +610,12 @@ class EndpointPairSelector:
                 payload["selected"] = True
                 payload[
                     "selection_reason"
-                ] = "selected_reachable_pair"
+                ] = (
+                    "selected_reachable_pair_diversity"
+                    if self.paper_novelty_bonus > 0
+                    else "selected_reachable_pair"
+                )
+                payload.update(selection_metadata[key])
                 chosen = (
                     EndpointPairDiagnostic(
                         **payload
@@ -538,14 +628,9 @@ class EndpointPairSelector:
 
         selected.sort(
             key=lambda item: (
+                item.selection_rank if item.selection_rank is not None else 10**9,
                 item.semantic_tier,
                 -item.pair_score,
-                (
-                    item.shortest_hops
-                    if item.shortest_hops
-                    is not None
-                    else 10**9
-                ),
                 item.source_node_id,
                 item.target_node_id,
             )

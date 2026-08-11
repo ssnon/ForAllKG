@@ -273,10 +273,14 @@ class PathBundleSelector:
         self,
         *,
         policy: PathBundlePolicy | None = None,
+        coverage_first: bool = True,
     ) -> None:
         self.policy = (
             policy
             or PathBundlePolicy()
+        )
+        self.coverage_first = bool(
+            coverage_first
         )
 
     def _max_overlap(
@@ -375,6 +379,7 @@ class PathBundleSelector:
             tuple[str, ...],
             int,
         ] = {}
+        selected_papers: set[str] = set()
 
         diagnostic_state: dict[
             str,
@@ -388,6 +393,8 @@ class PathBundleSelector:
             enforce_endpoint: bool,
             enforce_papers: bool,
             enforce_overlap: bool,
+            require_new_paper: bool = False,
+            require_new_signature: bool = False,
         ) -> bool:
             path_id = str(
                 row["path_id"]
@@ -408,8 +415,36 @@ class PathBundleSelector:
                     edge_sets,
                 )
             )
+            new_papers = tuple(
+                paper_id
+                for paper_id in papers
+                if paper_id not in selected_papers
+            )
+            signature_novel = (
+                paper_counts.get(
+                    papers,
+                    0,
+                )
+                == 0
+            )
 
             reasons: list[str] = []
+
+            if (
+                require_new_paper
+                and not new_papers
+            ):
+                reasons.append(
+                    "no_new_paper_gain"
+                )
+
+            if (
+                require_new_signature
+                and not signature_novel
+            ):
+                reasons.append(
+                    "paper_signature_already_selected"
+                )
 
             if (
                 enforce_endpoint
@@ -490,34 +525,80 @@ class PathBundleSelector:
                 )
                 + 1
             )
+            selected_papers.update(
+                papers
+            )
             return True
 
-        passes = [
-            (
-                "strict_diversity",
-                True,
-                True,
-                True,
-            ),
-            (
-                "relaxed_edge_overlap",
-                True,
-                True,
-                False,
-            ),
-            (
-                "relaxed_all_diversity",
-                False,
-                False,
-                False,
-            ),
-        ]
+        passes: list[
+            tuple[
+                str,
+                bool,
+                bool,
+                bool,
+                bool,
+                bool,
+            ]
+        ] = []
+
+        if self.coverage_first:
+            passes.extend(
+                [
+                    (
+                        "strict_new_paper_coverage",
+                        True,
+                        True,
+                        True,
+                        True,
+                        False,
+                    ),
+                    (
+                        "strict_new_signature",
+                        True,
+                        True,
+                        True,
+                        False,
+                        True,
+                    ),
+                ]
+            )
+
+        passes.extend(
+            [
+                (
+                    "strict_diversity",
+                    True,
+                    True,
+                    True,
+                    False,
+                    False,
+                ),
+                (
+                    "relaxed_edge_overlap",
+                    True,
+                    True,
+                    False,
+                    False,
+                    False,
+                ),
+                (
+                    "relaxed_all_diversity",
+                    False,
+                    False,
+                    False,
+                    False,
+                    False,
+                ),
+            ]
+        )
 
         for (
             pass_name,
             enforce_endpoint,
             enforce_papers,
             enforce_overlap,
+            require_new_paper,
+            require_new_signature,
         ) in passes:
             for row in rows:
                 if len(selected) >= top_k:
@@ -534,6 +615,12 @@ class PathBundleSelector:
                     ),
                     enforce_overlap=(
                         enforce_overlap
+                    ),
+                    require_new_paper=(
+                        require_new_paper
+                    ),
+                    require_new_signature=(
+                        require_new_signature
                     ),
                 )
 
