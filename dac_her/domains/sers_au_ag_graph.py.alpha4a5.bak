@@ -96,7 +96,7 @@ SERS_RELATION_CONSTRAINTS = (
     ),
     RelationConstraint(
         "TESTED_IN",
-        source_types=_SUBSTRATE_LIKE | frozenset({"Support"}),
+        source_types=_SUBSTRATE_LIKE,
         target_types=frozenset({"Experiment"}),
     ),
     RelationConstraint(

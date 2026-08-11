@@ -10,7 +10,7 @@ import networkx as nx
 
 from dac_her.graph_domain import GraphDomainAdapter
 
-SERS_GRAPH_DIAGNOSTICS_VERSION = "sers-alpha4a.5.2"
+SERS_GRAPH_DIAGNOSTICS_VERSION = "sers-alpha4a.5"
 
 
 def _json(value: Any) -> str:
@@ -191,20 +191,6 @@ def apply_graph_domain_canonicalization(
     return graph, summary
 
 
-def _contains_computational_acronym(text: str) -> bool:
-    """Match computational acronyms as tokens, not arbitrary substrings.
-
-    This prevents false positives such as ``FEM`` matching ``femtomolar``.
-    """
-    import re
-
-    acronym_pattern = re.compile(
-        r"(?<![A-Za-z0-9])(?:DDA|FDTD|FEM|BEM|DFT|TDDFT)(?![A-Za-z0-9])",
-        flags=re.IGNORECASE,
-    )
-    return bool(acronym_pattern.search(text))
-
-
 def node_role_diagnostics(
     graph: nx.MultiDiGraph,
     *,
@@ -216,13 +202,21 @@ def node_role_diagnostics(
 
     rows: list[dict[str, Any]] = []
 
-    strong_calculation_phrases = (
+    # alpha4a.5: distinguish explicit computational identity from experimental
+    # descriptions that merely mention a downstream "calculation" such as EF.
+    strong_calculation_markers = (
+        "dda",
         "discrete dipole",
+        "fdtd",
         "finite-difference time-domain",
         "finite difference time domain",
+        "fem",
         "finite element",
+        "bem",
         "boundary element",
+        "dft",
         "density functional",
+        "tddft",
         "time-dependent density functional",
         "simulation",
         "simulated",
@@ -297,35 +291,33 @@ def node_role_diagnostics(
             )
         )
 
-        explicit_method_signal = (
-            _contains_computational_acronym(identity_text)
-            or any(
-                phrase in identity_text
-                for phrase in strong_calculation_phrases
+        explicit_method_signal = any(
+            marker in identity_text
+            for marker in strong_calculation_markers
+        )
+        explicit_description_signal = any(
+            marker in description_text
+            for marker in (
+                "dda",
+                "discrete dipole",
+                "fdtd",
+                "finite-difference time-domain",
+                "finite difference time domain",
+                "fem",
+                "finite element",
+                "bem",
+                "boundary element",
+                "dft",
+                "density functional",
+                "tddft",
+                "time-dependent density functional",
+                "simulation",
+                "simulated",
+                "numerical simulation",
+                "field simulation",
+                "e-field simulation",
             )
         )
-
-        explicit_description_signal = (
-            _contains_computational_acronym(description_text)
-            or any(
-                phrase in description_text
-                for phrase in (
-                    "discrete dipole",
-                    "finite-difference time-domain",
-                    "finite difference time domain",
-                    "finite element",
-                    "boundary element",
-                    "density functional",
-                    "time-dependent density functional",
-                    "simulation",
-                    "simulated",
-                    "numerical simulation",
-                    "field simulation",
-                    "e-field simulation",
-                )
-            )
-        )
-
         weak_identity_signal = (
             any(
                 marker in identity_text
