@@ -39,10 +39,6 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         support_signature_tokens=frozenset({
             "silica", "sio2", "glass", "silicon", "film", "substrate",
         }),
-        high_priority_review_types=frozenset({
-            "PlasmonicSubstrate", "Nanostructure", "Support", "Material",
-            "StructuralMotif", "Morphology", "Analyte", "RamanReporter",
-        }),
     ),
     discovery=DiscoverySemantics(
         generic_entity_types=frozenset({
@@ -57,9 +53,8 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         ),
         scaffold_relations=frozenset({
             "HAS_COMPONENT", "HAS_ARCHITECTURE", "HAS_STRUCTURAL_MOTIF",
-            "HAS_MORPHOLOGY", "HAS_SUPPORT", "PREPARED_BY", "USES_PRECURSOR",
-            "TESTED_IN", "CHARACTERIZED_IN", "SIMULATED_BY", "USES_ANALYTE",
-            "USES_REPORTER", "USES_OPTICAL_CONDITION", "APPLIES_TO",
+            "HAS_SUPPORT", "PREPARED_BY", "USES_PRECURSOR", "TESTED_IN",
+            "CHARACTERIZED_IN", "SIMULATED_BY", "APPLIES_TO",
             "ALIGNS_TO_REGISTRY_ENTITY", "HAS_PAPER_MENTION",
         }),
         context_node_types=frozenset({
@@ -147,6 +142,5 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         low_scope_reason="low_sers_system_scope_overlap",
     ),
     extraction_adapter_id="sers_au_ag",
-    graph_adapter_id="sers_au_ag",
     feasibility_adapter_id=None,
 )

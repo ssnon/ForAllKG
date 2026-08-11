@@ -160,13 +160,7 @@ def _load_jsonl_resolution_plan(
     path: Path,
     *,
     graph: nx.Graph,
-    resolvable_node_types: frozenset[str] | None = None,
 ) -> ResolutionPlan:
-    allowed_resolvable_types = (
-        RESOLVABLE_NODE_TYPES
-        if resolvable_node_types is None
-        else resolvable_node_types
-    )
     records = read_jsonl(path)
     dsu = _DisjointSet()
     approved_records: list[tuple[str, str, str | None, bool]] = []
@@ -208,7 +202,7 @@ def _load_jsonl_resolution_plan(
                 "Claim nodes are not eligible for destructive paper-level "
                 f"same_entity merging: {left_id!r}, {right_id!r}."
             )
-        if left_type not in allowed_resolvable_types and left_type != "Measurement":
+        if left_type not in RESOLVABLE_NODE_TYPES and left_type != "Measurement":
             raise ValueError(
                 f"Unsupported node type in resolution decision: {left_type!r}."
             )
@@ -279,7 +273,6 @@ def load_resolution_plan(
     path: str | Path | None,
     *,
     graph: nx.Graph,
-    resolvable_node_types: frozenset[str] | None = None,
 ) -> ResolutionPlan:
     if path is None:
         return ResolutionPlan(
@@ -302,11 +295,7 @@ def load_resolution_plan(
         )
 
     if resolved.suffix.lower() == ".jsonl":
-        return _load_jsonl_resolution_plan(
-            resolved,
-            graph=graph,
-            resolvable_node_types=resolvable_node_types,
-        )
+        return _load_jsonl_resolution_plan(resolved, graph=graph)
     if resolved.suffix.lower() == ".json":
         return _load_legacy_resolution_json(resolved)
     raise ValueError(
@@ -319,7 +308,6 @@ def load_resolution_decisions(
     path: str | Path | None,
     *,
     graph: nx.Graph | None = None,
-    resolvable_node_types: frozenset[str] | None = None,
 ) -> tuple[dict[str, str], set[str]]:
     """Backward-compatible tuple API.
 
@@ -334,11 +322,7 @@ def load_resolution_decisions(
     if graph is None:
         plan = _load_legacy_resolution_json(resolved)
     else:
-        plan = load_resolution_plan(
-            resolved,
-            graph=graph,
-            resolvable_node_types=resolvable_node_types,
-        )
+        plan = load_resolution_plan(resolved, graph=graph)
     return plan.aliases, plan.drop_node_ids
 
 

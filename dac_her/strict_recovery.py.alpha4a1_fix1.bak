@@ -134,8 +134,7 @@ def _domain_gate(
     *,
     extraction_adapter: ExtractionDomainAdapter,
 ) -> KnowledgeGraphDraft:
-    """Canonicalize declared aliases, then fail closed on true drift."""
-    draft = extraction_adapter.normalize_draft_vocabulary(draft)
+    """Fail closed when recovery crosses the active domain vocabulary."""
     extraction_adapter.validate_draft_vocabulary(draft)
     return draft
 
@@ -352,23 +351,10 @@ def extract_one_chunk(
                 }
 
             if generation_attempt + 1 < policy.max_generation_attempts:
-                if (
-                    isinstance(error, ValueError)
-                    and "Extraction-domain vocabulary violation" in str(error)
-                ):
-                    generation_feedback = (
-                        "The previous response crossed the active scientific-domain "
-                        "vocabulary. Use only the exact entity and relation names "
-                        "defined by the SYSTEM prompt. Experiment, Calculation, "
-                        "Measurement, and claim objects must use their dedicated "
-                        "top-level collections rather than entities[]. "
-                        f"Error: {error}"
-                    )
-                else:
-                    generation_feedback = (
-                        "The previous response did not satisfy the node-level JSON "
-                        f"schema. Return a complete corrected graph. Error: {error}"
-                    )
+                generation_feedback = (
+                    "The previous response did not satisfy the node-level JSON schema. "
+                    f"Return a complete corrected graph. Error: {error}"
+                )
                 continue
 
             quarantine_path = quarantine_dir / f"{safe_chunk_id}.json"
@@ -985,17 +971,6 @@ def extract_one_chunk(
 
                 attempt_usages.append(usage)
                 micro_reextract_attempts += 1
-
-                if (
-                    isinstance(error, ValueError)
-                    and "Extraction-domain vocabulary violation" in str(error)
-                ):
-                    patch_feedback = (
-                        "The micro-reextract was rejected by the active domain "
-                        "vocabulary gate. Keep the current source-grounded graph, "
-                        "repair only the reported validation issues, and use exact "
-                        f"domain relation/entity names. Rejection: {error}"
-                    )
 
                 continue
             

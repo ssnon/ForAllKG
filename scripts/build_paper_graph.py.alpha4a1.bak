@@ -11,7 +11,6 @@ import networkx as nx
 
 from dac_her.config import get_paper_config
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.graph_registry import get_graph_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
 from dac_her.extraction_policy import ExtractionPolicy
@@ -42,7 +41,10 @@ from dac_her.resolution_candidates import (
     write_candidates_csv,
 )
 from dac_her.claim_overlap import write_claim_overlap_audit
-from dac_her.semantic_roles import SemanticRoleAdjustment
+from dac_her.semantic_roles import (
+    SemanticRoleAdjustment,
+    normalize_measurement_subject_roles,
+)
 from dac_her.run_state import (
     paper_output_root,
     read_json,
@@ -258,15 +260,17 @@ def write_id_collision_report(
 def write_semantic_role_report(
     run_dir: Path,
     adjustments: list[SemanticRoleAdjustment],
-    *,
-    policy: str,
 ) -> None:
     rows = [adjustment.to_dict() for adjustment in adjustments]
     write_json(
         run_dir / "semantic_role_report.json",
         {
             "adjustment_count": len(rows),
-            "policy": policy,
+            "policy": (
+                "Material/Support mentions are inferred as Catalyst only when "
+                "EVALUATED_IN and MEASURED_FOR/HAS_MEASUREMENT structure "
+                "jointly establishes a catalytic role."
+            ),
             "adjustments": rows,
         },
     )
@@ -407,7 +411,6 @@ def main() -> None:
     args = parse_args()
     domain_profile = get_domain_profile(args.domain_profile)
     extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
-    graph_adapter = get_graph_adapter(domain_profile.profile_id)
     data_root = args.data_root or extraction_adapter.default_data_root
     paper = get_paper_config(
         args.config,
@@ -479,8 +482,6 @@ def main() -> None:
         run_id=str(run_metadata["run_id"]),
         run_fingerprint=str(run_metadata["run_fingerprint"]),
         graph_stage="raw_merged",
-        domain_profile_id=domain_profile.profile_id,
-        graph_adapter_id=graph_adapter.adapter_id,
         **quality_attrs,
     )
 
@@ -513,7 +514,7 @@ def main() -> None:
 
         chunk_graph = knowledge_graph_to_networkx(result)
         chunk_graph, chunk_role_adjustments = (
-            graph_adapter.normalize_semantic_roles(
+            normalize_measurement_subject_roles(
                 chunk_graph,
                 chunk_id=result.chunk_id,
             )
@@ -530,11 +531,7 @@ def main() -> None:
         loaded_chunk_ids.append(result.chunk_id)
 
     write_id_collision_report(run_dir, id_collisions)
-    write_semantic_role_report(
-        run_dir,
-        semantic_role_adjustments,
-        policy=graph_adapter.semantic_role_policy,
-    )
+    write_semantic_role_report(run_dir, semantic_role_adjustments)
     if id_collisions:
         print(
             f"[NODE-ID COLLISIONS] {len(id_collisions)} collision(s) "
@@ -595,10 +592,7 @@ def main() -> None:
 
     # Candidate generation is non-destructive. Only exact registry-safe
     # Metal/Reaction candidates are auto-approved; all others remain review.
-    candidates, generated_candidate_summary = generate_resolution_candidates(
-        merged,
-        domain_profile=domain_profile,
-    )
+    candidates, generated_candidate_summary = generate_resolution_candidates(merged)
     write_candidates_csv(resolution_dir / "candidates.csv", candidates)
     candidate_summary_payload = generated_candidate_summary.to_dict()
     write_json(resolution_dir / "candidate_summary.json", candidate_summary_payload)
@@ -617,9 +611,6 @@ def main() -> None:
     resolution_plan = load_resolution_plan(
         decisions_path,
         graph=merged,
-        resolvable_node_types=(
-            domain_profile.resolution.resolvable_node_types
-        ),
     )
 
     canonical = canonicalize_paper_graph(
@@ -695,7 +686,6 @@ def main() -> None:
         canonical_graph=canonical,
         candidate_summary=candidate_summary_payload,
         resolution_summary=resolution_plan.summary(),
-        domain_profile=domain_profile,
     )
     write_json(
         resolution_dir / "resolution_report.json",
@@ -724,8 +714,6 @@ def main() -> None:
     build_summary = {
         "paper_id": paper.paper_id,
         "run_id": run_metadata["run_id"],
-        "domain_profile_id": domain_profile.profile_id,
-        "graph_adapter_id": graph_adapter.adapter_id,
         "loaded_chunks": loaded_chunks,
         "loaded_chunk_ids": loaded_chunk_ids,
         "graph_materialization_status": materialization_status,

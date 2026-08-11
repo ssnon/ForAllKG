@@ -129,17 +129,6 @@ def _enforce_chunk_metadata(
     return KnowledgeGraphDraft.model_validate(payload)
 
 
-def _domain_gate(
-    draft: KnowledgeGraphDraft,
-    *,
-    extraction_adapter: ExtractionDomainAdapter,
-) -> KnowledgeGraphDraft:
-    """Canonicalize declared aliases, then fail closed on true drift."""
-    draft = extraction_adapter.normalize_draft_vocabulary(draft)
-    extraction_adapter.validate_draft_vocabulary(draft)
-    return draft
-
-
 def _base_record(chunk: ChunkSpec) -> dict[str, Any]:
     return {
         "paper_id": chunk.paper_id,
@@ -313,10 +302,7 @@ def extract_one_chunk(
                 draft,
                 chunk=chunk,
             )
-            _domain_gate(
-                draft,
-                extraction_adapter=extraction_adapter,
-            )
+            extraction_adapter.validate_draft_vocabulary(draft)
             usage = dict(llm.last_call_metadata or {})
             usage["max_completion_tokens"] = policy.max_completion_tokens
             usage["call_kind"] = "graph_generation"
@@ -352,23 +338,10 @@ def extract_one_chunk(
                 }
 
             if generation_attempt + 1 < policy.max_generation_attempts:
-                if (
-                    isinstance(error, ValueError)
-                    and "Extraction-domain vocabulary violation" in str(error)
-                ):
-                    generation_feedback = (
-                        "The previous response crossed the active scientific-domain "
-                        "vocabulary. Use only the exact entity and relation names "
-                        "defined by the SYSTEM prompt. Experiment, Calculation, "
-                        "Measurement, and claim objects must use their dedicated "
-                        "top-level collections rather than entities[]. "
-                        f"Error: {error}"
-                    )
-                else:
-                    generation_feedback = (
-                        "The previous response did not satisfy the node-level JSON "
-                        f"schema. Return a complete corrected graph. Error: {error}"
-                    )
+                generation_feedback = (
+                    "The previous response did not satisfy the node-level JSON schema. "
+                    f"Return a complete corrected graph. Error: {error}"
+                )
                 continue
 
             quarantine_path = quarantine_dir / f"{safe_chunk_id}.json"
@@ -650,10 +623,6 @@ def extract_one_chunk(
                         post_patch_normalization.operations
                     )
 
-                _domain_gate(
-                    draft,
-                    extraction_adapter=extraction_adapter,
-                )
                 report = validate_draft(draft)
 
                 validation_suffix = (
@@ -829,10 +798,7 @@ def extract_one_chunk(
                     micro_draft,
                     chunk=chunk,
                 )
-                _domain_gate(
-                    micro_draft,
-                    extraction_adapter=extraction_adapter,
-                )
+                extraction_adapter.validate_draft_vocabulary(micro_draft)
 
                 usage = dict(
                     llm.last_call_metadata or {}
@@ -884,10 +850,6 @@ def extract_one_chunk(
                         micro_normalization.operations
                     )
 
-                _domain_gate(
-                    micro_draft,
-                    extraction_adapter=extraction_adapter,
-                )
                 report = validate_draft(
                     micro_draft
                 )
@@ -985,17 +947,6 @@ def extract_one_chunk(
 
                 attempt_usages.append(usage)
                 micro_reextract_attempts += 1
-
-                if (
-                    isinstance(error, ValueError)
-                    and "Extraction-domain vocabulary violation" in str(error)
-                ):
-                    patch_feedback = (
-                        "The micro-reextract was rejected by the active domain "
-                        "vocabulary gate. Keep the current source-grounded graph, "
-                        "repair only the reported validation issues, and use exact "
-                        f"domain relation/entity names. Rejection: {error}"
-                    )
 
                 continue
             

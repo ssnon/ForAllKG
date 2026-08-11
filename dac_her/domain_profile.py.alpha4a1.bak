@@ -59,7 +59,6 @@ class ResolutionSemantics:
     single_atom_terms: tuple[str, ...] = ('single atom',)
     nanoparticle_terms: tuple[str, ...] = ('nanoparticle',)
     support_signature_tokens: frozenset[str] = frozenset()
-    high_priority_review_types: frozenset[str] = frozenset()
 
     def catalyst_nuclearity(self, tokens: frozenset[str]) -> str:
         joined = ' '.join(sorted(tokens))
@@ -190,5 +189,4 @@ class ScientificDomainProfile:
     discovery: DiscoverySemantics
     novelty: NoveltySemantics
     extraction_adapter_id: str | None = None
-    graph_adapter_id: str | None = None
     feasibility_adapter_id: str | None = None

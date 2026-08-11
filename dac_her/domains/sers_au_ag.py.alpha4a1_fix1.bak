@@ -57,9 +57,8 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         ),
         scaffold_relations=frozenset({
             "HAS_COMPONENT", "HAS_ARCHITECTURE", "HAS_STRUCTURAL_MOTIF",
-            "HAS_MORPHOLOGY", "HAS_SUPPORT", "PREPARED_BY", "USES_PRECURSOR",
-            "TESTED_IN", "CHARACTERIZED_IN", "SIMULATED_BY", "USES_ANALYTE",
-            "USES_REPORTER", "USES_OPTICAL_CONDITION", "APPLIES_TO",
+            "HAS_SUPPORT", "PREPARED_BY", "USES_PRECURSOR", "TESTED_IN",
+            "CHARACTERIZED_IN", "SIMULATED_BY", "APPLIES_TO",
             "ALIGNS_TO_REGISTRY_ENTITY", "HAS_PAPER_MENTION",
         }),
         context_node_types=frozenset({

@@ -8,8 +8,6 @@ from pathlib import Path
 import networkx as nx
 
 from dac_her.config import get_paper_config
-from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.registry import get_domain_profile
 from dac_her.resolution_candidates import (
     generate_resolution_candidates,
     sync_decisions_jsonl,
@@ -35,8 +33,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--paper-id", required=True)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
-    parser.add_argument("--domain-profile", default="dac_her")
-    parser.add_argument("--data-root", default=None)
     parser.add_argument("--run-id", default=None)
     parser.add_argument(
         "--raw-graph",
@@ -92,10 +88,6 @@ def main() -> None:
     if not 0.0 <= args.measurement_threshold <= 1.0:
         raise ValueError("--measurement-threshold must be between 0 and 1.")
 
-    domain_profile = get_domain_profile(args.domain_profile)
-    extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
-    data_root = args.data_root or extraction_adapter.default_data_root
-
     paper = get_paper_config(
         args.config,
         project_root=PROJECT_ROOT,
@@ -105,7 +97,6 @@ def main() -> None:
         project_root=PROJECT_ROOT,
         paper_id=paper.paper_id,
         run_id=args.run_id,
-        data_root=data_root,
     )
 
     raw_graph_path = (
@@ -125,7 +116,6 @@ def main() -> None:
         graph,
         fuzzy_minimum_score=args.fuzzy_threshold,
         measurement_minimum_score=args.measurement_threshold,
-        domain_profile=domain_profile,
     )
 
     output_dir = (
@@ -143,18 +133,13 @@ def main() -> None:
         **summary.to_dict(),
         "paper_id": paper.paper_id,
         "run_id": run_dir.name,
-        "domain_profile_id": domain_profile.profile_id,
         "raw_graph": str(raw_graph_path),
         "fuzzy_threshold": args.fuzzy_threshold,
         "measurement_threshold": args.measurement_threshold,
     }
     write_json(output_dir / "candidate_summary.json", summary_payload)
 
-    paper_root = paper_output_root(
-        PROJECT_ROOT,
-        paper.paper_id,
-        data_root=data_root,
-    )
+    paper_root = paper_output_root(PROJECT_ROOT, paper.paper_id)
     decisions_path = resolve_decisions_path(
         paper_resolution_file=paper.resolution_file,
         paper_root=paper_root,
@@ -194,7 +179,7 @@ def main() -> None:
         summary.fuzzy_intra_component_candidates,
     )
     print(
-        "  Auto-approved domain-safe registry entities:",
+        "  Auto-approved safe Metal/Reaction:",
         summary.auto_approved_candidates,
     )
     print(

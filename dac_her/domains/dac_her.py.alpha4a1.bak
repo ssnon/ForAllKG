@@ -48,9 +48,6 @@ DAC_HER_PROFILE = ScientificDomainProfile(
         support_signature_tokens=frozenset({
             'graphene', 'nanotube', 'ncnt', 'carbon', 'nitrogen', 'doped', 'ng',
         }),
-        high_priority_review_types=frozenset({
-            'Catalyst', 'CatalystModel', 'Support', 'Material',
-        }),
     ),
     discovery=DiscoverySemantics(
         generic_entity_types=frozenset({
@@ -109,6 +106,5 @@ DAC_HER_PROFILE = ScientificDomainProfile(
         low_scope_reason='low_catalyst_scope_overlap',
     ),
     extraction_adapter_id='dac_her',
-    graph_adapter_id='dac_her',
     feasibility_adapter_id='dac_her',
 )

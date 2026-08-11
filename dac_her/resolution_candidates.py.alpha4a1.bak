@@ -6,7 +6,6 @@ import json
 import re
 import unicodedata
 from collections import defaultdict
-from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -18,44 +17,20 @@ from dac_her.chemistry_signatures import (
     METAL_NAMES,
     metal_signature,
 )
-from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains import get_domain_profile
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_ACTIVE_DOMAIN_PROFILE: ContextVar[ScientificDomainProfile] = ContextVar(
-    "resolution_domain_profile",
-    default=_DEFAULT_DOMAIN_PROFILE,
-)
+_DOMAIN_PROFILE = get_domain_profile("dac_her")
 
-# Backward-compatible constants. Domain-aware candidate generation below does
-# not use these module constants as active policy.
-RESOLVABLE_NODE_TYPES: frozenset[str] = (
-    _DEFAULT_DOMAIN_PROFILE.resolution.resolvable_node_types
-)
+RESOLVABLE_NODE_TYPES: frozenset[str] = _DOMAIN_PROFILE.resolution.resolvable_node_types
 CLAIM_NODE_TYPES: frozenset[str] = frozenset({"ObservationClaim", "MechanismClaim"})
-AUTO_MERGE_TYPES: frozenset[str] = (
-    _DEFAULT_DOMAIN_PROFILE.resolution.auto_merge_types
-)
-
-
-def _active_domain_profile() -> ScientificDomainProfile:
-    return _ACTIVE_DOMAIN_PROFILE.get()
-
-
-def _resolve_domain_profile(
-    value: ScientificDomainProfile | str | None,
-) -> ScientificDomainProfile:
-    if value is None:
-        return _DEFAULT_DOMAIN_PROFILE
-    if isinstance(value, ScientificDomainProfile):
-        return value
-    return get_domain_profile(str(value))
+AUTO_MERGE_TYPES: frozenset[str] = _DOMAIN_PROFILE.resolution.auto_merge_types
 
 _ELEMENT_NAMES = {
     name: symbol.lower()
     for name, symbol in METAL_NAMES.items()
 }
 
+_REACTION_ALIASES = dict(_DOMAIN_PROFILE.resolution.reaction_aliases)
 _STATE_RE = re.compile(r"\b(?:[a-z]{1,2}\()?\d+h\)?\b", re.I)
 
 
@@ -65,9 +40,7 @@ def normalize_scientific_text(value: Any) -> str:
     text = text.lower().strip()
     for name, symbol in _ELEMENT_NAMES.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
-    replacements = dict(
-        _active_domain_profile().resolution.text_replacements
-    )
+    replacements = dict(_DOMAIN_PROFILE.resolution.text_replacements)
     for source, target in replacements.items():
         text = text.replace(source, target)
     text = re.sub(r"<[^>]+>", " ", text)
@@ -171,10 +144,7 @@ def _state_tokens(value: Any) -> frozenset[str]:
 
 def _reaction_signature(label: str) -> str:
     normalized = normalize_scientific_text(label)
-    aliases = dict(
-        _active_domain_profile().resolution.reaction_aliases
-    )
-    return aliases.get(normalized, normalized.replace(" ", "_"))
+    return _REACTION_ALIASES.get(normalized, normalized.replace(" ", "_"))
 
 
 def _type_signature(graph: nx.Graph, node_id: str) -> tuple[Any, ...]:
@@ -188,10 +158,9 @@ def _type_signature(graph: nx.Graph, node_id: str) -> tuple[Any, ...]:
         return (node_type, _reaction_signature(label))
     if node_type in {"Catalyst", "CatalystModel"}:
         tokens = normalized_tokens(label)
-        profile = _active_domain_profile()
-        nuclearity = profile.resolution.catalyst_nuclearity(tokens)
+        nuclearity = _DOMAIN_PROFILE.resolution.catalyst_nuclearity(tokens)
         support_tokens = tuple(sorted(
-            tokens & profile.resolution.support_signature_tokens
+            tokens & _DOMAIN_PROFILE.resolution.support_signature_tokens
         ))
         return (
             node_type,
@@ -349,15 +318,20 @@ def _candidate(
         + 0.10 * float(signature_equal)
     ))
     node_type = _node_type(graph, left_id)
-    profile = _active_domain_profile()
     auto_approve = bool(
-        node_type in profile.resolution.auto_merge_types
+        node_type in AUTO_MERGE_TYPES
         and signature_equal
         and label_similarity >= 0.80
     )
 
     high_priority_review = bool(
-        node_type in profile.resolution.high_priority_review_types
+        node_type
+        in {
+            "Catalyst",
+            "CatalystModel",
+            "Support",
+            "Material",
+        }
         and normalized_label_equal
         and signature_equal
         and cross_document
@@ -426,27 +400,7 @@ def generate_resolution_candidates(
     *,
     fuzzy_minimum_score: float = 0.72,
     measurement_minimum_score: float = 0.90,
-    domain_profile: ScientificDomainProfile | str | None = None,
 ) -> tuple[list[ResolutionCandidate], CandidateSummary]:
-    profile = _resolve_domain_profile(domain_profile)
-    token = _ACTIVE_DOMAIN_PROFILE.set(profile)
-    try:
-        return _generate_resolution_candidates_impl(
-            graph,
-            fuzzy_minimum_score=fuzzy_minimum_score,
-            measurement_minimum_score=measurement_minimum_score,
-        )
-    finally:
-        _ACTIVE_DOMAIN_PROFILE.reset(token)
-
-
-def _generate_resolution_candidates_impl(
-    graph: nx.Graph,
-    *,
-    fuzzy_minimum_score: float = 0.72,
-    measurement_minimum_score: float = 0.90,
-) -> tuple[list[ResolutionCandidate], CandidateSummary]:
-    profile = _active_domain_profile()
     components = _component_index(graph)
     nodes_by_type: dict[str, list[str]] = defaultdict(list)
     for node_id, data in graph.nodes(data=True):
@@ -457,11 +411,6 @@ def _generate_resolution_candidates_impl(
 
     for node_type, node_ids in nodes_by_type.items():
         if node_type in CLAIM_NODE_TYPES or node_type == "MeasurementGroup":
-            continue
-        if (
-            node_type not in profile.resolution.resolvable_node_types
-            and node_type != "Measurement"
-        ):
             continue
         for index, left_id in enumerate(sorted(node_ids)):
             for right_id in sorted(node_ids)[index + 1:]:
@@ -661,20 +610,10 @@ def _graph_summary(graph: nx.Graph) -> dict[str, Any]:
 
 
 def build_raw_canonical_report(
-    *,
-    raw_graph: nx.Graph,
-    canonical_graph: nx.Graph,
-    candidate_summary: Mapping[str, Any],
-    resolution_summary: Mapping[str, Any],
-    domain_profile: ScientificDomainProfile | str | None = None,
+    *, raw_graph: nx.Graph, canonical_graph: nx.Graph,
+    candidate_summary: Mapping[str, Any], resolution_summary: Mapping[str, Any],
 ) -> dict[str, Any]:
-    profile = _resolve_domain_profile(domain_profile)
-    token = _ACTIVE_DOMAIN_PROFILE.set(profile)
-    try:
-        raw = _graph_summary(raw_graph)
-        canonical = _graph_summary(canonical_graph)
-    finally:
-        _ACTIVE_DOMAIN_PROFILE.reset(token)
+    raw, canonical = _graph_summary(raw_graph), _graph_summary(canonical_graph)
     return {
         "raw": raw,
         "canonical": canonical,
