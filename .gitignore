@@ -8,3 +8,5 @@ os.environ[OPENROUTER_EXTRACT_MODEL]
 __pycache__/
 *.py[cod]
 runs/
+
+figures/

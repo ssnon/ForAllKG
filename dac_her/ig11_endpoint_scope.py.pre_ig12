@@ -66,7 +66,6 @@ ScopeBreadth = Literal[
 
 EntityKind = Literal[
     "concrete_material_or_system",
-    "reaction_species_or_product",
     "descriptor_or_mechanism",
     "generic_concept",
 ]
@@ -75,22 +74,6 @@ EntityGroundingStatus = Literal[
     "grounded",
     "partial",
     "ungrounded",
-]
-
-
-BridgeTerminalRole = Literal[
-    "axis_grounding_terminal",
-    "bridge_terminal",
-    "both",
-    "not_terminal",
-]
-
-BridgeNoveltyStatus = Literal[
-    "already_directly_grounded",
-    "already_synthesis_grounded",
-    "genuinely_unestablished_relation",
-    "scope_transfer_required",
-    "uncertain",
 ]
 
 
@@ -106,8 +89,6 @@ class IG11StatementAxisAudit(StrictModel):
     scope_summary: str = Field(min_length=1)
 
     endpoint_candidate: bool
-    bridge_terminal_role: BridgeTerminalRole = "not_terminal"
-    bridge_terminal_excerpt: str | None = None
     reason: str = Field(min_length=1)
 
 
@@ -182,38 +163,6 @@ class IG11NoveltyBurdenAudit(StrictModel):
     additional_unmodeled_mechanisms_introduced: Literal[False] = False
     downstream_design_rule_introduced: Literal[False] = False
     burden_summary: str = Field(min_length=1)
-
-
-
-
-class IG12BridgeNonRedundancyAudit(StrictModel):
-    schema_version: Literal[
-        "ig1.2-bridge-nonredundancy-audit-v1"
-    ] = "ig1.2-bridge-nonredundancy-audit-v1"
-
-    axis_id: str
-    bridge_relation: str
-    selected_premise_statement_ids: list[str] = Field(min_length=1)
-
-    status: BridgeNoveltyStatus
-    directly_grounding_statement_ids: list[str] = Field(default_factory=list)
-    synthesis_grounding_statement_ids: list[str] = Field(default_factory=list)
-
-    scope_compatible: bool
-    explanation: str = Field(min_length=1)
-    missing_relation_if_unestablished: str | None = None
-
-
-class IG12BridgeAuditRecord(StrictModel):
-    axis_id: str
-    blueprint_sha256: str
-    audit_sha256: str
-    audit: IG12BridgeNonRedundancyAudit
-    valid: bool
-    validation_issues: list["IG11ValidationIssue"] = Field(
-        default_factory=list
-    )
-    generation_attempts: int = 1
 
 
 class IG11Blueprint(StrictModel):
@@ -327,7 +276,6 @@ class IG11BlueprintRecord(StrictModel):
     blueprint: IG11Blueprint
 
     generation_attempts: int
-    nonredundancy_replan_count: int = 0
     valid: bool
     validation_issues: list[IG11ValidationIssue] = Field(
         default_factory=list
@@ -354,17 +302,12 @@ class IG11PlanningReport(StrictModel):
     axis_count: int
     audit_valid_count: int
     audit_repair_count: int
-    bridge_audit_count: int
-    bridge_nonredundancy_replan_count: int
     active_blueprint_count: int
     abstained_blueprint_count: int
     invalid_blueprint_count: int
     conformance_repair_count: int
 
     audit_records: list[IG11EvidenceAuditRecord] = Field(
-        default_factory=list
-    )
-    bridge_audit_records: list[IG12BridgeAuditRecord] = Field(
         default_factory=list
     )
     blueprint_records: list[IG11BlueprintRecord] = Field(
@@ -532,10 +475,8 @@ Primary purpose:
 1. identify whether the assigned discovery axis already has grounded evidence
    for its scientific variable/relation;
 2. identify which statements are useful grounded endpoints;
-3. identify which statements can serve as BRIDGE TERMINALS even when they do
-   not directly ground the axis variable itself;
-4. expose each statement's evidence scope;
-5. identify concrete named axis entities/systems whose use would require
+3. expose each statement's evidence scope;
+4. identify concrete named axis entities/systems whose use would require
    unsupported extrapolation.
 
 AXIS SUPPORT LABELS
@@ -557,64 +498,18 @@ relation we may later hypothesize. Example: evidence for hydrogen adsorption
 energetics can ground that endpoint even if it does not ground a proposed
 stability–adsorption relation.
 
-BRIDGE-TERMINAL POLICY
-A useful endpoint does NOT have to directly ground the axis variable.
-A premise may be a bridge_terminal when it provides one scientifically
-grounded end of a plausible one-edge extension inspired by the axis.
-
-Examples:
-- a coordination-context premise can be a bridge terminal for a proposed
-  bonding-balance -> retention relation;
-- a stability premise can be a bridge terminal for a proposed
-  adsorption/stability relation;
-- a premise that merely restates the same relation we would call novel should
-  not be used to manufacture a zero-novelty hypothesis.
-
-Set bridge_terminal_role to:
-- axis_grounding_terminal: useful mainly because it directly grounds the axis;
-- bridge_terminal: useful as an endpoint even without direct axis grounding;
-- both: both roles apply;
-- not_terminal: not a useful grounded terminal.
-
-When bridge_terminal_role != not_terminal, bridge_terminal_excerpt MUST be a
-short contiguous VERBATIM substring of that premise showing the grounded
-terminal claim.
-
 For every review with axis_support != none, grounding_excerpt must be a short
 contiguous VERBATIM substring of that exact premise. scope_basis_excerpt must
 also be a contiguous VERBATIM substring whenever possible; if the statement is
 too synthetic for a clean scope excerpt, use null.
 
-AXIS ENTITY TAXONOMY POLICY
-Audit scientifically meaningful named entities appearing in the assigned axis,
-but classify them by scientific role.
+CONCRETE AXIS ENTITY POLICY
+Audit named concrete materials, compositions, metal pairs, catalyst systems, or
+other specific scientific entities appearing in the assigned axis. Do not list
+ordinary descriptors such as "stability" as concrete materials.
 
-Use `concrete_material_or_system` ONLY for system-defining identities such as:
-- a specific metal pair (for example Co/Mo or Pt/Ru);
-- a specific catalyst, material, composition, or support system;
-- another concrete modeled/experimental material identity whose unsupported
-  substitution would create entity-specific extrapolation.
-
-Use `reaction_species_or_product` for reaction participants, intermediates,
-reactants, or products such as H, H2, H+, H2O, OH-, O2, CO2, and analogous
-chemical species. These are NOT catalyst/material/system identities.
-
-Use `descriptor_or_mechanism` for descriptors/mechanisms such as
-bonding–antibonding balance, d-band position, charge redistribution, adsorption
-free energy, or electronic coupling.
-
-Use `generic_concept` for other non-system concepts. Do not classify ordinary
-outcome labels such as "stability" as concrete materials.
-
-If an axis would cease to be that specific MATERIAL/SYSTEM axis when a
-`concrete_material_or_system` entity is removed, set
-entity_specific_claim_required_for_axis_fidelity=true.
-
-For `reaction_species_or_product`, normally set
-entity_specific_claim_required_for_axis_fidelity=false. A scientific relation
-involving that species may still be unsupported and may still fail ordinary
-endpoint-grounding, scope, non-redundancy, or downstream coverage checks; the
-species itself simply must not trigger the concrete-material identity gate.
+If an axis would cease to be that specific axis when a concrete named entity is
+removed, set entity_specific_claim_required_for_axis_fidelity=true.
 
 External knowledge is forbidden. Discovery-axis content is inspiration, not
 evidence.
@@ -632,11 +527,6 @@ direct_axis_statement_ids must exactly list the statement IDs you classified
 as direct_axis_grounding.
 endpoint_candidate_statement_ids must exactly list all reviews where
 endpoint_candidate=true.
-
-Endpoint candidacy must include scientifically useful bridge terminals, not
-only direct axis-grounding statements. A statement may therefore have
-axis_support=adjacent_context while endpoint_candidate=true if it grounds one
-end of a bounded one-edge extension.
 """
     return [
         {"role": "system", "content": system},
@@ -728,32 +618,6 @@ def validate_axis_audit(
             issues.append(
                 IG11ValidationIssue(
                     code="nonverbatim_optional_grounding_excerpt",
-                    detail=row.statement_id,
-                )
-            )
-
-        if row.bridge_terminal_role != "not_terminal":
-            if not row.bridge_terminal_excerpt:
-                issues.append(
-                    IG11ValidationIssue(
-                        code="missing_bridge_terminal_excerpt",
-                        detail=row.statement_id,
-                    )
-                )
-            elif row.bridge_terminal_excerpt not in statement.text:
-                issues.append(
-                    IG11ValidationIssue(
-                        code="nonverbatim_bridge_terminal_excerpt",
-                        detail=row.statement_id,
-                    )
-                )
-        elif (
-            row.bridge_terminal_excerpt is not None
-            and row.bridge_terminal_excerpt not in statement.text
-        ):
-            issues.append(
-                IG11ValidationIssue(
-                    code="nonverbatim_optional_bridge_terminal_excerpt",
                     detail=row.statement_id,
                 )
             )
@@ -856,10 +720,6 @@ def build_axis_audit_repair_messages(
                         "Important repair rules:",
                         "- If grounding_status='ungrounded', "
                         "grounding_statement_ids MUST be empty.",
-                        "- Classify reaction participants/products such as "
-                        "H2, H+, H2O, or OH- as "
-                        "reaction_species_or_product, not "
-                        "concrete_material_or_system.",
                         "- If grounding_statement_ids contain real positive "
                         "support, reconsider whether grounding_status should "
                         "be grounded or partial based only on the supplied "
@@ -925,53 +785,34 @@ Apply these priorities in order:
    relation must not silently generalize a specific-system observation to all
    systems.
 
-2. USE ALREADY-GROUNDED AXIS CONTENT WHEN IT HELPS FORM A REAL NOVEL EDGE.
-   If direct_axis_grounding evidence exists, prefer using it as one endpoint
-   when it can participate in a genuinely new one-edge extension. Do NOT use
-   it merely to restate a relation already contained in that premise.
+2. USE ALREADY-GROUNDED AXIS CONTENT.
+   If the evidence audit contains any direct_axis_grounding statement, at
+   least one endpoint MUST use one of those statements. Do not re-invent an
+   already-grounded axis variable as part of the novel burden.
 
-3. USE BRIDGE-TERMINAL ENDPOINTS.
-   Endpoint candidates may come from adjacent_context premises when the audit
-   marks them as bridge terminals. The two endpoints should ground the two
-   ends of the proposed relation; the novel descriptor/mechanism itself need
-   not already be a grounded endpoint.
+3. MINIMIZE NOVEL SCIENTIFIC BURDEN.
+   Choose the endpoint pair that lets the axis contribute exactly ONE new
+   relation with the fewest additional ungrounded concepts.
 
-4. MINIMIZE NOVEL SCIENTIFIC BURDEN WITHOUT COLLAPSING NOVELTY TO ZERO.
-   Choose an endpoint pair that supports exactly ONE genuinely unestablished
-   relation. A relation already directly or jointly established by the selected
-   endpoint premises is NOT a valid hypothesis bridge.
-
-5. PRESERVE AXIS FIDELITY WITHOUT PROMOTING INSPIRATION TO EVIDENCE.
+4. PRESERVE AXIS FIDELITY WITHOUT PROMOTING INSPIRATION TO EVIDENCE.
    A descriptor/mechanism may be the one proposed relation. A concrete named
    material/system/entity may not be used as if grounded when the audit says it
    is ungrounded.
 
-6. DO NOT OPTIMIZE PREMISE DIVERSITY.
+5. DO NOT OPTIMIZE PREMISE DIVERSITY.
    Reusing a premise is acceptable when it is scientifically the best endpoint.
 
-STRICT CONCRETE-MATERIAL/SYSTEM RULE
-If an entity classified as `concrete_material_or_system` is ungrounded and
+STRICT CONCRETE-ENTITY RULE
+If a concrete material/system/entity is ungrounded and
 entity_specific_claim_required_for_axis_fidelity=true, ABSTAIN. Do not replace
-that missing material/system evidence with plausibility.
-
-Do NOT apply this strict identity gate to `reaction_species_or_product`. A
-reaction species may still participate in an unsupported relation, but that
-must be handled by ordinary endpoint grounding, scope, bridge non-redundancy,
-and downstream scientific coverage rather than by material/system identity
-abstention.
+that missing evidence with plausibility.
 
 ENDPOINT RULES
-- exactly two distinct grounded endpoint CLAIMS;
-- each endpoint anchor must be an eligible premise and an audited endpoint
-  candidate;
-- endpoint candidates may be direct axis-grounding endpoints OR bridge-terminal
-  endpoints;
+- exactly two distinct grounded endpoints;
+- each endpoint anchor must be an eligible premise;
 - grounded_excerpt and scope.scope_basis_excerpt must be VERBATIM substrings of
   the anchor statement;
-- supporting_statement_ids must be the smallest sufficient positive-premise set;
-- using two claims from the same premise is allowed only when the proposed
-  relation between them is not already directly/synthesis grounded by that
-  premise.
+- supporting_statement_ids must be the smallest sufficient positive-premise set.
 
 SCOPE ENVELOPE
 - define the narrowest scientifically defensible shared scope;
@@ -984,9 +825,6 @@ SCOPE ENVELOPE
 
 ONE NOVEL RELATION
 - exactly one scientific relation;
-- it must be genuinely UNESTABLISHED by the selected positive premises;
-- do not select a relation that the selected premises already directly state or
-  jointly establish without a new scientific edge;
 - no "A -> X -> Y -> B" chain;
 - do not append a second mechanism, design rule, optimization recommendation,
   or universal-rule rejection;
@@ -1015,9 +853,8 @@ Build the minimal-novelty-burden blueprint.
 If direct_axis_statement_ids is nonempty, at least one endpoint must use one of
 those IDs.
 
-If the audit identifies an ungrounded `concrete_material_or_system` entity that
-is required for material/system axis fidelity, return abstain=true. Do not use
-this identity rule for `reaction_species_or_product`.
+If the audit identifies a concrete ungrounded entity that is required for axis
+fidelity, return abstain=true.
 
 The scope_guard_phrase must occur exactly inside novel_bridge.relation.
 """
@@ -1211,224 +1048,6 @@ def validate_blueprint(
             )
 
     return issues
-
-
-def build_bridge_nonredundancy_messages(
-    prompt: HypothesisPrompt,
-    context: HypothesisContext,
-    audit: IG11AxisEvidenceAudit,
-    blueprint: IG11Blueprint,
-) -> list[dict[str, str]]:
-    if blueprint.abstain:
-        raise ValueError(
-            "cannot audit bridge non-redundancy for abstaining blueprint"
-        )
-    assert blueprint.novel_bridge is not None
-    selected_ids = blueprint_premise_ids(blueprint)
-    eligible = _eligible_map(context)
-    premises = [
-        {
-            "statement_id": sid,
-            "text": eligible[sid].text,
-            "epistemic_role": eligible[sid].epistemic_role,
-            "claim_kind": eligible[sid].claim_kind,
-            "paper_ids": eligible[sid].paper_ids,
-        }
-        for sid in selected_ids
-    ]
-
-    system = """You are the IG1.2 novel-bridge non-redundancy auditor.
-
-Decide whether the ONE proposed bridge is actually novel relative to the
-SELECTED positive premises.
-
-Use ONLY the selected premises. External knowledge and discovery-axis
-inspiration are NOT evidence.
-
-Statuses:
-- already_directly_grounded:
-  one selected premise directly establishes the bridge relation as written
-  with compatible scope.
-- already_synthesis_grounded:
-  multiple selected premises jointly establish the bridge relation without
-  introducing a genuinely new scientific relation.
-- genuinely_unestablished_relation:
-  selected premises ground the endpoints/context, but the proposed relation
-  itself is not established. This is the desired hypothesis case.
-- scope_transfer_required:
-  the relation could only be supported/tested by transferring a premise beyond
-  its demonstrated system/entity/condition scope.
-- uncertain:
-  cannot reliably decide from supplied text.
-
-Critical rules:
-- Do not call a relation novel merely because wording differs.
-- Do not call it grounded merely because both endpoints appear.
-- A real hypothesis requires a NEW relation between grounded terminals.
-- If one premise already states endpoint A -> endpoint B in substance, the
-  bridge is not novel even if the blueprint paraphrases it.
-- If the bridge adds a descriptor/mechanism that is not established, it may be
-  genuinely_unestablished_relation provided it does not require unsupported
-  scope transfer.
-- Keep scope compatibility separate from novelty.
-"""
-    user = f"""AXIS
-{_axis_metadata(prompt)}
-
-SELECTED PREMISES
-{json.dumps(premises, ensure_ascii=False, indent=2)}
-
-BLUEPRINT
-{blueprint.model_dump_json(indent=2)}
-
-Return exactly one IG12BridgeNonRedundancyAudit.
-"""
-    return [
-        {"role": "system", "content": system},
-        {"role": "user", "content": user},
-    ]
-
-
-def validate_bridge_nonredundancy_audit(
-    result: IG12BridgeNonRedundancyAudit,
-    *,
-    blueprint: IG11Blueprint,
-    expected_axis_id: str,
-) -> list[IG11ValidationIssue]:
-    issues: list[IG11ValidationIssue] = []
-    if blueprint.abstain:
-        issues.append(
-            IG11ValidationIssue(
-                code="bridge_audit_on_abstention",
-                detail=expected_axis_id,
-            )
-        )
-        return issues
-
-    assert blueprint.novel_bridge is not None
-    selected = set(blueprint_premise_ids(blueprint))
-
-    if result.axis_id != expected_axis_id:
-        issues.append(
-            IG11ValidationIssue(
-                code="bridge_audit_axis_mismatch",
-                detail=f"expected={expected_axis_id}; actual={result.axis_id}",
-            )
-        )
-    if result.bridge_relation != blueprint.novel_bridge.relation:
-        issues.append(
-            IG11ValidationIssue(
-                code="bridge_relation_mismatch",
-                detail="non-redundancy audit changed the fixed relation",
-            )
-        )
-    if set(result.selected_premise_statement_ids) != selected:
-        issues.append(
-            IG11ValidationIssue(
-                code="bridge_audit_premise_set_mismatch",
-                detail=(
-                    f"expected={sorted(selected)}; "
-                    f"actual={sorted(result.selected_premise_statement_ids)}"
-                ),
-            )
-        )
-
-    referenced = (
-        set(result.directly_grounding_statement_ids)
-        | set(result.synthesis_grounding_statement_ids)
-    )
-    if not referenced <= selected:
-        issues.append(
-            IG11ValidationIssue(
-                code="bridge_audit_unknown_support_id",
-                detail=str(sorted(referenced - selected)),
-            )
-        )
-
-    if (
-        result.status == "already_directly_grounded"
-        and not result.directly_grounding_statement_ids
-    ):
-        issues.append(
-            IG11ValidationIssue(
-                code="directly_grounded_without_support_ids",
-                detail="direct status requires direct grounding IDs",
-            )
-        )
-    if (
-        result.status == "already_synthesis_grounded"
-        and len(result.synthesis_grounding_statement_ids) < 2
-    ):
-        issues.append(
-            IG11ValidationIssue(
-                code="synthesis_grounded_without_multiple_ids",
-                detail="synthesis status requires at least two support IDs",
-            )
-        )
-    return issues
-
-
-def bridge_is_acceptable_novel_hypothesis(
-    result: IG12BridgeNonRedundancyAudit,
-) -> bool:
-    return (
-        result.status == "genuinely_unestablished_relation"
-        and result.scope_compatible
-    )
-
-
-def build_nonredundancy_replan_messages(
-    prompt: HypothesisPrompt,
-    context: HypothesisContext,
-    audit: IG11AxisEvidenceAudit,
-    previous_blueprint: IG11Blueprint,
-    bridge_audit: IG12BridgeNonRedundancyAudit,
-) -> list[dict[str, str]]:
-    messages = build_blueprint_messages(
-        prompt,
-        context,
-        audit,
-    )
-    messages.extend(
-        [
-            {
-                "role": "assistant",
-                "content": previous_blueprint.model_dump_json(indent=2),
-            },
-            {
-                "role": "user",
-                "content": "\n".join(
-                    [
-                        "IG1.2 NON-REDUNDANCY REPLAN",
-                        "===========================",
-                        "The previous one-bridge blueprint failed the "
-                        "novel-bridge audit.",
-                        f"status: {bridge_audit.status}",
-                        f"scope_compatible: {bridge_audit.scope_compatible}",
-                        f"explanation: {bridge_audit.explanation}",
-                        "",
-                        "Choose a NEW endpoint pair and/or ONE new relation "
-                        "such that:",
-                        "- both endpoint claims are grounded;",
-                        "- adjacent bridge-terminal premises may be used;",
-                        "- the relation is genuinely unestablished by the "
-                        "selected premises;",
-                        "- scope transfer is not required;",
-                        "- the relation remains a single scientific edge;",
-                        "- ungrounded required concrete MATERIAL/SYSTEM "
-                        "entities still force abstention;",
-                        "- reaction species/products do not trigger the "
-                        "material/system identity gate;",
-                        "- if no such bounded relation exists, abstain.",
-                        "",
-                        "Do not merely paraphrase the old relation.",
-                        "Return a complete replacement IG11Blueprint.",
-                    ]
-                ),
-            },
-        ]
-    )
-    return messages
 
 
 def augment_prompt(
@@ -1878,18 +1497,14 @@ class IG11HypothesisBackend:
         context: HypothesisContext,
         audit_generator: IG11StructuredGenerator,
         blueprint_generator: IG11StructuredGenerator,
-        bridge_audit_generator: IG11StructuredGenerator,
         max_audit_repairs: int = 1,
         max_blueprint_repairs: int = 1,
-        max_nonredundancy_replans: int = 1,
         max_conformance_repairs: int = 1,
     ) -> None:
         if max_audit_repairs not in {0, 1}:
             raise ValueError("max_audit_repairs must be 0 or 1")
         if max_blueprint_repairs not in {0, 1}:
             raise ValueError("max_blueprint_repairs must be 0 or 1")
-        if max_nonredundancy_replans not in {0, 1}:
-            raise ValueError("max_nonredundancy_replans must be 0 or 1")
         if max_conformance_repairs not in {0, 1}:
             raise ValueError("max_conformance_repairs must be 0 or 1")
 
@@ -1897,10 +1512,8 @@ class IG11HypothesisBackend:
         self.context = context
         self.audit_generator = audit_generator
         self.blueprint_generator = blueprint_generator
-        self.bridge_audit_generator = bridge_audit_generator
         self.max_audit_repairs = max_audit_repairs
         self.max_blueprint_repairs = max_blueprint_repairs
-        self.max_nonredundancy_replans = max_nonredundancy_replans
         self.max_conformance_repairs = max_conformance_repairs
 
         self.model_name = base_backend.model_name
@@ -1912,10 +1525,6 @@ class IG11HypothesisBackend:
         self._blueprint_records: dict[
             str,
             IG11BlueprintRecord,
-        ] = {}
-        self._bridge_audit_records: dict[
-            str,
-            IG12BridgeAuditRecord,
         ] = {}
         self._augmented_prompts: dict[
             str,
@@ -2008,7 +1617,7 @@ class IG11HypothesisBackend:
                 axis_id=axis["axis_id"],
                 abstain=True,
                 abstention_reason=(
-                    "IG1.2 evidence audit failed deterministic validation: "
+                    "IG1.1 evidence audit failed deterministic validation: "
                     + "; ".join(
                         f"{row.code}={row.detail}"
                         for row in audit_record.validation_issues
@@ -2022,7 +1631,6 @@ class IG11HypothesisBackend:
                 blueprint_sha256=_sha256_json(blueprint),
                 blueprint=blueprint,
                 generation_attempts=0,
-                nonredundancy_replan_count=0,
                 valid=False,
                 validation_issues=[
                     IG11ValidationIssue(
@@ -2047,7 +1655,6 @@ class IG11HypothesisBackend:
         blueprint = call.value
         assert isinstance(blueprint, IG11Blueprint)
         attempts = 1
-        nonredundancy_replans = 0
 
         issues = validate_blueprint(
             blueprint,
@@ -2066,15 +1673,17 @@ class IG11HypothesisBackend:
                 [
                     {
                         "role": "assistant",
-                        "content": blueprint.model_dump_json(indent=2),
+                        "content": blueprint.model_dump_json(
+                            indent=2
+                        ),
                     },
                     {
                         "role": "user",
                         "content": "\n".join(
                             [
-                                "IG1.2 BLUEPRINT REPAIR",
+                                "IG1.1 BLUEPRINT REPAIR",
                                 "The previous blueprint failed deterministic "
-                                "grounding/scope checks.",
+                                "minimal-burden/scope checks.",
                                 "Repair only the listed violations. If a "
                                 "required concrete axis entity is ungrounded "
                                 "or scope transfer cannot be avoided, abstain.",
@@ -2094,6 +1703,7 @@ class IG11HypothesisBackend:
             blueprint = call.value
             assert isinstance(blueprint, IG11Blueprint)
             attempts += 1
+
             issues = validate_blueprint(
                 blueprint,
                 audit=audit,
@@ -2101,147 +1711,14 @@ class IG11HypothesisBackend:
                 expected_axis_id=axis["axis_id"],
             )
 
-        # Only scientifically valid active blueprints reach the novelty gate.
-        if not issues and not blueprint.abstain:
-            bridge_call = self.bridge_audit_generator.call(
-                build_bridge_nonredundancy_messages(
-                    prompt,
-                    self.context,
-                    audit,
-                    blueprint,
-                ),
-                IG12BridgeNonRedundancyAudit,
-            )
-            bridge_audit = bridge_call.value
-            assert isinstance(
-                bridge_audit,
-                IG12BridgeNonRedundancyAudit,
-            )
-
-            bridge_issues = validate_bridge_nonredundancy_audit(
-                bridge_audit,
-                blueprint=blueprint,
-                expected_axis_id=axis["axis_id"],
-            )
-
-            bridge_record = IG12BridgeAuditRecord(
-                axis_id=axis["axis_id"],
-                blueprint_sha256=_sha256_json(blueprint),
-                audit_sha256=_sha256_json(bridge_audit),
-                audit=bridge_audit,
-                valid=not bridge_issues,
-                validation_issues=bridge_issues,
-                generation_attempts=1,
-            )
-            self._bridge_audit_records[
-                prompt.prompt_sha256
-            ] = bridge_record
-
-            acceptable = (
-                not bridge_issues
-                and bridge_is_acceptable_novel_hypothesis(
-                    bridge_audit
-                )
-            )
-
-            if (
-                not acceptable
-                and self.max_nonredundancy_replans
-            ):
-                replan_call = self.blueprint_generator.call(
-                    build_nonredundancy_replan_messages(
-                        prompt,
-                        self.context,
-                        audit,
-                        blueprint,
-                        bridge_audit,
-                    ),
-                    IG11Blueprint,
-                )
-                blueprint = replan_call.value
-                assert isinstance(blueprint, IG11Blueprint)
-                attempts += 1
-                nonredundancy_replans = 1
-
-                issues = validate_blueprint(
-                    blueprint,
-                    audit=audit,
-                    context=self.context,
-                    expected_axis_id=axis["axis_id"],
-                )
-
-                if not issues and not blueprint.abstain:
-                    bridge_call = self.bridge_audit_generator.call(
-                        build_bridge_nonredundancy_messages(
-                            prompt,
-                            self.context,
-                            audit,
-                            blueprint,
-                        ),
-                        IG12BridgeNonRedundancyAudit,
-                    )
-                    bridge_audit = bridge_call.value
-                    assert isinstance(
-                        bridge_audit,
-                        IG12BridgeNonRedundancyAudit,
-                    )
-                    bridge_issues = validate_bridge_nonredundancy_audit(
-                        bridge_audit,
-                        blueprint=blueprint,
-                        expected_axis_id=axis["axis_id"],
-                    )
-                    bridge_record = IG12BridgeAuditRecord(
-                        axis_id=axis["axis_id"],
-                        blueprint_sha256=_sha256_json(blueprint),
-                        audit_sha256=_sha256_json(bridge_audit),
-                        audit=bridge_audit,
-                        valid=not bridge_issues,
-                        validation_issues=bridge_issues,
-                        generation_attempts=2,
-                    )
-                    self._bridge_audit_records[
-                        prompt.prompt_sha256
-                    ] = bridge_record
-
-                    acceptable = (
-                        not bridge_issues
-                        and bridge_is_acceptable_novel_hypothesis(
-                            bridge_audit
-                        )
-                    )
-                else:
-                    acceptable = blueprint.abstain and not issues
-
-            if (
-                not blueprint.abstain
-                and not acceptable
-            ):
-                bridge_record = self._bridge_audit_records.get(
-                    prompt.prompt_sha256
-                )
-                detail = (
-                    bridge_record.audit.status
-                    if bridge_record is not None
-                    else "bridge_audit_invalid"
-                )
-                blueprint = IG11Blueprint(
-                    axis_id=axis["axis_id"],
-                    abstain=True,
-                    abstention_reason=(
-                        "IG1.2 could not obtain a genuinely unestablished "
-                        "single bridge after bounded replan. "
-                        f"Final bridge audit status: {detail}."
-                    ),
-                )
-                issues = []
-
         valid = not issues
         if not valid:
             blueprint = IG11Blueprint(
                 axis_id=axis["axis_id"],
                 abstain=True,
                 abstention_reason=(
-                    "IG1.2 blueprint failed deterministic checks: "
+                    "IG1.1 blueprint failed deterministic checks after "
+                    "bounded repair: "
                     + "; ".join(
                         f"{row.code}={row.detail}"
                         for row in issues
@@ -2256,7 +1733,6 @@ class IG11HypothesisBackend:
             blueprint_sha256=_sha256_json(blueprint),
             blueprint=blueprint,
             generation_attempts=attempts,
-            nonredundancy_replan_count=nonredundancy_replans,
             valid=valid,
             validation_issues=issues,
         )
@@ -2405,12 +1881,6 @@ class IG11HypothesisBackend:
             key=lambda row: row.axis_id,
         )
 
-    def bridge_audit_records(self) -> list[IG12BridgeAuditRecord]:
-        return sorted(
-            self._bridge_audit_records.values(),
-            key=lambda row: row.axis_id,
-        )
-
     def blueprint_records(self) -> list[IG11BlueprintRecord]:
         return sorted(
             self._blueprint_records.values(),
@@ -2433,7 +1903,6 @@ def build_planning_report(
     axis_plan_id: str,
 ) -> IG11PlanningReport:
     audits = backend.audit_records()
-    bridge_audits = backend.bridge_audit_records()
     blueprints = backend.blueprint_records()
 
     payload = {
@@ -2448,11 +1917,6 @@ def build_planning_report(
         "audit_repair_count": sum(
             row.repair_count
             for row in audits
-        ),
-        "bridge_audit_count": len(bridge_audits),
-        "bridge_nonredundancy_replan_count": sum(
-            row.nonredundancy_replan_count
-            for row in blueprints
         ),
         "active_blueprint_count": sum(
             not row.blueprint.abstain
@@ -2474,10 +1938,6 @@ def build_planning_report(
             row.model_dump(mode="json")
             for row in audits
         ],
-        "bridge_audit_records": [
-            row.model_dump(mode="json")
-            for row in bridge_audits
-        ],
         "blueprint_records": [
             row.model_dump(mode="json")
             for row in blueprints
@@ -2491,7 +1951,6 @@ def build_planning_report(
         backend.audit_generator.model_name,
         backend.blueprint_generator.model_name,
         _sha256_json(payload["audit_records"]),
-        _sha256_json(payload["bridge_audit_records"]),
         _sha256_json(payload["blueprint_records"]),
     )
 

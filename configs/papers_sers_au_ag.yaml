@@ -231,3 +231,530 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  Kiwook_SERS_12:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_12/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_13:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_13/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_13/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_14:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_14/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_14/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_15:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_15/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_16:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_16/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_17:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_17/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_17/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_18:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_18/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_18/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_19:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_19/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_20:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_20/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_21:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_21/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_21/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_22:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_22/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_22/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_23:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_23/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_24:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_24/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_25:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_25/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_26:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_26/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_26/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_27:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_27/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_27/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_28:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_28/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_28/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_29:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_29/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_29/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_30:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_30/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_31:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_31/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_32:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_32/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_33:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_33/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_33/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_34:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_34/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_34/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_35:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_35/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_35/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_36:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_36/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_36/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_37:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_37/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_37/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  Kiwook_SERS_38:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_38/main/main
+      markdown_file: normalized.md
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_sers/ingestion/markdown/Kiwook_SERS_38/si1/si_1
+      markdown_file: normalized.md
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null

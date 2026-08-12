@@ -498,18 +498,9 @@ def main() -> int:
                 and row.entity_specific_claim_required_for_axis_fidelity
             )
         ]
-        reaction_species = [
-            row.entity_text
-            for row in audit_record.audit.axis_entities
-            if row.entity_kind == "reaction_species_or_product"
-        ]
         print(
-            " required ungrounded concrete material/system entities:",
+            " required ungrounded concrete entities:",
             required_ungrounded,
-        )
-        print(
-            " reaction species/products:",
-            reaction_species,
         )
         bridge_record = next(
             (

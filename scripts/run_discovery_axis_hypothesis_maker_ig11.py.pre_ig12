@@ -190,12 +190,6 @@ def parse_args() -> argparse.Namespace:
         default=1,
     )
     parser.add_argument(
-        "--max-nonredundancy-replans",
-        type=int,
-        choices=(0, 1),
-        default=1,
-    )
-    parser.add_argument(
         "--max-conformance-repairs",
         type=int,
         choices=(0, 1),
@@ -326,27 +320,13 @@ def main() -> int:
         max_output_tokens=args.max_output_tokens,
     )
 
-    bridge_audit_generator = IG11StructuredGenerator(
-        model=args.blueprint_model or args.model,
-        api_key_env=args.api_key_env,
-        base_url=args.base_url,
-        instructor_mode=args.instructor_mode,
-        temperature=args.temperature,
-        parse_retries=args.parse_retries,
-        timeout=args.timeout,
-        extra_headers=headers,
-        max_output_tokens=args.max_output_tokens,
-    )
-
     ig11_backend = IG11HypothesisBackend(
         base_backend,
         context=dual.grounded_context,
         audit_generator=audit_generator,
         blueprint_generator=blueprint_generator,
-        bridge_audit_generator=bridge_audit_generator,
         max_audit_repairs=args.max_audit_repairs,
         max_blueprint_repairs=args.max_blueprint_repairs,
-        max_nonredundancy_replans=args.max_nonredundancy_replans,
         max_conformance_repairs=args.max_conformance_repairs,
     )
 
@@ -453,11 +433,6 @@ def main() -> int:
         planning_report.audit_repair_count,
     )
     print(
-        "Bridge audits / nonredundancy replans:",
-        f"{planning_report.bridge_audit_count}/"
-        f"{planning_report.bridge_nonredundancy_replan_count}",
-    )
-    print(
         "Conformance repairs:",
         planning_report.conformance_repair_count,
     )
@@ -498,39 +473,9 @@ def main() -> int:
                 and row.entity_specific_claim_required_for_axis_fidelity
             )
         ]
-        reaction_species = [
-            row.entity_text
-            for row in audit_record.audit.axis_entities
-            if row.entity_kind == "reaction_species_or_product"
-        ]
         print(
-            " required ungrounded concrete material/system entities:",
+            " required ungrounded concrete entities:",
             required_ungrounded,
-        )
-        print(
-            " reaction species/products:",
-            reaction_species,
-        )
-        bridge_record = next(
-            (
-                row
-                for row in planning_report.bridge_audit_records
-                if row.axis_id == record.axis_id
-            ),
-            None,
-        )
-        if bridge_record is not None:
-            print(
-                " bridge novelty:",
-                bridge_record.audit.status,
-                "/ scope compatible:",
-                bridge_record.audit.scope_compatible,
-                "/ audit attempts:",
-                bridge_record.generation_attempts,
-            )
-        print(
-            " nonredundancy replans:",
-            record.nonredundancy_replan_count,
         )
         print(
             " blueprint valid:",

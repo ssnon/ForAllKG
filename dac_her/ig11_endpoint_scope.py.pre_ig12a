@@ -66,7 +66,6 @@ ScopeBreadth = Literal[
 
 EntityKind = Literal[
     "concrete_material_or_system",
-    "reaction_species_or_product",
     "descriptor_or_mechanism",
     "generic_concept",
 ]
@@ -585,36 +584,13 @@ contiguous VERBATIM substring of that exact premise. scope_basis_excerpt must
 also be a contiguous VERBATIM substring whenever possible; if the statement is
 too synthetic for a clean scope excerpt, use null.
 
-AXIS ENTITY TAXONOMY POLICY
-Audit scientifically meaningful named entities appearing in the assigned axis,
-but classify them by scientific role.
+CONCRETE AXIS ENTITY POLICY
+Audit named concrete materials, compositions, metal pairs, catalyst systems, or
+other specific scientific entities appearing in the assigned axis. Do not list
+ordinary descriptors such as "stability" as concrete materials.
 
-Use `concrete_material_or_system` ONLY for system-defining identities such as:
-- a specific metal pair (for example Co/Mo or Pt/Ru);
-- a specific catalyst, material, composition, or support system;
-- another concrete modeled/experimental material identity whose unsupported
-  substitution would create entity-specific extrapolation.
-
-Use `reaction_species_or_product` for reaction participants, intermediates,
-reactants, or products such as H, H2, H+, H2O, OH-, O2, CO2, and analogous
-chemical species. These are NOT catalyst/material/system identities.
-
-Use `descriptor_or_mechanism` for descriptors/mechanisms such as
-bonding–antibonding balance, d-band position, charge redistribution, adsorption
-free energy, or electronic coupling.
-
-Use `generic_concept` for other non-system concepts. Do not classify ordinary
-outcome labels such as "stability" as concrete materials.
-
-If an axis would cease to be that specific MATERIAL/SYSTEM axis when a
-`concrete_material_or_system` entity is removed, set
-entity_specific_claim_required_for_axis_fidelity=true.
-
-For `reaction_species_or_product`, normally set
-entity_specific_claim_required_for_axis_fidelity=false. A scientific relation
-involving that species may still be unsupported and may still fail ordinary
-endpoint-grounding, scope, non-redundancy, or downstream coverage checks; the
-species itself simply must not trigger the concrete-material identity gate.
+If an axis would cease to be that specific axis when a concrete named entity is
+removed, set entity_specific_claim_required_for_axis_fidelity=true.
 
 External knowledge is forbidden. Discovery-axis content is inspiration, not
 evidence.
@@ -856,10 +832,6 @@ def build_axis_audit_repair_messages(
                         "Important repair rules:",
                         "- If grounding_status='ungrounded', "
                         "grounding_statement_ids MUST be empty.",
-                        "- Classify reaction participants/products such as "
-                        "H2, H+, H2O, or OH- as "
-                        "reaction_species_or_product, not "
-                        "concrete_material_or_system.",
                         "- If grounding_statement_ids contain real positive "
                         "support, reconsider whether grounding_status should "
                         "be grounded or partial based only on the supplied "
@@ -949,16 +921,10 @@ Apply these priorities in order:
 6. DO NOT OPTIMIZE PREMISE DIVERSITY.
    Reusing a premise is acceptable when it is scientifically the best endpoint.
 
-STRICT CONCRETE-MATERIAL/SYSTEM RULE
-If an entity classified as `concrete_material_or_system` is ungrounded and
+STRICT CONCRETE-ENTITY RULE
+If a concrete material/system/entity is ungrounded and
 entity_specific_claim_required_for_axis_fidelity=true, ABSTAIN. Do not replace
-that missing material/system evidence with plausibility.
-
-Do NOT apply this strict identity gate to `reaction_species_or_product`. A
-reaction species may still participate in an unsupported relation, but that
-must be handled by ordinary endpoint grounding, scope, bridge non-redundancy,
-and downstream scientific coverage rather than by material/system identity
-abstention.
+that missing evidence with plausibility.
 
 ENDPOINT RULES
 - exactly two distinct grounded endpoint CLAIMS;
@@ -1015,9 +981,8 @@ Build the minimal-novelty-burden blueprint.
 If direct_axis_statement_ids is nonempty, at least one endpoint must use one of
 those IDs.
 
-If the audit identifies an ungrounded `concrete_material_or_system` entity that
-is required for material/system axis fidelity, return abstain=true. Do not use
-this identity rule for `reaction_species_or_product`.
+If the audit identifies a concrete ungrounded entity that is required for axis
+fidelity, return abstain=true.
 
 The scope_guard_phrase must occur exactly inside novel_bridge.relation.
 """
@@ -1415,10 +1380,8 @@ def build_nonredundancy_replan_messages(
                         "selected premises;",
                         "- scope transfer is not required;",
                         "- the relation remains a single scientific edge;",
-                        "- ungrounded required concrete MATERIAL/SYSTEM "
-                        "entities still force abstention;",
-                        "- reaction species/products do not trigger the "
-                        "material/system identity gate;",
+                        "- concrete ungrounded required entities still force "
+                        "abstention;",
                         "- if no such bounded relation exists, abstain.",
                         "",
                         "Do not merely paraphrase the old relation.",
