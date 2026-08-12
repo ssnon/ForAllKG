@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
+from dac_her.domains.catalysis_mechanism_graph import (
+    CATALYSIS_MECHANISM_GRAPH_ADAPTER,
+)
 from dac_her.domains.dac_her_graph import DAC_HER_GRAPH_ADAPTER
 from dac_her.domains.registry import get_domain_profile
 from dac_her.domains.sers_au_ag_graph import SERS_AU_AG_GRAPH_ADAPTER
@@ -8,6 +11,9 @@ from dac_her.graph_domain import GraphDomainAdapter
 
 
 _ADAPTERS: dict[str, GraphDomainAdapter] = {
+    CATALYSIS_MECHANISM_GRAPH_ADAPTER.adapter_id: (
+        CATALYSIS_MECHANISM_GRAPH_ADAPTER
+    ),
     DAC_HER_GRAPH_ADAPTER.adapter_id: DAC_HER_GRAPH_ADAPTER,
     SERS_AU_AG_GRAPH_ADAPTER.adapter_id: SERS_AU_AG_GRAPH_ADAPTER,
 }

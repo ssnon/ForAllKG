@@ -1,0 +1,82 @@
+schema_version: graphagentsdac-literature-query-plan-v01
+plan_id: broad_catalysis_mechanism_v1
+description: >-
+  Pilot query plan for a broad catalysis-mechanism corpus. Targets are
+  corpus-composition goals rather than per-query retrieval limits.
+
+buckets:
+  working_state_reconstruction:
+    label: Working-state and active-site reconstruction
+    target: 180
+    queries:
+      - electrocatalyst reconstruction
+      - adsorbate induced reconstruction electrocatalysis
+      - dynamic active site electrocatalysis
+      - operando active site reconstruction catalyst
+      - potential induced reconstruction electrocatalyst
+
+  elementary_step_kinetics:
+    label: Elementary-step kinetics and rate-determining-step changes
+    target: 180
+    queries:
+      - electrocatalysis constant potential DFT reaction barrier
+      - electrocatalysis microkinetic reaction mechanism
+      - rate determining step switching electrocatalysis
+      - Volmer Heyrovsky Tafel activation barrier
+      - potential dependent reaction pathway electrocatalysis
+
+  interfacial_environment:
+    label: Interfacial water, electrolyte, pH, and ion effects
+    target: 150
+    queries:
+      - interfacial water electrocatalysis reaction barrier
+      - electrolyte cation effect electrocatalysis
+      - hydrogen bond network electrocatalysis
+      - pH dependent electrocatalysis mechanism
+      - electric double layer reaction kinetics electrocatalysis
+
+  structural_landscape:
+    label: Structural energy landscapes and coordination-dependent stability
+    target: 150
+    queries:
+      - catalyst structural energy landscape coordination
+      - metastable active site electrocatalysis
+      - coordination dependent catalyst stability DFT
+      - metal metal distance electronic coupling catalyst
+      - local coordination topology electrocatalysis
+
+  active_site_attribution:
+    label: Active-site attribution, operando probes, and selective poisoning
+    target: 100
+    queries:
+      - selective poisoning active site electrocatalysis
+      - operando spectroscopy active site identification catalyst
+      - molecular probe active site electrocatalysis
+      - site selective inhibition electrocatalysis
+
+  cooperative_bifunctional_mechanisms:
+    label: Cooperative adsorption and bifunctional catalytic mechanisms
+    target: 100
+    queries:
+      - cooperative adsorption bimetallic electrocatalysis
+      - bifunctional mechanism dual site electrocatalysis
+      - bridge adsorption dual metal catalyst
+      - tandem active site electrocatalysis mechanism
+
+  descriptor_failure_counterexamples:
+    label: Descriptor failures, conditionality, and mechanistic counterexamples
+    target: 70
+    queries:
+      - adsorption energy descriptor failure electrocatalysis
+      - volcano descriptor breakdown electrocatalysis
+      - scaling relation breakdown electrocatalysis
+      - catalyst descriptor counterexample reaction kinetics
+
+  cross_reaction_atomic_site_mechanisms:
+    label: Transferable atomic-site mechanisms across electrocatalytic reactions
+    target: 70
+    queries:
+      - dual atom catalyst mechanism ORR OER CO2RR
+      - single atom catalyst active site reconstruction
+      - heteronuclear atomic pair electrocatalysis mechanism
+      - atomic site spillover electrocatalysis

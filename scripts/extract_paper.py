@@ -49,6 +49,10 @@ from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existi
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.broad_extraction_policy import (
+    BROAD_ABSTRACT_RECOVERY_POLICY_ID,
+    broad_abstract_extraction_policy,
+)
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
@@ -292,6 +296,11 @@ def main() -> None:
             raise ValueError("--concurrency must be at least 1.")
         policy = replace(policy, concurrency=args.concurrency)
 
+    extraction_policy_id = "default-strict-recovery"
+    if domain_profile.profile_id == "catalysis_mechanism":
+        policy = broad_abstract_extraction_policy(policy)
+        extraction_policy_id = BROAD_ABSTRACT_RECOVERY_POLICY_ID
+
     run_metadata = compute_run_metadata(
         project_root=PROJECT_ROOT,
         paper=paper,
@@ -306,6 +315,7 @@ def main() -> None:
             "vision_model_override": args.vision_model,
             "domain_profile_id": domain_profile.profile_id,
             "extraction_adapter_id": extraction_adapter.adapter_id,
+            "extraction_policy_id": extraction_policy_id,
             "data_root": str(data_root),
         },
         prompt_version=extraction_adapter.prompt_version,
@@ -566,6 +576,7 @@ def main() -> None:
     print("Model:", model, flush=True)
     print("Domain profile:", domain_profile.profile_id, flush=True)
     print("Extraction adapter:", extraction_adapter.adapter_id, flush=True)
+    print("Extraction policy:", extraction_policy_id, flush=True)
     print("Data root:", data_root, flush=True)
     print("Paper ID:", paper.paper_id, flush=True)
     print("Run ID:", run_id, flush=True)

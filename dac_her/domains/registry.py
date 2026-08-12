@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
+from dac_her.domains.catalysis_mechanism import CATALYSIS_MECHANISM_PROFILE
 from dac_her.domains.dac_her import DAC_HER_PROFILE
 from dac_her.domains.sers_au_ag import SERS_AU_AG_PROFILE
 
 
 _PROFILES: dict[str, ScientificDomainProfile] = {
+    CATALYSIS_MECHANISM_PROFILE.profile_id: CATALYSIS_MECHANISM_PROFILE,
     DAC_HER_PROFILE.profile_id: DAC_HER_PROFILE,
     SERS_AU_AG_PROFILE.profile_id: SERS_AU_AG_PROFILE,
 }
@@ -13,6 +15,9 @@ _ALIASES = {
     'default': 'dac_her',
     'her': 'dac_her',
     'dac-her': 'dac_her',
+    'broad': 'catalysis_mechanism',
+    'broad-catalysis': 'catalysis_mechanism',
+    'catalysis-mechanism': 'catalysis_mechanism',
     'sers': 'sers_au_ag',
     'au-ag-sers': 'sers_au_ag',
     'sers-au-ag': 'sers_au_ag',

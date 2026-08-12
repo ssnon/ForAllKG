@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
+from dac_her.domains.catalysis_mechanism_extraction import (
+    CATALYSIS_MECHANISM_EXTRACTION_ADAPTER,
+)
 from dac_her.domains.dac_her_extraction import DAC_HER_EXTRACTION_ADAPTER
 from dac_her.domains.sers_au_ag_extraction import SERS_AU_AG_EXTRACTION_ADAPTER
 from dac_her.domains.registry import get_domain_profile
@@ -8,6 +11,9 @@ from dac_her.extraction_domain import ExtractionDomainAdapter
 
 
 _ADAPTERS: dict[str, ExtractionDomainAdapter] = {
+    CATALYSIS_MECHANISM_EXTRACTION_ADAPTER.adapter_id: (
+        CATALYSIS_MECHANISM_EXTRACTION_ADAPTER
+    ),
     DAC_HER_EXTRACTION_ADAPTER.adapter_id: DAC_HER_EXTRACTION_ADAPTER,
     SERS_AU_AG_EXTRACTION_ADAPTER.adapter_id: SERS_AU_AG_EXTRACTION_ADAPTER,
 }

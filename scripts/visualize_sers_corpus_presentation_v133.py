@@ -566,7 +566,7 @@ def draw_network(
             va="center",
             multialignment="center",
             linespacing=0.92,
-            fontsize=fs,
+            fontsize=1.5*fs,
             color="black",
             fontweight="medium",
             zorder=6,

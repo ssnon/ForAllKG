@@ -693,15 +693,6 @@ def _build_candidate_portfolio(
         source.portfolio_id,
         [row.hypothesis_id for row in hypotheses],
     )
-
-    if hypotheses:
-        data["abstention_reason"] = None
-    else:
-        data["abstention_reason"] = (
-            "SC1 filtered all hypotheses because no candidate endpoint pair "
-            "satisfied the required endpoint-scope compatibility contract."
-        )
-
     return HypothesisPortfolio.model_validate(data)
 
 

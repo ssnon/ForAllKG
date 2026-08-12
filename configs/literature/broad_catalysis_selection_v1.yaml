@@ -1,0 +1,137 @@
+schema_version: graphagentsdac-literature-selection-plan-v01
+plan_id: broad_catalysis_selection_v1
+query_plan_id: broad_catalysis_mechanism_v1
+target_count: 100
+min_abstract_chars: 200
+max_abstract_chars: 9000
+min_total_score: 7.0
+allowed_languages:
+  - en
+
+global_context_terms:
+  - electrocatalysis
+  - electrocatalytic
+  - catalyst
+  - catalytic
+  - electrochemical
+  - electrode
+  - active site
+  - reaction mechanism
+
+global_mechanism_terms:
+  - mechanism
+  - reconstruction
+  - activation barrier
+  - reaction barrier
+  - rate determining step
+  - rate-determining step
+  - microkinetic
+  - adsorption
+  - intermediate
+  - charge transfer
+  - electronic structure
+  - orbital
+  - operando
+  - in situ
+  - coordination
+  - interfacial water
+  - hydrogen bond
+  - electrolyte
+  - poisoning
+  - spillover
+  - bifunctional
+
+bucket_rules:
+  working_state_reconstruction:
+    keywords:
+      - reconstruction
+      - dynamic active site
+      - active site evolution
+      - working state
+      - adsorbate induced
+      - potential induced
+      - surface restructuring
+      - site switching
+
+  elementary_step_kinetics:
+    keywords:
+      - activation barrier
+      - reaction barrier
+      - rate determining step
+      - rate-determining step
+      - microkinetic
+      - transition state
+      - constant potential
+      - grand canonical
+      - Volmer
+      - Heyrovsky
+      - Tafel
+
+  interfacial_environment:
+    keywords:
+      - interfacial water
+      - hydrogen bond network
+      - electric double layer
+      - electrolyte
+      - cation effect
+      - pH dependent
+      - proton transfer
+      - water dissociation
+      - solvent
+
+  structural_landscape:
+    keywords:
+      - structural energy landscape
+      - metastable
+      - coordination environment
+      - coordination topology
+      - formation energy
+      - structural stability
+      - metal metal distance
+      - metal-metal distance
+      - local minimum
+
+  active_site_attribution:
+    keywords:
+      - selective poisoning
+      - molecular probe
+      - active site identification
+      - operando spectroscopy
+      - in situ spectroscopy
+      - site selective inhibition
+      - active site assignment
+
+  cooperative_bifunctional_mechanisms:
+    keywords:
+      - cooperative adsorption
+      - bifunctional mechanism
+      - dual site
+      - bridge adsorption
+      - tandem active site
+      - synergistic mechanism
+      - spillover
+      - cooperative mechanism
+
+  descriptor_failure_counterexamples:
+    keywords:
+      - descriptor failure
+      - descriptor breakdown
+      - volcano breakdown
+      - scaling relation breakdown
+      - scaling relation
+      - counterexample
+      - descriptor limitation
+      - nonmonotonic
+
+  cross_reaction_atomic_site_mechanisms:
+    keywords:
+      - dual atom
+      - single atom
+      - atomic pair
+      - heteronuclear
+      - ORR
+      - OER
+      - CO2RR
+      - NRR
+      - atomic site
+      - metal pair
