@@ -110,6 +110,5 @@ DAC_HER_PROFILE = ScientificDomainProfile(
     ),
     extraction_adapter_id='dac_her',
     graph_adapter_id='dac_her',
-    bridge_adapter_id='dac_her',
     feasibility_adapter_id='dac_her',
 )

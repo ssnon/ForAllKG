@@ -6,8 +6,6 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from dac_her.bridge_domain import BridgeDomainAdapter
-
 from dac_her.bridge_draft_schema import (
     BridgeCandidateRepair,
     BridgeChunkDraft,
@@ -36,19 +34,6 @@ from dac_her.scientific_signatures import strict_node_catalog
 from dac_her.schemas import KnowledgeGraph
 
 
-def _resolve_bridge_adapter(
-    bridge_adapter: BridgeDomainAdapter | None,
-) -> BridgeDomainAdapter:
-    if bridge_adapter is not None:
-        return bridge_adapter
-
-    # Backward-compatible direct Python callers retain the frozen HER
-    # semantics. Domain-aware CLIs resolve explicitly and fail closed.
-    from dac_her.domains.bridge_registry import get_bridge_adapter
-
-    return get_bridge_adapter("dac_her")
-
-
 def bridge_raw_output_path(
     chunk_id: str,
     output_dir: str | Path,
@@ -65,9 +50,8 @@ def bridge_raw_output_path(
 
 def _catalog(
     result: KnowledgeGraph,
-    bridge_adapter: BridgeDomainAdapter,
 ) -> list[dict[str, Any]]:
-    return bridge_adapter.strict_node_catalog_builder(
+    return strict_node_catalog(
         knowledge_graph_to_networkx(result)
     )
 
@@ -77,7 +61,6 @@ def _load_cached_raw(
     raw_output_path: Path,
     strict_result: KnowledgeGraph,
     source_payload: dict[str, Any],
-    bridge_adapter: BridgeDomainAdapter,
 ) -> BridgeChunkGraph | None:
     """
     Load a cached raw extraction only when it remains strict-valid against the
@@ -95,7 +78,7 @@ def _load_cached_raw(
             )
         )
 
-        bridge_adapter.validate_chunk(
+        validate_bridge_chunk(
             raw_result,
             paper_id=str(
                 source_payload["paper_id"]
@@ -125,8 +108,7 @@ def _load_cached_raw(
                 source_payload["core_text"]
             ),
             strict_nodes=_catalog(
-                strict_result,
-                bridge_adapter,
+                strict_result
             ),
         )
 
@@ -194,7 +176,6 @@ def extract_bridge_raw_chunk(
     max_tokens: int = 3400,
     max_candidate_repairs_per_chunk: int = 3,
     candidate_repair_max_tokens: int = 1800,
-    bridge_adapter: BridgeDomainAdapter | None = None,
 ) -> dict[str, Any]:
     """
     Extract and persist one strict-valid raw BridgeChunkGraph.
@@ -211,8 +192,6 @@ def extract_bridge_raw_chunk(
     Whole-chunk failure is reserved for technical/provider/draft-shape/internal
     failures that prevent creation of a strict-valid raw Bridge graph.
     """
-    bridge_adapter = _resolve_bridge_adapter(bridge_adapter)
-
     output_dir = Path(output_dir)
     output_dir.mkdir(
         parents=True,
@@ -241,7 +220,6 @@ def extract_bridge_raw_chunk(
             raw_output_path=raw_output_path,
             strict_result=strict_result,
             source_payload=source_payload,
-            bridge_adapter=bridge_adapter,
         )
 
         if cached is not None:
@@ -298,7 +276,7 @@ def extract_bridge_raw_chunk(
     # Import provider client only on a cache miss.
     from dac_her.llm_openrouter import OpenRouterLLM
 
-    nodes = _catalog(strict_result, bridge_adapter)
+    nodes = _catalog(strict_result)
     validation_feedback: str | None = None
     attempts: list[dict[str, Any]] = []
 
@@ -321,8 +299,8 @@ def extract_bridge_raw_chunk(
 
         try:
             draft = llm.generate_structured(
-                system_prompt=bridge_adapter.system_prompt,
-                prompt=bridge_adapter.build_prompt(
+                system_prompt=BRIDGE_SYSTEM_PROMPT,
+                prompt=build_bridge_prompt(
                     paper_id=str(
                         source_payload["paper_id"]
                     ),
@@ -504,10 +482,10 @@ def extract_bridge_raw_chunk(
             try:
                 repair = repair_llm.generate_structured(
                     system_prompt=(
-                        bridge_adapter.recovery_system_prompt
+                        BRIDGE_RECOVERY_SYSTEM_PROMPT
                     ),
                     prompt=(
-                        bridge_adapter.build_candidate_repair_prompt(
+                        build_bridge_candidate_repair_prompt(
                             original_concept=(
                                 original_concept
                             ),
@@ -587,12 +565,6 @@ def extract_bridge_raw_chunk(
                 max_candidate_repairs_per_chunk=(
                     max_candidate_repairs_per_chunk
                 ),
-                validation_issues_fn=(
-                    bridge_adapter.validation_issues
-                ),
-                validate_chunk_fn=(
-                    bridge_adapter.validate_chunk
-                ),
             )
         except BridgeRecoveryError as error:
             attempts.extend(candidate_repair_usages)
@@ -644,7 +616,7 @@ def extract_bridge_raw_chunk(
                 BRIDGE_RECOVERY_VERSION
             ),
             "bridge_recovery_prompt_version": (
-                bridge_adapter.recovery_prompt_version
+                BRIDGE_RECOVERY_PROMPT_VERSION
             ),
             "source_reconciliation_version": (
                 BRIDGE_SOURCE_RECONCILIATION_VERSION
@@ -789,7 +761,6 @@ def extract_bridge_chunk(
     max_tokens: int = 3400,
     max_candidate_repairs_per_chunk: int = 3,
     candidate_repair_max_tokens: int = 1800,
-    bridge_adapter: BridgeDomainAdapter | None = None,
 ) -> dict[str, Any]:
     """Backward-compatible extraction + deterministic filtering wrapper."""
     raw_record = extract_bridge_raw_chunk(
@@ -808,7 +779,6 @@ def extract_bridge_chunk(
         candidate_repair_max_tokens=(
             candidate_repair_max_tokens
         ),
-        bridge_adapter=bridge_adapter,
     )
 
     if raw_record["status"] == "failed":
@@ -834,7 +804,6 @@ def extract_bridge_chunk(
         strict_result=strict_result,
         source_payload=source_payload,
         output_dir=output_dir,
-        bridge_adapter=bridge_adapter,
     )
 
     return {

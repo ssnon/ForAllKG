@@ -14,12 +14,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-import dac_her.bridge_domain \
-    as bridge_domain_module
-import dac_her.domains.bridge_registry \
-    as bridge_registry_module
-import dac_her.domains.dac_her_bridge \
-    as dac_her_bridge_module
 import dac_her.bridge_extraction \
     as bridge_extraction_module
 import dac_her.bridge_filtering \
@@ -52,9 +46,6 @@ import dac_her.bridge_source_reconciliation \
 from dac_her.bridge_extraction import (
     extract_bridge_raw_chunk,
 )
-from dac_her.domains.bridge_registry import resolve_bridge_adapter
-from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.registry import get_domain_profile
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
@@ -113,14 +104,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--run-id",
-        default=None,
-    )
-    parser.add_argument(
-        "--domain-profile",
-        default="dac_her",
-    )
-    parser.add_argument(
-        "--data-root",
         default=None,
     )
     parser.add_argument(
@@ -266,20 +249,6 @@ def _seed_raw_cache(
 def main() -> None:
     args = parse_args()
 
-    domain_profile = get_domain_profile(
-        args.domain_profile
-    )
-    bridge_adapter = resolve_bridge_adapter(
-        domain_profile
-    )
-    extraction_adapter = get_extraction_adapter(
-        domain_profile.profile_id
-    )
-    data_root = Path(
-        args.data_root
-        or extraction_adapter.default_data_root
-    )
-
     if not args.model:
         raise RuntimeError(
             "Set OPENROUTER_BRIDGE_MODEL "
@@ -298,7 +267,6 @@ def main() -> None:
             project_root=PROJECT_ROOT,
             paper_id=args.paper_id,
             run_id=args.run_id,
-            data_root=data_root,
         )
     )
 
@@ -310,18 +278,6 @@ def main() -> None:
         strict_run_dir
         / "run.json"
     )
-
-    strict_domain = str(
-        strict_run_metadata.get(
-            "domain_profile_id",
-            "dac_her",
-        )
-    )
-    if strict_domain != domain_profile.profile_id:
-        raise RuntimeError(
-            "Strict-run/domain mismatch: "
-            f"run={strict_domain!r}, requested={domain_profile.profile_id!r}"
-        )
 
     active_payload = {
         **active_payload,
@@ -380,7 +336,6 @@ def main() -> None:
     paper_root = paper_output_root(
         PROJECT_ROOT,
         args.paper_id,
-        data_root=data_root,
     )
 
     canonical_path = (
@@ -479,9 +434,6 @@ def main() -> None:
         )
 
     extraction_implementation_paths = (
-        bridge_domain_module.__file__,
-        bridge_registry_module.__file__,
-        dac_her_bridge_module.__file__,
         bridge_extraction_module.__file__,
         bridge_prompts_module.__file__,
         bridge_schemas_module.__file__,
@@ -516,15 +468,6 @@ def main() -> None:
                 "reproducible": False,
                 "zdr": True,
             },
-            bridge_prompt_version=(
-                bridge_adapter.prompt_version
-            ),
-            domain_profile_id=(
-                domain_profile.profile_id
-            ),
-            bridge_adapter_id=(
-                bridge_adapter.adapter_id
-            ),
         )
     )
 
@@ -605,7 +548,6 @@ def main() -> None:
                 output_dir=raw_dir,
                 debug_dir=debug_dir,
                 force=args.force,
-                bridge_adapter=bridge_adapter,
             ): strict_result.chunk_id
             for (
                 _,
@@ -676,8 +618,6 @@ def main() -> None:
 
     extraction_summary = {
         "paper_id": args.paper_id,
-        "domain_profile_id": domain_profile.profile_id,
-        "bridge_adapter_id": bridge_adapter.adapter_id,
         "strict_run_id": (
             active_payload.get(
                 "run_id"
@@ -721,8 +661,6 @@ def main() -> None:
         / "latest_bridge_extraction.json",
         {
             "paper_id": args.paper_id,
-            "domain_profile_id": domain_profile.profile_id,
-            "bridge_adapter_id": bridge_adapter.adapter_id,
             "strict_run_id": (
                 active_payload.get(
                     "run_id"
@@ -746,9 +684,6 @@ def main() -> None:
     )
 
     policy_implementation_paths = (
-        bridge_domain_module.__file__,
-        bridge_registry_module.__file__,
-        dac_her_bridge_module.__file__,
         bridge_filtering_module.__file__,
         bridge_policy_module.__file__,
         bridge_relation_repairs_module.__file__,
@@ -784,18 +719,12 @@ def main() -> None:
             policy_implementation_paths=(
                 policy_implementation_paths
             ),
-            bridge_adapter=bridge_adapter,
-            data_root=data_root,
         )
     )
 
     print(
         "Bridge extraction and policy "
         "materialization finished"
-    )
-    print(
-        "Domain / Bridge adapter:",
-        f"{domain_profile.profile_id} / {bridge_adapter.adapter_id}",
     )
     print(
         "Extraction ID:",

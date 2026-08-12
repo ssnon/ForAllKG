@@ -191,5 +191,4 @@ class ScientificDomainProfile:
     novelty: NoveltySemantics
     extraction_adapter_id: str | None = None
     graph_adapter_id: str | None = None
-    bridge_adapter_id: str | None = None
     feasibility_adapter_id: str | None = None

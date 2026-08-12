@@ -104,9 +104,6 @@ def compute_bridge_extraction_metadata(
     runtime_options: (
         dict[str, Any] | None
     ) = None,
-    bridge_prompt_version: str = BRIDGE_PROMPT_VERSION,
-    domain_profile_id: str = "dac_her",
-    bridge_adapter_id: str = "dac_her",
 ) -> dict[str, Any]:
     """
     Compute the identity of raw LLM extraction.
@@ -123,7 +120,7 @@ def compute_bridge_extraction_metadata(
 
     payload = {
         "bridge_prompt_version": (
-            bridge_prompt_version
+            BRIDGE_PROMPT_VERSION
         ),
         "model": model,
         "provider": provider or "",
@@ -176,8 +173,6 @@ def compute_bridge_extraction_metadata(
         "created_at_utc": (
             _created_at_utc()
         ),
-        "domain_profile_id": domain_profile_id,
-        "bridge_adapter_id": bridge_adapter_id,
         **payload,
     }
 
@@ -198,9 +193,6 @@ def compute_bridge_policy_run_metadata(
     implementation_paths: Iterable[
         str | Path
     ],
-    bridge_policy_version: str = BRIDGE_POLICY_VERSION,
-    domain_profile_id: str = "dac_her",
-    bridge_adapter_id: str = "dac_her",
 ) -> dict[str, Any]:
     """
     Compute the identity of one policy application.
@@ -225,7 +217,7 @@ def compute_bridge_policy_run_metadata(
             ]
         ),
         "bridge_policy_version": (
-            bridge_policy_version
+            BRIDGE_POLICY_VERSION
         ),
         "raw_chunks": (
             _hash_files_by_name(
@@ -261,8 +253,6 @@ def compute_bridge_policy_run_metadata(
         "created_at_utc": (
             _created_at_utc()
         ),
-        "domain_profile_id": domain_profile_id,
-        "bridge_adapter_id": bridge_adapter_id,
         **payload,
     }
 
@@ -311,10 +301,6 @@ def compute_bridge_run_metadata(
     implementation_paths: Iterable[
         str | Path
     ],
-    bridge_prompt_version: str = BRIDGE_PROMPT_VERSION,
-    bridge_policy_version: str = BRIDGE_POLICY_VERSION,
-    domain_profile_id: str = "dac_her",
-    bridge_adapter_id: str = "dac_her",
 ) -> dict[str, Any]:
     """
     Legacy combined fingerprint retained while older
@@ -326,10 +312,10 @@ def compute_bridge_run_metadata(
 
     payload = {
         "bridge_prompt_version": (
-            bridge_prompt_version
+            BRIDGE_PROMPT_VERSION
         ),
         "bridge_policy_version": (
-            bridge_policy_version
+            BRIDGE_POLICY_VERSION
         ),
         "model": model,
         "provider": provider or "",
@@ -384,8 +370,6 @@ def compute_bridge_run_metadata(
         "created_at_utc": (
             _created_at_utc()
         ),
-        "domain_profile_id": domain_profile_id,
-        "bridge_adapter_id": bridge_adapter_id,
         **payload,
     }
 

@@ -4,13 +4,20 @@ import base64
 import json
 import mimetypes
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, Mapping, TypeVar
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
+
+from dac_her.llm_telemetry import (
+    append_usage_event,
+    build_usage_event,
+    normalize_stage_name,
+)
 
 
 load_dotenv()
@@ -24,6 +31,7 @@ class LLMUsage:
     input_tokens: int
     output_tokens: int
     total_tokens: int
+
 
 def env_bool(
     name: str,
@@ -66,6 +74,8 @@ class OpenRouterLLM:
         provider: str | None = None,
         reproducible: bool = True,
         zdr: bool = True,
+        telemetry_path: str | Path | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> None:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
@@ -91,8 +101,11 @@ class OpenRouterLLM:
                 "X-OpenRouter-Metadata": "enabled",
             },
         )
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self.last_usage: LLMUsage | None = None
         self.last_call_metadata: dict[str, object] = {}
+        self.last_telemetry_event: dict[str, Any] | None = None
 
     def _provider_options(self, *, structured: bool) -> dict:
         options = {
@@ -132,6 +145,49 @@ class OpenRouterLLM:
             "finish_reason": choice.finish_reason,
         }
 
+    def _record_telemetry(
+        self,
+        *,
+        response: Any,
+        system_prompt: str,
+        prompt: str,
+        response_schema: Any | None,
+        semantic_components: Mapping[str, Any] | None,
+        extra_messages: list[Mapping[str, Any]] | None,
+        elapsed_seconds: float,
+        outcome: str,
+        rejection_reason: str | None,
+        telemetry_context: Mapping[str, Any] | None,
+    ) -> None:
+        context = dict(self.telemetry_context)
+        context.update(dict(telemetry_context or {}))
+        event = build_usage_event(
+            requested_model=self.model,
+            completion=response,
+            system_prompt=system_prompt,
+            user_prompt=prompt,
+            response_schema=response_schema,
+            semantic_components=semantic_components,
+            extra_messages=extra_messages,
+            elapsed_seconds=elapsed_seconds,
+            outcome=outcome,
+            rejection_reason=rejection_reason,
+            context=context,
+            provider_usage_scope="direct_provider_call",
+        )
+        append_usage_event(self.telemetry_path, event)
+        payload = event.to_dict()
+        self.last_telemetry_event = payload
+        # Existing strict_recovery already copies last_call_metadata into each
+        # attempt_usages record, so telemetry becomes available there without
+        # changing recovery policy or control flow.
+        self.last_call_metadata["telemetry_event"] = payload
+
+    @staticmethod
+    def _structured_stage(response_model: type[BaseModel]) -> str:
+        name = response_model.__name__
+        return normalize_stage_name(name, response_model=name) or name
+
     @staticmethod
     def _image_data_url(path: str | Path) -> str:
         path = Path(path)
@@ -148,7 +204,10 @@ class OpenRouterLLM:
         prompt: str,
         temperature: float = 0.0,
         max_tokens: int = 1500,
+        telemetry_components: Mapping[str, Any] | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> str:
+        started = time.perf_counter()
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -164,8 +223,38 @@ class OpenRouterLLM:
         self._record_usage(response)
         self._record_call_metadata(response)
         content = response.choices[0].message.content
+        elapsed = time.perf_counter() - started
+        call_context = {
+            "stage": "text_generation",
+            "call_kind": "text",
+            **dict(telemetry_context or {}),
+        }
         if not content or not content.strip():
+            self._record_telemetry(
+                response=response,
+                system_prompt=system_prompt,
+                prompt=prompt,
+                response_schema=None,
+                semantic_components=telemetry_components,
+                extra_messages=None,
+                elapsed_seconds=elapsed,
+                outcome="error",
+                rejection_reason="empty_response",
+                telemetry_context=call_context,
+            )
             raise RuntimeError("OpenRouter returned empty content.")
+        self._record_telemetry(
+            response=response,
+            system_prompt=system_prompt,
+            prompt=prompt,
+            response_schema=None,
+            semantic_components=telemetry_components,
+            extra_messages=None,
+            elapsed_seconds=elapsed,
+            outcome="success",
+            rejection_reason=None,
+            telemetry_context=call_context,
+        )
         return content.strip()
 
     def _validate_structured_content(
@@ -214,7 +303,11 @@ class OpenRouterLLM:
         max_tokens: int = 4000,
         reasoning_effort: str = "minimal",
         debug_path: str | Path | None = None,
+        telemetry_components: Mapping[str, Any] | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> T:
+        schema = response_model.model_json_schema()
+        started = time.perf_counter()
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -228,7 +321,7 @@ class OpenRouterLLM:
                 "json_schema": {
                     "name": response_model.__name__,
                     "strict": True,
-                    "schema": response_model.model_json_schema(),
+                    "schema": schema,
                 },
             },
             extra_body={
@@ -241,11 +334,45 @@ class OpenRouterLLM:
         )
         self._record_usage(response)
         self._record_call_metadata(response)
-        return self._validate_structured_content(
-            content=response.choices[0].message.content,
-            response_model=response_model,
-            debug_path=debug_path,
+        call_context = {
+            "stage": self._structured_stage(response_model),
+            "call_kind": "structured",
+            "response_model": response_model.__name__,
+            **dict(telemetry_context or {}),
+        }
+        try:
+            result = self._validate_structured_content(
+                content=response.choices[0].message.content,
+                response_model=response_model,
+                debug_path=debug_path,
+            )
+        except Exception as error:
+            self._record_telemetry(
+                response=response,
+                system_prompt=system_prompt,
+                prompt=prompt,
+                response_schema=schema,
+                semantic_components=telemetry_components,
+                extra_messages=None,
+                elapsed_seconds=time.perf_counter() - started,
+                outcome="validation_error",
+                rejection_reason=type(error).__name__,
+                telemetry_context=call_context,
+            )
+            raise
+        self._record_telemetry(
+            response=response,
+            system_prompt=system_prompt,
+            prompt=prompt,
+            response_schema=schema,
+            semantic_components=telemetry_components,
+            extra_messages=None,
+            elapsed_seconds=time.perf_counter() - started,
+            outcome="success",
+            rejection_reason=None,
+            telemetry_context=call_context,
         )
+        return result
 
     def generate_structured_with_images(
         self,
@@ -258,6 +385,8 @@ class OpenRouterLLM:
         max_tokens: int = 3000,
         reasoning_effort: str = "minimal",
         debug_path: str | Path | None = None,
+        telemetry_components: Mapping[str, Any] | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> T:
         if not image_paths:
             raise ValueError("At least one image path is required.")
@@ -272,6 +401,8 @@ class OpenRouterLLM:
                 },
             })
 
+        schema = response_model.model_json_schema()
+        started = time.perf_counter()
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -285,7 +416,7 @@ class OpenRouterLLM:
                 "json_schema": {
                     "name": response_model.__name__,
                     "strict": True,
-                    "schema": response_model.model_json_schema(),
+                    "schema": schema,
                 },
             },
             extra_body={
@@ -298,8 +429,50 @@ class OpenRouterLLM:
         )
         self._record_usage(response)
         self._record_call_metadata(response)
-        return self._validate_structured_content(
-            content=response.choices[0].message.content,
-            response_model=response_model,
-            debug_path=debug_path,
+        call_context = {
+            "stage": self._structured_stage(response_model),
+            "call_kind": "structured_with_images",
+            "response_model": response_model.__name__,
+            **dict(telemetry_context or {}),
+        }
+        image_diagnostics = [
+            {"name": Path(path).name, "detail": "high"}
+            for path in image_paths
+        ]
+        components = {
+            "images": image_diagnostics,
+            **dict(telemetry_components or {}),
+        }
+        try:
+            result = self._validate_structured_content(
+                content=response.choices[0].message.content,
+                response_model=response_model,
+                debug_path=debug_path,
+            )
+        except Exception as error:
+            self._record_telemetry(
+                response=response,
+                system_prompt=system_prompt,
+                prompt=prompt,
+                response_schema=schema,
+                semantic_components=components,
+                extra_messages=None,
+                elapsed_seconds=time.perf_counter() - started,
+                outcome="validation_error",
+                rejection_reason=type(error).__name__,
+                telemetry_context=call_context,
+            )
+            raise
+        self._record_telemetry(
+            response=response,
+            system_prompt=system_prompt,
+            prompt=prompt,
+            response_schema=schema,
+            semantic_components=components,
+            extra_messages=None,
+            elapsed_seconds=time.perf_counter() - started,
+            outcome="success",
+            rejection_reason=None,
+            telemetry_context=call_context,
         )
+        return result

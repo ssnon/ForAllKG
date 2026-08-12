@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
-import time
 from dataclasses import dataclass
-from typing import Any, Protocol, runtime_checkable
+from pathlib import Path
+from typing import Any, Mapping, Protocol, runtime_checkable
 
 from dac_her.hypothesis_contracts import HypothesisPortfolioDraft
 from dac_her.hypothesis_prompt import HypothesisPrompt
+from dac_her.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,8 @@ class InstructorOpenAICompatibleHypothesisBackend:
         parse_retries: int = 1,
         timeout: float | None = 180.0,
         extra_headers: dict[str, str] | None = None,
+        telemetry_path: str | Path | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> None:
         self.model_name = str(model)
         self.api_key = api_key if api_key is not None else os.getenv(api_key_env)
@@ -65,6 +68,8 @@ class InstructorOpenAICompatibleHypothesisBackend:
         self.parse_retries = int(parse_retries)
         self.timeout = timeout
         self.extra_headers = dict(extra_headers or {})
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self._client: Any | None = None
 
     def _get_client(self) -> Any:
@@ -101,27 +106,48 @@ class InstructorOpenAICompatibleHypothesisBackend:
         self._client = instructor.from_openai(raw_client, mode=mode)
         return self._client
 
-    def _call(self, messages: list[dict[str, str]]) -> HypothesisDraftGeneration:
+    def _call(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        stage: str,
+        semantic_components: Mapping[str, Any] | None = None,
+    ) -> HypothesisDraftGeneration:
         client = self._get_client()
-        started = time.perf_counter()
-        draft = client.chat.completions.create(
+        context = {
+            **self.telemetry_context,
+            "pipeline": "hypothesis_maker",
+            "stage": stage,
+            "call_kind": stage,
+        }
+        draft, event = run_instructor_structured_call(
+            client.chat.completions,
             model=self.model_name,
             response_model=HypothesisPortfolioDraft,
             messages=messages,
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context=context,
+            semantic_components=semantic_components,
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(draft, HypothesisPortfolioDraft):
             draft = HypothesisPortfolioDraft.model_validate(draft)
-        return HypothesisDraftGeneration(draft=draft, elapsed_seconds=elapsed)
+        return HypothesisDraftGeneration(
+            draft=draft,
+            input_tokens=event.provider_input_tokens,
+            output_tokens=event.provider_output_tokens,
+            response_id=event.response_id,
+            elapsed_seconds=event.elapsed_seconds,
+        )
 
     def generate(self, prompt: HypothesisPrompt) -> HypothesisDraftGeneration:
         return self._call(
             [
                 {"role": "system", "content": prompt.system_prompt},
                 {"role": "user", "content": prompt.user_prompt},
-            ]
+            ],
+            stage="generation",
         )
 
     def repair(
@@ -130,11 +156,17 @@ class InstructorOpenAICompatibleHypothesisBackend:
         previous_draft: HypothesisPortfolioDraft,
         feedback: str,
     ) -> HypothesisDraftGeneration:
+        previous_payload = previous_draft.model_dump_json(indent=2)
         return self._call(
             [
                 {"role": "system", "content": prompt.system_prompt},
                 {"role": "user", "content": prompt.user_prompt},
-                {"role": "assistant", "content": previous_draft.model_dump_json(indent=2)},
+                {"role": "assistant", "content": previous_payload},
                 {"role": "user", "content": feedback},
-            ]
+            ],
+            stage="repair",
+            semantic_components={
+                "previous_stage_output": previous_payload,
+                "issues": feedback,
+            },
         )

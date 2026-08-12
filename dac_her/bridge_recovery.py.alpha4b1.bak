@@ -322,7 +322,6 @@ def _validate_one_concept(
     metadata: dict[str, Any],
     core_text: str,
     strict_nodes: list[dict[str, Any]],
-    validation_issues_fn: Callable[..., list[str]] = bridge_validation_issues,
 ) -> tuple[
     BridgeConcept | None,
     list[BridgeLink],
@@ -367,7 +366,7 @@ def _validate_one_concept(
                 concepts=[concept],
                 links=[link],
             )
-            issues = validation_issues_fn(
+            issues = bridge_validation_issues(
                 mini,
                 **_mini_validation_kwargs(
                     metadata=metadata,
@@ -447,8 +446,6 @@ def recover_bridge_draft(
     strict_nodes: list[dict[str, Any]],
     repair_callback: CandidateRepairCallback | None = None,
     max_candidate_repairs_per_chunk: int = 3,
-    validation_issues_fn: Callable[..., list[str]] = bridge_validation_issues,
-    validate_chunk_fn: Callable[..., None] = validate_bridge_chunk,
 ) -> BridgeRecoveryResult:
     """
     Convert a recoverable Bridge draft into a strict BridgeChunkGraph.
@@ -607,7 +604,6 @@ def recover_bridge_draft(
             metadata=metadata,
             core_text=core_text,
             strict_nodes=strict_nodes,
-            validation_issues_fn=validation_issues_fn,
         )
 
         if concept_model is not None and valid_links:
@@ -708,7 +704,6 @@ def recover_bridge_draft(
                     metadata=metadata,
                     core_text=core_text,
                     strict_nodes=strict_nodes,
-                    validation_issues_fn=validation_issues_fn,
                 )
 
                 if (
@@ -787,7 +782,7 @@ def recover_bridge_draft(
     )
 
     try:
-        validate_chunk_fn(
+        validate_bridge_chunk(
             final_graph,
             **_mini_validation_kwargs(
                 metadata=metadata,

@@ -12,6 +12,7 @@ from dac_her.external_novelty_contracts import (
     NoveltyClaimDecompositionDraft,
 )
 from dac_her.hypothesis_contracts import HypothesisCard
+from dac_her.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,8 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         timeout: float | None = 180.0,
         capture_prompts: bool = False,
         max_abstract_chars: int = 1400,
+        telemetry_path: str | os.PathLike[str] | None = None,
+        telemetry_context: dict[str, Any] | None = None,
     ) -> None:
         self.model_name = str(model)
         self.api_key = api_key if api_key is not None else os.getenv(api_key_env)
@@ -85,6 +88,8 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         self.capture_prompts = bool(capture_prompts)
         self.max_abstract_chars = int(max_abstract_chars)
         self.prompt_records: list[ExternalNoveltyPromptRecord] = []
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self._client: Any | None = None
 
     def _get_client(self) -> Any:
@@ -151,8 +156,8 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ]
         )
         self._record(f"decompose_{hypothesis.hypothesis_id}", _DECOMPOSE_SYSTEM, user)
-        client = self._get_client()
-        return client.chat.completions.create(
+        result, _event = run_instructor_structured_call(
+            self._get_client().chat.completions,
             model=self.model_name,
             response_model=NoveltyClaimDecompositionDraft,
             messages=[
@@ -161,7 +166,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context={
+                **self.telemetry_context,
+                "pipeline": "external_novelty",
+                "stage": "decompose",
+                "call_kind": "structured",
+                "hypothesis_id": hypothesis.hypothesis_id,
+            },
         )
+        if not isinstance(result, NoveltyClaimDecompositionDraft):
+            result = NoveltyClaimDecompositionDraft.model_validate(result)
+        return result
 
     def review_claim(
         self,
@@ -207,9 +223,8 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         )
         user = "\n".join(lines)
         self._record(f"review_{claim.claim_id}", _REVIEW_SYSTEM, user)
-        client = self._get_client()
-        started = time.perf_counter()
-        result = client.chat.completions.create(
+        result, _event = run_instructor_structured_call(
+            self._get_client().chat.completions,
             model=self.model_name,
             response_model=ClaimPriorArtReviewDraft,
             messages=[
@@ -218,6 +233,15 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context={
+                **self.telemetry_context,
+                "pipeline": "external_novelty",
+                "stage": "prior_art_review",
+                "call_kind": "structured",
+                "claim_id": claim.claim_id,
+            },
         )
-        _ = time.perf_counter() - started
+        if not isinstance(result, ClaimPriorArtReviewDraft):
+            result = ClaimPriorArtReviewDraft.model_validate(result)
         return result

@@ -9,8 +9,6 @@ from typing import Any, Iterable
 import networkx as nx
 import csv
 
-from dac_her.bridge_domain import BridgeDomainAdapter
-
 from dac_her.bridge_extraction import (
     bridge_raw_output_path,
 )
@@ -256,8 +254,6 @@ def materialize_bridge_policy_run(
     policy_implementation_paths: Iterable[
         str | Path
     ],
-    bridge_adapter: BridgeDomainAdapter | None = None,
-    data_root: str | Path = "data_dac",
 ) -> dict[str, Any]:
     """
     Apply the current deterministic repair and Bridge
@@ -265,10 +261,6 @@ def materialize_bridge_policy_run(
 
     No LLM calls are performed here.
     """
-    if bridge_adapter is None:
-        from dac_her.domains.bridge_registry import get_bridge_adapter
-        bridge_adapter = get_bridge_adapter("dac_her")
-
     project_root = Path(
         project_root
     ).resolve()
@@ -295,23 +287,6 @@ def materialize_bridge_policy_run(
     extraction_metadata = read_json(
         extraction_run_path
     )
-
-    extraction_domain = str(
-        extraction_metadata.get("domain_profile_id", "dac_her")
-    )
-    extraction_adapter_id = str(
-        extraction_metadata.get("bridge_adapter_id", "dac_her")
-    )
-    if extraction_domain != bridge_adapter.domain_profile_id:
-        raise RuntimeError(
-            "Bridge extraction/domain mismatch: "
-            f"{extraction_domain!r} != {bridge_adapter.domain_profile_id!r}"
-        )
-    if extraction_adapter_id != bridge_adapter.adapter_id:
-        raise RuntimeError(
-            "Bridge extraction/adapter mismatch: "
-            f"{extraction_adapter_id!r} != {bridge_adapter.adapter_id!r}"
-        )
 
     raw_dir = (
         extraction_dir
@@ -395,15 +370,6 @@ def materialize_bridge_policy_run(
             implementation_paths=(
                 policy_implementation_paths
             ),
-            bridge_policy_version=(
-                bridge_adapter.policy_version
-            ),
-            domain_profile_id=(
-                bridge_adapter.domain_profile_id
-            ),
-            bridge_adapter_id=(
-                bridge_adapter.adapter_id
-            ),
         )
     )
 
@@ -483,9 +449,6 @@ def materialize_bridge_policy_run(
                     ),
                     output_dir=(
                         filtered_dir
-                    ),
-                    bridge_adapter=(
-                        bridge_adapter
                     ),
                 )
             )
@@ -735,7 +698,7 @@ def materialize_bridge_policy_run(
         "bridge_prompt_version": str(
             extraction_metadata.get(
                 "bridge_prompt_version",
-                bridge_adapter.prompt_version,
+                BRIDGE_PROMPT_VERSION,
             )
         ),
         "bridge_extraction_id": str(
@@ -749,13 +712,7 @@ def materialize_bridge_policy_run(
             ]
         ),
         "bridge_policy_version": (
-            bridge_adapter.policy_version
-        ),
-        "domain_profile_id": (
-            bridge_adapter.domain_profile_id
-        ),
-        "bridge_adapter_id": (
-            bridge_adapter.adapter_id
+            BRIDGE_POLICY_VERSION
         ),
         "bridge_policy_run_id": (
             policy_run_id
@@ -821,7 +778,6 @@ def materialize_bridge_policy_run(
     paper_root = paper_output_root(
         project_root,
         paper_id,
-        data_root=data_root,
     )
     latest_bridge_path = (
         paper_root
@@ -923,17 +879,11 @@ def materialize_bridge_policy_run(
         "prompt_version": str(
             extraction_metadata.get(
                 "bridge_prompt_version",
-                bridge_adapter.prompt_version,
+                BRIDGE_PROMPT_VERSION,
             )
         ),
         "policy_version": (
-            bridge_adapter.policy_version
-        ),
-        "domain_profile_id": (
-            bridge_adapter.domain_profile_id
-        ),
-        "bridge_adapter_id": (
-            bridge_adapter.adapter_id
+            BRIDGE_POLICY_VERSION
         ),
         "chunks": len(
             bridge_results

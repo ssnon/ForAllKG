@@ -20,6 +20,7 @@ from dac_her.hypothesis_contracts import (
     HypothesisEvidenceStatement,
     HypothesisPortfolio,
 )
+from dac_her.llm_telemetry import run_instructor_structured_call
 from dac_her.premise_necessity_diagnostic import (
     PremiseNecessityDiagnosticReport,
 )
@@ -273,6 +274,8 @@ class InstructorPremiseCriticBackend:
         parse_retries: int = 2,
         timeout: float | None = 180.0,
         extra_headers: dict[str, str] | None = None,
+        telemetry_path: str | os.PathLike[str] | None = None,
+        telemetry_context: dict[str, Any] | None = None,
     ) -> None:
         self.model_name = str(model)
         self.api_key = (
@@ -291,6 +294,8 @@ class InstructorPremiseCriticBackend:
         self.parse_retries = int(parse_retries)
         self.timeout = timeout
         self.extra_headers = dict(extra_headers or {})
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self._client: Any | None = None
 
     def _get_client(self) -> Any:
@@ -347,30 +352,37 @@ class InstructorPremiseCriticBackend:
         prompt: CriticPrompt,
         response_model: type[BaseModel],
     ) -> StructuredGeneration:
-        client = self._get_client()
-        started = time.perf_counter()
-        value = client.chat.completions.create(
+        stage = {
+            "PremiseRoleReviewDraft": "ps2_role_review",
+            "PremiseAblationReviewDraft": "ps2_ablation_review",
+            "HypothesisClauseDecompositionDraft": "ps3_decomposition",
+            "HypothesisClauseCoverageDraft": "ps3_coverage",
+            "HypothesisClauseCoverageDraftV31": "ps3_1_coverage",
+        }.get(response_model.__name__, response_model.__name__)
+        context = {
+            **self.telemetry_context,
+            "pipeline": "hypothesis_validation",
+            "stage": stage,
+            "call_kind": "structured_critic",
+        }
+        value, event = run_instructor_structured_call(
+            self._get_client().chat.completions,
             model=self.model_name,
             response_model=response_model,
             messages=[
-                {
-                    "role": "system",
-                    "content": prompt.system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": prompt.user_prompt,
-                },
+                {"role": "system", "content": prompt.system_prompt},
+                {"role": "user", "content": prompt.user_prompt},
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context=context,
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(value, response_model):
             value = response_model.model_validate(value)
         return StructuredGeneration(
             value=value,
-            elapsed_seconds=elapsed,
+            elapsed_seconds=event.elapsed_seconds or 0.0,
         )
 
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
-import time
 from dataclasses import dataclass
-from typing import Any, Protocol, runtime_checkable
+from pathlib import Path
+from typing import Any, Mapping, Protocol, runtime_checkable
 
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_prompt import ExplorerPrompt
+from dac_her.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)
@@ -37,7 +38,7 @@ class InstructorOpenAICompatibleDraftBackend:
     """Structured ExplorationDraft generation through an OpenAI-compatible API.
 
     Imports are lazy so deterministic/compiler tests do not require a configured
-    model endpoint.  The default instructor JSON mode works with many compatible
+    model endpoint. The default instructor JSON mode works with many compatible
     providers; callers can select another installed Instructor mode explicitly.
     """
 
@@ -55,6 +56,8 @@ class InstructorOpenAICompatibleDraftBackend:
         parse_retries: int = 1,
         timeout: float | None = 180.0,
         extra_headers: dict[str, str] | None = None,
+        telemetry_path: str | Path | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> None:
         self.model_name = str(model)
         self.api_key = api_key if api_key is not None else os.getenv(api_key_env)
@@ -65,6 +68,8 @@ class InstructorOpenAICompatibleDraftBackend:
         self.parse_retries = int(parse_retries)
         self.timeout = timeout
         self.extra_headers = dict(extra_headers or {})
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self._client: Any | None = None
 
     def _get_client(self) -> Any:
@@ -99,27 +104,49 @@ class InstructorOpenAICompatibleDraftBackend:
         self._client = instructor.from_openai(raw_client, mode=mode)
         return self._client
 
-    def _call(self, messages: list[dict[str, str]]) -> DraftGeneration:
+    def _call(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        stage: str,
+        semantic_components: Mapping[str, Any] | None = None,
+    ) -> DraftGeneration:
         client = self._get_client()
-        started = time.perf_counter()
-        draft = client.chat.completions.create(
+        context = {
+            **self.telemetry_context,
+            "pipeline": "graph_explorer",
+            "stage": stage,
+            "call_kind": stage,
+        }
+        draft, event = run_instructor_structured_call(
+            client.chat.completions,
             model=self.model_name,
             response_model=ExplorationDraft,
             messages=messages,
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context=context,
+            semantic_components=semantic_components,
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(draft, ExplorationDraft):
             draft = ExplorationDraft.model_validate(draft)
-        return DraftGeneration(draft=draft, elapsed_seconds=elapsed)
+        return DraftGeneration(
+            draft=draft,
+            input_tokens=event.provider_input_tokens,
+            output_tokens=event.provider_output_tokens,
+            response_id=event.response_id,
+            elapsed_seconds=event.elapsed_seconds,
+        )
 
     def generate(self, prompt: ExplorerPrompt) -> DraftGeneration:
         return self._call(
             [
                 {"role": "system", "content": prompt.system_prompt},
                 {"role": "user", "content": prompt.user_prompt},
-            ]
+            ],
+            stage="generation",
+            semantic_components={"explorer_context": prompt.user_prompt},
         )
 
     def repair(
@@ -128,11 +155,18 @@ class InstructorOpenAICompatibleDraftBackend:
         previous_draft: ExplorationDraft,
         feedback: str,
     ) -> DraftGeneration:
+        previous_payload = previous_draft.model_dump_json(indent=2)
         return self._call(
             [
                 {"role": "system", "content": prompt.system_prompt},
                 {"role": "user", "content": prompt.user_prompt},
-                {"role": "assistant", "content": previous_draft.model_dump_json(indent=2)},
+                {"role": "assistant", "content": previous_payload},
                 {"role": "user", "content": feedback},
-            ]
+            ],
+            stage="repair",
+            semantic_components={
+                "explorer_context": prompt.user_prompt,
+                "previous_stage_output": previous_payload,
+                "issues": feedback,
+            },
         )

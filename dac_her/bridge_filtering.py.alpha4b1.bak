@@ -4,8 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-from dac_her.bridge_domain import BridgeDomainAdapter
-
 from dac_her.bridge_policy import (
     filter_bridge_result,
     partition_bridge_result
@@ -26,15 +24,6 @@ from dac_her.scientific_signatures import (
     strict_node_catalog,
 )
 from dac_her.schemas import KnowledgeGraph
-
-
-def _resolve_bridge_adapter(
-    bridge_adapter: BridgeDomainAdapter | None,
-) -> BridgeDomainAdapter:
-    if bridge_adapter is not None:
-        return bridge_adapter
-    from dac_her.domains.bridge_registry import get_bridge_adapter
-    return get_bridge_adapter("dac_her")
 
 
 def bridge_output_path(
@@ -112,9 +101,8 @@ def bridge_candidate_issues_path(
 
 def _catalog(
     result: KnowledgeGraph,
-    bridge_adapter: BridgeDomainAdapter,
 ) -> list[dict[str, Any]]:
-    return bridge_adapter.strict_node_catalog_builder(
+    return strict_node_catalog(
         knowledge_graph_to_networkx(
             result
         )
@@ -127,7 +115,6 @@ def filter_bridge_raw_chunk(
     strict_result: KnowledgeGraph,
     source_payload: dict[str, Any],
     output_dir: str | Path,
-    bridge_adapter: BridgeDomainAdapter | None = None,
 ) -> dict[str, Any]:
     """
     Apply deterministic repairs and the current
@@ -135,8 +122,6 @@ def filter_bridge_raw_chunk(
 
     This function performs no LLM calls.
     """
-    bridge_adapter = _resolve_bridge_adapter(bridge_adapter)
-
     output_dir = Path(output_dir)
     output_dir.mkdir(
         parents=True,
@@ -173,9 +158,9 @@ def filter_bridge_raw_chunk(
         )
     )
 
-    nodes = _catalog(strict_result, bridge_adapter)
+    nodes = _catalog(strict_result)
 
-    bridge_adapter.validate_chunk(
+    validate_bridge_chunk(
         raw_result,
         paper_id=str(
             source_payload["paper_id"]
@@ -213,7 +198,7 @@ def filter_bridge_raw_chunk(
         )
     )
 
-    partition = bridge_adapter.partition_result(
+    partition = partition_bridge_result(
         repaired_result,
         strict_nodes=nodes,
         core_text=str(

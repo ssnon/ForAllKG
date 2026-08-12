@@ -21,6 +21,7 @@ from dac_her.hypothesis_llm import (
     HypothesisDraftGeneration,
 )
 from dac_her.hypothesis_prompt import HypothesisPrompt
+from dac_her.llm_telemetry import run_instructor_structured_call
 from dac_her.ig1_grounded_bridge import (
     IG1ConformanceIssue,
     IG1DiscriminativeTest,
@@ -1725,21 +1726,47 @@ class IG11StructuredGenerator:
         messages: list[dict[str, str]],
         response_model: type[BaseModel],
     ) -> _StructuredCall:
-        started = time.perf_counter()
-        value = self._get_client().chat.completions.create(
+        planning_stages = {
+            "IG11AxisEvidenceAudit": "axis_audit",
+            "IG11Blueprint": "blueprint",
+            "IG12BridgeNonRedundancyAudit": "bridge_audit",
+        }
+        validation_stages = {
+            "SC1EndpointPairScopeAudit": "sc1_scope_audit",
+            "OG1MaterialOperandAudit": "og1_operand_audit",
+            "AF1AxisSemanticFidelityAudit": "af1_axis_fidelity",
+            "TR1RepairPlan": "tr1_repair",
+            "TR1SemanticAudit": "tr1_semantic_audit",
+        }
+        response_name = response_model.__name__
+        stage = planning_stages.get(
+            response_name,
+            validation_stages.get(response_name, response_name),
+        )
+        pipeline = (
+            "hypothesis_planning"
+            if response_name in planning_stages
+            else "hypothesis_validation"
+        )
+        value, event = run_instructor_structured_call(
+            self._get_client().chat.completions,
             model=self.model_name,
             response_model=response_model,
             messages=messages,
             temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
             max_retries=self.parse_retries,
+            telemetry_context={
+                "pipeline": pipeline,
+                "stage": stage,
+                "call_kind": "structured",
+            },
+            request_kwargs={"max_tokens": self.max_output_tokens},
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(value, response_model):
             value = response_model.model_validate(value)
         return _StructuredCall(
             value=value,
-            elapsed_seconds=elapsed,
+            elapsed_seconds=event.elapsed_seconds or 0.0,
         )
 
 
@@ -1821,21 +1848,33 @@ class IG11CappedHypothesisBackend:
         self,
         messages: list[dict[str, str]],
     ) -> HypothesisDraftGeneration:
-        started = time.perf_counter()
-        draft = self._get_client().chat.completions.create(
+        stage = (
+            "ig11_final_generation"
+            if len(messages) == 2
+            else "ig11_final_repair"
+        )
+        draft, event = run_instructor_structured_call(
+            self._get_client().chat.completions,
             model=self.model_name,
             response_model=HypothesisPortfolioDraft,
             messages=messages,
             temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
             max_retries=self.parse_retries,
+            telemetry_context={
+                "pipeline": "hypothesis_maker",
+                "stage": stage,
+                "call_kind": stage,
+            },
+            request_kwargs={"max_tokens": self.max_output_tokens},
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(draft, HypothesisPortfolioDraft):
             draft = HypothesisPortfolioDraft.model_validate(draft)
         return HypothesisDraftGeneration(
             draft=draft,
-            elapsed_seconds=elapsed,
+            input_tokens=event.provider_input_tokens,
+            output_tokens=event.provider_output_tokens,
+            response_id=event.response_id,
+            elapsed_seconds=event.elapsed_seconds,
         )
 
     def generate(

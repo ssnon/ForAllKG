@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
-import time
 from dataclasses import dataclass
-from typing import Any, Protocol, runtime_checkable
+from pathlib import Path
+from typing import Any, Mapping, Protocol, runtime_checkable
 
 from dac_her.hypothesis_semantic_contracts import HypothesisSemanticReviewDraft
 from dac_her.hypothesis_semantic_prompt import HypothesisSemanticPrompt
+from dac_her.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,8 @@ class InstructorOpenAICompatibleSemanticCriticBackend:
         parse_retries: int = 1,
         timeout: float | None = 180.0,
         extra_headers: dict[str, str] | None = None,
+        telemetry_path: str | Path | None = None,
+        telemetry_context: Mapping[str, Any] | None = None,
     ) -> None:
         self.model_name = str(model)
         self.api_key = api_key if api_key is not None else os.getenv(api_key_env)
@@ -59,6 +62,8 @@ class InstructorOpenAICompatibleSemanticCriticBackend:
         self.parse_retries = int(parse_retries)
         self.timeout = timeout
         self.extra_headers = dict(extra_headers or {})
+        self.telemetry_path = telemetry_path
+        self.telemetry_context = dict(telemetry_context or {})
         self._client: Any | None = None
 
     def _get_client(self) -> Any:
@@ -101,8 +106,14 @@ class InstructorOpenAICompatibleSemanticCriticBackend:
         prompt: HypothesisSemanticPrompt,
     ) -> HypothesisSemanticGeneration:
         client = self._get_client()
-        started = time.perf_counter()
-        draft = client.chat.completions.create(
+        context = {
+            **self.telemetry_context,
+            "pipeline": "hypothesis_validation",
+            "stage": "semantic_critic",
+            "call_kind": "review",
+        }
+        draft, event = run_instructor_structured_call(
+            client.chat.completions,
             model=self.model_name,
             response_model=HypothesisSemanticReviewDraft,
             messages=[
@@ -111,8 +122,15 @@ class InstructorOpenAICompatibleSemanticCriticBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context=context,
         )
-        elapsed = time.perf_counter() - started
         if not isinstance(draft, HypothesisSemanticReviewDraft):
             draft = HypothesisSemanticReviewDraft.model_validate(draft)
-        return HypothesisSemanticGeneration(draft=draft, elapsed_seconds=elapsed)
+        return HypothesisSemanticGeneration(
+            draft=draft,
+            input_tokens=event.provider_input_tokens,
+            output_tokens=event.provider_output_tokens,
+            response_id=event.response_id,
+            elapsed_seconds=event.elapsed_seconds,
+        )

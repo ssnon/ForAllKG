@@ -49,6 +49,7 @@ from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existi
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.extraction_policy import ExtractionPolicy
+from dac_her.llm_telemetry import append_extraction_artifact_resolutions
 from dac_her.broad_extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,
@@ -781,6 +782,16 @@ def main() -> None:
     materialization_status = str(
         quality["graph_materialization_status"]
     )
+    telemetry_resolution_count = append_extraction_artifact_resolutions(
+        None,
+        run_id=run_id,
+        paper_id=paper.paper_id,
+        materialization_status=materialization_status,
+        active_records=active_chunks.values(),
+        quarantined_records=quarantined_records,
+        failed_records=failed_records,
+    )
+
     paper_status = (
         "complete"
         if complete
@@ -831,6 +842,9 @@ def main() -> None:
         "failed": failed_count,
         "paper_status": paper_status,
         "graph_materialization_status": materialization_status,
+        "telemetry_artifact_resolution_count": (
+            telemetry_resolution_count
+        ),
         "extraction_quality": quality,
         "attempt_id": attempt_id,
         "experiment_vocab_version": experiment_registry.version,
