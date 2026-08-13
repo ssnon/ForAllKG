@@ -269,6 +269,7 @@ class ScientificDomainProfile:
     novelty: NoveltySemantics
     projection: ProjectionSemantics | None = None
     corpus: CorpusSemantics | None = None
+    comparison_adapter_id: str | None = None
     extraction_adapter_id: str | None = None
     graph_adapter_id: str | None = None
     bridge_adapter_id: str | None = None
