@@ -192,5 +192,6 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
     bridge_adapter_id="sers_au_ag",
     comparison_adapter_id="sers_au_ag",
     reproducibility_adapter_id="sers_au_ag",
+    metric_definition_adapter_id="sers_au_ag",
     feasibility_adapter_id=None,
 )
