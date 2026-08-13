@@ -274,3 +274,4 @@ class ScientificDomainProfile:
     graph_adapter_id: str | None = None
     bridge_adapter_id: str | None = None
     feasibility_adapter_id: str | None = None
+    reproducibility_adapter_id: str | None = None
