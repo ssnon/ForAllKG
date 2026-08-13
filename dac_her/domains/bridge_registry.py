@@ -3,11 +3,13 @@ from __future__ import annotations
 from dac_her.bridge_domain import BridgeDomainAdapter
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.dac_her_bridge import DAC_HER_BRIDGE_ADAPTER
+from dac_her.domains.sers_au_ag_bridge import SERS_AU_AG_BRIDGE_ADAPTER
 from dac_her.domains.registry import get_domain_profile
 
 
 _ADAPTERS: dict[str, BridgeDomainAdapter] = {
     DAC_HER_BRIDGE_ADAPTER.adapter_id: DAC_HER_BRIDGE_ADAPTER,
+    SERS_AU_AG_BRIDGE_ADAPTER.adapter_id: SERS_AU_AG_BRIDGE_ADAPTER,
 }
 
 

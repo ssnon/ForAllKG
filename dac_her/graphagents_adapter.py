@@ -8,6 +8,11 @@ from typing import Any, Iterable, Literal
 
 import networkx as nx
 
+from dac_her.domain_profile import (
+    ProjectionBacktraceRule,
+    ProjectionSemantics,
+)
+
 
 ProjectionMode = Literal["evidence", "mechanism", "exploratory"]
 
@@ -47,6 +52,24 @@ _BACKTRACE_RELATIONS = {
     "APPLIES_TO",
     "SUPPORTS_CLAIM",
 }
+
+
+_LEGACY_DAC_HER_PROJECTION_SEMANTICS = ProjectionSemantics(
+    semantics_id="dac_her_legacy_projection_v1",
+    mechanism_node_types=frozenset(_MECHANISM_NODE_TYPES),
+    origin_node_types=frozenset(_ORIGIN_NODE_TYPES),
+    backtrace_rules=tuple(
+        ProjectionBacktraceRule(relation, "incoming")
+        for relation in sorted(_BACKTRACE_RELATIONS)
+    ),
+    max_backtrace_depth=3,
+)
+
+
+def _resolve_projection_semantics(
+    value: ProjectionSemantics | None,
+) -> ProjectionSemantics:
+    return value or _LEGACY_DAC_HER_PROJECTION_SEMANTICS
 
 
 def _as_bool(value: Any) -> bool:
@@ -540,13 +563,51 @@ def _incoming_edges(
     ]
 
 
+def _outgoing_edges(
+    graph: nx.Graph,
+    node_id: str,
+) -> list[tuple[str, str, str, dict[str, Any]]]:
+    if not graph.is_directed():
+        return []
+    if graph.is_multigraph():
+        return [
+            (str(left), str(right), str(key), dict(attrs))
+            for left, right, key, attrs in graph.out_edges(
+                node_id, keys=True, data=True
+            )
+        ]
+    return [
+        (str(left), str(right), str(index), dict(attrs))
+        for index, (left, right, attrs) in enumerate(
+            graph.out_edges(node_id, data=True)
+        )
+    ]
+
+
 def _backtrace_origins(
     graph: nx.Graph,
     start_id: str,
     *,
-    max_depth: int = 3,
+    projection_semantics: ProjectionSemantics | None = None,
+    max_depth: int | None = None,
 ) -> list[dict[str, Any]]:
-    """Trace evidence/experiment/calculation nodes back to scientific entities."""
+    semantics = _resolve_projection_semantics(projection_semantics)
+    depth_limit = (
+        semantics.max_backtrace_depth
+        if max_depth is None
+        else max_depth
+    )
+    incoming_relations = {
+        rule.relation
+        for rule in semantics.backtrace_rules
+        if rule.direction == "incoming"
+    }
+    outgoing_relations = {
+        rule.relation
+        for rule in semantics.backtrace_rules
+        if rule.direction == "outgoing"
+    }
+
     results: list[dict[str, Any]] = []
     queue: deque[tuple[str, list[str], list[str], int]] = deque([
         (str(start_id), [str(start_id)], [], 0)
@@ -562,7 +623,10 @@ def _backtrace_origins(
 
         if current in graph:
             node_type = str(graph.nodes[current].get("type", ""))
-            if current != str(start_id) and node_type in _ORIGIN_NODE_TYPES:
+            if (
+                current != str(start_id)
+                and node_type in semantics.origin_node_types
+            ):
                 results.append({
                     "origin_id": current,
                     "node_path": list(reversed(node_path)),
@@ -570,20 +634,30 @@ def _backtrace_origins(
                 })
                 continue
 
-        if depth >= max_depth:
+        if depth >= depth_limit:
             continue
 
         for left, _, key, attrs in _incoming_edges(graph, current):
             relation = str(attrs.get("relation", ""))
-            if relation not in _BACKTRACE_RELATIONS:
-                continue
-            edge_id = _edge_attr_id(left, current, key, attrs)
-            queue.append((
-                left,
-                node_path + [left],
-                edge_path + [edge_id],
-                depth + 1,
-            ))
+            if relation in incoming_relations:
+                edge_id = _edge_attr_id(left, current, key, attrs)
+                queue.append((
+                    left,
+                    node_path + [left],
+                    edge_path + [edge_id],
+                    depth + 1,
+                ))
+
+        for _, right, key, attrs in _outgoing_edges(graph, current):
+            relation = str(attrs.get("relation", ""))
+            if relation in outgoing_relations:
+                edge_id = _edge_attr_id(current, right, key, attrs)
+                queue.append((
+                    right,
+                    node_path + [right],
+                    edge_path + [edge_id],
+                    depth + 1,
+                ))
 
     unique: dict[tuple[str, tuple[str, ...]], dict[str, Any]] = {}
     for row in results:
@@ -611,6 +685,7 @@ def build_graphagents_projection(
         nx.Graph | None
     ) = None,
     mode: ProjectionMode = "mechanism",
+    projection_semantics: ProjectionSemantics | None = None,
 ) -> tuple[
     nx.DiGraph,
     list[dict[str, Any]],
@@ -618,6 +693,10 @@ def build_graphagents_projection(
 ]:
     if mode not in {"evidence", "mechanism", "exploratory"}:
         raise ValueError(f"Unknown projection mode: {mode!r}")
+
+    projection_semantics = _resolve_projection_semantics(
+        projection_semantics
+    )
 
     quality_graph_attrs = {
         str(key): value
@@ -627,6 +706,7 @@ def build_graphagents_projection(
     projection = nx.DiGraph(
         graph_stage="graphagents_projection",
         projection_mode=mode,
+        projection_semantics_id=projection_semantics.semantics_id,
         **quality_graph_attrs,
     )
     evidence_rows: list[dict[str, Any]] = []
@@ -642,7 +722,7 @@ def build_graphagents_projection(
         kept_ids = {
             str(node_id)
             for node_id, attrs in canonical_graph.nodes(data=True)
-            if str(attrs.get("type", "")) in _MECHANISM_NODE_TYPES
+            if str(attrs.get("type", "")) in projection_semantics.mechanism_node_types
         }
 
     for node_id in sorted(kept_ids):
@@ -710,7 +790,11 @@ def build_graphagents_projection(
                 support_edge_id = _edge_attr_id(
                     evidence_id, claim_id, key, attrs
                 )
-                origins = _backtrace_origins(canonical_graph, evidence_id)
+                origins = _backtrace_origins(
+                    canonical_graph,
+                    evidence_id,
+                    projection_semantics=projection_semantics,
+                )
                 for origin in origins:
                     origin_id = str(origin["origin_id"])
                     if origin_id not in projection:
@@ -810,7 +894,11 @@ def build_graphagents_projection(
             # from the mechanism projection. Lift grounding to upstream domain
             # entities while retaining the original path in the sidecar.
             if anchor_id in canonical_graph:
-                origins = _backtrace_origins(canonical_graph, anchor_id)
+                origins = _backtrace_origins(
+                    canonical_graph,
+                    anchor_id,
+                    projection_semantics=projection_semantics,
+                )
             else:
                 origins = []
             for origin in origins:
@@ -1058,6 +1146,7 @@ def build_graphagents_projection(
                     _backtrace_origins(
                         canonical_graph,
                         anchor_id,
+                        projection_semantics=projection_semantics,
                     )
                 )
             else:

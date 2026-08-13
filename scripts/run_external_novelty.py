@@ -29,6 +29,9 @@ from dac_her.novelty_claim_decomposition import (
     NoveltyClaimDecomposer,
 )
 from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
+from dac_her.prior_art_review_audit import (
+    prior_art_review_audit_scope,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -179,12 +182,18 @@ def main() -> None:
         policy=policy,
         compiler=compiler,
     )
-    report = assessor.assess(
-        portfolio,
-        plan,
-        packet,
-        lineage=lineage,
-    )
+    with prior_art_review_audit_scope(
+        assessment_kind="alpha5_initial",
+        source_portfolio_id=portfolio.portfolio_id,
+        query_plan_id=plan.plan_id,
+        prior_art_packet_id=packet.packet_id,
+    ):
+        report = assessor.assess(
+            portfolio,
+            plan,
+            packet,
+            lineage=lineage,
+        )
     _write(report_path, report)
 
     if args.save_prompts:

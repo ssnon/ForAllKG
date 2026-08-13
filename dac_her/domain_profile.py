@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Literal
 
 
 DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS: tuple[str, ...] = (
@@ -182,6 +182,40 @@ class NoveltySemantics:
         return (not reasons, domain, scope, reasons)
 
 
+ProjectionBacktraceDirection = Literal["incoming", "outgoing"]
+
+
+@dataclass(frozen=True)
+class ProjectionBacktraceRule:
+    relation: str
+    direction: ProjectionBacktraceDirection
+
+    def __post_init__(self) -> None:
+        if not self.relation.strip():
+            raise ValueError("Projection backtrace relation must not be empty.")
+
+
+@dataclass(frozen=True)
+class ProjectionSemantics:
+    semantics_id: str
+    mechanism_node_types: frozenset[str]
+    origin_node_types: frozenset[str]
+    backtrace_rules: tuple[ProjectionBacktraceRule, ...]
+    max_backtrace_depth: int = 3
+
+    def __post_init__(self) -> None:
+        if not self.semantics_id.strip():
+            raise ValueError("Projection semantics_id must not be empty.")
+        if self.max_backtrace_depth < 1:
+            raise ValueError("Projection max_backtrace_depth must be >= 1.")
+        signatures = [
+            (rule.relation, rule.direction)
+            for rule in self.backtrace_rules
+        ]
+        if len(signatures) != len(set(signatures)):
+            raise ValueError("Projection backtrace rules must be unique.")
+
+
 @dataclass(frozen=True)
 class ScientificDomainProfile:
     profile_id: str
@@ -189,6 +223,7 @@ class ScientificDomainProfile:
     resolution: ResolutionSemantics
     discovery: DiscoverySemantics
     novelty: NoveltySemantics
+    projection: ProjectionSemantics | None = None
     extraction_adapter_id: str | None = None
     graph_adapter_id: str | None = None
     bridge_adapter_id: str | None = None

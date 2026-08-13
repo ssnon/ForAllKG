@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from dac_her.bridge_domain import BridgeDomainAdapter
+import dac_her.bridge_policy as bridge_policy_module
+import dac_her.bridge_prompts as bridge_prompts_module
+import dac_her.bridge_validation as bridge_validation_module
+import dac_her.scientific_signatures as scientific_signatures_module
+
+from dac_her.bridge_domain import (
+    BridgeDomainAdapter,
+    BridgeImplementationFiles,
+)
 from dac_her.bridge_policy import (
     BRIDGE_POLICY_VERSION,
     partition_bridge_result,
@@ -19,7 +27,10 @@ from dac_her.bridge_validation import (
     bridge_validation_issues,
     validate_bridge_chunk,
 )
-from dac_her.scientific_signatures import strict_node_catalog
+from dac_her.scientific_signatures import (
+    strict_node_catalog,
+    strong_anchor_context_issues,
+)
 
 
 DAC_HER_BRIDGE_ADAPTER = BridgeDomainAdapter(
@@ -36,4 +47,18 @@ DAC_HER_BRIDGE_ADAPTER = BridgeDomainAdapter(
     validation_issues=bridge_validation_issues,
     validate_chunk=validate_bridge_chunk,
     partition_result=partition_bridge_result,
+    anchor_context_issues=strong_anchor_context_issues,
+    implementation_files=BridgeImplementationFiles(
+        extraction=(
+            __file__,
+            bridge_prompts_module.__file__,
+            bridge_validation_module.__file__,
+            scientific_signatures_module.__file__,
+        ),
+        policy=(
+            __file__,
+            bridge_policy_module.__file__,
+            scientific_signatures_module.__file__,
+        ),
+    ),
 )

@@ -38,6 +38,11 @@ class FakeCompletions:
                 prompt_tokens=444,
                 completion_tokens=21,
                 total_tokens=465,
+                cost=0.03125,
+                prompt_tokens_details=SimpleNamespace(
+                    cached_tokens=256,
+                    cache_write_tokens=32,
+                ),
             ),
             choices=[
                 SimpleNamespace(
@@ -92,6 +97,9 @@ def test_openrouter_structured_call_preserves_payload_and_records_telemetry(
     event = llm.last_call_metadata["telemetry_event"]
     assert event["provider_input_tokens"] == 444
     assert event["provider_output_tokens"] == 21
+    assert event["provider_cost_credits"] == 0.03125
+    assert event["provider_cached_input_tokens"] == 256
+    assert event["provider_cache_write_tokens"] == 32
     assert event["provider_usage_scope"] == "direct_provider_call"
     assert event["paper_id"] == "paper-1"
     assert event["chunk_id"] == "chunk-1"

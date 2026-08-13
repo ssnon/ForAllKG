@@ -100,6 +100,11 @@ class LLMCallUsageEvent:
     provider_input_tokens: int | None = None
     provider_output_tokens: int | None = None
     provider_total_tokens: int | None = None
+    # OpenRouter Usage Accounting fields. These are observational only and
+    # remain optional so older/non-OpenRouter completion objects stay valid.
+    provider_cost_credits: float | None = None
+    provider_cached_input_tokens: int | None = None
+    provider_cache_write_tokens: int | None = None
     provider_usage_scope: str | None = None
     configured_max_retries: int | None = None
 
@@ -351,6 +356,42 @@ def estimate_prompt_components(
     return components, estimated_sum
 
 
+def _metadata_field(value: Any | None, name: str) -> Any | None:
+    """Read SDK/Pydantic/dict response metadata without provider coupling."""
+
+    if value is None:
+        return None
+    if isinstance(value, Mapping):
+        return value.get(name)
+    result = getattr(value, name, None)
+    if result is not None:
+        return result
+    # OpenAI-compatible SDK models keep provider-specific extension fields in
+    # model_extra on some versions. Do not require a particular SDK release.
+    model_extra = getattr(value, "model_extra", None)
+    if isinstance(model_extra, Mapping):
+        return model_extra.get(name)
+    return None
+
+
+def _int_or_none(value: Any | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _float_or_none(value: Any | None) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def completion_metadata(completion: Any | None) -> dict[str, Any]:
     if completion is None:
         return {
@@ -358,26 +399,42 @@ def completion_metadata(completion: Any | None) -> dict[str, Any]:
             "provider_input_tokens": None,
             "provider_output_tokens": None,
             "provider_total_tokens": None,
+            "provider_cost_credits": None,
+            "provider_cached_input_tokens": None,
+            "provider_cache_write_tokens": None,
             "finish_reason": None,
             "response_id": None,
         }
 
-    usage = getattr(completion, "usage", None)
-    choices = getattr(completion, "choices", None) or []
+    usage = _metadata_field(completion, "usage")
+    prompt_details = _metadata_field(usage, "prompt_tokens_details")
+    choices = _metadata_field(completion, "choices") or []
     choice = choices[0] if choices else None
     return {
-        "served_model": getattr(completion, "model", None),
-        "provider_input_tokens": (
-            getattr(usage, "prompt_tokens", None) if usage is not None else None
+        "served_model": _metadata_field(completion, "model"),
+        "provider_input_tokens": _int_or_none(
+            _metadata_field(usage, "prompt_tokens")
         ),
-        "provider_output_tokens": (
-            getattr(usage, "completion_tokens", None) if usage is not None else None
+        "provider_output_tokens": _int_or_none(
+            _metadata_field(usage, "completion_tokens")
         ),
-        "provider_total_tokens": (
-            getattr(usage, "total_tokens", None) if usage is not None else None
+        "provider_total_tokens": _int_or_none(
+            _metadata_field(usage, "total_tokens")
         ),
-        "finish_reason": getattr(choice, "finish_reason", None),
-        "response_id": getattr(completion, "id", None),
+        # OpenRouter reports account charge as usage.cost (credits) and prompt
+        # cache reads/writes under usage.prompt_tokens_details. Missing fields
+        # mean "not observed", not zero.
+        "provider_cost_credits": _float_or_none(
+            _metadata_field(usage, "cost")
+        ),
+        "provider_cached_input_tokens": _int_or_none(
+            _metadata_field(prompt_details, "cached_tokens")
+        ),
+        "provider_cache_write_tokens": _int_or_none(
+            _metadata_field(prompt_details, "cache_write_tokens")
+        ),
+        "finish_reason": _metadata_field(choice, "finish_reason"),
+        "response_id": _metadata_field(completion, "id"),
     }
 
 
@@ -472,6 +529,9 @@ def build_usage_event(
         provider_input_tokens=provider_input,
         provider_output_tokens=provider["provider_output_tokens"],
         provider_total_tokens=provider["provider_total_tokens"],
+        provider_cost_credits=provider["provider_cost_credits"],
+        provider_cached_input_tokens=provider["provider_cached_input_tokens"],
+        provider_cache_write_tokens=provider["provider_cache_write_tokens"],
         provider_usage_scope=provider_usage_scope,
         configured_max_retries=configured_max_retries,
         estimated_components=components,

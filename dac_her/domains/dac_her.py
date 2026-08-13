@@ -3,6 +3,8 @@ from __future__ import annotations
 from dac_her.domain_profile import (
     DiscoverySemantics,
     NoveltySemantics,
+    ProjectionBacktraceRule,
+    ProjectionSemantics,
     ResolutionSemantics,
     ScientificDomainProfile,
 )
@@ -73,6 +75,28 @@ DAC_HER_PROFILE = ScientificDomainProfile(
             'METAL', 'COORDINATIONMOTIF',
         }),
         legacy_mechanism_id_prefixes=('mech_',),
+    ),
+    projection=ProjectionSemantics(
+        semantics_id="dac_her_projection_v1_alpha4b2c",
+        mechanism_node_types=frozenset({
+            "Catalyst", "CatalystModel", "Metal", "Support",
+            "CoordinationMotif", "SynthesisMethod", "Precursor",
+            "Reaction", "ReactionStep", "Intermediate", "Material",
+            "ObservationClaim", "MechanismClaim", "BridgeConcept",
+        }),
+        origin_node_types=frozenset({
+            "Catalyst", "CatalystModel", "Support", "CoordinationMotif",
+            "Material", "Reaction", "ReactionStep", "Intermediate",
+        }),
+        backtrace_rules=(
+            ProjectionBacktraceRule("HAS_MEASUREMENT", "incoming"),
+            ProjectionBacktraceRule("EVALUATED_IN", "incoming"),
+            ProjectionBacktraceRule("CHARACTERIZED_BY", "incoming"),
+            ProjectionBacktraceRule("MODELED_BY", "incoming"),
+            ProjectionBacktraceRule("APPLIES_TO", "incoming"),
+            ProjectionBacktraceRule("SUPPORTS_CLAIM", "incoming"),
+        ),
+        max_backtrace_depth=3,
     ),
     novelty=NoveltySemantics(
         domain_patterns=(

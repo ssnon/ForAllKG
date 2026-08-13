@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 from dac_her.bridge_schemas import BridgeChunkGraph
 from dac_her.scientific_signatures import strong_anchor_context_issues
@@ -65,6 +65,9 @@ def bridge_validation_issues(
     core_text: str,
     strict_nodes: Iterable[dict[str, Any] | str] | None = None,
     strict_node_ids: Iterable[str] | None = None,
+    anchor_context_issues_fn: Callable[..., list[str]] = (
+        strong_anchor_context_issues
+    ),
 ) -> list[str]:
     """Return hard validation failures.
 
@@ -191,7 +194,7 @@ def bridge_validation_issues(
                 ),
             )
         )
-        for context_issue in strong_anchor_context_issues(
+        for context_issue in anchor_context_issues_fn(
             concept_text=context_text,
             anchor=anchor,
             pattern_relation=concept.pattern_relation,
@@ -233,3 +236,32 @@ def validate_bridge_chunk(result: BridgeChunkGraph, **kwargs: Any) -> None:
     issues = bridge_validation_issues(result, **kwargs)
     if issues:
         raise ValueError("Bridge graph validation failed:\n- " + "\n- ".join(issues))
+
+
+def bind_bridge_validation(
+    anchor_context_issues_fn: Callable[..., list[str]],
+) -> tuple[Callable[..., list[str]], Callable[..., None]]:
+    # Bind generic validation to one domain's anchor-context semantics.
+
+    def issues(
+        result: BridgeChunkGraph,
+        **kwargs: Any,
+    ) -> list[str]:
+        return bridge_validation_issues(
+            result,
+            anchor_context_issues_fn=anchor_context_issues_fn,
+            **kwargs,
+        )
+
+    def validate(
+        result: BridgeChunkGraph,
+        **kwargs: Any,
+    ) -> None:
+        found = issues(result, **kwargs)
+        if found:
+            raise ValueError(
+                "Bridge graph validation failed:\n- "
+                + "\n- ".join(found)
+            )
+
+    return issues, validate

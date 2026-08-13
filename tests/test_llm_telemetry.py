@@ -17,15 +17,31 @@ from dac_her.llm_telemetry_report import (
 )
 
 
-def _completion(*, prompt_tokens=100, completion_tokens=20, model="served-model"):
+def _completion(
+    *,
+    prompt_tokens=100,
+    completion_tokens=20,
+    model="served-model",
+    cost=None,
+    cached_tokens=None,
+    cache_write_tokens=None,
+):
+    usage = SimpleNamespace(
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        total_tokens=prompt_tokens + completion_tokens,
+    )
+    if cost is not None:
+        usage.cost = cost
+    if cached_tokens is not None or cache_write_tokens is not None:
+        usage.prompt_tokens_details = SimpleNamespace(
+            cached_tokens=cached_tokens,
+            cache_write_tokens=cache_write_tokens,
+        )
     return SimpleNamespace(
         id="resp-1",
         model=model,
-        usage=SimpleNamespace(
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            total_tokens=prompt_tokens + completion_tokens,
-        ),
+        usage=usage,
         choices=[SimpleNamespace(finish_reason="stop")],
     )
 
@@ -80,6 +96,107 @@ def test_provider_usage_is_ground_truth_and_estimate_gap_is_diagnostic():
     assert event.pipeline == "test"
     assert event.stage == "generation"
 
+
+
+def test_provider_billing_and_cache_metadata_are_observed():
+    event = build_usage_event(
+        requested_model="requested-model",
+        completion=_completion(
+            prompt_tokens=777,
+            completion_tokens=33,
+            cost=0.125,
+            cached_tokens=512,
+            cache_write_tokens=64,
+        ),
+        system_prompt="system",
+        user_prompt="CORE_TEXT:\nsource",
+        response_schema={"type": "object"},
+        context={"pipeline": "hypothesis_maker", "stage": "generation"},
+    )
+
+    assert event.provider_cost_credits == 0.125
+    assert event.provider_cached_input_tokens == 512
+    assert event.provider_cache_write_tokens == 64
+
+
+def test_report_aggregates_billing_cache_and_query_stage_economics():
+    first = build_usage_event(
+        requested_model="m",
+        completion=_completion(
+            prompt_tokens=100,
+            completion_tokens=10,
+            cost=0.125,
+            cached_tokens=40,
+            cache_write_tokens=10,
+        ),
+        system_prompt="same system",
+        user_prompt="first prompt",
+        response_schema={"type": "object"},
+        context={"pipeline": "hypothesis_maker", "stage": "generation"},
+    ).to_dict()
+    second = build_usage_event(
+        requested_model="m",
+        completion=_completion(
+            prompt_tokens=120,
+            completion_tokens=15,
+            cost=0.25,
+            cached_tokens=80,
+            cache_write_tokens=0,
+        ),
+        system_prompt="same system",
+        user_prompt="second prompt",
+        response_schema={"type": "object"},
+        context={"pipeline": "hypothesis_maker", "stage": "generation"},
+    ).to_dict()
+
+    summary = summarize_usage_events([first, second])
+    assert summary["provider_cost_credits"] == 0.375
+    assert summary["provider_cost_observations"] == 2
+    assert summary["provider_cost_coverage_fraction"] == 1.0
+    assert summary["provider_cached_input_tokens"] == 120
+    assert summary["provider_cache_write_tokens"] == 10
+    assert summary["cache_detail_observations"] == 2
+    assert summary["cache_read_fraction_of_observed_input"] == 120 / 220
+
+    stage = summary["by_stage"]["hypothesis_maker:generation"]
+    assert stage["provider_cost_credits"] == 0.375
+    assert stage["provider_cached_input_tokens"] == 120
+    assert stage["cache_detail_coverage_fraction"] == 1.0
+
+    query = summary["query_stage_economics"]
+    assert query["calls"] == 2
+    assert query["provider_cost_credits"] == 0.375
+    assert query["provider_cached_input_tokens"] == 120
+    assert query["by_stage"]["hypothesis_maker:generation"][
+        "cost_share_of_observed_query_cost"
+    ] == 1.0
+
+
+def test_report_does_not_treat_missing_cache_details_as_zero():
+    observed = build_usage_event(
+        requested_model="m",
+        completion=_completion(
+            prompt_tokens=100,
+            completion_tokens=5,
+            cached_tokens=50,
+            cache_write_tokens=0,
+        ),
+        system_prompt="system",
+        user_prompt="prompt",
+        context={"pipeline": "hypothesis_maker", "stage": "generation"},
+    ).to_dict()
+    missing = build_usage_event(
+        requested_model="m",
+        completion=_completion(prompt_tokens=900, completion_tokens=5),
+        system_prompt="system",
+        user_prompt="prompt",
+        context={"pipeline": "hypothesis_maker", "stage": "generation"},
+    ).to_dict()
+
+    summary = summarize_usage_events([observed, missing])
+    assert summary["cache_detail_observations"] == 1
+    assert summary["cache_detail_coverage_fraction"] == 0.5
+    assert summary["cache_read_fraction_of_observed_input"] == 0.5
 
 def test_append_usage_event_writes_no_prompt_text(tmp_path):
     event = build_usage_event(

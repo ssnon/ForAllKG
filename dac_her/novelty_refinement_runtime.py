@@ -37,6 +37,9 @@ from dac_her.novelty_refinement_contracts import (
 )
 from dac_her.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
 from dac_her.targeted_novelty_retrieval import TargetedNoveltyRetriever
+from dac_her.prior_art_review_audit import (
+    prior_art_review_audit_scope,
+)
 
 
 def _canonical_json(value: object) -> str:
@@ -216,7 +219,18 @@ class TargetedNoveltyRefinementRuntime:
         decompositions = self.external_assessor.decompose_portfolio(portfolio)
         plan = LiteratureQueryPlanner().build(portfolio, decompositions)
         packet = self.targeted_retriever.retriever.retrieve(plan).packet
-        report = self.external_assessor.assess(portfolio, plan, packet)
+        with prior_art_review_audit_scope(
+            assessment_kind="alpha6_fresh_final",
+            focal_hypothesis_id=portfolio.hypotheses[0].hypothesis_id,
+            source_portfolio_id=portfolio.portfolio_id,
+            query_plan_id=plan.plan_id,
+            prior_art_packet_id=packet.packet_id,
+        ):
+            report = self.external_assessor.assess(
+                portfolio,
+                plan,
+                packet,
+            )
         return PerHypothesisExternalArtifacts(
             hypothesis_id=portfolio.hypotheses[0].hypothesis_id,
             query_plan=plan,
@@ -324,12 +338,20 @@ class TargetedNoveltyRefinementRuntime:
             targeted = self.targeted_retriever.retrieve(
                 external_query_plan, external_prior_art, gap
             )
-            reassessed = self.external_assessor.assess(
-                portfolio,
-                targeted.augmented_plan,
-                targeted.merged_packet,
-                lineage=lineage,
-            )
+            with prior_art_review_audit_scope(
+                assessment_kind="alpha6_targeted_reassessment",
+                focal_hypothesis_id=original.hypothesis_id,
+                gap_id=gap.gap_id,
+                source_portfolio_id=portfolio.portfolio_id,
+                query_plan_id=targeted.augmented_plan.plan_id,
+                prior_art_packet_id=targeted.merged_packet.packet_id,
+            ):
+                reassessed = self.external_assessor.assess(
+                    portfolio,
+                    targeted.augmented_plan,
+                    targeted.merged_packet,
+                    lineage=lineage,
+                )
             targeted_card = next(
                 x for x in reassessed.cards
                 if x.hypothesis_id == original.hypothesis_id

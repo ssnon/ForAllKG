@@ -59,6 +59,23 @@ def _created_at_utc() -> str:
     ).isoformat()
 
 
+def _domain_fingerprint_identity(
+    *,
+    domain_profile_id: str,
+    bridge_adapter_id: str,
+) -> dict[str, str]:
+    # Add plugin domain identity while preserving frozen HER fingerprints.
+    if (
+        domain_profile_id == "dac_her"
+        and bridge_adapter_id == "dac_her"
+    ):
+        return {}
+    return {
+        "domain_profile_id": domain_profile_id,
+        "bridge_adapter_id": bridge_adapter_id,
+    }
+
+
 def _hash_files_by_name(
     paths: Iterable[str | Path],
 ) -> dict[str, str]:
@@ -157,6 +174,10 @@ def compute_bridge_extraction_metadata(
         "runtime_options": (
             runtime_options or {}
         ),
+        **_domain_fingerprint_identity(
+            domain_profile_id=domain_profile_id,
+            bridge_adapter_id=bridge_adapter_id,
+        ),
     }
 
     fingerprint = stable_json_hash(
@@ -241,6 +262,10 @@ def compute_bridge_policy_run_metadata(
             _hash_files_by_name(
                 implementation_paths
             )
+        ),
+        **_domain_fingerprint_identity(
+            domain_profile_id=domain_profile_id,
+            bridge_adapter_id=bridge_adapter_id,
         ),
     }
 
@@ -364,6 +389,10 @@ def compute_bridge_run_metadata(
             _hash_files_by_name(
                 implementation_paths
             )
+        ),
+        **_domain_fingerprint_identity(
+            domain_profile_id=domain_profile_id,
+            bridge_adapter_id=bridge_adapter_id,
         ),
     }
 

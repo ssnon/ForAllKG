@@ -490,16 +490,13 @@ def main() -> None:
     extraction_implementation_paths = (
         bridge_domain_module.__file__,
         bridge_registry_module.__file__,
-        dac_her_bridge_module.__file__,
         bridge_extraction_module.__file__,
-        bridge_prompts_module.__file__,
         bridge_schemas_module.__file__,
-        bridge_validation_module.__file__,
-        scientific_signatures_module.__file__,
         schemas_module.__file__,
         llm_openrouter_module.__file__,
         bridge_recovery_module.__file__,
         bridge_source_reconciliation_module.__file__,
+        *bridge_adapter.implementation_files.extraction,
     )
 
     extraction_metadata = (
@@ -757,15 +754,13 @@ def main() -> None:
     policy_implementation_paths = (
         bridge_domain_module.__file__,
         bridge_registry_module.__file__,
-        dac_her_bridge_module.__file__,
         bridge_filtering_module.__file__,
-        bridge_policy_module.__file__,
         bridge_relation_repairs_module.__file__,
         bridge_graph_module.__file__,
         bridge_schemas_module.__file__,
-        scientific_signatures_module.__file__,
         schemas_module.__file__,
         bridge_policy_run_module.__file__,
+        *bridge_adapter.implementation_files.policy,
     )
 
     policy_summary = (

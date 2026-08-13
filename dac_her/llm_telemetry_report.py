@@ -40,12 +40,18 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
             continue
         rows.append(row)
 
-    by_stage_internal: dict[str, dict[str, int]] = defaultdict(
+    by_stage_internal: dict[str, dict[str, Any]] = defaultdict(
         lambda: {
             "calls": 0,
             "input_tokens": 0,
             "output_tokens": 0,
             "total_tokens": 0,
+            "provider_cost_credits": 0.0,
+            "provider_cost_observations": 0,
+            "cached_input_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_detail_observations": 0,
+            "cache_observed_input_tokens": 0,
             "source_bearing_calls": 0,
             "source_bearing_input_tokens": 0,
             "estimated_source_tokens": 0,
@@ -63,6 +69,12 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
     response_models = Counter()
 
     total_input = total_output = total_tokens = 0
+    total_cost_credits = 0.0
+    cost_observations = 0
+    total_cached_input_tokens = 0
+    total_cache_write_tokens = 0
+    cache_detail_observations = 0
+    cache_observed_input_tokens = 0
     source_scoped_input = 0
     source_scoped_source_estimate = 0
     source_scoped_calls = 0
@@ -119,6 +131,41 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
         bucket["input_tokens"] += input_tokens
         bucket["output_tokens"] += output_tokens
         bucket["total_tokens"] += provider_total
+
+        provider_cost = event.get("provider_cost_credits")
+        if provider_cost is not None:
+            try:
+                cost_value = float(provider_cost)
+            except (TypeError, ValueError):
+                cost_value = None
+            if cost_value is not None:
+                total_cost_credits += cost_value
+                cost_observations += 1
+                bucket["provider_cost_credits"] += cost_value
+                bucket["provider_cost_observations"] += 1
+
+        cached_raw = event.get("provider_cached_input_tokens")
+        cache_write_raw = event.get("provider_cache_write_tokens")
+        # Missing cache detail is not equivalent to a measured zero. Coverage
+        # is tracked explicitly so old/non-supporting provider rows do not make
+        # cache hit rates look artificially low.
+        if cached_raw is not None or cache_write_raw is not None:
+            try:
+                cached_tokens = int(cached_raw or 0)
+            except (TypeError, ValueError):
+                cached_tokens = 0
+            try:
+                cache_write_tokens = int(cache_write_raw or 0)
+            except (TypeError, ValueError):
+                cache_write_tokens = 0
+            total_cached_input_tokens += cached_tokens
+            total_cache_write_tokens += cache_write_tokens
+            cache_detail_observations += 1
+            cache_observed_input_tokens += input_tokens
+            bucket["cached_input_tokens"] += cached_tokens
+            bucket["cache_write_tokens"] += cache_write_tokens
+            bucket["cache_detail_observations"] += 1
+            bucket["cache_observed_input_tokens"] += input_tokens
 
         components = event.get("estimated_components") or {}
         source_component = components.get("source")
@@ -189,11 +236,55 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
         source_tokens = values["estimated_source_tokens"]
         source_input = values["source_bearing_input_tokens"]
         ratio = source_input / source_tokens if source_tokens > 0 else None
+        stage_cost_observations = int(values["provider_cost_observations"])
+        stage_cache_observations = int(values["cache_detail_observations"])
+        stage_cost = float(values["provider_cost_credits"])
+        stage_cache_input = int(values["cache_observed_input_tokens"])
         by_stage[key] = {
             "calls": values["calls"],
             "input_tokens": values["input_tokens"],
             "output_tokens": values["output_tokens"],
             "total_tokens": values["total_tokens"],
+            "provider_cost_credits": (
+                stage_cost if stage_cost_observations else None
+            ),
+            "provider_cost_observations": stage_cost_observations,
+            "provider_cost_coverage_fraction": (
+                stage_cost_observations / values["calls"]
+                if values["calls"]
+                else None
+            ),
+            "cost_per_observed_call_credits": (
+                stage_cost / stage_cost_observations
+                if stage_cost_observations
+                else None
+            ),
+            "cost_share_of_observed_total": (
+                stage_cost / total_cost_credits
+                if stage_cost_observations and total_cost_credits > 0
+                else None
+            ),
+            "provider_cached_input_tokens": (
+                int(values["cached_input_tokens"])
+                if stage_cache_observations
+                else None
+            ),
+            "provider_cache_write_tokens": (
+                int(values["cache_write_tokens"])
+                if stage_cache_observations
+                else None
+            ),
+            "cache_detail_observations": stage_cache_observations,
+            "cache_detail_coverage_fraction": (
+                stage_cache_observations / values["calls"]
+                if values["calls"]
+                else None
+            ),
+            "cache_read_fraction_of_observed_input": (
+                int(values["cached_input_tokens"]) / stage_cache_input
+                if stage_cache_input > 0
+                else None
+            ),
             "source_bearing_calls": values["source_bearing_calls"],
             "estimated_source_tokens": source_tokens,
             "provider_input_to_estimated_source_ratio": ratio,
@@ -211,6 +302,81 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
         graph_generation_key
     )
 
+    # "Query-side" here means LLM stages outside the extraction pipeline.
+    # It is intentionally a reporting view only; no stage is skipped or reordered.
+    query_stage_keys = [
+        key
+        for key in by_stage
+        if key.split(":", 1)[0] not in {"extraction", "unknown"}
+    ]
+    query_calls = sum(int(by_stage[key]["calls"]) for key in query_stage_keys)
+    query_input = sum(int(by_stage[key]["input_tokens"]) for key in query_stage_keys)
+    query_output = sum(int(by_stage[key]["output_tokens"]) for key in query_stage_keys)
+    query_total = sum(int(by_stage[key]["total_tokens"]) for key in query_stage_keys)
+    query_cost_observations = sum(
+        int(by_stage[key]["provider_cost_observations"])
+        for key in query_stage_keys
+    )
+    query_cost = sum(
+        float(by_stage[key]["provider_cost_credits"] or 0.0)
+        for key in query_stage_keys
+    )
+    query_cache_observations = sum(
+        int(by_stage[key]["cache_detail_observations"])
+        for key in query_stage_keys
+    )
+    query_cached_tokens = sum(
+        int(by_stage[key]["provider_cached_input_tokens"] or 0)
+        for key in query_stage_keys
+    )
+    query_cache_write_tokens = sum(
+        int(by_stage[key]["provider_cache_write_tokens"] or 0)
+        for key in query_stage_keys
+    )
+    query_cache_observed_input = sum(
+        int(by_stage_internal[key]["cache_observed_input_tokens"])
+        for key in query_stage_keys
+    )
+    query_by_stage: dict[str, dict[str, Any]] = {}
+    for key in query_stage_keys:
+        row = dict(by_stage[key])
+        row["cost_share_of_observed_query_cost"] = (
+            float(row["provider_cost_credits"] or 0.0) / query_cost
+            if row["provider_cost_observations"] and query_cost > 0
+            else None
+        )
+        query_by_stage[key] = row
+
+    query_stage_economics = {
+        "calls": query_calls,
+        "provider_input_tokens": query_input,
+        "provider_output_tokens": query_output,
+        "provider_total_tokens": query_total,
+        "provider_cost_credits": (
+            query_cost if query_cost_observations else None
+        ),
+        "provider_cost_observations": query_cost_observations,
+        "provider_cost_coverage_fraction": (
+            query_cost_observations / query_calls if query_calls else None
+        ),
+        "provider_cached_input_tokens": (
+            query_cached_tokens if query_cache_observations else None
+        ),
+        "provider_cache_write_tokens": (
+            query_cache_write_tokens if query_cache_observations else None
+        ),
+        "cache_detail_observations": query_cache_observations,
+        "cache_detail_coverage_fraction": (
+            query_cache_observations / query_calls if query_calls else None
+        ),
+        "cache_read_fraction_of_observed_input": (
+            query_cached_tokens / query_cache_observed_input
+            if query_cache_observed_input > 0
+            else None
+        ),
+        "by_stage": query_by_stage,
+    }
+
     return {
         "schema_version": "llm-telemetry-summary-v1.1",
         "calls": len(rows),
@@ -222,6 +388,28 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "provider_input_tokens": total_input,
         "provider_output_tokens": total_output,
         "provider_total_tokens": total_tokens,
+        "provider_cost_credits": (
+            total_cost_credits if cost_observations else None
+        ),
+        "provider_cost_observations": cost_observations,
+        "provider_cost_coverage_fraction": (
+            cost_observations / len(rows) if rows else None
+        ),
+        "provider_cached_input_tokens": (
+            total_cached_input_tokens if cache_detail_observations else None
+        ),
+        "provider_cache_write_tokens": (
+            total_cache_write_tokens if cache_detail_observations else None
+        ),
+        "cache_detail_observations": cache_detail_observations,
+        "cache_detail_coverage_fraction": (
+            cache_detail_observations / len(rows) if rows else None
+        ),
+        "cache_read_fraction_of_observed_input": (
+            total_cached_input_tokens / cache_observed_input_tokens
+            if cache_observed_input_tokens > 0
+            else None
+        ),
         "pipeline_call_counts": dict(sorted(pipelines.items())),
         "provider_usage_scope_counts": dict(sorted(provider_usage_scopes.items())),
         "call_outcome_counts": dict(sorted(call_outcomes.items())),
@@ -233,6 +421,7 @@ def summarize_usage_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
         ),
         "response_model_counts": dict(sorted(response_models.items())),
         "by_stage": by_stage,
+        "query_stage_economics": query_stage_economics,
         "source_overhead_by_stage": source_overhead_by_stage,
         "graph_generation_source_overhead": graph_generation_source_overhead,
         "component_estimates": component_estimates,

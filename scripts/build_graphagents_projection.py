@@ -182,6 +182,7 @@ def main() -> None:
                 candidate_bridge_graph
             ),
             mode=args.mode,
+            projection_semantics=domain_profile.projection,
         )
     )
     evidence_status_counts = Counter(
@@ -240,6 +241,9 @@ def main() -> None:
         "domain_profile_id": domain_profile.profile_id,
         "data_root": str(data_root),
         "mode": args.mode,
+        "projection_semantics_id": str(
+            projection.graph.get("projection_semantics_id", "")
+        ),
         **projection_quality_summary(projection),
         "canonical_graphml": str(canonical_path),
         "bridge_graphml": str(bridge_path) if bridge_graph is not None else "",

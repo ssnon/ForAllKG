@@ -4,6 +4,8 @@ from dac_her.domain_profile import (
     DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS,
     DiscoverySemantics,
     NoveltySemantics,
+    ProjectionBacktraceRule,
+    ProjectionSemantics,
     ResolutionSemantics,
     ScientificDomainProfile,
 )
@@ -86,6 +88,29 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
             )
         ),
     ),
+    projection=ProjectionSemantics(
+        semantics_id="sers_au_ag_projection_v2_alpha4b2c3",
+        mechanism_node_types=frozenset({
+            "PlasmonicSubstrate", "Nanostructure", "Metal", "Material",
+            "Support", "StructuralMotif", "Morphology", "SynthesisMethod",
+            "ObservationClaim", "MechanismClaim", "BridgeConcept",
+        }),
+        origin_node_types=frozenset({
+            "PlasmonicSubstrate", "Nanostructure", "Metal", "Material",
+            "Support", "StructuralMotif", "Morphology", "SynthesisMethod",
+        }),
+        backtrace_rules=(
+            ProjectionBacktraceRule("HAS_MEASUREMENT", "incoming"),
+            ProjectionBacktraceRule("IN_MEASUREMENT_GROUP", "incoming"),
+            ProjectionBacktraceRule("TESTED_IN", "incoming"),
+            ProjectionBacktraceRule("CHARACTERIZED_IN", "incoming"),
+            ProjectionBacktraceRule("SIMULATED_BY", "incoming"),
+            ProjectionBacktraceRule("USES_PRECURSOR", "incoming"),
+            ProjectionBacktraceRule("MEASURED_FOR", "outgoing"),
+            ProjectionBacktraceRule("APPLIES_TO", "outgoing"),
+        ),
+        max_backtrace_depth=3,
+    ),
     novelty=NoveltySemantics(
         domain_patterns=(
             ("SERS", (
@@ -149,5 +174,6 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
     ),
     extraction_adapter_id="sers_au_ag",
     graph_adapter_id="sers_au_ag",
+    bridge_adapter_id="sers_au_ag",
     feasibility_adapter_id=None,
 )

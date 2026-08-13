@@ -13,6 +13,9 @@ from dac_her.external_novelty_contracts import (
 )
 from dac_her.hypothesis_contracts import HypothesisCard
 from dac_her.llm_telemetry import run_instructor_structured_call
+from dac_her.prior_art_review_audit import (
+    record_prior_art_review_call,
+)
 
 
 @dataclass(frozen=True)
@@ -244,4 +247,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         )
         if not isinstance(result, ClaimPriorArtReviewDraft):
             result = ClaimPriorArtReviewDraft.model_validate(result)
+        record_prior_art_review_call(
+            system_prompt=_REVIEW_SYSTEM,
+            user_prompt=user,
+            response_schema=ClaimPriorArtReviewDraft,
+            result=result,
+            model=self.model_name,
+            instructor_mode=self.instructor_mode,
+            temperature=self.temperature,
+            claim_id=claim.claim_id,
+            hypothesis_id=claim.hypothesis_id,
+            claim_text=claim.text,
+            works=works,
+            telemetry_event=_event,
+        )
         return result

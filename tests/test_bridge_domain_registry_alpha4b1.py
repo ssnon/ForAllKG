@@ -42,11 +42,16 @@ def test_alpha4b1_dac_her_adapter_is_exact_legacy_wrapper():
     assert adapter.partition_result is partition_bridge_result
 
 
-def test_alpha4b1_only_her_bridge_adapter_is_registered():
-    assert available_bridge_adapters() == ("dac_her",)
+def test_alpha4b1_dac_her_bridge_adapter_remains_registered():
+    # alpha4b.1 established DAC-HER registration. Later phases may register
+    # additional domain adapters, so preserve the invariant rather than
+    # freezing the registry cardinality.
+    assert "dac_her" in available_bridge_adapters()
 
 
-@pytest.mark.parametrize("profile_id", ["sers_au_ag", "catalysis_mechanism"])
-def test_alpha4b1_unimplemented_domains_fail_closed(profile_id: str):
+@pytest.mark.parametrize("profile_id", ["catalysis_mechanism"])
+def test_alpha4b1_still_unimplemented_domains_fail_closed(profile_id: str):
+    # SERS is intentionally implemented in alpha4b.2b. Keep fail-closed
+    # coverage for domains that still have no Bridge adapter.
     with pytest.raises(ValueError, match="has no Bridge adapter"):
         get_bridge_adapter(profile_id)
