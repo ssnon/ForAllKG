@@ -17,6 +17,7 @@ from dac_her.comparison_domain import (
     ComparisonDimensionValue,
     ComparisonDomainAdapter,
     MeasurementUnitStatus,
+    MetricDefinitionAssessment,
     ObservableComparisonPolicy,
 )
 from dac_her.method_context import (
@@ -651,11 +652,15 @@ def audit_comparison_outputs(
     adapter: ComparisonDomainAdapter,
     method_contexts: Iterable[MethodContext] = (),
     protocol_assessments: Iterable[ProtocolAssessment] = (),
+    metric_definition_assessments: Iterable[
+        MetricDefinitionAssessment
+    ] = (),
 ) -> dict[str, Any]:
     context_rows = list(contexts)
     assessment_rows = list(assessments)
     method_rows = list(method_contexts)
     protocol_rows = list(protocol_assessments)
+    metric_definition_rows = list(metric_definition_assessments)
     issues: list[dict[str, str]] = []
 
     context_by_id = {item.context_id: item for item in context_rows}
@@ -841,6 +846,42 @@ def audit_comparison_outputs(
                 ),
             })
 
+    metric_definition_by_comparison: dict[
+        str,
+        MetricDefinitionAssessment,
+    ] = {}
+    if metric_definition_rows:
+        metric_ids: set[str] = set()
+        for metric in metric_definition_rows:
+            if metric.assessment_id in metric_ids:
+                issues.append({
+                    "code": "DUPLICATE_METRIC_DEFINITION_ASSESSMENT_ID",
+                    "message": metric.assessment_id,
+                })
+            metric_ids.add(metric.assessment_id)
+            if (
+                metric.comparison_assessment_id
+                in metric_definition_by_comparison
+            ):
+                issues.append({
+                    "code": (
+                        "DUPLICATE_METRIC_DEFINITION_COMPARISON_LINK"
+                    ),
+                    "message": metric.comparison_assessment_id,
+                })
+            metric_definition_by_comparison[
+                metric.comparison_assessment_id
+            ] = metric
+
+        if len(metric_definition_rows) != len(assessment_rows):
+            issues.append({
+                "code": "METRIC_DEFINITION_ASSESSMENT_COUNT_MISMATCH",
+                "message": (
+                    f"metric_definition={len(metric_definition_rows)} "
+                    f"comparison={len(assessment_rows)}"
+                ),
+            })
+
     assessment_ids: set[str] = set()
     for assessment in assessment_rows:
         if assessment.assessment_id in assessment_ids:
@@ -901,6 +942,58 @@ def audit_comparison_outputs(
                     "code": "UNSAFE_NUMERIC_RANKING_PROTOCOL",
                     "message": assessment.assessment_id,
                 })
+            if not assessment.metric_definition_gate:
+                issues.append({
+                    "code": "UNSAFE_NUMERIC_RANKING_METRIC_DEFINITION",
+                    "message": assessment.assessment_id,
+                })
+            if assessment.metric_definition_compatibility not in {
+                "same_definition",
+                "not_applicable",
+            }:
+                issues.append({
+                    "code": (
+                        "UNSAFE_NUMERIC_RANKING_METRIC_COMPATIBILITY"
+                    ),
+                    "message": assessment.assessment_id,
+                })
+
+        if metric_definition_rows:
+            metric = metric_definition_by_comparison.get(
+                assessment.assessment_id
+            )
+            if metric is None:
+                issues.append({
+                    "code": "MISSING_METRIC_DEFINITION_ASSESSMENT_LINK",
+                    "message": assessment.assessment_id,
+                })
+            else:
+                if (
+                    assessment.metric_definition_assessment_id
+                    != metric.assessment_id
+                ):
+                    issues.append({
+                        "code": "METRIC_DEFINITION_LINK_MISMATCH",
+                        "message": assessment.assessment_id,
+                    })
+                if (
+                    assessment.metric_definition_compatibility
+                    != metric.compatibility
+                ):
+                    issues.append({
+                        "code": (
+                            "METRIC_DEFINITION_COMPATIBILITY_MISMATCH"
+                        ),
+                        "message": assessment.assessment_id,
+                    })
+                if (
+                    assessment.metric_definition_gate
+                    != metric.numeric_metric_definition_gate
+                ):
+                    issues.append({
+                        "code": "METRIC_DEFINITION_GATE_MISMATCH",
+                        "message": assessment.assessment_id,
+                    })
 
     compatibility_counts = Counter(
         item.compatibility for item in assessment_rows
@@ -913,6 +1006,9 @@ def audit_comparison_outputs(
     )
     protocol_comparability_counts = Counter(
         item.comparability for item in protocol_rows
+    )
+    metric_definition_compatibility_counts = Counter(
+        item.compatibility for item in metric_definition_rows
     )
     unknown_dimension_counts = Counter(
         dimension.name
@@ -956,6 +1052,20 @@ def audit_comparison_outputs(
         for assessment in protocol_rows
     )
 
+    assessment_by_id = {
+        item.assessment_id: item
+        for item in assessment_rows
+    }
+    ranking_relevant_metric_rows = [
+        item
+        for item in metric_definition_rows
+        if item.compatibility != "not_applicable"
+        and item.comparison_assessment_id in assessment_by_id
+        and assessment_by_id[
+            item.comparison_assessment_id
+        ].numeric_ranking_mode != "disabled"
+    ]
+
     return {
         "comparison_adapter_id": adapter.adapter_id,
         "comparison_semantics_id": adapter.semantics_id,
@@ -965,6 +1075,37 @@ def audit_comparison_outputs(
         "protocol_assessment_count": len(protocol_rows),
         "protocol_comparability_counts": dict(
             sorted(protocol_comparability_counts.items())
+        ),
+        "metric_definition_assessment_count": len(
+            metric_definition_rows
+        ),
+        "metric_definition_compatibility_counts": dict(
+            sorted(metric_definition_compatibility_counts.items())
+        ),
+        "metric_definition_applicable_assessment_count": sum(
+            item.compatibility != "not_applicable"
+            for item in metric_definition_rows
+        ),
+        "metric_definition_gate_pass_count": sum(
+            item.numeric_metric_definition_gate
+            and item.compatibility != "not_applicable"
+            for item in metric_definition_rows
+        ),
+        "metric_definition_gate_blocked_applicable_count": sum(
+            (not item.numeric_metric_definition_gate)
+            and item.compatibility != "not_applicable"
+            for item in metric_definition_rows
+        ),
+        "metric_definition_ranking_relevant_assessment_count": len(
+            ranking_relevant_metric_rows
+        ),
+        "metric_definition_ranking_relevant_gate_pass_count": sum(
+            item.numeric_metric_definition_gate
+            for item in ranking_relevant_metric_rows
+        ),
+        "metric_definition_ranking_relevant_gate_blocked_count": sum(
+            not item.numeric_metric_definition_gate
+            for item in ranking_relevant_metric_rows
         ),
         "numeric_context_count": sum(
             item.value_numeric is not None for item in context_rows

@@ -15,9 +15,21 @@ from dac_her.comparison_context import (
     build_pairwise_assessments,
     build_protocol_assessments,
 )
+from dac_her.quality_aware_comparison import (
+    QUALITY_AWARE_NUMERIC_GATE_SEMANTICS_ID,
+    apply_metric_definition_numeric_gate,
+    build_metric_definition_assessments,
+)
 from dac_her.domains.comparison_registry import get_comparison_adapter
 from dac_her.domains.extraction_registry import get_extraction_adapter
+from dac_her.domains.metric_definition_registry import (
+    get_metric_definition_adapter,
+)
 from dac_her.domains.registry import get_domain_profile
+from dac_her.metric_definition_context import (
+    audit_metric_definition_contexts,
+)
+from dac_her.metric_definition_domain import MetricDefinitionContext
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +57,122 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _metric_definition_context_from_row(
+    row: dict[str, Any],
+) -> MetricDefinitionContext:
+    values = dict(row)
+    for key in (
+        "source_measurement_ids",
+        "source_measurement_group_ids",
+        "source_experiment_ids",
+        "source_calculation_ids",
+        "source_node_ids",
+    ):
+        values[key] = tuple(
+            str(value)
+            for value in values.get(key, [])
+        )
+    return MetricDefinitionContext(**values)
+
+
+def _load_metric_definition_sidecar(
+    *,
+    corpus_root: Path,
+    metric_definition_id: str,
+    profile_id: str,
+    corpus_id: str,
+    corpus_mode: str,
+    metric_adapter,
+    source_graphs: dict[str, nx.Graph],
+    source_rows: list[dict[str, str]],
+) -> tuple[list[MetricDefinitionContext], dict[str, Any], dict[str, Any]]:
+    root = (
+        corpus_root
+        / "metric_definition"
+        / metric_definition_id
+    )
+    summary_path = root / "summary.json"
+    contexts_path = root / "contexts.jsonl"
+    if not summary_path.exists():
+        raise FileNotFoundError(
+            f"Metric-definition summary not found: {summary_path}"
+        )
+    if not contexts_path.exists():
+        raise FileNotFoundError(
+            f"Metric-definition contexts not found: {contexts_path}"
+        )
+
+    summary = json.loads(
+        summary_path.read_text(encoding="utf-8")
+    )
+    if not isinstance(summary, dict):
+        raise ValueError(
+            "Metric-definition summary must be a JSON object."
+        )
+
+    expected_fields = {
+        "metric_definition_id": metric_definition_id,
+        "domain_profile_id": profile_id,
+        "corpus_id": corpus_id,
+        "corpus_mode": corpus_mode,
+        "metric_definition_semantics_id": (
+            metric_adapter.semantics_id
+        ),
+    }
+    for key, expected in expected_fields.items():
+        observed = str(summary.get(key, ""))
+        if observed != str(expected):
+            raise ValueError(
+                "Metric-definition sidecar binding mismatch for "
+                f"{key}: {observed!r} != {expected!r}."
+            )
+
+    expected_hashes = {
+        row["paper_id"]: row["canonical_graph_sha256"]
+        for row in source_rows
+    }
+    observed_hashes = {
+        str(row.get("paper_id", "")): str(
+            row.get("canonical_graph_sha256", "")
+        )
+        for row in summary.get("source_graphs", [])
+        if isinstance(row, dict)
+    }
+    if observed_hashes != expected_hashes:
+        raise ValueError(
+            "Metric-definition sidecar canonical graph hashes do not "
+            "match the comparison build inputs."
+        )
+
+    contexts: list[MetricDefinitionContext] = []
+    with contexts_path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict):
+                raise ValueError(
+                    "Metric-definition JSONL row must be an object: "
+                    f"line {line_number}."
+                )
+            contexts.append(
+                _metric_definition_context_from_row(row)
+            )
+
+    audit = audit_metric_definition_contexts(
+        contexts=contexts,
+        source_graphs=source_graphs,
+        adapter=metric_adapter,
+    )
+    if not audit.structural_gate:
+        raise ValueError(
+            "Metric-definition sidecar failed structural re-audit: "
+            f"{list(audit.issues)!r}."
+        )
+
+    return contexts, summary, audit.to_dict()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -61,6 +189,14 @@ def parse_args() -> argparse.Namespace:
         default="exploratory",
     )
     parser.add_argument("--comparison-id", required=True)
+    parser.add_argument(
+        "--metric-definition-id",
+        default=None,
+        help=(
+            "Frozen MetricDefinitionContext sidecar ID used by the "
+            "quality-aware numeric gate."
+        ),
+    )
     parser.add_argument("--output-dir", default=None)
     return parser.parse_args()
 
@@ -70,6 +206,19 @@ def main() -> None:
     profile = get_domain_profile(args.domain_profile)
     adapter = get_comparison_adapter(profile)
     extraction_adapter = get_extraction_adapter(profile.profile_id)
+    metric_definition_adapter = None
+    if getattr(profile, "metric_definition_adapter_id", None):
+        metric_definition_adapter = get_metric_definition_adapter(profile)
+        if not args.metric_definition_id:
+            raise ValueError(
+                "--metric-definition-id is required for domain profile "
+                f"{profile.profile_id!r}."
+            )
+    elif args.metric_definition_id:
+        raise ValueError(
+            "--metric-definition-id was supplied, but this domain has "
+            "no metric-definition adapter."
+        )
 
     data_root = Path(
         args.data_root or extraction_adapter.default_data_root
@@ -196,6 +345,41 @@ def main() -> None:
         protocol_assessments,
         adapter=adapter,
     )
+
+    metric_definition_contexts = []
+    metric_definition_assessments = []
+    metric_definition_summary: dict[str, Any] = {}
+    metric_definition_audit: dict[str, Any] = {}
+    if metric_definition_adapter is not None:
+        (
+            metric_definition_contexts,
+            metric_definition_summary,
+            metric_definition_audit,
+        ) = _load_metric_definition_sidecar(
+            corpus_root=corpus_root,
+            metric_definition_id=str(args.metric_definition_id),
+            profile_id=profile.profile_id,
+            corpus_id=args.corpus_id,
+            corpus_mode=args.mode,
+            metric_adapter=metric_definition_adapter,
+            source_graphs=source_graphs,
+            source_rows=source_rows,
+        )
+        metric_definition_assessments = (
+            build_metric_definition_assessments(
+                comparison_assessments=assessments,
+                comparison_contexts=contexts,
+                metric_definition_contexts=(
+                    metric_definition_contexts
+                ),
+                adapter=metric_definition_adapter,
+            )
+        )
+        assessments = apply_metric_definition_numeric_gate(
+            assessments,
+            metric_definition_assessments,
+        )
+
     audit = audit_comparison_outputs(
         contexts=contexts,
         assessments=assessments,
@@ -203,6 +387,9 @@ def main() -> None:
         adapter=adapter,
         method_contexts=method_contexts,
         protocol_assessments=protocol_assessments,
+        metric_definition_assessments=(
+            metric_definition_assessments
+        ),
     )
 
     output_dir = (
@@ -232,6 +419,13 @@ def main() -> None:
     protocol_assessments_path = _write_jsonl(
         output_dir / "protocol_assessments.jsonl",
         (item.to_row() for item in protocol_assessments),
+    )
+    metric_definition_assessments_path = _write_jsonl(
+        output_dir / "metric_definition_assessments.jsonl",
+        (
+            item.to_row()
+            for item in metric_definition_assessments
+        ),
     )
 
     compatibility_counts = Counter(
@@ -269,6 +463,46 @@ def main() -> None:
         "protocol_comparability_counts": dict(sorted(Counter(
             item.comparability for item in protocol_assessments
         ).items())),
+        "quality_gate_semantics_id": (
+            QUALITY_AWARE_NUMERIC_GATE_SEMANTICS_ID
+            if metric_definition_adapter is not None
+            else ""
+        ),
+        "metric_definition_id": (
+            str(args.metric_definition_id or "")
+        ),
+        "metric_definition_semantics_id": (
+            metric_definition_adapter.semantics_id
+            if metric_definition_adapter is not None
+            else ""
+        ),
+        "metric_definition_context_count": len(
+            metric_definition_contexts
+        ),
+        "metric_definition_assessment_count": len(
+            metric_definition_assessments
+        ),
+        "metric_definition_compatibility_counts": audit[
+            "metric_definition_compatibility_counts"
+        ],
+        "metric_definition_applicable_assessment_count": audit[
+            "metric_definition_applicable_assessment_count"
+        ],
+        "metric_definition_gate_pass_count": audit[
+            "metric_definition_gate_pass_count"
+        ],
+        "metric_definition_gate_blocked_applicable_count": audit[
+            "metric_definition_gate_blocked_applicable_count"
+        ],
+        "metric_definition_ranking_relevant_assessment_count": audit[
+            "metric_definition_ranking_relevant_assessment_count"
+        ],
+        "metric_definition_ranking_relevant_gate_pass_count": audit[
+            "metric_definition_ranking_relevant_gate_pass_count"
+        ],
+        "metric_definition_ranking_relevant_gate_blocked_count": audit[
+            "metric_definition_ranking_relevant_gate_blocked_count"
+        ],
         "compatibility_counts": dict(
             sorted(compatibility_counts.items())
         ),
@@ -312,6 +546,22 @@ def main() -> None:
         "assessments": str(assessments_path),
         "method_contexts": str(method_contexts_path),
         "protocol_assessments": str(protocol_assessments_path),
+        "metric_definition_assessments": str(
+            metric_definition_assessments_path
+        ),
+        "metric_definition_source_summary": (
+            str(
+                corpus_root
+                / "metric_definition"
+                / str(args.metric_definition_id)
+                / "summary.json"
+            )
+            if metric_definition_adapter is not None
+            else ""
+        ),
+        "metric_definition_source_audit": (
+            metric_definition_audit
+        ),
         "audit": str(output_dir / "audit.json"),
         "passes_structural_gate": audit["passes_structural_gate"],
     }
@@ -387,6 +637,54 @@ def main() -> None:
             sort_keys=True,
         ),
     )
+    if metric_definition_adapter is not None:
+        print(
+            "Metric-definition sidecar:",
+            summary["metric_definition_id"],
+        )
+        print(
+            "Metric-definition contexts:",
+            summary["metric_definition_context_count"],
+        )
+        print(
+            "Metric-definition compatibility:",
+            json.dumps(
+                summary[
+                    "metric_definition_compatibility_counts"
+                ],
+                sort_keys=True,
+            ),
+        )
+        print(
+            "Metric-definition applicable assessments:",
+            summary[
+                "metric_definition_applicable_assessment_count"
+            ],
+        )
+        print(
+            "Metric-definition gate pass / blocked:",
+            summary["metric_definition_gate_pass_count"],
+            "/",
+            summary[
+                "metric_definition_gate_blocked_applicable_count"
+            ],
+        )
+        print(
+            "Metric-definition ranking-relevant assessments:",
+            summary[
+                "metric_definition_ranking_relevant_assessment_count"
+            ],
+        )
+        print(
+            "Metric-definition ranking-relevant gate pass / blocked:",
+            summary[
+                "metric_definition_ranking_relevant_gate_pass_count"
+            ],
+            "/",
+            summary[
+                "metric_definition_ranking_relevant_gate_blocked_count"
+            ],
+        )
     print(
         "Observable families:",
         json.dumps(

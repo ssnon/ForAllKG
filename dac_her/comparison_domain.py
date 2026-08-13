@@ -16,6 +16,12 @@ ComparisonCompatibility = Literal[
     "unknown",
 ]
 MeasurementUnitStatus = Literal["matched", "mismatched", "unknown"]
+MetricDefinitionCompatibility = Literal[
+    "same_definition",
+    "different_definition",
+    "unknown",
+    "not_applicable",
+]
 NumericRankingMode = Literal["allowed_if_complete", "disabled"]
 RankingDirection = Literal["higher_better", "lower_better", "none"]
 
@@ -181,6 +187,31 @@ class ComparisonContext:
 
 
 @dataclass(frozen=True)
+class MetricDefinitionAssessment:
+    assessment_id: str
+    quality_gate_semantics_id: str
+    metric_definition_semantics_id: str
+    comparison_assessment_id: str
+    observable_key: str
+    left_context_id: str
+    right_context_id: str
+    left_metric_definition_context_id: str
+    right_metric_definition_context_id: str
+    compatibility: MetricDefinitionCompatibility
+    left_definition_status: str
+    right_definition_status: str
+    left_definition_family: str
+    right_definition_family: str
+    left_aggregation_scope: str
+    right_aggregation_scope: str
+    numeric_metric_definition_gate: bool
+    reasons: tuple[str, ...]
+
+    def to_row(self) -> dict[str, object]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class ComparisonAssessment:
     assessment_id: str
     comparison_semantics_id: str
@@ -205,6 +236,9 @@ class ComparisonAssessment:
     numeric_ranking_allowed: bool
     protocol_assessment_id: str = ""
     protocol_comparability: str = "not_applicable"
+    metric_definition_assessment_id: str = ""
+    metric_definition_compatibility: str = "not_applicable"
+    metric_definition_gate: bool = True
 
     def to_row(self) -> dict[str, object]:
         return asdict(self)
