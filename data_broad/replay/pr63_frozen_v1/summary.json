@@ -1,0 +1,150 @@
+{
+  "comparisons": [
+    {
+      "compact": {
+        "calls": 4,
+        "domain_gate_pass": 4,
+        "edge_count": 64,
+        "finalization_issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 4,
+          "ISOLATED_NODE": 4
+        },
+        "finalization_success": 0,
+        "finalized_edge_count": 0,
+        "finalized_node_count": 0,
+        "issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 4,
+          "ISOLATED_NODE": 4
+        },
+        "llm_success": 4,
+        "measurement_issue_count": 0,
+        "mechanism_claim_count": 8,
+        "mechanism_connected": 4,
+        "mechanism_incident_edge_count": 20,
+        "node_count": 56,
+        "provider_input_tokens": 26408,
+        "provider_output_tokens": 9930,
+        "provider_total_tokens": 36338,
+        "strict_valid": 0
+      },
+      "fixture_id": "dgr:2afd3b3f92751dbdcb845fe6",
+      "full": {
+        "calls": 4,
+        "domain_gate_pass": 4,
+        "edge_count": 63,
+        "finalization_issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 4,
+          "ISOLATED_NODE": 2
+        },
+        "finalization_success": 0,
+        "finalized_edge_count": 0,
+        "finalized_node_count": 0,
+        "issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 4,
+          "ISOLATED_NODE": 2
+        },
+        "llm_success": 4,
+        "measurement_issue_count": 0,
+        "mechanism_claim_count": 8,
+        "mechanism_connected": 4,
+        "mechanism_incident_edge_count": 20,
+        "node_count": 54,
+        "provider_input_tokens": 29536,
+        "provider_output_tokens": 11128,
+        "provider_total_tokens": 40664,
+        "strict_valid": 0
+      },
+      "hard_failures": [],
+      "manual_holds": [],
+      "provider_input_delta": -3128
+    },
+    {
+      "compact": {
+        "calls": 4,
+        "domain_gate_pass": 2,
+        "edge_count": 56,
+        "finalization_issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 2,
+          "RELATION_SOURCE_TYPE_MISMATCH": 2,
+          "RELATION_TARGET_TYPE_MISMATCH": 2
+        },
+        "finalization_success": 0,
+        "finalized_edge_count": 0,
+        "finalized_node_count": 0,
+        "issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 4,
+          "ISOLATED_NODE": 1,
+          "OBSERVATION_MISSING_SUPPORT": 2,
+          "RELATION_SOURCE_TYPE_MISMATCH": 2,
+          "RELATION_TARGET_TYPE_MISMATCH": 4
+        },
+        "llm_success": 4,
+        "measurement_issue_count": 0,
+        "mechanism_claim_count": 4,
+        "mechanism_connected": 4,
+        "mechanism_incident_edge_count": 12,
+        "node_count": 50,
+        "provider_input_tokens": 23660,
+        "provider_output_tokens": 9503,
+        "provider_total_tokens": 33163,
+        "strict_valid": 0
+      },
+      "fixture_id": "dgr:499da33c4512a56361b5c612",
+      "full": {
+        "calls": 4,
+        "domain_gate_pass": 3,
+        "edge_count": 64,
+        "finalization_issue_counts": {
+          "INVALID_MEASURED_FOR_COUNT": 3,
+          "MISSING_MEASUREMENT_PRODUCER": 3,
+          "OBSERVATION_MISSING_SUPPORT": 1,
+          "RELATION_SOURCE_TYPE_MISMATCH": 3,
+          "RELATION_TARGET_TYPE_MISMATCH": 6
+        },
+        "finalization_success": 0,
+        "finalized_edge_count": 0,
+        "finalized_node_count": 0,
+        "issue_counts": {
+          "CLAIM_MISSING_APPLICATION_TARGET": 1,
+          "INVALID_MEASURED_FOR_COUNT": 6,
+          "MISSING_MEASUREMENT_PRODUCER": 6,
+          "OBSERVATION_MISSING_SUPPORT": 2,
+          "RELATION_SOURCE_TYPE_MISMATCH": 6,
+          "RELATION_TARGET_TYPE_MISMATCH": 10
+        },
+        "llm_success": 4,
+        "measurement_issue_count": 6,
+        "mechanism_claim_count": 4,
+        "mechanism_connected": 4,
+        "mechanism_incident_edge_count": 12,
+        "node_count": 56,
+        "provider_input_tokens": 26788,
+        "provider_output_tokens": 11451,
+        "provider_total_tokens": 38239,
+        "strict_valid": 0
+      },
+      "hard_failures": [
+        "compact domain_gate_pass decreased: 2 < 3",
+        "compact introduced validation issue families not observed under full: ISOLATED_NODE"
+      ],
+      "manual_holds": [
+        "compact node_count is lower and requires semantic review: 50 < 56",
+        "compact edge_count is lower and requires semantic review: 56 < 64"
+      ],
+      "provider_input_delta": -3128
+    }
+  ],
+  "fixture_count": 2,
+  "hard_failures": [
+    "dgr:499da33c4512a56361b5c612: compact domain_gate_pass decreased: 2 < 3",
+    "dgr:499da33c4512a56361b5c612: compact introduced validation issue families not observed under full: ISOLATED_NODE"
+  ],
+  "manual_holds": [
+    "dgr:499da33c4512a56361b5c612: compact node_count is lower and requires semantic review: 50 < 56",
+    "dgr:499da33c4512a56361b5c612: compact edge_count is lower and requires semantic review: 56 < 64"
+  ],
+  "quality_policy": "Token savings never justify any observed scientific-quality degradation. Automated PASS is not permission to adopt; manual semantic review remains mandatory.",
+  "row_count": 16,
+  "schema_version": "domain-gate-recovery-replay-summary-v1",
+  "verdict": "DO_NOT_ADOPT_OBSERVED_QUALITY_LOSS_SIGNAL"
+}

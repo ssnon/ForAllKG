@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from dac_her.chunking import ChunkSpec, count_tokens
 from dac_her.draft_schema import KnowledgeGraphDraft
+from dac_her.domain_gate_replay import build_domain_gate_replay_fixture
 from dac_her.extraction_domain import ExtractionDomainAdapter
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.domains.extraction_registry import get_extraction_adapter
@@ -286,12 +287,14 @@ def extract_one_chunk(
     normalization_dir = run_dir / "normalizations"
     patch_dir = run_dir / "patches"
     quarantine_dir = run_dir / "quarantine"
+    replay_fixture_dir = run_dir / "replay_fixtures"
     for directory in (
         candidate_dir,
         validation_dir,
         normalization_dir,
         patch_dir,
         quarantine_dir,
+        replay_fixture_dir,
     ):
         directory.mkdir(parents=True, exist_ok=True)
 
@@ -437,28 +440,55 @@ def extract_one_chunk(
                     debug_dir
                     / f"{safe_chunk_id}__domain_gate_recovery_0.json"
                 )
+                domain_recovery_prompt = build_domain_gate_recovery_prompt(
+                    paper_id=chunk.paper_id,
+                    chunk_id=chunk.chunk_id,
+                    document_id=chunk.document_id,
+                    document_role=chunk.document_role,
+                    section=chunk.section,
+                    page_ids=chunk.page_ids,
+                    asset_ids=chunk.asset_ids,
+                    core_text=chunk.core_text,
+                    left_context=chunk.left_context,
+                    right_context=chunk.right_context,
+                    asset_context=chunk.asset_context,
+                    rejected_graph_payload=(
+                        last_domain_rejected_draft.model_dump()
+                    ),
+                    domain_error=str(last_domain_gate_error),
+                )
+                if (
+                    extraction_adapter
+                    .compact_domain_gate_recovery_response_model
+                    is not None
+                ):
+                    replay_fixture = build_domain_gate_replay_fixture(
+                        extraction_adapter=extraction_adapter,
+                        chunk=chunk,
+                        rejected_draft=last_domain_rejected_draft,
+                        domain_error=last_domain_gate_error,
+                        system_prompt=(
+                            extraction_adapter.micro_reextract_system_prompt
+                        ),
+                        user_prompt=domain_recovery_prompt,
+                        captured_model=model,
+                        captured_provider=provider,
+                        max_completion_tokens=policy.max_completion_tokens,
+                    )
+                    _write_json(
+                        replay_fixture_dir
+                        / (
+                            f"{safe_chunk_id}"
+                            "__domain_gate_recovery_0.fixture.json"
+                        ),
+                        replay_fixture.model_dump(mode="json"),
+                    )
                 try:
                     recovered_generated = recovery_llm.generate_structured(
                         system_prompt=(
                             extraction_adapter.micro_reextract_system_prompt
                         ),
-                        prompt=build_domain_gate_recovery_prompt(
-                            paper_id=chunk.paper_id,
-                            chunk_id=chunk.chunk_id,
-                            document_id=chunk.document_id,
-                            document_role=chunk.document_role,
-                            section=chunk.section,
-                            page_ids=chunk.page_ids,
-                            asset_ids=chunk.asset_ids,
-                            core_text=chunk.core_text,
-                            left_context=chunk.left_context,
-                            right_context=chunk.right_context,
-                            asset_context=chunk.asset_context,
-                            rejected_graph_payload=(
-                                last_domain_rejected_draft.model_dump()
-                            ),
-                            domain_error=str(last_domain_gate_error),
-                        ),
+                        prompt=domain_recovery_prompt,
                         response_model=domain_gate_recovery_response_model,
                         temperature=0.0,
                         max_tokens=policy.max_completion_tokens,
