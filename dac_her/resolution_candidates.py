@@ -59,15 +59,22 @@ _ELEMENT_NAMES = {
 _STATE_RE = re.compile(r"\b(?:[a-z]{1,2}\()?\d+h\)?\b", re.I)
 
 
-def normalize_scientific_text(value: Any) -> str:
+def normalize_scientific_text(
+    value: Any,
+    *,
+    domain_profile: ScientificDomainProfile | str | None = None,
+) -> str:
+    profile = (
+        _active_domain_profile()
+        if domain_profile is None
+        else _resolve_domain_profile(domain_profile)
+    )
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
     text = text.lower().strip()
     for name, symbol in _ELEMENT_NAMES.items():
         text = re.sub(rf"\b{re.escape(name)}\b", symbol, text)
-    replacements = dict(
-        _active_domain_profile().resolution.text_replacements
-    )
+    replacements = dict(profile.resolution.text_replacements)
     for source, target in replacements.items():
         text = text.replace(source, target)
     text = re.sub(r"<[^>]+>", " ", text)

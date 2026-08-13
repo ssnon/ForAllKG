@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import (
+    CorpusSemantics,
     DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS,
     DiscoverySemantics,
     NoveltySemantics,
@@ -110,6 +111,20 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
             ProjectionBacktraceRule("APPLIES_TO", "outgoing"),
         ),
         max_backtrace_depth=3,
+    ),
+    corpus=CorpusSemantics(
+        semantics_id="sers_au_ag_corpus_v1_alpha4b3a",
+        review_candidate_types=frozenset({
+            "PlasmonicSubstrate",
+            "Nanostructure",
+            "Support",
+            "Material",
+            "StructuralMotif",
+            "Morphology",
+            "Analyte",
+            "RamanReporter",
+        }),
+        pattern_alignment_mode="confirmed_exact",
     ),
     novelty=NoveltySemantics(
         domain_patterns=(

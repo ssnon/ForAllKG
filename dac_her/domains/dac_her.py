@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import (
+    CorpusSemantics,
     DiscoverySemantics,
     NoveltySemantics,
     ProjectionBacktraceRule,
@@ -97,6 +98,18 @@ DAC_HER_PROFILE = ScientificDomainProfile(
             ProjectionBacktraceRule("SUPPORTS_CLAIM", "incoming"),
         ),
         max_backtrace_depth=3,
+    ),
+    corpus=CorpusSemantics(
+        semantics_id="dac_her_corpus_v1_alpha4b3a",
+        review_candidate_types=frozenset({
+            "Catalyst",
+            "CatalystModel",
+            "Support",
+            "CoordinationMotif",
+            "Material",
+            "Intermediate",
+        }),
+        pattern_alignment_mode="confirmed_exact",
     ),
     novelty=NoveltySemantics(
         domain_patterns=(

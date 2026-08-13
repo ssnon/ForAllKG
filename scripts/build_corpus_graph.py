@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-registry-alignment",
         action="store_true",
-        help="Disable deterministic Metal/Reaction alignment hubs.",
+        help="Disable deterministic domain-safe registry alignment hubs.",
     )
     parser.add_argument(
         "--no-pattern-alignment",
@@ -115,6 +115,7 @@ def main() -> None:
         bundles,
         corpus_id=args.corpus_id,
         mode=args.mode,
+        domain_profile=domain_profile,
         add_registry_alignment=(not args.no_registry_alignment),
         add_pattern_alignment=(not args.no_pattern_alignment),
     )
@@ -180,6 +181,7 @@ def main() -> None:
     print("Corpus graph built")
     print("Corpus ID:", args.corpus_id)
     print("Domain profile:", domain_profile.profile_id)
+    print("Corpus semantics:", manifest["corpus_semantics_id"])
     print("Data root:", data_root)
     print("Mode:", args.mode)
     print("Papers:", len(args.paper_ids))

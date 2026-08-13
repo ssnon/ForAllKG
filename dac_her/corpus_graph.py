@@ -10,26 +10,15 @@ from typing import Any, Iterable, Literal
 
 import networkx as nx
 
+from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.node_references import remap_node_reference_attributes
-from dac_her.resolution_candidates import (
-    AUTO_MERGE_TYPES,
-    normalize_scientific_text,
-)
+from dac_her.resolution_candidates import normalize_scientific_text
 
 
 ProjectionMode = Literal["evidence", "mechanism", "exploratory"]
 
-# Corpus-level destructive merging is intentionally disabled.  Only exact,
-# registry-safe scientific entities receive deterministic alignment hubs.
-_REGISTRY_ALIGNMENT_TYPES = frozenset(AUTO_MERGE_TYPES)
-_REVIEW_CANDIDATE_TYPES = frozenset({
-    "Catalyst",
-    "CatalystModel",
-    "Support",
-    "CoordinationMotif",
-    "Material",
-    "Intermediate",
-})
+# Cross-paper merging remains non-destructive. Scientific eligibility is
+# supplied by the active ScientificDomainProfile rather than module constants.
 
 
 @dataclass(frozen=True)
@@ -402,16 +391,69 @@ def _alignment_edge_attrs(
     }
 
 
+def _legacy_corpus_profile() -> ScientificDomainProfile:
+    # Lazy import avoids coupling the shared corpus core to a scientific
+    # domain at import time while preserving the historical direct-call API.
+    from dac_her.domains.dac_her import DAC_HER_PROFILE
+
+    return DAC_HER_PROFILE
+
+
+def _require_corpus_semantics(
+    profile: ScientificDomainProfile,
+):
+    semantics = profile.corpus
+    if semantics is None:
+        raise ValueError(
+            f"Domain profile {profile.profile_id!r} does not define "
+            "CorpusSemantics."
+        )
+    return semantics
+
+
+def _validate_bundle_domain_identity(
+    bundles: list[ProjectionBundle],
+    *,
+    expected_profile_id: str,
+) -> None:
+    mismatches: list[tuple[str, str]] = []
+    for bundle in bundles:
+        actual = str(
+            bundle.summary.get("domain_profile_id", "")
+        ).strip()
+        if actual != expected_profile_id:
+            mismatches.append(
+                (
+                    bundle.paper_id,
+                    actual or "<missing>",
+                )
+            )
+    if mismatches:
+        raise ValueError(
+            "Corpus domain mismatch: "
+            f"expected {expected_profile_id!r}; "
+            f"projection bundles={mismatches!r}."
+        )
+
+
 def add_registry_alignment_hubs(
     graph: nx.MultiDiGraph,
+    *,
+    alignment_types: frozenset[str] | None = None,
+    domain_profile: ScientificDomainProfile | None = None,
 ) -> list[dict[str, Any]]:
+    profile = domain_profile or _legacy_corpus_profile()
+    if alignment_types is None:
+        alignment_types = profile.resolution.auto_merge_types
+
     grouped: dict[tuple[str, str], list[str]] = {}
     for node_id, attrs in graph.nodes(data=True):
         node_type = str(attrs.get("type", ""))
-        if node_type not in _REGISTRY_ALIGNMENT_TYPES:
+        if node_type not in alignment_types:
             continue
         normalized = normalize_scientific_text(
-            _node_label(str(node_id), dict(attrs))
+            _node_label(str(node_id), dict(attrs)),
+            domain_profile=profile,
         )
         if not normalized:
             continue
@@ -489,72 +531,60 @@ def add_registry_alignment_hubs(
     return rows
 
 
-def _pattern_signature(attrs: dict[str, Any]) -> tuple[str, str, str] | None:
-    subject = normalize_scientific_text(attrs.get("pattern_subject", ""))
-    relation = normalize_scientific_text(attrs.get("pattern_relation", ""))
-    object_value = normalize_scientific_text(attrs.get("pattern_object", ""))
+def _pattern_signature(
+    attrs: dict[str, Any],
+    *,
+    domain_profile: ScientificDomainProfile,
+) -> tuple[str, str, str] | None:
+    subject = normalize_scientific_text(
+        attrs.get("pattern_subject", ""),
+        domain_profile=domain_profile,
+    )
+    relation = normalize_scientific_text(
+        attrs.get("pattern_relation", ""),
+        domain_profile=domain_profile,
+    )
+    object_value = normalize_scientific_text(
+        attrs.get("pattern_object", ""),
+        domain_profile=domain_profile,
+    )
     if not subject or not relation or not object_value:
         return None
     return subject, relation, object_value
 
 
+def is_confirmed_corpus_pattern(attrs: dict[str, Any]) -> bool:
+    if str(attrs.get("type", "")) != "BridgeConcept":
+        return False
+    if str(attrs.get("retention_lane", "")) != "accepted_pattern":
+        return False
+    if str(attrs.get("policy_lane", "")) == "semantic_candidate":
+        return False
+    if str(attrs.get("evidence_status", "")) == "semantic_candidate":
+        return False
+    if str(attrs.get("graph_layer", "")) == "bridge_candidate":
+        return False
+    if _as_bool(attrs.get("requires_verification", False)):
+        return False
+    return True
+
+
 def add_pattern_alignment_hubs(
     graph: nx.MultiDiGraph,
+    *,
+    domain_profile: ScientificDomainProfile | None = None,
 ) -> list[dict[str, Any]]:
+    profile = domain_profile or _legacy_corpus_profile()
     grouped: dict[tuple[str, str, str], list[str]] = {}
     for node_id, attrs in graph.nodes(data=True):
-        if str(attrs.get("type", "")) != "BridgeConcept":
-            continue
-        if str(attrs.get("retention_lane", "")) != "accepted_pattern":
-            continue
-
-        # CorpusPattern hubs represent only
-        # confirmed cross-paper scientific patterns.
-        # Exploratory semantic candidates must remain
-        # local, verification-required hypotheses.
-
-        if (
-            str(
-                attrs.get(
-                    "policy_lane",
-                    "",
-                )
-            )
-            == "semantic_candidate"
-        ):
+        attrs_dict = dict(attrs)
+        if not is_confirmed_corpus_pattern(attrs_dict):
             continue
 
-        if (
-            str(
-                attrs.get(
-                    "evidence_status",
-                    "",
-                )
-            )
-            == "semantic_candidate"
-        ):
-            continue
-
-        if (
-            str(
-                attrs.get(
-                    "graph_layer",
-                    "",
-                )
-            )
-            == "bridge_candidate"
-        ):
-            continue
-
-        if _as_bool(
-            attrs.get(
-                "requires_verification",
-                False,
-            )
-        ):
-            continue
-        
-        signature = _pattern_signature(dict(attrs))
+        signature = _pattern_signature(
+            attrs_dict,
+            domain_profile=profile,
+        )
         if signature is None:
             continue
         grouped.setdefault(signature, []).append(str(node_id))
@@ -627,14 +657,30 @@ def add_pattern_alignment_hubs(
 
 def generate_cross_paper_review_candidates(
     graph: nx.MultiDiGraph,
+    *,
+    candidate_types: frozenset[str] | None = None,
+    high_priority_types: frozenset[str] | None = None,
+    domain_profile: ScientificDomainProfile | None = None,
 ) -> list[dict[str, Any]]:
+    profile = domain_profile or _legacy_corpus_profile()
+    semantics = _require_corpus_semantics(profile)
+    if candidate_types is None:
+        candidate_types = semantics.review_candidate_types
+    if high_priority_types is None:
+        high_priority_types = (
+            semantics.effective_high_priority_review_types(
+                profile.resolution
+            )
+        )
+
     grouped: dict[tuple[str, str], list[str]] = {}
     for node_id, attrs in graph.nodes(data=True):
         node_type = str(attrs.get("type", ""))
-        if node_type not in _REVIEW_CANDIDATE_TYPES:
+        if node_type not in candidate_types:
             continue
         normalized = normalize_scientific_text(
-            _node_label(str(node_id), dict(attrs))
+            _node_label(str(node_id), dict(attrs)),
+            domain_profile=profile,
         )
         if not normalized:
             continue
@@ -660,12 +706,7 @@ def generate_cross_paper_review_candidates(
                 "merge_safety": "review_required",
                 "review_priority": (
                     "high"
-                    if node_type in {
-                        "Catalyst",
-                        "CatalystModel",
-                        "Support",
-                        "Material",
-                    }
+                    if node_type in high_priority_types
                     else "normal"
                 ),
                 "node_type": node_type,
@@ -762,6 +803,7 @@ def build_corpus_graph(
     *,
     corpus_id: str,
     mode: ProjectionMode,
+    domain_profile: ScientificDomainProfile | None = None,
     add_registry_alignment: bool = True,
     add_pattern_alignment: bool = True,
 ) -> tuple[
@@ -781,11 +823,34 @@ def build_corpus_graph(
     if any(bundle.mode != mode for bundle in bundles):
         raise ValueError("All projection bundles must use the same mode.")
 
+    explicit_domain_profile = domain_profile is not None
+    profile = domain_profile or _legacy_corpus_profile()
+    semantics = _require_corpus_semantics(profile)
+    if explicit_domain_profile:
+        _validate_bundle_domain_identity(
+            bundles,
+            expected_profile_id=profile.profile_id,
+        )
+
+    registry_alignment_types = profile.resolution.auto_merge_types
+    review_candidate_types = semantics.review_candidate_types
+    high_priority_review_types = (
+        semantics.effective_high_priority_review_types(
+            profile.resolution
+        )
+    )
+    pattern_alignment_enabled = bool(
+        add_pattern_alignment
+        and semantics.pattern_alignment_mode == "confirmed_exact"
+    )
+
     corpus = nx.MultiDiGraph(
         graph_stage="corpus_projection",
         corpus_id=corpus_id,
         projection_mode=mode,
         corpus_policy="non_destructive_namespacing_plus_alignment_hubs_v1",
+        domain_profile_id=profile.profile_id,
+        corpus_semantics_id=semantics.semantics_id,
     )
     node_rows: list[dict[str, Any]] = []
     evidence_rows: list[dict[str, Any]] = []
@@ -868,16 +933,28 @@ def build_corpus_graph(
         })
 
     registry_rows = (
-        add_registry_alignment_hubs(corpus)
+        add_registry_alignment_hubs(
+            corpus,
+            alignment_types=registry_alignment_types,
+            domain_profile=profile,
+        )
         if add_registry_alignment
         else []
     )
     pattern_rows = (
-        add_pattern_alignment_hubs(corpus)
-        if add_pattern_alignment
+        add_pattern_alignment_hubs(
+            corpus,
+            domain_profile=profile,
+        )
+        if pattern_alignment_enabled
         else []
     )
-    candidate_rows = generate_cross_paper_review_candidates(corpus)
+    candidate_rows = generate_cross_paper_review_candidates(
+        corpus,
+        candidate_types=review_candidate_types,
+        high_priority_types=high_priority_review_types,
+        domain_profile=profile,
+    )
 
     # Alignment edges are derived corpus edges, but they still receive stable
     # edge IDs and evidence-sidecar rows so corpus traversal can audit every
@@ -956,6 +1033,13 @@ def build_corpus_graph(
     manifest = {
         "corpus_id": corpus_id,
         "mode": mode,
+        "domain_profile_id": profile.profile_id,
+        "corpus_semantics_id": semantics.semantics_id,
+        "registry_alignment_types": sorted(registry_alignment_types),
+        "review_candidate_types": sorted(review_candidate_types),
+        "high_priority_review_types": sorted(high_priority_review_types),
+        "pattern_alignment_mode": semantics.pattern_alignment_mode,
+        "pattern_alignment_enabled": pattern_alignment_enabled,
         "policy_version": (
             "corpus-non-destructive-alignment-v1"
         ),

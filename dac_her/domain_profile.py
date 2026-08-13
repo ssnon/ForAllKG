@@ -182,6 +182,50 @@ class NoveltySemantics:
         return (not reasons, domain, scope, reasons)
 
 
+CorpusPatternAlignmentMode = Literal["disabled", "confirmed_exact"]
+
+
+@dataclass(frozen=True)
+class CorpusSemantics:
+    semantics_id: str
+    review_candidate_types: frozenset[str]
+    pattern_alignment_mode: CorpusPatternAlignmentMode = "confirmed_exact"
+    high_priority_review_types_override: frozenset[str] | None = None
+
+    def __post_init__(self) -> None:
+        if not self.semantics_id.strip():
+            raise ValueError("Corpus semantics_id must not be empty.")
+        if any(not value.strip() for value in self.review_candidate_types):
+            raise ValueError("Corpus review candidate types must not be empty.")
+        if self.pattern_alignment_mode not in {"disabled", "confirmed_exact"}:
+            raise ValueError(
+                "Corpus pattern_alignment_mode must be 'disabled' "
+                "or 'confirmed_exact'."
+            )
+        if self.high_priority_review_types_override is not None:
+            unknown = (
+                self.high_priority_review_types_override
+                - self.review_candidate_types
+            )
+            if unknown:
+                raise ValueError(
+                    "Corpus high-priority review override must be a subset "
+                    "of review_candidate_types: "
+                    f"{sorted(unknown)!r}"
+                )
+
+    def effective_high_priority_review_types(
+        self,
+        resolution: ResolutionSemantics,
+    ) -> frozenset[str]:
+        if self.high_priority_review_types_override is not None:
+            return self.high_priority_review_types_override
+        return (
+            resolution.high_priority_review_types
+            & self.review_candidate_types
+        )
+
+
 ProjectionBacktraceDirection = Literal["incoming", "outgoing"]
 
 
@@ -224,6 +268,7 @@ class ScientificDomainProfile:
     discovery: DiscoverySemantics
     novelty: NoveltySemantics
     projection: ProjectionSemantics | None = None
+    corpus: CorpusSemantics | None = None
     extraction_adapter_id: str | None = None
     graph_adapter_id: str | None = None
     bridge_adapter_id: str | None = None

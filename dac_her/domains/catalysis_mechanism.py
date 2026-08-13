@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import (
+    CorpusSemantics,
     DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS,
     DiscoverySemantics,
     NoveltySemantics,
@@ -189,6 +190,24 @@ CATALYSIS_MECHANISM_PROFILE = ScientificDomainProfile(
                 r"\bdestabiliz(?:e|es|ed|ing)\b",
             )
         ),
+    ),
+    corpus=CorpusSemantics(
+        semantics_id="catalysis_mechanism_corpus_v1_alpha4b3a",
+        review_candidate_types=frozenset({
+            "Catalyst",
+            "CatalystModel",
+            "Support",
+            "CoordinationMotif",
+            "Material",
+            "Intermediate",
+        }),
+        pattern_alignment_mode="disabled",
+        high_priority_review_types_override=frozenset({
+            "Catalyst",
+            "CatalystModel",
+            "Support",
+            "Material",
+        }),
     ),
     novelty=NoveltySemantics(
         domain_patterns=(
