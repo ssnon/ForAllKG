@@ -12,3 +12,27 @@ runs/
 figures/
 data_broad/*.bak
 *.bak
+data_broad/*
+
+# ==================================================
+# Repository hygiene
+# ==================================================
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Python package build metadata
+*.egg-info/
+
+# Backup files
+*.bak
+
+# Runtime logs
+*.log
+logs/
+
+# Generated broad-pipeline outputs
+data_broad/telemetry/
+data_broad/pipeline_runs/
+data_broad/discovery/
+data_broad/extracted/

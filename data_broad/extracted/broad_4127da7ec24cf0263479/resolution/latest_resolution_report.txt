@@ -1,6 +1,0 @@
-Paper-level resolution report
-Raw nodes/edges: 6/6
-Canonical nodes/edges: 6/6
-Components: 1 -> 1
-Nodes merged/dropped: 0
-Resolution: {"source_path": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_4127da7ec24cf0263479/resolution/decisions.jsonl", "source_format": "jsonl_reviewed_decisions", "approved_same_entity": 0, "applied_aliases": 0, "stale_decisions": 0, "ignored_decisions": 0, "rejected_decisions": 0, "cluster_count": 0}
