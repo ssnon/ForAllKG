@@ -90,6 +90,7 @@ class BroadPilotOptions:
     domain_profile: str = "catalysis_mechanism"
     extract_concurrency: int = 1
     force_extract: bool = False
+    broad_compact_schema: bool = False
     allow_partial: bool = False
     skip_extraction: bool = False
     dry_run: bool = False
@@ -177,6 +178,8 @@ class BroadCorpusPilotPipeline:
             ]
             if self.options.force_extract:
                 command.append("--force")
+            if self.options.broad_compact_schema:
+                command.append("--broad-compact-schema")
             if self.options.allow_partial:
                 command.append("--allow-partial")
             return command
@@ -295,7 +298,29 @@ class BroadCorpusPilotPipeline:
             return None
         try:
             pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
-            run_dir = Path(str(pointer["run_directory"]))
+            family_dir = Path(str(pointer["run_directory"]))
+            attempt_dir_raw = pointer.get("attempt_directory")
+            attempt_dir = (
+                Path(str(attempt_dir_raw))
+                if attempt_dir_raw
+                else None
+            )
+            if attempt_dir is not None and attempt_dir.exists():
+                run_dir = attempt_dir
+            else:
+                latest_attempt_path = family_dir / "latest_attempt.json"
+                latest_attempt = (
+                    json.loads(latest_attempt_path.read_text(encoding="utf-8"))
+                    if latest_attempt_path.exists()
+                    else {}
+                )
+                latest_raw = latest_attempt.get("attempt_directory")
+                latest_dir = Path(str(latest_raw)) if latest_raw else None
+                run_dir = (
+                    latest_dir
+                    if latest_dir is not None and latest_dir.exists()
+                    else family_dir
+                )
             active_path = run_dir / "active_chunks.json"
             if not active_path.exists():
                 return None
@@ -319,11 +344,19 @@ class BroadCorpusPilotPipeline:
                 or run_meta.get("run_fingerprint")
                 or ""
             ).strip()
+            attempt_id = str(
+                payload.get("attempt_id")
+                or pointer.get("attempt_id")
+                or run_meta.get("attempt_id")
+                or ""
+            ).strip()
             return {
                 "status": status,
                 "run_id": run_id,
                 "run_fingerprint": run_fingerprint,
+                "attempt_id": attempt_id,
                 "run_directory": str(run_dir),
+                "run_family_directory": str(family_dir),
             }
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
             return None
@@ -339,12 +372,16 @@ class BroadCorpusPilotPipeline:
         expected: dict[str, str],
         actual_run_id: str,
         actual_fingerprint: str,
+        actual_attempt_id: str = "",
     ) -> bool:
         expected_run_id = str(expected.get("run_id") or "").strip()
         if not expected_run_id or actual_run_id != expected_run_id:
             return False
         expected_fingerprint = str(expected.get("run_fingerprint") or "").strip()
         if expected_fingerprint and actual_fingerprint != expected_fingerprint:
+            return False
+        expected_attempt_id = str(expected.get("attempt_id") or "").strip()
+        if expected_attempt_id and actual_attempt_id != expected_attempt_id:
             return False
         return True
 
@@ -361,6 +398,9 @@ class BroadCorpusPilotPipeline:
                 identity,
                 str(graph.graph.get("run_id") or "").strip(),
                 str(graph.graph.get("run_fingerprint") or "").strip(),
+                str(
+                    graph.graph.get("source_extraction_attempt_id") or ""
+                ).strip(),
             )
         except Exception:
             return False
@@ -383,6 +423,7 @@ class BroadCorpusPilotPipeline:
                 str(
                     summary.get("source_extraction_run_fingerprint") or ""
                 ).strip(),
+                str(summary.get("source_extraction_attempt_id") or "").strip(),
             )
         except (OSError, TypeError, ValueError, json.JSONDecodeError):
             return False

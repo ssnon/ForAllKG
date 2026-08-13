@@ -121,6 +121,9 @@ def main() -> None:
         "source_extraction_run_fingerprint": str(
             canonical_graph.graph.get("run_fingerprint") or ""
         ),
+        "source_extraction_attempt_id": str(
+            canonical_graph.graph.get("source_extraction_attempt_id") or ""
+        ),
         **projection_quality_summary(projection),
         **summarize_broad_projection(projection),
         "node_text_rows": len(node_rows),

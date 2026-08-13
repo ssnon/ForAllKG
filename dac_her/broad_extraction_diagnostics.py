@@ -75,8 +75,18 @@ def _latest_run_dir(paper_root: Path) -> Path | None:
     raw = pointer.get("run_directory")
     if not raw:
         return None
-    path = Path(str(raw))
-    return path if path.exists() else None
+    family_dir = Path(str(raw))
+    attempt_raw = pointer.get("attempt_directory")
+    if attempt_raw:
+        attempt_dir = Path(str(attempt_raw))
+        if attempt_dir.exists():
+            return attempt_dir
+    latest_attempt = _read_json(family_dir / "latest_attempt.json")
+    if latest_attempt is not None and latest_attempt.get("attempt_directory"):
+        attempt_dir = Path(str(latest_attempt["attempt_directory"]))
+        if attempt_dir.exists():
+            return attempt_dir
+    return family_dir if family_dir.exists() else None
 
 
 def _terminal_records(active_payload: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -421,6 +431,11 @@ def inspect_broad_paper(
         or summary.get("run_fingerprint")
         or ""
     )
+    attempt_id = str(
+        active_payload.get("attempt_id")
+        or summary.get("attempt_id")
+        or ""
+    ).strip()
     projection = _projection_summary(paper_root)
     projection_source_run_id = str(
         projection.get("source_extraction_run_id") if projection else ""
@@ -428,6 +443,11 @@ def inspect_broad_paper(
     projection_source_fingerprint = str(
         projection.get("source_extraction_run_fingerprint") if projection else ""
     )
+    projection_source_attempt_id = str(
+        (projection.get("source_extraction_attempt_id") or "")
+        if projection
+        else ""
+    ).strip()
     projection_current = bool(
         projection
         and run_id
@@ -435,6 +455,10 @@ def inspect_broad_paper(
         and (
             not run_fingerprint
             or projection_source_fingerprint == run_fingerprint
+        )
+        and (
+            not attempt_id
+            or projection_source_attempt_id == attempt_id
         )
     )
     stale_projection_found = projection is not None and not projection_current
@@ -448,6 +472,7 @@ def inspect_broad_paper(
         **base,
         "run_id": run_id,
         "run_fingerprint": run_fingerprint,
+        "attempt_id": attempt_id,
         "graph_materialization_status": materialization,
         "graph_usable": graph_usable,
         "strict_complete": bool(
@@ -481,6 +506,12 @@ def inspect_broad_paper(
         "projection_current": projection_current,
         "stale_projection_found": stale_projection_found,
         "projection_source_extraction_run_id": projection_source_run_id,
+        "projection_source_extraction_run_fingerprint": (
+            projection_source_fingerprint
+        ),
+        "projection_source_extraction_attempt_id": (
+            projection_source_attempt_id
+        ),
         "projection_nodes": _int(
             projection.get("nodes") if projection_current and projection else 0
         ),

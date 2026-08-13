@@ -37,6 +37,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--force-extract", action="store_true")
+    parser.add_argument(
+        "--broad-compact-schema",
+        action="store_true",
+        help=(
+            "Use the experimental compact response schema for Broad initial "
+            "graph generation. Pair with --force-extract for controlled A/B runs."
+        ),
+    )
     parser.add_argument("--allow-partial", action="store_true")
     parser.add_argument("--skip-extraction", action="store_true")
     parser.add_argument("--no-resume", action="store_true")
@@ -79,6 +87,7 @@ def main() -> None:
             data_root=args.data_root,
             extract_concurrency=args.extract_concurrency,
             force_extract=args.force_extract,
+            broad_compact_schema=args.broad_compact_schema,
             allow_partial=args.allow_partial,
             skip_extraction=args.skip_extraction,
             dry_run=args.dry_run,

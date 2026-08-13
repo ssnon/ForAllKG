@@ -116,6 +116,14 @@ def parse_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
+        "--attempt-id",
+        default=None,
+        help=(
+            "Select one immutable strict-extraction attempt within --run-id. "
+            "Default: latest attempt; legacy flat runs remain supported."
+        ),
+    )
+    parser.add_argument(
         "--domain-profile",
         default="dac_her",
     )
@@ -299,6 +307,7 @@ def main() -> None:
             paper_id=args.paper_id,
             run_id=args.run_id,
             data_root=data_root,
+            attempt_id=args.attempt_id,
         )
     )
 

@@ -393,6 +393,7 @@ def normalize_stage_name(
     candidate = raw or model
     mapping = {
         "KnowledgeGraphDraft": "graph_generation",
+        "BroadMechanismGraphDraft": "graph_generation",
         "KnowledgeGraphPatch": "semantic_patch",
     }
     if candidate in mapping:

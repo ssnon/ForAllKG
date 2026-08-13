@@ -13,6 +13,7 @@ from dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 
 
 RUN_STATE_VERSION = "semantic-si-assets-run-v5-strict-recovery"
+ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -166,6 +167,37 @@ def run_directory(
     ) / "runs" / run_id
 
 
+def attempt_directory(
+    project_root: str | Path,
+    paper_id: str,
+    run_id: str,
+    attempt_id: str,
+    data_root: str | Path = "data_dac",
+) -> Path:
+    return (
+        run_directory(
+            project_root,
+            paper_id,
+            run_id,
+            data_root=data_root,
+        )
+        / "attempts"
+        / attempt_id
+    )
+
+
+def _latest_attempt_from_family(run_dir: Path) -> Path:
+    pointer_path = run_dir / "latest_attempt.json"
+    if not pointer_path.exists():
+        return run_dir
+    pointer = read_json(pointer_path)
+    raw = pointer.get("attempt_directory")
+    if not raw:
+        return run_dir
+    path = Path(str(raw))
+    return path if path.exists() else run_dir
+
+
 def write_json(
     path: str | Path,
     payload: Any,
@@ -188,33 +220,78 @@ def read_json(path: str | Path) -> Any:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def write_latest_attempt_pointer(
+    *,
+    project_root: str | Path,
+    paper_id: str,
+    run_metadata: dict[str, Any],
+    attempt_id: str,
+    data_root: str | Path = "data_dac",
+) -> Path:
+    run_id = str(run_metadata["run_id"])
+    family_dir = run_directory(
+        project_root,
+        paper_id,
+        run_id,
+        data_root=data_root,
+    )
+    concrete_dir = attempt_directory(
+        project_root,
+        paper_id,
+        run_id,
+        attempt_id,
+        data_root=data_root,
+    )
+    return write_json(
+        family_dir / "latest_attempt.json",
+        {
+            "paper_id": paper_id,
+            "run_id": run_id,
+            "run_fingerprint": run_metadata["run_fingerprint"],
+            "attempt_layout_version": ATTEMPT_LAYOUT_VERSION,
+            "attempt_id": attempt_id,
+            "attempt_directory": str(concrete_dir),
+            "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+
 def write_latest_run_pointer(
     *,
     project_root: str | Path,
     paper_id: str,
     run_metadata: dict[str, Any],
     data_root: str | Path = "data_dac",
+    attempt_id: str | None = None,
 ) -> Path:
     root = paper_output_root(project_root, paper_id, data_root=data_root)
-    return write_json(
-        root / "latest_run.json",
-        {
-            "paper_id": paper_id,
-            "run_id": run_metadata["run_id"],
-            "run_fingerprint": run_metadata["run_fingerprint"],
-            "run_directory": str(
-                run_directory(
-                    project_root,
-                    paper_id,
-                    str(run_metadata["run_id"]),
-                    data_root=data_root,
-                )
-            ),
-            "updated_at_utc": datetime.now(
-                timezone.utc
-            ).isoformat(),
-        },
+    run_id = str(run_metadata["run_id"])
+    family_dir = run_directory(
+        project_root,
+        paper_id,
+        run_id,
+        data_root=data_root,
     )
+    payload: dict[str, Any] = {
+        "paper_id": paper_id,
+        "run_id": run_id,
+        "run_fingerprint": run_metadata["run_fingerprint"],
+        "run_directory": str(family_dir),
+        "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    if attempt_id:
+        payload["attempt_layout_version"] = ATTEMPT_LAYOUT_VERSION
+        payload["attempt_id"] = attempt_id
+        payload["attempt_directory"] = str(
+            attempt_directory(
+                project_root,
+                paper_id,
+                run_id,
+                attempt_id,
+                data_root=data_root,
+            )
+        )
+    return write_json(root / "latest_run.json", payload)
 
 
 def resolve_run_directory(
@@ -223,9 +300,11 @@ def resolve_run_directory(
     paper_id: str,
     run_id: str | None,
     data_root: str | Path = "data_dac",
+    attempt_id: str | None = None,
 ) -> Path:
+    pointer: dict[str, Any] | None = None
     if run_id:
-        path = run_directory(
+        family_dir = run_directory(
             project_root, paper_id, run_id, data_root=data_root
         )
     else:
@@ -239,7 +318,19 @@ def resolve_run_directory(
                 f"{paper_id!r}: {pointer_path}"
             )
         pointer = read_json(pointer_path)
-        path = Path(pointer["run_directory"])
+        family_dir = Path(pointer["run_directory"])
+
+    if attempt_id:
+        path = family_dir / "attempts" / attempt_id
+    elif pointer and pointer.get("attempt_directory"):
+        candidate = Path(str(pointer["attempt_directory"]))
+        path = (
+            candidate
+            if candidate.exists()
+            else _latest_attempt_from_family(family_dir)
+        )
+    else:
+        path = _latest_attempt_from_family(family_dir)
 
     if not path.exists():
         raise FileNotFoundError(f"Run directory not found: {path}")

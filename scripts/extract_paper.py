@@ -23,6 +23,7 @@ import dac_her.structural_repair as structural_repair_module
 import dac_her.validation as validation_module
 import dac_her.chunking_recovery as chunking_recovery_module
 import dac_her.draft_schema as draft_schema_module
+import dac_her.broad_compact_schema as broad_compact_schema_module
 import dac_her.graph_validation as graph_validation_module
 import dac_her.extraction_quality as extraction_quality_module
 import dac_her.lossless_normalization as lossless_normalization_module
@@ -68,9 +69,13 @@ from dac_her.figure_extraction import (
     should_analyze_asset,
 )
 from dac_her.run_state import (
+    ATTEMPT_LAYOUT_VERSION,
+    attempt_directory,
     compute_run_metadata,
+    resolve_run_directory,
     run_directory,
     write_json,
+    write_latest_attempt_pointer,
     write_latest_run_pointer,
 )
 from dac_her.vocab_registry import load_default_registries
@@ -102,6 +107,15 @@ def parse_args() -> argparse.Namespace:
         "--force",
         action="store_true",
         help="Ignore valid chunk caches in the current fingerprinted run.",
+    )
+    parser.add_argument(
+        "--broad-compact-schema",
+        action="store_true",
+        help=(
+            "Use the experimental compact initial-generation response schema "
+            "for catalysis_mechanism abstracts. The prompt, validators, and "
+            "recovery policy are unchanged."
+        ),
     )
     parser.add_argument(
         "--import-legacy-cache",
@@ -261,6 +275,19 @@ def main() -> None:
     args = parse_args()
     domain_profile = get_domain_profile(args.domain_profile)
     extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
+    if (
+        args.broad_compact_schema
+        and domain_profile.profile_id != "catalysis_mechanism"
+    ):
+        raise ValueError(
+            "--broad-compact-schema is only valid with "
+            "--domain-profile catalysis_mechanism"
+        )
+    generation_response_schema_id = (
+        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
+        if args.broad_compact_schema
+        else "knowledge-graph-draft-full"
+    )
     data_root = args.data_root or extraction_adapter.default_data_root
     model = args.model or os.getenv("OPENROUTER_EXTRACT_MODEL")
     if not model:
@@ -317,6 +344,7 @@ def main() -> None:
             "domain_profile_id": domain_profile.profile_id,
             "extraction_adapter_id": extraction_adapter.adapter_id,
             "extraction_policy_id": extraction_policy_id,
+            "generation_response_schema_id": generation_response_schema_id,
             "data_root": str(data_root),
         },
         prompt_version=extraction_adapter.prompt_version,
@@ -332,6 +360,7 @@ def main() -> None:
             validation_module.__file__,
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
+            broad_compact_schema_module.__file__,
             graph_validation_module.__file__,
             extraction_quality_module.__file__,
             lossless_normalization_module.__file__,
@@ -349,32 +378,74 @@ def main() -> None:
     run_dir = run_directory(
         PROJECT_ROOT, paper.paper_id, run_id, data_root=data_root
     )
-    chunk_output_dir = run_dir / "chunks"
-    source_chunk_dir = run_dir / "source_chunks"
-    debug_dir = run_dir / "debug"
-    documents_dir = run_dir / "documents"
-    attempt_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
-    attempt_dir = run_dir / "attempts" / attempt_id
-    manifest_path = attempt_dir / "manifest.jsonl"
-    events_path = run_dir / "events.jsonl"
+    previous_attempt_dir: Path | None = None
+    try:
+        previous_attempt_dir = resolve_run_directory(
+            project_root=PROJECT_ROOT,
+            paper_id=paper.paper_id,
+            run_id=run_id,
+            data_root=data_root,
+        )
+    except FileNotFoundError:
+        previous_attempt_dir = None
 
+    attempt_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    attempt_dir = attempt_directory(
+        PROJECT_ROOT,
+        paper.paper_id,
+        run_id,
+        attempt_id,
+        data_root=data_root,
+    )
+    chunk_output_dir = attempt_dir / "chunks"
+    source_chunk_dir = attempt_dir / "source_chunks"
+    debug_dir = attempt_dir / "debug"
+    documents_dir = attempt_dir / "documents"
+    manifest_path = attempt_dir / "manifest.jsonl"
+    events_path = attempt_dir / "events.jsonl"
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+    attempt_dir.mkdir(parents=True, exist_ok=False)
     for directory in (
-        run_dir,
         chunk_output_dir,
         source_chunk_dir,
         debug_dir,
         documents_dir,
-        attempt_dir,
     ):
         directory.mkdir(parents=True, exist_ok=True)
     manifest_path.touch(exist_ok=False)
     write_json(run_dir / "run.json", run_metadata)
-    write_latest_run_pointer(
-        project_root=PROJECT_ROOT,
-        paper_id=paper.paper_id,
-        run_metadata=run_metadata,
-        data_root=data_root,
+    write_json(
+        attempt_dir / "run.json",
+        {
+            **run_metadata,
+            "attempt_layout_version": ATTEMPT_LAYOUT_VERSION,
+            "attempt_id": attempt_id,
+            "attempt_directory": str(attempt_dir),
+            "run_family_directory": str(run_dir),
+        },
     )
+
+    # Preserve the old no-force cache semantics without mutating a previous
+    # attempt. Only validated chunk JSONs are consumed later; copying here
+    # merely seeds the new immutable attempt with the previous cache surface.
+    if previous_attempt_dir is not None and previous_attempt_dir != attempt_dir:
+        if not (args.force or args.force_vision):
+            previous_chunks = previous_attempt_dir / "chunks"
+            if previous_chunks.exists():
+                shutil.copytree(
+                    previous_chunks,
+                    chunk_output_dir,
+                    dirs_exist_ok=True,
+                )
+        if not args.force_vision:
+            previous_documents = previous_attempt_dir / "documents"
+            if previous_documents.exists():
+                shutil.copytree(
+                    previous_documents,
+                    documents_dir,
+                    dirs_exist_ok=True,
+                )
 
     configs_by_id = {document.document_id: document for document in paper.documents}
     packages: dict[str, DocumentPackage] = {
@@ -400,9 +471,9 @@ def main() -> None:
                 raise ValueError(f"Duplicate asset ID: {asset.asset_id}")
             all_assets[asset.asset_id] = asset
 
-    write_json(run_dir / "documents.json", {"documents": document_records})
+    write_json(attempt_dir / "documents.json", {"documents": document_records})
     write_json(
-        run_dir / "asset_manifest.json",
+        attempt_dir / "asset_manifest.json",
         {"assets": [asset.to_dict() for asset in all_assets.values()]},
     )
 
@@ -465,7 +536,7 @@ def main() -> None:
         })
 
     write_json(
-        run_dir / "supplementary_references.json",
+        attempt_dir / "supplementary_references.json",
         {
             "reference_scope": (
                 "whole_main" if use_whole_main_for_references
@@ -475,7 +546,7 @@ def main() -> None:
         },
     )
     write_json(
-        run_dir / "si_selection_diagnostics.json",
+        attempt_dir / "si_selection_diagnostics.json",
         {"documents": si_selection_diagnostics},
     )
 
@@ -578,9 +649,11 @@ def main() -> None:
     print("Domain profile:", domain_profile.profile_id, flush=True)
     print("Extraction adapter:", extraction_adapter.adapter_id, flush=True)
     print("Extraction policy:", extraction_policy_id, flush=True)
+    print("Generation response schema:", generation_response_schema_id, flush=True)
     print("Data root:", data_root, flush=True)
     print("Paper ID:", paper.paper_id, flush=True)
     print("Run ID:", run_id, flush=True)
+    print("Attempt ID:", attempt_id, flush=True)
     print("Documents:", len(paper.documents), flush=True)
     print("Selected sources:", len(selected_sources), flush=True)
     print("Indexed assets:", len(all_assets), flush=True)
@@ -614,6 +687,7 @@ def main() -> None:
                     vocabulary_context=vocabulary_context,
                     force=(args.force or args.force_vision),
                     extraction_adapter=extraction_adapter,
+                    compact_generation_schema=args.broad_compact_schema,
                 ): chunk
                 for chunk in logical_batch
             }
@@ -801,6 +875,10 @@ def main() -> None:
         "paper_id": paper.paper_id,
         "run_id": run_id,
         "run_fingerprint": run_metadata["run_fingerprint"],
+        "attempt_layout_version": ATTEMPT_LAYOUT_VERSION,
+        "attempt_id": attempt_id,
+        "attempt_directory": str(attempt_dir),
+        "run_family_directory": str(run_dir),
         "paper_status": paper_status,
         "complete": complete,
         "graph_materialization_status": materialization_status,
@@ -818,9 +896,9 @@ def main() -> None:
         "failed_chunks": failed_records,
         "quarantined_chunks": quarantined_records,
     }
-    write_json(run_dir / "active_chunks.json", active_payload)
-    write_json(run_dir / "extraction_quality.json", quality)
-    write_json(run_dir / "lineage.json", {"splits": lineage_records})
+    write_json(attempt_dir / "active_chunks.json", active_payload)
+    write_json(attempt_dir / "extraction_quality.json", quality)
+    write_json(attempt_dir / "lineage.json", {"splits": lineage_records})
 
     summary = {
         "paper_id": paper.paper_id,
@@ -833,6 +911,7 @@ def main() -> None:
         "linked_assets": len(linked_asset_ids),
         "vision_analyses": len(analyses),
         "initial_chunks": len(initial_chunks),
+        "generation_response_schema_id": generation_response_schema_id,
         "active_leaf_chunks": len(active_chunks),
         "successful": success_count,
         "skipped": skipped_count,
@@ -856,9 +935,25 @@ def main() -> None:
         "chunk_output_dir": str(chunk_output_dir),
         "source_chunk_dir": str(source_chunk_dir),
         "manifest_path": str(manifest_path),
-        "active_chunks_path": str(run_dir / "active_chunks.json"),
+        "active_chunks_path": str(attempt_dir / "active_chunks.json"),
+        "attempt_directory": str(attempt_dir),
+        "run_family_directory": str(run_dir),
     }
-    write_json(run_dir / "summary.json", summary)
+    write_json(attempt_dir / "summary.json", summary)
+    write_latest_attempt_pointer(
+        project_root=PROJECT_ROOT,
+        paper_id=paper.paper_id,
+        run_metadata=run_metadata,
+        attempt_id=attempt_id,
+        data_root=data_root,
+    )
+    write_latest_run_pointer(
+        project_root=PROJECT_ROOT,
+        paper_id=paper.paper_id,
+        run_metadata=run_metadata,
+        data_root=data_root,
+        attempt_id=attempt_id,
+    )
 
     print("\nExtraction finished", flush=True)
     print("Successful:", success_count, flush=True)
@@ -883,8 +978,9 @@ def main() -> None:
         quality.get("quarantine_tier_counts"),
         flush=True,
     )
-    print("Run directory:", run_dir, flush=True)
-    print("Active chunks:", run_dir / "active_chunks.json", flush=True)
+    print("Run family directory:", run_dir, flush=True)
+    print("Attempt directory:", attempt_dir, flush=True)
+    print("Active chunks:", attempt_dir / "active_chunks.json", flush=True)
 
     if materialization_status == QUALITY_REJECTED:
         raise SystemExit(2)

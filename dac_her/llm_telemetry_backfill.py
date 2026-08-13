@@ -66,7 +66,20 @@ def backfill_extraction_resolutions(
         if pointer is None or not pointer.get("run_directory"):
             missing_runs.append(paper_id)
             continue
-        run_dir = Path(str(pointer["run_directory"]))
+        family_dir = Path(str(pointer["run_directory"]))
+        attempt_raw = pointer.get("attempt_directory")
+        attempt_dir = Path(str(attempt_raw)) if attempt_raw else None
+        if attempt_dir is not None and attempt_dir.exists():
+            run_dir = attempt_dir
+        else:
+            latest_attempt = _read_json(family_dir / "latest_attempt.json")
+            latest_raw = (latest_attempt or {}).get("attempt_directory")
+            latest_dir = Path(str(latest_raw)) if latest_raw else None
+            run_dir = (
+                latest_dir
+                if latest_dir is not None and latest_dir.exists()
+                else family_dir
+            )
         active = _read_json(run_dir / "active_chunks.json")
         if active is None:
             missing_runs.append(paper_id)

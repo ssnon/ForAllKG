@@ -270,6 +270,68 @@ def test_stale_projection_is_not_counted_as_current_mechanism_yield(tmp_path: Pa
     assert report["direct_mechanism_edges"] == 0
 
 
+def test_attempt_scoped_projection_requires_matching_attempt_identity(
+    tmp_path: Path,
+):
+    data_root = tmp_path / "data_broad"
+    family_dir = _write_run(
+        data_root,
+        "broad_A",
+        status="complete",
+        records=[{"status": "success", "attempt_usages": []}],
+        projection_edges=3,
+    )
+    paper_root = data_root / "extracted" / "broad_A"
+    attempt_id = "attempt-new"
+    attempt_dir = family_dir / "attempts" / attempt_id
+    attempt_dir.mkdir(parents=True, exist_ok=False)
+
+    for filename in ("active_chunks.json", "summary.json"):
+        payload = json.loads(
+            (family_dir / filename).read_text(encoding="utf-8")
+        )
+        payload["attempt_id"] = attempt_id
+        (attempt_dir / filename).write_text(
+            json.dumps(payload),
+            encoding="utf-8",
+        )
+
+    pointer_path = paper_root / "latest_run.json"
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    pointer["attempt_id"] = attempt_id
+    pointer["attempt_directory"] = str(attempt_dir)
+    pointer_path.write_text(json.dumps(pointer), encoding="utf-8")
+
+    projection_path = (
+        paper_root / "graphagents" / "mechanism" / "summary.json"
+    )
+
+    # A run/fingerprint-only projection is legacy with respect to the new
+    # concrete attempt. It must not be counted as current for this attempt.
+    row = inspect_broad_paper(data_root=data_root, paper_id="broad_A")
+    assert row["attempt_id"] == attempt_id
+    assert row["projection_source_extraction_attempt_id"] == ""
+    assert row["projection_current"] is False
+    assert row["stale_projection_found"] is True
+    assert row["direct_mechanism_edges"] == 0
+
+    projection = json.loads(projection_path.read_text(encoding="utf-8"))
+    projection["source_extraction_attempt_id"] = "attempt-old"
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+    row = inspect_broad_paper(data_root=data_root, paper_id="broad_A")
+    assert row["projection_source_extraction_attempt_id"] == "attempt-old"
+    assert row["projection_current"] is False
+    assert row["direct_mechanism_edges"] == 0
+
+    projection["source_extraction_attempt_id"] = attempt_id
+    projection_path.write_text(json.dumps(projection), encoding="utf-8")
+    row = inspect_broad_paper(data_root=data_root, paper_id="broad_A")
+    assert row["projection_source_extraction_attempt_id"] == attempt_id
+    assert row["projection_current"] is True
+    assert row["stale_projection_found"] is False
+    assert row["direct_mechanism_edges"] == 3
+
+
 def test_preflight_outlier_ignores_historical_run_cost(tmp_path: Path):
     data_root = tmp_path / "data_broad"
     _write_run(

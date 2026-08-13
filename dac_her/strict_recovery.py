@@ -6,6 +6,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from dac_her.broad_compact_schema import BroadMechanismGraphDraft
 from dac_her.chunking import ChunkSpec, count_tokens
 from dac_her.draft_schema import KnowledgeGraphDraft
 from dac_her.extraction_domain import ExtractionDomainAdapter
@@ -249,8 +250,17 @@ def extract_one_chunk(
     vocabulary_context: str,
     force: bool = False,
     extraction_adapter: ExtractionDomainAdapter | None = None,
+    compact_generation_schema: bool = False,
 ) -> dict[str, Any]:
     extraction_adapter = extraction_adapter or get_extraction_adapter("dac_her")
+    generation_response_model = KnowledgeGraphDraft
+    if compact_generation_schema:
+        if extraction_adapter.domain_profile_id != "catalysis_mechanism":
+            raise ValueError(
+                "compact_generation_schema is only valid for "
+                "the catalysis_mechanism extraction domain"
+            )
+        generation_response_model = BroadMechanismGraphDraft
     output_path = chunk_output_path(chunk, chunk_output_dir)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -301,7 +311,7 @@ def extract_one_chunk(
         )
         raw_debug_path = debug_dir / f"{safe_chunk_id}__generation_{generation_attempt}.json"
         try:
-            draft = llm.generate_structured(
+            generated_draft = llm.generate_structured(
                 system_prompt=extraction_adapter.system_prompt,
                 prompt=build_extraction_prompt(
                     paper_id=chunk.paper_id,
@@ -318,10 +328,18 @@ def extract_one_chunk(
                     right_context=chunk.right_context,
                     validation_feedback=generation_feedback,
                 ),
-                response_model=KnowledgeGraphDraft,
+                response_model=generation_response_model,
                 temperature=0.0,
                 max_tokens=policy.max_completion_tokens,
                 debug_path=raw_debug_path,
+            )
+            draft = (
+                generated_draft.to_knowledge_graph_draft()
+                if isinstance(
+                    generated_draft,
+                    BroadMechanismGraphDraft,
+                )
+                else generated_draft
             )
             draft = _enforce_chunk_metadata(
                 draft,

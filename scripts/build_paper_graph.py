@@ -76,6 +76,15 @@ def parse_args() -> argparse.Namespace:
         help="Default: latest_run.json for the paper.",
     )
     parser.add_argument(
+        "--attempt-id",
+        default=None,
+        help=(
+            "Select one immutable extraction attempt within --run-id. "
+            "Default: the run family's latest attempt; legacy flat runs "
+            "remain supported."
+        ),
+    )
+    parser.add_argument(
         "--allow-incomplete",
         action="store_true",
         help=(
@@ -423,6 +432,7 @@ def main() -> None:
         paper_id=paper.paper_id,
         run_id=args.run_id,
         data_root=data_root,
+        attempt_id=args.attempt_id,
     )
 
     run_metadata = read_json(run_dir / "run.json")
@@ -436,6 +446,17 @@ def main() -> None:
         raise ValueError(
             "active_chunks.json and run.json refer to different runs."
         )
+    active_attempt_id = str(active_payload.get("attempt_id") or "").strip()
+    metadata_attempt_id = str(run_metadata.get("attempt_id") or "").strip()
+    if (
+        active_attempt_id
+        and metadata_attempt_id
+        and active_attempt_id != metadata_attempt_id
+    ):
+        raise ValueError(
+            "active_chunks.json and run.json refer to different attempts."
+        )
+    extraction_attempt_id = active_attempt_id or metadata_attempt_id
     extraction_quality = quality_from_active_payload(
         active_payload,
         policy=ExtractionPolicy(),
@@ -482,6 +503,7 @@ def main() -> None:
         paper_id=paper.paper_id,
         run_id=str(run_metadata["run_id"]),
         run_fingerprint=str(run_metadata["run_fingerprint"]),
+        source_extraction_attempt_id=extraction_attempt_id,
         graph_stage="raw_merged",
         domain_profile_id=domain_profile.profile_id,
         graph_adapter_id=graph_adapter.adapter_id,
