@@ -1,5 +1,0 @@
-# Mechanistic insight into the active centers of single/dual-atom Ni/Fe-based oxygen electrocatalysts
-
-## Abstract
-
-Abstract Single-atom catalysts with maximum metal utilization efficiency show great potential for sustainable catalytic applications and fundamental mechanistic studies. We here provide a convenient molecular tailoring strategy based on graphitic carbon nitride as support for the rational design of single-site and dual-site single-atom catalysts. Catalysts with single Fe sites exhibit impressive oxygen reduction reaction activity with a half-wave potential of 0.89 V vs. RHE. We find that the single Ni sites are favorable to promote the key structural reconstruction into bridging Ni-O-Fe bonds in dual-site NiFe SAC. Meanwhile, the newly formed Ni-O-Fe bonds create spin channels for electron transfer, resulting in a significant improvement of the oxygen evolution reaction activity with an overpotential of 270 mV at 10 mA cm −2 . We further reveal that the water oxidation reaction follows a dual-site pathway through the deprotonation of *OH at both Ni and Fe sites, leading to the formation of bridging O 2 atop the Ni-O-Fe sites.

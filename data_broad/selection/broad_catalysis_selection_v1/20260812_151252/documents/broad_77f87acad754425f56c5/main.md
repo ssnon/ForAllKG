@@ -1,5 +1,0 @@
-# Recent advances in dual‐atom catalysts for energy catalysis
-
-## Abstract
-
-Abstract In the context of the global pursuit of sustainable energy, dual‐atom catalysts (DACs) have attracted widespread attention due to their unique structural and excellent catalytic performance. Unlike the single‐atom catalysts, DACs possess two active metal centers, exhibiting intriguing synergistic effects that significantly enhance their efficiency in various electrochemical reactions. This comprehensive review provides an overview of the recent advances in the field of dual‐atom catalysts, focusing on their innovative preparation methods and strategies. It further delves into the intrinsic connections between structure and performance, discussing the applications of DACs in hydrogen evolution reaction, oxygen evolution reaction, oxygen reduction reaction, photocatalysis, carbon dioxide reduction reaction, and batteries. Lastly, a forward‐looking perspective addresses the current challenges and outlines future directions. This review aims to deepen our understanding of DACs and stimulate further innovation in advanced catalysts for energy conversion systems.

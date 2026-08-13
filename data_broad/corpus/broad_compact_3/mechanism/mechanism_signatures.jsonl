@@ -1,4 +1,0 @@
-{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "FACILITATES_STEP", "source_type": "ActiveSite", "target_type": "ReactionStep"}
-{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "MODULATES", "source_type": "StructuralState", "target_type": "Descriptor"}
-{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "MODULATES", "source_type": "StructuralState", "target_type": "MechanisticFactor"}
-{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "RECONSTRUCTS_TO", "source_type": "StructuralState", "target_type": "StructuralState"}

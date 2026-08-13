@@ -1,5 +1,0 @@
-# Carbon doping switching on the hydrogen adsorption activity of NiO for hydrogen evolution reaction
-
-## Abstract
-
-Abstract Hydrogen evolution reaction (HER) is more sluggish in alkaline than in acidic media because of the additional energy required for water dissociation. Numerous catalysts, including NiO, that offer active sites for water dissociation have been extensively investigated. Yet, the overall HER performance of NiO is still limited by lacking favorable H adsorption sites. Here we show a strategy to activate NiO through carbon doping, which creates under-coordinated Ni sites favorable for H adsorption. DFT calculations reveal that carbon dopant decreases the energy barrier of Heyrovsky step from 1.17 eV to 0.81 eV, suggesting the carbon also serves as a hot-spot for the dissociation of water molecules in water-alkali HER. As a result, the carbon doped NiO catalyst achieves an ultralow overpotential of 27 mV at 10 mA cm −2 , and a low Tafel slope of 36 mV dec −1 , representing the best performance among the state-of-the-art NiO catalysts.

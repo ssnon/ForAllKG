@@ -1,5 +1,0 @@
-# Free-Energy Barriers and Reaction Mechanisms for the Electrochemical Reduction of CO on the Cu(100) Surface, Including Multiple Layers of Explicit Solvent at pH 0
-
-## Abstract
-
-The great interest in the photochemical reduction from CO2 to fuels and chemicals has focused attention on Cu because of its unique ability to catalyze formation of carbon-containing fuels and chemicals. A particular goal is to learn how to modify the Cu catalysts to enhance the production selectivity while reducing the energy requirements (overpotential). To enable such developments, we report here the free-energy reaction barriers and mechanistic pathways on the Cu(100) surface, which produces only CH4 (not C2H4 or CH3OH) in acid (pH 0). We predict a threshold potential for CH4 formation of -0.52 V, which compares well to experiments at low pH, -0.45 to -0.50 V. These quantum molecular dynamics simulations included ∼5 layers of explicit water at the water/electrode interface using enhanced sampling methodology to obtain the free energies. We find that that chemisorbed hydroxyl-methylene (CH-OH) is the key intermediate determining the selectivity for methane over methanol.

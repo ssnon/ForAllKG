@@ -58,3 +58,12 @@ data_broad/extracted/
 # Generated benchmark runs
 /benchmarks/hypothesis_v262/candidate_*_smoke*/
 /benchmarks/hypothesis_v262/candidate_*_stability_*/
+
+# --------------------------------------------------
+# Experimental research artifacts
+# --------------------------------------------------
+/data_broad/corpus/
+/data_broad/registry/
+/data_broad/selection/
+
+/benchmarks/hypothesis_v262/

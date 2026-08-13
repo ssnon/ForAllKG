@@ -1,5 +1,0 @@
-# Iron phthalocyanine with coordination induced electronic localization to boost oxygen reduction reaction
-
-## Abstract
-
-Abstract Iron phthalocyanine (FePc) is a promising non-precious catalyst for the oxygen reduction reaction (ORR). Unfortunately, FePc with plane-symmetric FeN 4 site usually exhibits an unsatisfactory ORR activity due to its poor O 2 adsorption and activation. Here, we report an axial Fe–O coordination induced electronic localization strategy to improve its O 2 adsorption, activation and thus the ORR performance. Theoretical calculations indicate that the Fe–O coordination evokes the electronic localization among the axial direction of O–FeN 4 sites to enhance O 2 adsorption and activation. To realize this speculation, FePc is coordinated with an oxidized carbon. Synchrotron X-ray absorption and Mössbauer spectra validate Fe–O coordination between FePc and carbon. The obtained catalyst exhibits fast kinetics for O 2 adsorption and activation with an ultralow Tafel slope of 27.5 mV dec −1 and a remarkable half-wave potential of 0.90 V. This work offers a new strategy to regulate catalytic sites for better performance.
