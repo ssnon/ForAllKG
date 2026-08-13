@@ -1,0 +1,11 @@
+{
+  "isolated_node_patterns": [],
+  "observed_validation_issue_counts": {},
+  "recovery_reason_counts": {
+    "error_type:TypeError": 1,
+    "quarantine_reason_class:unknown": 1,
+    "recovery_reason:draft_schema_generation_exhausted": 1
+  },
+  "relation_mismatch_patterns": [],
+  "terminal_validation_issue_counts": {}
+}

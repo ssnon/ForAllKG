@@ -1,0 +1,22 @@
+{
+  "alignment_edges": 0,
+  "alignment_hubs": 0,
+  "corpus_id": "broad_ab3_compact_r2_prov",
+  "destructive_cross_paper_merges": 0,
+  "direct_cross_paper_source_edges": 0,
+  "edges": 11,
+  "expected_papers": [
+    "broad_241a667a6ef693f01c95"
+  ],
+  "graph_stage": "corpus_projection",
+  "issue_count": 0,
+  "issues": [],
+  "nodes": 12,
+  "paper_local_nodes": 12,
+  "passes_structural_gate": true,
+  "projection_mode": "mechanism",
+  "seen_papers": [
+    "broad_241a667a6ef693f01c95"
+  ],
+  "source_projection_edges": 11
+}

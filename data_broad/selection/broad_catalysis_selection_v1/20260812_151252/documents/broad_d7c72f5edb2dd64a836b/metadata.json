@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "working_state_reconstruction",
+  "bucket_scores": {
+    "active_site_attribution": 1.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 2.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 1.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1002/adfm.202301884",
+  "literature_paper_id": "literature:d7c72f5edb2dd64a836b",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_d7c72f5edb2dd64a836b",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4372403264"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 17.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 84,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W4372403264",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1002/adfm.202301884",
+      "source_id": "https://openalex.org/S135204980",
+      "source_name": "Advanced Functional Materials",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-05-05",
+    "relevance_score": 278.06644,
+    "work_type": "article"
+  },
+  "title": "Surface Self‐Reconstruction of Fe‐Ni<sub>3</sub>S<sub>2</sub> Electrocatalyst for Value‐Generating Nitrile Evolution Reaction to Drive Efficient Hydrogen Production",
+  "venue": "Advanced Functional Materials",
+  "year": 2023
+}

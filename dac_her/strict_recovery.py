@@ -6,7 +6,6 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from dac_her.broad_compact_schema import BroadMechanismGraphDraft
 from dac_her.chunking import ChunkSpec, count_tokens
 from dac_her.draft_schema import KnowledgeGraphDraft
 from dac_her.extraction_domain import ExtractionDomainAdapter
@@ -225,12 +224,14 @@ def _finalize_and_save(
     output_path: Path,
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
+    relation_constraints: tuple[Any, ...],
 ) -> tuple[KnowledgeGraph | None, list[Any], ValidationReport]:
     finalized = finalize_draft(
         draft=draft,
         context=_context(chunk),
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
+        relation_constraints=relation_constraints,
     )
     if finalized.graph is not None:
         _write_json(output_path, finalized.graph.model_dump())
@@ -253,14 +254,10 @@ def extract_one_chunk(
     compact_generation_schema: bool = False,
 ) -> dict[str, Any]:
     extraction_adapter = extraction_adapter or get_extraction_adapter("dac_her")
-    generation_response_model = KnowledgeGraphDraft
-    if compact_generation_schema:
-        if extraction_adapter.domain_profile_id != "catalysis_mechanism":
-            raise ValueError(
-                "compact_generation_schema is only valid for "
-                "the catalysis_mechanism extraction domain"
-            )
-        generation_response_model = BroadMechanismGraphDraft
+    generation_response_model = extraction_adapter.generation_response_model(
+        compact=compact_generation_schema,
+    )
+    relation_constraints = extraction_adapter.strict_relation_constraints
     output_path = chunk_output_path(chunk, chunk_output_dir)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -333,13 +330,8 @@ def extract_one_chunk(
                 max_tokens=policy.max_completion_tokens,
                 debug_path=raw_debug_path,
             )
-            draft = (
-                generated_draft.to_knowledge_graph_draft()
-                if isinstance(
-                    generated_draft,
-                    BroadMechanismGraphDraft,
-                )
-                else generated_draft
+            draft = extraction_adapter.canonicalize_generation_output(
+                generated_draft
             )
             draft = _enforce_chunk_metadata(
                 draft,
@@ -534,7 +526,10 @@ def extract_one_chunk(
     patch_paths: list[Path] = []
     patch_operation_count = 0
 
-    report = validate_draft(draft)
+    report = validate_draft(
+        draft,
+        relation_constraints=relation_constraints,
+    )
     _write_report(validation_dir / f"{safe_chunk_id}__raw.json", report)
 
     graph, vocabulary_issues, final_report = _finalize_and_save(
@@ -543,6 +538,7 @@ def extract_one_chunk(
         output_path=output_path,
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
+        relation_constraints=relation_constraints,
     )
     if graph is not None:
         return _success_record(
@@ -582,7 +578,10 @@ def extract_one_chunk(
     )
     if normalization.operations:
         draft = KnowledgeGraphDraft.model_validate(normalization.payload)
-        report = validate_draft(draft)
+        report = validate_draft(
+        draft,
+        relation_constraints=relation_constraints,
+    )
         _write_report(validation_dir / f"{safe_chunk_id}__normalized.json", report)
         graph, vocabulary_issues, final_report = _finalize_and_save(
             draft=draft,
@@ -590,6 +589,7 @@ def extract_one_chunk(
             output_path=output_path,
             experiment_registry=experiment_registry,
             metric_registry=metric_registry,
+            relation_constraints=relation_constraints,
         )
         if graph is not None:
             return _success_record(
@@ -784,7 +784,10 @@ def extract_one_chunk(
                     draft,
                     extraction_adapter=extraction_adapter,
                 )
-                report = validate_draft(draft)
+                report = validate_draft(
+        draft,
+        relation_constraints=relation_constraints,
+    )
 
                 validation_suffix = (
                     f"after_post_micro_patch_"
@@ -813,6 +816,7 @@ def extract_one_chunk(
                         experiment_registry
                     ),
                     metric_registry=metric_registry,
+                    relation_constraints=relation_constraints,
                 )
 
                 if is_post_micro_patch:
@@ -990,7 +994,8 @@ def extract_one_chunk(
                 )
 
                 micro_report = validate_draft(
-                    micro_draft
+                    micro_draft,
+                    relation_constraints=relation_constraints,
                 )
 
                 micro_normalization = (
@@ -1019,7 +1024,8 @@ def extract_one_chunk(
                     extraction_adapter=extraction_adapter,
                 )
                 report = validate_draft(
-                    micro_draft
+                    micro_draft,
+                    relation_constraints=relation_constraints,
                 )
 
                 _write_report(
@@ -1041,6 +1047,7 @@ def extract_one_chunk(
                             experiment_registry
                         ),
                         metric_registry=metric_registry,
+                        relation_constraints=relation_constraints,
                     )
                 )
 

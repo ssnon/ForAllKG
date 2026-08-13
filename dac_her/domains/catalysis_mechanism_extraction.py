@@ -7,6 +7,10 @@ from dac_her.catalysis_mechanism_prompts import (
     CATALYSIS_MECHANISM_SYSTEM_PROMPT,
 )
 from dac_her.extraction_domain import ExtractionDomainAdapter
+from dac_her.broad_compact_schema import BroadMechanismGraphDraft
+from dac_her.domains.strict_relation_contracts import (
+    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
+)
 
 
 CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
@@ -19,6 +23,10 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
         CATALYSIS_MECHANISM_MICRO_REEXTRACT_SYSTEM_PROMPT
     ),
     default_data_root="data_broad",
+    strict_relation_constraints=(
+        CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
+    ),
+    compact_generation_response_model=BroadMechanismGraphDraft,
     allowed_entity_types=frozenset({
         "Paper",
         "Catalyst",

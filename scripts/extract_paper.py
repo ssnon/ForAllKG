@@ -20,6 +20,7 @@ import dac_her.graph_normalization as graph_normalization_module
 import dac_her.llm_openrouter as llm_openrouter_module
 import dac_her.measurement_scalarization as measurement_scalarization_module
 import dac_her.structural_repair as structural_repair_module
+import dac_her.extraction_vocabulary_context as extraction_vocabulary_context_module
 import dac_her.validation as validation_module
 import dac_her.chunking_recovery as chunking_recovery_module
 import dac_her.draft_schema as draft_schema_module
@@ -60,6 +61,10 @@ from dac_her.extraction_quality import (
     QUALITY_REJECTED,
     annotate_quarantined_records,
     evaluate_extraction_quality,
+)
+from dac_her.extraction_vocabulary_context import (
+    BROAD_METHODS_ONLY_CONTEXT_ID,
+    build_broad_experiment_methods_vocabulary_context,
 )
 from dac_her.figure_extraction import (
     FigureAnalysis,
@@ -115,6 +120,16 @@ def parse_args() -> argparse.Namespace:
             "Use the experimental compact initial-generation response schema "
             "for catalysis_mechanism abstracts. The prompt, validators, and "
             "recovery policy are unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--broad-prune-metric-vocabulary",
+        action="store_true",
+        help=(
+            "For catalysis_mechanism extraction only, omit the registered "
+            "measurement-metric vocabulary from the LLM prompt surface. "
+            "The metric registry remains active in final validation. "
+            "Intended for controlled PR6.1 A/B runs."
         ),
     )
     parser.add_argument(
@@ -283,6 +298,14 @@ def main() -> None:
             "--broad-compact-schema is only valid with "
             "--domain-profile catalysis_mechanism"
         )
+    if (
+        args.broad_prune_metric_vocabulary
+        and domain_profile.profile_id != "catalysis_mechanism"
+    ):
+        raise ValueError(
+            "--broad-prune-metric-vocabulary is only valid with "
+            "--domain-profile catalysis_mechanism"
+        )
     generation_response_schema_id = (
         broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
         if args.broad_compact_schema
@@ -310,13 +333,20 @@ def main() -> None:
     experiment_registry, metric_registry = load_default_registries(
         PROJECT_ROOT
     )
-    vocabulary_context = "\n".join([
-        "REGISTERED EXPERIMENT METHODS:",
-        *experiment_registry.prompt_lines(metadata_keys=("family",)),
-        "",
-        "REGISTERED MEASUREMENT METRICS:",
-        *metric_registry.prompt_lines(metadata_keys=("canonical_unit", "parameters")),
-    ])
+    if args.broad_prune_metric_vocabulary:
+        vocabulary_context = (
+            build_broad_experiment_methods_vocabulary_context(
+                experiment_registry
+            )
+        )
+    else:
+        vocabulary_context = "\n".join([
+            "REGISTERED EXPERIMENT METHODS:",
+            *experiment_registry.prompt_lines(metadata_keys=("family",)),
+            "",
+            "REGISTERED MEASUREMENT METRICS:",
+            *metric_registry.prompt_lines(metadata_keys=("canonical_unit", "parameters")),
+        ])
 
     policy = ExtractionPolicy()
     if args.concurrency is not None:
@@ -346,6 +376,14 @@ def main() -> None:
             "extraction_policy_id": extraction_policy_id,
             "generation_response_schema_id": generation_response_schema_id,
             "data_root": str(data_root),
+            **(
+                {
+                    "vocabulary_context_serialization_id": (
+                        BROAD_METHODS_ONLY_CONTEXT_ID
+                    )
+                }
+                if args.broad_prune_metric_vocabulary else {}
+            ),
         },
         prompt_version=extraction_adapter.prompt_version,
         system_prompt=extraction_adapter.system_prompt,
@@ -360,7 +398,16 @@ def main() -> None:
             validation_module.__file__,
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
-            broad_compact_schema_module.__file__,
+            *(
+                (broad_compact_schema_module.__file__,)
+                if args.broad_compact_schema
+                else ()
+            ),
+            *(
+                (extraction_vocabulary_context_module.__file__,)
+                if args.broad_prune_metric_vocabulary
+                else ()
+            ),
             graph_validation_module.__file__,
             extraction_quality_module.__file__,
             lossless_normalization_module.__file__,

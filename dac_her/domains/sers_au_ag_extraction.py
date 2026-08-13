@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dac_her.extraction_domain import ExtractionDomainAdapter
+from dac_her.domains.strict_relation_contracts import (
+    SERS_AU_AG_STRICT_RELATION_CONSTRAINTS,
+)
 from dac_her.sers_prompts import (
     SERS_MICRO_REEXTRACT_SYSTEM_PROMPT,
     SERS_PATCH_SYSTEM_PROMPT,
@@ -22,6 +25,7 @@ SERS_AU_AG_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
         "Support", "StructuralMotif", "Morphology", "Analyte", "RamanReporter",
         "OpticalCondition", "SynthesisMethod", "Precursor",
     }),
+    strict_relation_constraints=SERS_AU_AG_STRICT_RELATION_CONSTRAINTS,
     allowed_relation_types=frozenset({
         "STUDIES", "HAS_COMPONENT", "HAS_ARCHITECTURE",
         "HAS_STRUCTURAL_MOTIF", "HAS_MORPHOLOGY", "HAS_SUPPORT",

@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d36" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d35" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d34" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d33" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d32" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d31" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d30" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d29" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d28" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d27" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d26" for="edge" attr.name="section" attr.type="string"/>
+<key id="d25" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d24" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d23" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d22" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d21" for="edge" attr.name="title" attr.type="string"/>
+<key id="d20" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d19" for="node" attr.name="description" attr.type="string"/>
+<key id="d18" for="node" attr.name="label" attr.type="string"/>
+<key id="d17" for="node" attr.name="type" attr.type="string"/>
+<key id="d16" for="graph" attr.name="extraction_coverage_sensitive_queries_allowed" attr.type="boolean"/>
+<key id="d15" for="graph" attr.name="extraction_absence_claims_allowed" attr.type="boolean"/>
+<key id="d14" for="graph" attr.name="extraction_coverage_exact" attr.type="boolean"/>
+<key id="d13" for="graph" attr.name="extraction_failed_chunk_count" attr.type="long"/>
+<key id="d12" for="graph" attr.name="extraction_quarantined_chunk_count" attr.type="long"/>
+<key id="d11" for="graph" attr.name="extraction_active_chunk_count" attr.type="long"/>
+<key id="d10" for="graph" attr.name="extraction_quarantine_token_fraction" attr.type="double"/>
+<key id="d9" for="graph" attr.name="extraction_source_token_coverage" attr.type="double"/>
+<key id="d8" for="graph" attr.name="extraction_quality_status" attr.type="string"/>
+<key id="d7" for="graph" attr.name="extraction_complete" attr.type="boolean"/>
+<key id="d6" for="graph" attr.name="graph_adapter_id" attr.type="string"/>
+<key id="d5" for="graph" attr.name="domain_profile_id" attr.type="string"/>
+<key id="d4" for="graph" attr.name="graph_stage" attr.type="string"/>
+<key id="d3" for="graph" attr.name="source_extraction_attempt_id" attr.type="string"/>
+<key id="d2" for="graph" attr.name="run_fingerprint" attr.type="string"/>
+<key id="d1" for="graph" attr.name="run_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="paper_id" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">broad_323433beead65749162b</data>
+<data key="d1">6d714f1e63f76ae3</data>
+<data key="d2">6d714f1e63f76ae391ba53ba4bde9692da51b4319097b4e4d084bace8f0192b3</data>
+<data key="d3">20260812T223049.273227Z</data>
+<data key="d4">raw_merged</data>
+<data key="d5">catalysis_mechanism</data>
+<data key="d6">catalysis_mechanism</data>
+<data key="d7">True</data>
+<data key="d8">complete</data>
+<data key="d9">1.0</data>
+<data key="d10">0.0</data>
+<data key="d11">1</data>
+<data key="d12">0</data>
+<data key="d13">0</data>
+<data key="d14">True</data>
+<data key="d15">True</data>
+<data key="d16">True</data>
+<node id="paper_dynamic_active_sites_electrocatalysis">
+  <data key="d17">Paper</data>
+  <data key="d18">Dynamic Active Sites in Electrocatalysis</data>
+  <data key="d19">Review of dynamic active sites and their engineering principles in electrocatalysis.</data>
+</node>
+<node id="active_site_dynamic">
+  <data key="d17">ActiveSite</data>
+  <data key="d18">Dynamic active site</data>
+  <data key="d19">An electrocatalytic active site whose behavior evolves during electrocatalysis.</data>
+</node>
+<node id="catalyst_dynamic_electrocatalyst">
+  <data key="d17">Catalyst</data>
+  <data key="d18">Dynamic electrocatalyst</data>
+  <data key="d19">Self-adaptive electrocatalyst incorporating dynamic active sites.</data>
+</node>
+<node id="structural_state_dynamic_evolution">
+  <data key="d17">StructuralState</data>
+  <data key="d18">Dynamic active-site evolution</data>
+  <data key="d19">Real-time or dynamic evolution of active-site states during electrocatalysis.</data>
+</node>
+<node id="environment_variable_reaction">
+  <data key="d17">InterfacialEnvironment</data>
+  <data key="d18">Variable reaction environment</data>
+  <data key="d19">Reaction environments that vary during electrocatalysis and are proposed as a route to dynamic electrocatalysis.</data>
+</node>
+<edge source="paper_dynamic_active_sites_electrocatalysis" target="active_site_dynamic" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:0">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">This review systematically analyzes the fundamentals of dynamic active sites for electrocatalysis.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_dynamic_active_sites_electrocatalysis" target="catalyst_dynamic_electrocatalyst" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:1">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The abstract discusses self-adaptive electrocatalysts enabled by dynamic active sites.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_dynamic_electrocatalyst" target="active_site_dynamic" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:2">
+  <data key="d20">HAS_ACTIVE_SITE</data>
+  <data key="d21">HAS_ACTIVE_SITE</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">interpretive</data>
+  <data key="d34">Dynamic active sites are presented as an approach for creating self-adaptive electrocatalysts.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_dynamic_electrocatalyst" target="structural_state_dynamic_evolution" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:3">
+  <data key="d20">HAS_STRUCTURAL_STATE</data>
+  <data key="d21">HAS_STRUCTURAL_STATE</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">interpretive</data>
+  <data key="d34">The review emphasizes understanding the real-time behaviors and dynamic evolution of active sites during electrocatalysis.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_dynamic_electrocatalyst" target="environment_variable_reaction" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:4">
+  <data key="d20">HAS_ENVIRONMENT</data>
+  <data key="d21">HAS_ENVIRONMENT</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">interpretive</data>
+  <data key="d34">Implementing dynamic electrocatalysis through variable reaction environments is identified as a key direction for designing high-performance dynamic electrocatalysts.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="environment_variable_reaction" target="active_site_dynamic" id="broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd:5">
+  <data key="d20">MODULATES</data>
+  <data key="d21">MODULATES</data>
+  <data key="d22">broad_323433beead65749162b</data>
+  <data key="d23">broad_323433beead65749162b:abstract:9991b3aeb3310869c0cd</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">interpretive</data>
+  <data key="d34">Variable reaction environments are identified as a route for implementing dynamic electrocatalysis through evolving active sites.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+</graph></graphml>

@@ -60,7 +60,7 @@ def test_explorer_normalizer_only_weakens_noncausal_unsupported_mechanism():
     assert result.audit.blocked_count == 0
 
 
-def test_explorer_normalizer_blocks_strong_causal_downgrade():
+def test_explorer_normalizer_drops_unsupported_strong_causal_statement():
     draft = ExplorationDraft(
         statements=[
             ExplorerStatementDraft(
@@ -79,12 +79,14 @@ def test_explorer_normalizer_blocks_strong_causal_downgrade():
         _packet(),
         draft,
     )
-    assert (
-        result.draft.statements[0].claim_kind
-        == "mechanism"
+
+    assert result.draft.statements == []
+    assert result.audit.applied is True
+    assert result.audit.action_count == 1
+    assert result.audit.blocked_count == 0
+    assert result.audit.actions[0].action == (
+        "drop_unsupported_strong_causal_statement"
     )
-    assert result.audit.action_count == 0
-    assert result.audit.blocked_count == 1
 
 
 def test_explorer_normalizer_drops_unsupported_mechanistic_motif():
@@ -117,13 +119,15 @@ def _semantic_draft(
     *,
     hypothesis_ids=None,
     statement_ids=None,
+    reference_dimension=None,
 ):
     hypothesis_ids = hypothesis_ids or []
     statement_ids = statement_ids or []
+    reference_dimension = (
+        reference_dimension or SEMANTIC_DIMENSIONS[0]
+    )
     rows = []
-    for index, dimension in enumerate(
-        SEMANTIC_DIMENSIONS
-    ):
+    for dimension in SEMANTIC_DIMENSIONS:
         rows.append(
             HypothesisSemanticDimensionDraft(
                 dimension=dimension,
@@ -131,11 +135,11 @@ def _semantic_draft(
                 rationale="Grounded review rationale.",
                 hypothesis_ids=(
                     list(hypothesis_ids)
-                    if index == 0 else []
+                    if dimension == reference_dimension else []
                 ),
                 statement_ids=(
                     list(statement_ids)
-                    if index == 0 else []
+                    if dimension == reference_dimension else []
                 ),
             )
         )
@@ -165,10 +169,11 @@ def test_semantic_reference_sanitizer_safe_drops_mixed_unknown_ids():
     assert result.audit.fatal is False
 
 
-def test_semantic_reference_sanitizer_fails_closed_if_whole_namespace_lost():
+def test_semantic_reference_sanitizer_fails_closed_if_required_namespace_lost():
     draft = _semantic_draft(
         hypothesis_ids=["hallucinated_h"],
         statement_ids=["s1"],
+        reference_dimension="inferential_proportionality",
     )
     result = (
         HypothesisSemanticReferenceSanitizer()

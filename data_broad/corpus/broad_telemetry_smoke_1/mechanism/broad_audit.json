@@ -1,0 +1,38 @@
+{
+  "core_mechanism_nodes": 5,
+  "direct_mechanism_edge_fraction": 0.3333333333333333,
+  "direct_mechanism_edges": 1,
+  "edges": 3,
+  "expected_paper_count": 1,
+  "mechanism_bearing_paper_count": 1,
+  "mechanism_bearing_paper_fraction": 1.0,
+  "node_type_counts": {
+    "InterfacialEnvironment": 2,
+    "MechanismClaim": 1,
+    "MechanisticFactor": 2,
+    "Reaction": 2
+  },
+  "nodes": 7,
+  "observed_paper_count": 1,
+  "observed_paper_ids": [
+    "broad_0774386e5705dc5099bf"
+  ],
+  "per_paper": {
+    "broad_0774386e5705dc5099bf": {
+      "direct_mechanism_edges": 1,
+      "edges": 3,
+      "nodes": 7
+    }
+  },
+  "recurring_mechanism_signatures": 0,
+  "relation_counts": {
+    "APPLIES_TO": 2,
+    "MODULATES": 1
+  },
+  "schema_version": "graphagentsdac-broad-corpus-audit-v1",
+  "source_scientific_edges": 3,
+  "unique_mechanism_signatures": 1,
+  "verification_required_edge_fraction": 1.0,
+  "zero_edge_papers": [],
+  "zero_node_papers": []
+}

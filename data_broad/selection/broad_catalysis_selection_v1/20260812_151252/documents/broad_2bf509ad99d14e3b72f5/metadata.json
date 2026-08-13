@@ -1,0 +1,65 @@
+{
+  "assigned_bucket": "working_state_reconstruction",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 4.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1021/acs.chemmater.8b02315",
+  "literature_paper_id": "literature:2bf509ad99d14e3b72f5",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_2bf509ad99d14e3b72f5",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W2895514370"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 16.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://www.osti.gov/biblio/1556073",
+      "source_id": "https://openalex.org/S4306402487",
+      "source_name": "OSTI OAI (U.S. Department of Energy Office of Scientific and Technical Information)",
+      "version": "submittedVersion"
+    },
+    "cited_by_count": 29,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "green",
+      "oa_url": "https://www.osti.gov/biblio/1556073"
+    },
+    "openalex_id": "https://openalex.org/W2895514370",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1021/acs.chemmater.8b02315",
+      "source_id": "https://openalex.org/S66104727",
+      "source_name": "Chemistry of Materials",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2018-10-01",
+    "relevance_score": 302.99387,
+    "work_type": "article"
+  },
+  "title": "Tuning the Performance of Single-Atom Electrocatalysts: Support-Induced Structural Reconstruction",
+  "venue": "Chemistry of Materials",
+  "year": 2018
+}

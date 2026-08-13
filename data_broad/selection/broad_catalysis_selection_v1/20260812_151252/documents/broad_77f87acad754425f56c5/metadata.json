@@ -1,0 +1,67 @@
+{
+  "assigned_bucket": "cross_reaction_atomic_site_mechanisms",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 5.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 4.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "catalyst structural energy landscape coordination"
+  ],
+  "doi": "10.1007/s12598-024-02911-6",
+  "literature_paper_id": "literature:77f87acad754425f56c5",
+  "mechanism_buckets": [
+    "structural_landscape"
+  ],
+  "paper_id": "broad_77f87acad754425f56c5",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4402600537"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 10.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1007/s12598-024-02911-6",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1007/s12598-024-02911-6",
+      "source_id": "https://openalex.org/S172552266",
+      "source_name": "Rare Metals",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 26,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": true,
+      "oa_status": "bronze",
+      "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1007/s12598-024-02911-6"
+    },
+    "openalex_id": "https://openalex.org/W4402600537",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1007/s12598-024-02911-6",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1007/s12598-024-02911-6",
+      "source_id": "https://openalex.org/S172552266",
+      "source_name": "Rare Metals",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2024-09-17",
+    "relevance_score": 105.81474,
+    "work_type": "article"
+  },
+  "title": "Recent advances in dual‐atom catalysts for energy catalysis",
+  "venue": "Rare Metals",
+  "year": 2024
+}

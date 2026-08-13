@@ -1,0 +1,10 @@
+{"edge_count": 2, "paper_ids": ["broad_241a667a6ef693f01c95", "broad_29bf9d5faa2fcf91a418"], "paper_support": 2, "relation": "MODULATES", "source_type": "Catalyst", "target_type": "MechanisticFactor"}
+{"edge_count": 2, "paper_ids": ["broad_29bf9d5faa2fcf91a418"], "paper_support": 1, "relation": "MODULATES", "source_type": "MechanisticFactor", "target_type": "AdsorbateState"}
+{"edge_count": 2, "paper_ids": ["broad_444fa95d3a7db533ade0"], "paper_support": 1, "relation": "STABILIZES", "source_type": "MechanisticFactor", "target_type": "ActiveSite"}
+{"edge_count": 1, "paper_ids": ["broad_444fa95d3a7db533ade0"], "paper_support": 1, "relation": "FACILITATES_STEP", "source_type": "ActiveSite", "target_type": "Reaction"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "FACILITATES_STEP", "source_type": "ActiveSite", "target_type": "ReactionStep"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "MODULATES", "source_type": "ActiveSite", "target_type": "StructuralState"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "PROMOTES", "source_type": "ActiveSite", "target_type": "AdsorbateState"}
+{"edge_count": 1, "paper_ids": ["broad_444fa95d3a7db533ade0"], "paper_support": 1, "relation": "PROMOTES", "source_type": "ActiveSite", "target_type": "Reaction"}
+{"edge_count": 1, "paper_ids": ["broad_29bf9d5faa2fcf91a418"], "paper_support": 1, "relation": "PROMOTES", "source_type": "Catalyst", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_241a667a6ef693f01c95"], "paper_support": 1, "relation": "STABILIZES", "source_type": "MechanisticFactor", "target_type": "Catalyst"}

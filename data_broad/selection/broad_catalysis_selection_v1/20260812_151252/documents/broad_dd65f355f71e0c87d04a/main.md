@@ -1,0 +1,5 @@
+# Dynamic oxygen adsorption on single-atomic Ruthenium catalyst with high performance for acidic oxygen evolution reaction
+
+## Abstract
+
+Abstract Achieving active and stable oxygen evolution reaction (OER) in acid media based on single-atom catalysts is highly promising for cost-effective and sustainable energy supply in proton electrolyte membrane electrolyzers. Here, we report an atomically dispersed Ru 1 -N 4 site anchored on nitrogen-carbon support (Ru-N-C) as an efficient and durable electrocatalyst for acidic OER. The single-atom Ru-N-C catalyst delivers an exceptionally intrinsic activity, reaching a mass activity as high as 3571 A g metal −1 and turnover frequency of 3348 O 2 h −1 with a low overpotential of 267 mV at a current density of 10 mA cm −2 . The catalyst shows no evident deactivation or decomposition after 30-hour operation in acidic environment. Operando synchrotron radiation X-ray absorption spectroscopy and infrared spectroscopy identify the dynamic adsorption of single oxygen atom on Ru site under working potentials, and theoretical calculations demonstrate that the O-Ru 1 -N 4 site is responsible for the high OER activity and stability.

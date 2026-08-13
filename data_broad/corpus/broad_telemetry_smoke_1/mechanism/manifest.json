@@ -1,0 +1,60 @@
+{
+  "absence_claim_safe_paper_ids": [
+    "broad_0774386e5705dc5099bf"
+  ],
+  "audit": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/audit.json",
+  "corpus_edges": 3,
+  "corpus_id": "broad_telemetry_smoke_1",
+  "corpus_nodes": 7,
+  "cross_paper_resolution_candidates_path": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/cross_paper_resolution_candidates.jsonl",
+  "cross_paper_review_candidates": 0,
+  "destructive_cross_paper_merges": 0,
+  "edge_evidence": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/edge_evidence.jsonl",
+  "extraction_quality_counts": {
+    "complete": 1
+  },
+  "graphml": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/graph.graphml",
+  "mode": "mechanism",
+  "node_text": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/node_text.jsonl",
+  "paper_count": 1,
+  "paper_ids": [
+    "broad_0774386e5705dc5099bf"
+  ],
+  "papers": [
+    {
+      "bridge_extraction_id": "",
+      "bridge_policy_run_id": "",
+      "candidate_bridge_policy_run_id": "",
+      "edge_evidence": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_0774386e5705dc5099bf/graphagents/mechanism/edge_evidence.jsonl",
+      "edges": 3,
+      "extraction_absence_claims_allowed": true,
+      "extraction_complete": true,
+      "extraction_failed_chunk_count": 0,
+      "extraction_quality_status": "complete",
+      "extraction_quarantine_token_fraction": 0.0,
+      "extraction_quarantined_chunk_count": 0,
+      "extraction_source_token_coverage": 1.0,
+      "graphml": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_0774386e5705dc5099bf/graphagents/mechanism/graph.graphml",
+      "mode": "mechanism",
+      "node_text": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_0774386e5705dc5099bf/graphagents/mechanism/node_text.jsonl",
+      "nodes": 7,
+      "paper_id": "broad_0774386e5705dc5099bf",
+      "sha256": {
+        "edge_evidence": "88b9f23bacdb2a299d825f8651e62bded6aa120474bdec35e2041efb1a83020f",
+        "graphml": "88917f48bc3cc7676b6b6b90a2774e73ae4bea5f9a8fcec17400933f2d3ffd49",
+        "node_text": "72ef69c81cc711b766cf66f175d9d1000f7403a4583b82810b710302425156b4",
+        "summary": "6ad385d7359d762894eac5b71d2a12e9106fdfaed11df5e301ccde0696aed465"
+      },
+      "summary": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_0774386e5705dc5099bf/graphagents/mechanism/summary.json"
+    }
+  ],
+  "partial_paper_ids": [],
+  "passes_structural_gate": true,
+  "pattern_alignment_hubs": 0,
+  "pattern_alignments": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/pattern_alignments.jsonl",
+  "policy_version": "corpus-non-destructive-alignment-v1",
+  "registry_alignment_hubs": 0,
+  "registry_alignments": "/home/rldnr7959/GraphAgentsDAC/data_broad/corpus/broad_telemetry_smoke_1/mechanism/registry_alignments.jsonl",
+  "source_projection_edges": 3,
+  "source_projection_nodes": 7
+}

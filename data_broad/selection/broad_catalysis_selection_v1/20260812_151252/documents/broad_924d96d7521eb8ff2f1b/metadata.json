@@ -1,0 +1,71 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 5.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier",
+    "interfacial water electrocatalysis reaction barrier"
+  ],
+  "doi": "10.1038/s41467-018-06728-7",
+  "literature_paper_id": "literature:924d96d7521eb8ff2f1b",
+  "mechanism_buckets": [
+    "elementary_step_kinetics",
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_924d96d7521eb8ff2f1b",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W2898604175"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 13.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-018-06728-7",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-018-06728-7.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 589,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-018-06728-7.pdf"
+    },
+    "openalex_id": "https://openalex.org/W2898604175",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-018-06728-7",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-018-06728-7.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2018-10-25",
+    "relevance_score": 204.60881,
+    "work_type": "article"
+  },
+  "title": "Interfacing nickel nitride and nickel boosts both electrocatalytic hydrogen evolution and oxidation reactions",
+  "venue": "Nature Communications",
+  "year": 2018
+}

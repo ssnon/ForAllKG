@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 4.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "interfacial water electrocatalysis reaction barrier"
+  ],
+  "doi": "10.3390/catal5031507",
+  "literature_paper_id": "literature:63f34d4799c446ee9c63",
+  "mechanism_buckets": [
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_63f34d4799c446ee9c63",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W1961983105"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "global_fallback",
+  "selection_score": 18.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.3390/catal5031507",
+      "license": "cc-by",
+      "pdf_url": "https://www.mdpi.com/2073-4344/5/3/1507/pdf?version=1441202637",
+      "source_id": "https://openalex.org/S2738539744",
+      "source_name": "Catalysts",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 494,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.mdpi.com/2073-4344/5/3/1507/pdf?version=1441202637"
+    },
+    "openalex_id": "https://openalex.org/W1961983105",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.3390/catal5031507",
+      "license": "cc-by",
+      "pdf_url": "https://www.mdpi.com/2073-4344/5/3/1507/pdf?version=1441202637",
+      "source_id": "https://openalex.org/S2738539744",
+      "source_name": "Catalysts",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2015-09-02",
+    "relevance_score": 213.85405,
+    "work_type": "article"
+  },
+  "title": "Recent Advances on Electro-Oxidation of Ethanol on Pt- and Pd-Based Catalysts: From Reaction Mechanisms to Catalytic Materials",
+  "venue": "Catalysts",
+  "year": 2015
+}

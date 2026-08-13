@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "cooperative_bifunctional_mechanisms",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 3.0,
+    "cross_reaction_atomic_site_mechanisms": 2.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1021/jacs.1c08890",
+  "literature_paper_id": "literature:444fa95d3a7db533ade0",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_444fa95d3a7db533ade0",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4200317775"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 15.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 365,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W4200317775",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1021/jacs.1c08890",
+      "source_id": "https://openalex.org/S111155417",
+      "source_name": "Journal of the American Chemical Society",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2021-12-22",
+    "relevance_score": 937.4154,
+    "work_type": "article"
+  },
+  "title": "Atomic Metal–Support Interaction Enables Reconstruction-Free Dual-Site Electrocatalyst",
+  "venue": "Journal of the American Chemical Society",
+  "year": 2021
+}

@@ -1,0 +1,71 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 13.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 1.0
+  },
+  "discovery_queries": [
+    "interfacial water electrocatalysis reaction barrier",
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1016/j.coelec.2021.100918",
+  "literature_paper_id": "literature:81d24d88ee971a8571a4",
+  "mechanism_buckets": [
+    "active_site_attribution",
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_81d24d88ee971a8571a4",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4200425208"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 22.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1016/j.coelec.2021.100918",
+      "license": "cc-by",
+      "pdf_url": "https://www.sciencedirect.com/science/article/pii/S2451910321002325/pdf",
+      "source_id": "https://openalex.org/S2764372282",
+      "source_name": "Current Opinion in Electrochemistry",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 113,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "hybrid",
+      "oa_url": "https://www.sciencedirect.com/science/article/pii/S2451910321002325/pdf"
+    },
+    "openalex_id": "https://openalex.org/W4200425208",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1016/j.coelec.2021.100918",
+      "license": "cc-by",
+      "pdf_url": "https://www.sciencedirect.com/science/article/pii/S2451910321002325/pdf",
+      "source_id": "https://openalex.org/S2764372282",
+      "source_name": "Current Opinion in Electrochemistry",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2021-12-09",
+    "relevance_score": 191.10225,
+    "work_type": "article"
+  },
+  "title": "Toward understanding the role of the electric double layer structure and electrolyte effects on well-defined interfaces for electrocatalysis",
+  "venue": "Current Opinion in Electrochemistry",
+  "year": 2021
+}

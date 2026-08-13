@@ -1,0 +1,37 @@
+{
+  "isolated_node_patterns": [
+    {
+      "actual_type": "",
+      "count": 1,
+      "example_node_ids": [
+        "factor_metal_support_interaction"
+      ],
+      "node_collection": "entities"
+    }
+  ],
+  "observed_validation_issue_counts": {
+    "CLAIM_MISSING_APPLICATION_TARGET": 1,
+    "ISOLATED_NODE": 1,
+    "RELATION_SOURCE_TYPE_MISMATCH": 1
+  },
+  "recovery_reason_counts": {
+    "input_guard:ABSTRACT_LENGTH_OUTLIER": 1,
+    "quarantine_reason_class:recovery_exhausted": 1,
+    "recovery_reason:Pre-micro patch, micro-reextract, and post-micro patch budgets were exhausted and the chunk cannot be split safely.": 1
+  },
+  "relation_mismatch_patterns": [
+    {
+      "actual_type": "Catalyst",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 1,
+      "expected_types": [
+        "CatalystModel"
+      ],
+      "relation": "MODELED_BY",
+      "side": "source"
+    }
+  ],
+  "terminal_validation_issue_counts": {
+    "RELATION_SOURCE_TYPE_MISMATCH": 1
+  }
+}

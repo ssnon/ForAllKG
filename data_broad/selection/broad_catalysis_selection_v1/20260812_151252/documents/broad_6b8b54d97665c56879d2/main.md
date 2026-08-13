@@ -1,0 +1,5 @@
+# Single atom tungsten doped ultrathin α-Ni(OH)2 for enhanced electrocatalytic water oxidation
+
+## Abstract
+
+Abstract Electrocatalytic water oxidation is a rate-determining step in the water splitting reaction. Here, we report one single atom W 6+ doped Ni(OH) 2 nanosheet sample (w-Ni(OH) 2 ) with an outstanding oxygen evolution reaction (OER) performance that is, in a 1 M KOH medium, an overpotential of 237 mV is obtained reaching a current density of 10 mA/cm 2 . Moreover, at high current density of 80 mA/cm 2 , the overpotential value is 267 mV. The corresponding Tafel slope is measured to be 33 mV/dec. The d 0 W 6+ atom with a low spin-state has more outermost vacant orbitals, resulting in more water and OH − groups being adsorbed on the exposed W sites of the Ni(OH) 2 nanosheet. Density functional theory (DFT) calculations confirm that the O radical and O-O coupling are both generated at the same site of W 6+ . This work demonstrates that W 6+ doping can promote the electrocatalytic water oxidation activity of Ni(OH) 2 with the highest performance.

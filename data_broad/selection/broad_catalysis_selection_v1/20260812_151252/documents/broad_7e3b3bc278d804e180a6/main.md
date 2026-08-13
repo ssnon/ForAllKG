@@ -1,0 +1,5 @@
+# Understanding potential-dependent competition between electrocatalytic dinitrogen and proton reduction reactions
+
+## Abstract
+
+Abstract A key challenge to realizing practical electrochemical N 2 reduction reaction (NRR) is the decrease in the NRR activity before reaching the mass-transfer limit as overpotential increases. While the hydrogen evolution reaction (HER) has been suggested to be responsible for this phenomenon, the mechanistic origin has not been clearly explained. Herein, we investigate the potential-dependent competition between NRR and HER using the constant electrode potential model and microkinetic modeling. We find that the H coverage and N 2 coverage crossover leads to the premature decrease of NRR activity. The coverage crossover originates from the larger charge transfer in H + adsorption than N 2 adsorption. The larger charge transfer in H + adsorption, which potentially leads to the coverage crossover, is a general phenomenon seen in various heterogeneous catalysts, posing a fundamental challenge to realize practical electrochemical NRR. We suggest several strategies to overcome the challenge based on the present understandings.

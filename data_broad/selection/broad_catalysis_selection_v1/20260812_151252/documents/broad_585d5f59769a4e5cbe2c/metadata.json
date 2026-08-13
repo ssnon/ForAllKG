@@ -1,0 +1,71 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 9.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier",
+    "interfacial water electrocatalysis reaction barrier"
+  ],
+  "doi": "10.1038/s41467-023-41030-1",
+  "literature_paper_id": "literature:585d5f59769a4e5cbe2c",
+  "mechanism_buckets": [
+    "elementary_step_kinetics",
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_585d5f59769a4e5cbe2c",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4386304401"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 16.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-023-41030-1",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-023-41030-1.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 552,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-023-41030-1.pdf"
+    },
+    "openalex_id": "https://openalex.org/W4386304401",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-023-41030-1",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-023-41030-1.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-08-30",
+    "relevance_score": 484.85187,
+    "work_type": "article"
+  },
+  "title": "Revealing the role of interfacial water and key intermediates at ruthenium surfaces in the alkaline hydrogen evolution reaction",
+  "venue": "Nature Communications",
+  "year": 2023
+}

@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "working_state_reconstruction",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 1.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1021/acsnano.5c04545",
+  "literature_paper_id": "literature:6f27c730de3e3206dfc2",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_6f27c730de3e3206dfc2",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4410349632"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 19.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 7,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W4410349632",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1021/acsnano.5c04545",
+      "source_id": "https://openalex.org/S145476921",
+      "source_name": "ACS Nano",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2025-05-14",
+    "relevance_score": 281.45547,
+    "work_type": "article"
+  },
+  "title": "Spatiotemporal Coordination-Engineered Core–Shell Zeolitic Imidazolate Frameworks Enable Self-Adaptive Electrocatalyst Reconstruction and Self-Tandem Sulfur Conversion",
+  "venue": "ACS Nano",
+  "year": 2025
+}

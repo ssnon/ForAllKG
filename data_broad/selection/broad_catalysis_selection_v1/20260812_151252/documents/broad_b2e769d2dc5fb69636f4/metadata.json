@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "elementary_step_kinetics",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 5.0,
+    "interfacial_environment": 3.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier"
+  ],
+  "doi": "10.1021/acs.jpclett.5b02247",
+  "literature_paper_id": "literature:b2e769d2dc5fb69636f4",
+  "mechanism_buckets": [
+    "elementary_step_kinetics"
+  ],
+  "paper_id": "broad_b2e769d2dc5fb69636f4",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W2180689864"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 13.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1021/acs.jpclett.5b02247",
+      "license": "other-oa",
+      "pdf_url": "https://pubs.acs.org/doi/pdf/10.1021/acs.jpclett.5b02247",
+      "source_id": "https://openalex.org/S123480357",
+      "source_name": "The Journal of Physical Chemistry Letters",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 270,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "hybrid",
+      "oa_url": "https://pubs.acs.org/doi/pdf/10.1021/acs.jpclett.5b02247"
+    },
+    "openalex_id": "https://openalex.org/W2180689864",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1021/acs.jpclett.5b02247",
+      "license": "other-oa",
+      "pdf_url": "https://pubs.acs.org/doi/pdf/10.1021/acs.jpclett.5b02247",
+      "source_id": "https://openalex.org/S123480357",
+      "source_name": "The Journal of Physical Chemistry Letters",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2015-11-12",
+    "relevance_score": 199.47939,
+    "work_type": "article"
+  },
+  "title": "Free-Energy Barriers and Reaction Mechanisms for the Electrochemical Reduction of CO on the Cu(100) Surface, Including Multiple Layers of Explicit Solvent at pH 0",
+  "venue": "The Journal of Physical Chemistry Letters",
+  "year": 2015
+}

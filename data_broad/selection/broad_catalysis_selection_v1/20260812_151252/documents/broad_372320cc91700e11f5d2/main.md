@@ -1,0 +1,5 @@
+# Promoting Surface Reconstruction of NiFe Layered Double Hydroxide for Enhanced Oxygen Evolution
+
+## Abstract
+
+Abstract A dynamic surface reconstruction of oxide electrocatalysts in alkaline media is widely observed especially for layered double hydroxide (LDH), but little is known about how to promote the reconstruction toward desired surfaces for improved oxygen evolution reaction (OER). Here, surface reconstruction of NiFe LDH nanosheets is successfully induced to a higher degree via in situ sulfur doping than that by natural electrochemical activation. Theoretical calculations, operando Raman, and various ex situ characterizations reveal the S anion‐induced effect can lower the energy barrier and facilitate the phase transformation into highly active S‐doped oxyhydroxides. The generated S‐Ni x Fe y OOH can optimize the intermediate adsorption and facilitate the OER kinetics. The reconstructed S‐oxyhydroxides catalyst presents superior OER activity and long‐term durability compared to undoped ones. This work provides a structure–composition–activity relationship during the in situ surface restructuring of NiFe LDH pre‐catalysts.

@@ -1,0 +1,87 @@
+{
+  "core_mechanism_nodes": 36,
+  "direct_mechanism_edge_fraction": 0.2564102564102564,
+  "direct_mechanism_edges": 20,
+  "edges": 102,
+  "expected_paper_count": 5,
+  "mechanism_bearing_paper_count": 5,
+  "mechanism_bearing_paper_fraction": 1.0,
+  "node_type_counts": {
+    "ActiveSite": 4,
+    "AdsorbateState": 2,
+    "Catalyst": 5,
+    "CorpusAlignment": 4,
+    "Descriptor": 2,
+    "InterfacialEnvironment": 1,
+    "Material": 1,
+    "MechanismClaim": 6,
+    "MechanisticFactor": 9,
+    "Metal": 8,
+    "ObservationClaim": 4,
+    "Reaction": 12,
+    "StructuralState": 12,
+    "Support": 4
+  },
+  "nodes": 74,
+  "observed_paper_count": 5,
+  "observed_paper_ids": [
+    "broad_1e86b38c448a764b68a3",
+    "broad_241a667a6ef693f01c95",
+    "broad_2906a6cb4ffcfb858fea",
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_444fa95d3a7db533ade0"
+  ],
+  "per_paper": {
+    "broad_1e86b38c448a764b68a3": {
+      "direct_mechanism_edges": 4,
+      "edges": 14,
+      "nodes": 15
+    },
+    "broad_241a667a6ef693f01c95": {
+      "direct_mechanism_edges": 1,
+      "edges": 12,
+      "nodes": 13
+    },
+    "broad_2906a6cb4ffcfb858fea": {
+      "direct_mechanism_edges": 4,
+      "edges": 14,
+      "nodes": 13
+    },
+    "broad_29bf9d5faa2fcf91a418": {
+      "direct_mechanism_edges": 4,
+      "edges": 13,
+      "nodes": 10
+    },
+    "broad_444fa95d3a7db533ade0": {
+      "direct_mechanism_edges": 7,
+      "edges": 25,
+      "nodes": 19
+    }
+  },
+  "recurring_mechanism_signatures": 2,
+  "relation_counts": {
+    "APPLIES_TO": 10,
+    "CATALYZES": 12,
+    "DERIVED_FROM": 1,
+    "HAS_ACTIVE_SITE": 4,
+    "HAS_ADSORBATE_STATE": 2,
+    "HAS_DESCRIPTOR": 3,
+    "HAS_ENVIRONMENT": 2,
+    "HAS_METAL": 8,
+    "HAS_STRUCTURAL_STATE": 10,
+    "INDUCES": 4,
+    "INTERPRETED_AS": 2,
+    "MODULATES": 7,
+    "PROMOTES": 4,
+    "RECONSTRUCTS_TO": 1,
+    "STABILIZES": 3,
+    "SUPPORTED_ON": 4,
+    "SUPPRESSES": 1
+  },
+  "schema_version": "graphagentsdac-broad-corpus-audit-v1",
+  "source_scientific_edges": 78,
+  "unique_mechanism_signatures": 15,
+  "verification_required_edge_fraction": 1.0,
+  "zero_edge_papers": [],
+  "zero_node_papers": []
+}

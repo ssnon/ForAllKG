@@ -1,0 +1,5 @@
+# In situ/operando analysis of surface reconstruction of transition metal-based oxygen evolution electrocatalysts
+
+## Abstract
+
+The oxygen evolution reaction (OER) is one of the major challenges in water splitting due to its extremely sluggish reaction kinetics. Increasingly, studies reveal that surface reconstruction occurs in several types of transition metal-based electrocatalysts, which may challenge previously developed universal structure-activity descriptors and catalytic mechanisms based on the pristine active species in original structures. The development of in situ/operando technology, which can continuously capture information on metastable species during reactions, discloses surface reconstruction processes and real active electrocatalytic species. Here, we review the surface reconstruction and in-depth active species identification of transition metal-based electrocatalysts based on in situ/operando techniques to help researchers further understand the catalytic mechanisms and how to identify new active species.

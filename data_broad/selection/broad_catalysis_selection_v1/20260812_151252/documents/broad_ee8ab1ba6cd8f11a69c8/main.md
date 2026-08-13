@@ -1,0 +1,5 @@
+# Interfacial water engineering boosts neutral water reduction
+
+## Abstract
+
+Abstract Hydrogen evolution reaction (HER) in neutral media is of great practical importance for sustainable hydrogen production, but generally suffers from low activities, the cause of which has been a puzzle yet to be solved. Herein, by investigating the synergy between Ru single atoms (RuNC) and RuSe x cluster compounds (RuSe x ) for HER using ab initio molecular dynamics, operando X-ray absorption spectroscopy, and operando surface-enhanced infrared absorption spectroscopy, we establish that the interfacial water governs neutral HER. The rigid interfacial water layer in neutral media would inhibit the transport of H 2 O*/OH* at the electrode/electrolyte interface of RuNC, but the RuSe x can promote H 2 O*/OH* transport to increase the number of available H 2 O* on RuNC by disordering the interfacial water network. With the synergy of RuSe x and RuNC, the resulting neutral HER performance in terms of mass-specific activity is 6.7 times higher than that of 20 wt.% Pt/C at overpotential of 100 mV.

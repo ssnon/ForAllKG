@@ -1,0 +1,8 @@
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "FACILITATES_STEP", "source_type": "ActiveSite", "target_type": "ReactionStep"}
+{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "INDUCES", "source_type": "StructuralState", "target_type": "StructuralState"}
+{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "MODULATES", "source_type": "Descriptor", "target_type": "ReactionStep"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "MODULATES", "source_type": "MechanisticFactor", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "MODULATES", "source_type": "StructuralState", "target_type": "AdsorbateState"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "MODULATES", "source_type": "StructuralState", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_12549367c327c283ccf7"], "paper_support": 1, "relation": "PROMOTES", "source_type": "MechanisticFactor", "target_type": "ReactionStep"}
+{"edge_count": 1, "paper_ids": ["broad_1e86b38c448a764b68a3"], "paper_support": 1, "relation": "RECONSTRUCTS_TO", "source_type": "StructuralState", "target_type": "StructuralState"}

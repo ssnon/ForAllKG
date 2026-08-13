@@ -3,6 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from pydantic import BaseModel
+
+from dac_her.draft_schema import KnowledgeGraphDraft
+from dac_her.graph_domain import RelationConstraint
+
 
 @dataclass(frozen=True)
 class ExtractionDomainAdapter:
@@ -18,10 +23,47 @@ class ExtractionDomainAdapter:
     allowed_entity_types: frozenset[str]
     allowed_relation_types: frozenset[str]
     relation_aliases: tuple[tuple[str, str], ...] = ()
+    strict_relation_constraints: tuple[RelationConstraint, ...] = ()
+    compact_generation_response_model: type[BaseModel] | None = None
 
     def canonical_relation(self, relation: str) -> str:
         aliases = dict(self.relation_aliases)
         return aliases.get(str(relation), str(relation))
+
+    def generation_response_model(
+        self,
+        *,
+        compact: bool = False,
+    ) -> type[BaseModel]:
+        if not compact:
+            return KnowledgeGraphDraft
+        if self.compact_generation_response_model is None:
+            raise ValueError(
+                "compact generation schema is not configured for "
+                f"domain {self.domain_profile_id!r}"
+            )
+        return self.compact_generation_response_model
+
+    def canonicalize_generation_output(
+        self,
+        generated: BaseModel,
+    ) -> KnowledgeGraphDraft:
+        if isinstance(generated, KnowledgeGraphDraft):
+            return generated
+        converter = getattr(
+            generated,
+            "to_knowledge_graph_draft",
+            None,
+        )
+        if callable(converter):
+            canonical = converter()
+            if isinstance(canonical, KnowledgeGraphDraft):
+                return canonical
+        raise TypeError(
+            "generation response cannot be converted to "
+            f"KnowledgeGraphDraft for domain {self.domain_profile_id!r}: "
+            f"{type(generated).__name__}"
+        )
 
     def normalize_draft_vocabulary(self, draft: Any) -> Any:
         """Apply only explicitly declared, semantics-preserving aliases."""

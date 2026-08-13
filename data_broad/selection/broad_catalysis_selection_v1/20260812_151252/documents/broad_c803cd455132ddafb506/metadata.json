@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "elementary_step_kinetics",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 2.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 11.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1038/srep13801",
+  "literature_paper_id": "literature:c803cd455132ddafb506",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_c803cd455132ddafb506",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W2410039023"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 17.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/srep13801",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/srep13801.pdf",
+      "source_id": "https://openalex.org/S196734849",
+      "source_name": "Scientific Reports",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 3221,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/srep13801.pdf"
+    },
+    "openalex_id": "https://openalex.org/W2410039023",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/srep13801",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/srep13801.pdf",
+      "source_id": "https://openalex.org/S196734849",
+      "source_name": "Scientific Reports",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2015-09-08",
+    "relevance_score": 841.20685,
+    "work_type": "article"
+  },
+  "title": "Insight on Tafel slopes from a microkinetic analysis of aqueous electrocatalysis for energy conversion",
+  "venue": "Scientific Reports",
+  "year": 2015
+}

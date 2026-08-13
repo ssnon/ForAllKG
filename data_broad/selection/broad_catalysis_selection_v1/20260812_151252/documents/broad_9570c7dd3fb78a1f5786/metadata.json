@@ -1,0 +1,71 @@
+{
+  "assigned_bucket": "descriptor_failure_counterexamples",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 1.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 4.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier",
+    "interfacial water electrocatalysis reaction barrier"
+  ],
+  "doi": "10.1186/s40580-024-00467-w",
+  "literature_paper_id": "literature:9570c7dd3fb78a1f5786",
+  "mechanism_buckets": [
+    "elementary_step_kinetics",
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_9570c7dd3fb78a1f5786",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4406793010"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 9.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1186/s40580-024-00467-w",
+      "license": "cc-by",
+      "pdf_url": "https://nanoconvergencejournal.springeropen.com/counter/pdf/10.1186/s40580-024-00467-w",
+      "source_id": "https://openalex.org/S2738500204",
+      "source_name": "Nano Convergence",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 68,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "diamond",
+      "oa_url": "https://nanoconvergencejournal.springeropen.com/counter/pdf/10.1186/s40580-024-00467-w"
+    },
+    "openalex_id": "https://openalex.org/W4406793010",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1186/s40580-024-00467-w",
+      "license": "cc-by",
+      "pdf_url": "https://nanoconvergencejournal.springeropen.com/counter/pdf/10.1186/s40580-024-00467-w",
+      "source_id": "https://openalex.org/S2738500204",
+      "source_name": "Nano Convergence",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2025-01-24",
+    "relevance_score": 204.64185,
+    "work_type": "article"
+  },
+  "title": "Expanding the frontiers of electrocatalysis: advanced theoretical methods for water splitting",
+  "venue": "Nano Convergence",
+  "year": 2025
+}

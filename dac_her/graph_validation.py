@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from typing import Iterable
 
 from dac_her.draft_schema import KnowledgeGraphDraft
+from dac_her.graph_domain import RelationConstraint
 from dac_her.validation_issues import (
     IssueCode,
     IssueStage,
@@ -57,7 +58,11 @@ def _relation_type_issue(
     )
 
 
-def collect_graph_issues(graph: KnowledgeGraphDraft) -> ValidationReport:
+def collect_graph_issues(
+    graph: KnowledgeGraphDraft,
+    *,
+    relation_constraints: tuple[RelationConstraint, ...] | None = None,
+) -> ValidationReport:
     issues: list[ValidationIssue] = []
     collections, by_id = _node_index(graph)
     node_ids = set(by_id)
@@ -504,6 +509,77 @@ def collect_graph_issues(graph: KnowledgeGraphDraft) -> ValidationReport:
     # --------------------------------------------------------
     # Relation endpoint types
     # --------------------------------------------------------
+    entity_type_by_id = _entity_types(graph)
+    collection_by_id = {
+        node_id: entries[0][0]
+        for node_id, entries in by_id.items()
+        if len(entries) == 1
+    }
+
+    def semantic_type(node_id: str) -> str | None:
+        entity_type = entity_type_by_id.get(node_id)
+        if entity_type is not None:
+            return entity_type
+        collection_name = collection_by_id.get(node_id)
+        return {
+            "experiments": "Experiment",
+            "calculations": "Calculation",
+            "measurements": "Measurement",
+            "measurement_groups": "MeasurementGroup",
+            "observation_claims": "ObservationClaim",
+            "mechanism_claims": "MechanismClaim",
+        }.get(collection_name)
+
+    def endpoint_matches(
+        node_id: str,
+        expected: frozenset[str],
+    ) -> bool:
+        if not expected:
+            return True
+        if (
+            "Entity" in expected
+            and collection_by_id.get(node_id) == "entities"
+        ):
+            return True
+        return semantic_type(node_id) in expected
+
+    if relation_constraints is not None:
+        constraints_by_relation = {
+            item.relation: item
+            for item in relation_constraints
+        }
+        for edge_index, edge in enumerate(graph.edges):
+            if edge.source not in node_ids or edge.target not in node_ids:
+                continue
+            constraint = constraints_by_relation.get(edge.relation)
+            if constraint is None:
+                continue
+            if not endpoint_matches(edge.source, constraint.source_types):
+                issues.append(
+                    _relation_type_issue(
+                        source=True,
+                        edge_index=edge_index,
+                        relation=edge.relation,
+                        endpoint_id=edge.source,
+                        expected=constraint.source_types,
+                        actual=semantic_type(edge.source),
+                    )
+                )
+            if not endpoint_matches(edge.target, constraint.target_types):
+                issues.append(
+                    _relation_type_issue(
+                        source=False,
+                        edge_index=edge_index,
+                        relation=edge.relation,
+                        endpoint_id=edge.target,
+                        expected=constraint.target_types,
+                        actual=semantic_type(edge.target),
+                    )
+                )
+        return ValidationReport.from_issues(issues)
+
+    # Legacy direct-call fallback. Runtime strict extraction now passes the
+    # active domain adapter's explicit relation contract.
     entity_type_by_id = _entity_types(graph)
     collection_by_id = {
         node_id: entries[0][0]

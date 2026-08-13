@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "elementary_step_kinetics",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 6.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier"
+  ],
+  "doi": "10.1038/s41467-023-40011-8",
+  "literature_paper_id": "literature:92bf63874a7174fa0f80",
+  "mechanism_buckets": [
+    "elementary_step_kinetics"
+  ],
+  "paper_id": "broad_92bf63874a7174fa0f80",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4384407240"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 13.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-023-40011-8",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-023-40011-8.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 275,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-023-40011-8.pdf"
+    },
+    "openalex_id": "https://openalex.org/W4384407240",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-023-40011-8",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-023-40011-8.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-07-15",
+    "relevance_score": 207.00232,
+    "work_type": "article"
+  },
+  "title": "Potential-dependent transition of reaction mechanisms for oxygen evolution on layered double hydroxides",
+  "venue": "Nature Communications",
+  "year": 2023
+}

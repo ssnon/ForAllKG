@@ -1,0 +1,52 @@
+{
+  "core_mechanism_nodes": 9,
+  "direct_mechanism_edge_fraction": 0.26666666666666666,
+  "direct_mechanism_edges": 4,
+  "edges": 15,
+  "expected_paper_count": 1,
+  "mechanism_bearing_paper_count": 1,
+  "mechanism_bearing_paper_fraction": 1.0,
+  "node_type_counts": {
+    "ActiveSite": 1,
+    "Catalyst": 1,
+    "CatalystModel": 1,
+    "Descriptor": 2,
+    "MechanisticFactor": 1,
+    "Metal": 1,
+    "Reaction": 2,
+    "ReactionStep": 1,
+    "StructuralState": 4,
+    "Support": 1
+  },
+  "nodes": 15,
+  "observed_paper_count": 1,
+  "observed_paper_ids": [
+    "broad_1e86b38c448a764b68a3"
+  ],
+  "per_paper": {
+    "broad_1e86b38c448a764b68a3": {
+      "direct_mechanism_edges": 4,
+      "edges": 15,
+      "nodes": 15
+    }
+  },
+  "recurring_mechanism_signatures": 0,
+  "relation_counts": {
+    "CATALYZES": 2,
+    "FACILITATES_STEP": 1,
+    "HAS_ACTIVE_SITE": 1,
+    "HAS_DESCRIPTOR": 2,
+    "HAS_METAL": 1,
+    "HAS_STRUCTURAL_STATE": 3,
+    "MODEL_OF": 1,
+    "MODULATES": 2,
+    "RECONSTRUCTS_TO": 1,
+    "SUPPORTED_ON": 1
+  },
+  "schema_version": "graphagentsdac-broad-corpus-audit-v1",
+  "source_scientific_edges": 15,
+  "unique_mechanism_signatures": 4,
+  "verification_required_edge_fraction": 1.0,
+  "zero_edge_papers": [],
+  "zero_node_papers": []
+}

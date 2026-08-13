@@ -1,0 +1,71 @@
+{
+  "assigned_bucket": "active_site_attribution",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier",
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1038/s41467-020-19277-9",
+  "literature_paper_id": "literature:951ff8f7a37926b3a4bf",
+  "mechanism_buckets": [
+    "active_site_attribution",
+    "elementary_step_kinetics"
+  ],
+  "paper_id": "broad_951ff8f7a37926b3a4bf",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W3096631593"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 13.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-020-19277-9",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-020-19277-9.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 666,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-020-19277-9.pdf"
+    },
+    "openalex_id": "https://openalex.org/W3096631593",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-020-19277-9",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-020-19277-9.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2020-10-28",
+    "relevance_score": 545.0631,
+    "work_type": "article"
+  },
+  "title": "Fast site-to-site electron transfer of high-entropy alloy nanocatalyst driving redox electrocatalysis",
+  "venue": "Nature Communications",
+  "year": 2020
+}

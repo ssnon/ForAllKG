@@ -1,0 +1,4 @@
+{"edge_count": 1, "paper_ids": ["broad_0dc10bb8cea2a03ae330"], "paper_support": 1, "relation": "INDUCES", "source_type": "StructuralState", "target_type": "ActiveSite"}
+{"edge_count": 1, "paper_ids": ["broad_0dc10bb8cea2a03ae330"], "paper_support": 1, "relation": "INDUCES", "source_type": "StructuralState", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_0af1f93bd0e0360bf3dd"], "paper_support": 1, "relation": "PROMOTES", "source_type": "Descriptor", "target_type": "Reaction"}
+{"edge_count": 1, "paper_ids": ["broad_0af1f93bd0e0360bf3dd"], "paper_support": 1, "relation": "PROMOTES", "source_type": "Material", "target_type": "Reaction"}

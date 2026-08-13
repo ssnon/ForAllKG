@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "cross_reaction_atomic_site_mechanisms",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 5.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 1.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1002/smll.202300373",
+  "literature_paper_id": "literature:570fbfbc17e38e1513a8",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_570fbfbc17e38e1513a8",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4324304816"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 11.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/smll.202300373",
+      "license": "cc-by-nc-nd",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smll.202300373",
+      "source_id": "https://openalex.org/S94619837",
+      "source_name": "Small",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 83,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": true,
+      "oa_status": "hybrid",
+      "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smll.202300373"
+    },
+    "openalex_id": "https://openalex.org/W4324304816",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/smll.202300373",
+      "license": "cc-by-nc-nd",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smll.202300373",
+      "source_id": "https://openalex.org/S94619837",
+      "source_name": "Small",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-03-15",
+    "relevance_score": 157.01314,
+    "work_type": "article"
+  },
+  "title": "Regulating the Coordination Geometry and Oxidation State of Single‐Atom Fe Sites for Enhanced Oxygen Reduction Electrocatalysis",
+  "venue": "Small",
+  "year": 2023
+}

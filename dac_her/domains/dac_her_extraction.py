@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dac_her.extraction_domain import ExtractionDomainAdapter
+from dac_her.domains.strict_relation_contracts import (
+    DAC_HER_STRICT_RELATION_CONSTRAINTS,
+)
 from dac_her.micro_reextract_prompts import MICRO_REEXTRACT_SYSTEM_PROMPT
 from dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 from dac_her.semantic_patch_prompts import PATCH_SYSTEM_PROMPT
@@ -19,6 +22,7 @@ DAC_HER_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
         "CoordinationMotif", "SynthesisMethod", "Precursor", "Reaction",
         "ReactionStep", "Intermediate", "Material",
     }),
+    strict_relation_constraints=DAC_HER_STRICT_RELATION_CONSTRAINTS,
     allowed_relation_types=frozenset({
         "STUDIES", "HAS_METAL", "SUPPORTED_ON", "HAS_MOTIF",
         "SYNTHESIZED_BY", "USES_PRECURSOR", "CATALYZES", "EVALUATED_IN",

@@ -1,0 +1,22 @@
+{
+  "alignment_edges": 0,
+  "alignment_hubs": 0,
+  "corpus_id": "broad_telemetry_smoke_1",
+  "destructive_cross_paper_merges": 0,
+  "direct_cross_paper_source_edges": 0,
+  "edges": 3,
+  "expected_papers": [
+    "broad_0774386e5705dc5099bf"
+  ],
+  "graph_stage": "corpus_projection",
+  "issue_count": 0,
+  "issues": [],
+  "nodes": 7,
+  "paper_local_nodes": 7,
+  "passes_structural_gate": true,
+  "projection_mode": "mechanism",
+  "seen_papers": [
+    "broad_0774386e5705dc5099bf"
+  ],
+  "source_projection_edges": 3
+}

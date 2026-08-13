@@ -45,6 +45,15 @@ def parse_args() -> argparse.Namespace:
             "graph generation. Pair with --force-extract for controlled A/B runs."
         ),
     )
+    parser.add_argument(
+        "--broad-prune-metric-vocabulary",
+        action="store_true",
+        help=(
+            "Omit measurement-metric registry serialization from Broad "
+            "extraction prompts while keeping metric validation active. "
+            "Intended for PR6.1 controlled A/B runs."
+        ),
+    )
     parser.add_argument("--allow-partial", action="store_true")
     parser.add_argument("--skip-extraction", action="store_true")
     parser.add_argument("--no-resume", action="store_true")
@@ -88,6 +97,9 @@ def main() -> None:
             extract_concurrency=args.extract_concurrency,
             force_extract=args.force_extract,
             broad_compact_schema=args.broad_compact_schema,
+            broad_prune_metric_vocabulary=(
+                args.broad_prune_metric_vocabulary
+            ),
             allow_partial=args.allow_partial,
             skip_extraction=args.skip_extraction,
             dry_run=args.dry_run,

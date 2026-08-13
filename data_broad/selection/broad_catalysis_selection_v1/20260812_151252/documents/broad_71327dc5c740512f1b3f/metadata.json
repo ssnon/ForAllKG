@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "working_state_reconstruction",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1002/aenm.202201713",
+  "literature_paper_id": "literature:71327dc5c740512f1b3f",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_71327dc5c740512f1b3f",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4284968791"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "global_fallback",
+  "selection_score": 16.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 406,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W4284968791",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1002/aenm.202201713",
+      "source_id": "https://openalex.org/S2502627819",
+      "source_name": "Advanced Energy Materials",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2022-07-08",
+    "relevance_score": 1250.2046,
+    "work_type": "article"
+  },
+  "title": "Surface Reconstruction of Water Splitting Electrocatalysts",
+  "venue": "Advanced Energy Materials",
+  "year": 2022
+}

@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "structural_landscape",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 4.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1038/s41467-022-30670-4",
+  "literature_paper_id": "literature:5582597ca7bf4a90b9e6",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_5582597ca7bf4a90b9e6",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4281478051"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 11.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-022-30670-4",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-022-30670-4.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 326,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-022-30670-4.pdf"
+    },
+    "openalex_id": "https://openalex.org/W4281478051",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-022-30670-4",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-022-30670-4.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2022-05-25",
+    "relevance_score": 157.72903,
+    "work_type": "article"
+  },
+  "title": "Coordination environment tuning of nickel sites by oxyanions to optimize methanol electro-oxidation activity",
+  "venue": "Nature Communications",
+  "year": 2022
+}

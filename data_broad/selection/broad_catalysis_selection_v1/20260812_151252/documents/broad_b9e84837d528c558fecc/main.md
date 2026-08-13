@@ -1,0 +1,5 @@
+# Catalyst overcoating engineering towards high-performance electrocatalysis
+
+## Abstract
+
+Clean and sustainable energy needs the development of advanced heterogeneous catalysts as they are of vital importance for electrochemical transformation reactions in renewable energy conversion and storage devices. Advances in nanoscience and material chemistry have afforded great opportunities for the design and optimization of nanostructured electrocatalysts with high efficiency and practical durability. In this review article, we specifically emphasize the synthetic methodologies for the versatile surface overcoating engineering reported to date for optimal electrocatalysts. We discuss the recent progress in the development of surface overcoating-derived electrocatalysts potentially applied in polymer electrolyte fuel cells and water electrolyzers by correlating catalyst intrinsic structures with electrocatalytic properties. Finally, we present the opportunities and perspectives of surface overcoating engineering for the design of advanced (electro)catalysts and their deep exploitation in a broad scope of applications.

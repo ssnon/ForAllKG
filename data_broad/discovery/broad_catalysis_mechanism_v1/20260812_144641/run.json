@@ -1,0 +1,58 @@
+{
+  "candidates_path": "/home/rldnr7959/GraphAgentsDAC/data_broad/discovery/broad_catalysis_mechanism_v1/20260812_144641/candidates.jsonl",
+  "completed_at": "2026-08-12T05:46:57.276748+00:00",
+  "duplicate_or_repeat_count": 73,
+  "plan_id": "broad_catalysis_mechanism_v1",
+  "provider": "openalex",
+  "queries": [
+    {
+      "abstract_count": 77,
+      "mechanism_bucket": "working_state_reconstruction",
+      "new_unique_count": 100,
+      "query": "electrocatalyst reconstruction",
+      "requested_limit": 100,
+      "returned_count": 100
+    },
+    {
+      "abstract_count": 89,
+      "mechanism_bucket": "elementary_step_kinetics",
+      "new_unique_count": 96,
+      "query": "electrocatalysis constant potential DFT reaction barrier",
+      "requested_limit": 100,
+      "returned_count": 100
+    },
+    {
+      "abstract_count": 90,
+      "mechanism_bucket": "interfacial_environment",
+      "new_unique_count": 64,
+      "query": "interfacial water electrocatalysis reaction barrier",
+      "requested_limit": 100,
+      "returned_count": 100
+    },
+    {
+      "abstract_count": 84,
+      "mechanism_bucket": "structural_landscape",
+      "new_unique_count": 98,
+      "query": "catalyst structural energy landscape coordination",
+      "requested_limit": 100,
+      "returned_count": 100
+    },
+    {
+      "abstract_count": 87,
+      "mechanism_bucket": "active_site_attribution",
+      "new_unique_count": 69,
+      "query": "selective poisoning active site electrocatalysis",
+      "requested_limit": 100,
+      "returned_count": 100
+    }
+  ],
+  "query_count": 5,
+  "query_plan_schema_version": "graphagentsdac-literature-query-plan-v01",
+  "raw_abstract_count": 427,
+  "raw_candidate_count": 500,
+  "registry_path": "/home/rldnr7959/GraphAgentsDAC/data_broad/registry/literature.json",
+  "schema_version": "graphagentsdac-literature-discovery-run-v01",
+  "started_at": "2026-08-12T05:46:41.234683+00:00",
+  "status": "complete",
+  "unique_candidate_count": 427
+}

@@ -1,0 +1,67 @@
+{
+  "assigned_bucket": "elementary_step_kinetics",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 5.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 8.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier"
+  ],
+  "doi": "10.1063/5.0138197",
+  "literature_paper_id": "literature:d41e17ede0ef6e12c0a1",
+  "mechanism_buckets": [
+    "elementary_step_kinetics"
+  ],
+  "paper_id": "broad_d41e17ede0ef6e12c0a1",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4363676503"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 12.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1063/5.0138197",
+      "pdf_url": "https://pubs.aip.org/aip/jcp/article-pdf/doi/10.1063/5.0138197/16825425/144701_1_5.0138197.pdf",
+      "source_id": "https://openalex.org/S77047749",
+      "source_name": "The Journal of Chemical Physics",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 47,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "bronze",
+      "oa_url": "https://pubs.aip.org/aip/jcp/article-pdf/doi/10.1063/5.0138197/16825425/144701_1_5.0138197.pdf"
+    },
+    "openalex_id": "https://openalex.org/W4363676503",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1063/5.0138197",
+      "pdf_url": "https://pubs.aip.org/aip/jcp/article-pdf/doi/10.1063/5.0138197/16825425/144701_1_5.0138197.pdf",
+      "source_id": "https://openalex.org/S77047749",
+      "source_name": "The Journal of Chemical Physics",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-04-10",
+    "relevance_score": 214.55054,
+    "work_type": "article"
+  },
+  "title": "Approximating constant potential DFT with canonical DFT and electrostatic corrections",
+  "venue": "The Journal of Chemical Physics",
+  "year": 2023
+}

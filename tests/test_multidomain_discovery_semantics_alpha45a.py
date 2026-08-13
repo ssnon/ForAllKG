@@ -1,7 +1,8 @@
-from pathlib import Path
-
 import networkx as nx
 import pytest
+
+import dac_her.candidate_unit_selection as candidate_unit_selection_module
+from dac_her.candidate_unit_selection import CandidateUnitSelector
 
 from dac_her.discovery_semantics import (
     is_alignment_edge,
@@ -168,16 +169,41 @@ def test_explorer_packet_rejects_explicit_domain_lineage_mismatch():
         )
 
 
-def test_candidate_unit_right_branch_keeps_selected_semantics():
-    source = Path(
-        "dac_her/candidate_unit_selection.py"
-    ).read_text(encoding="utf-8")
-    compact = " ".join(source.split())
-    expected = " ".join(
-        """node in self.graph and _is_mechanism_node(
-        node,
-        dict(self.graph.nodes[node]),
-        semantics=self.discovery_semantics,
-        )""".split()
+def test_candidate_unit_right_branch_keeps_selected_semantics(monkeypatch):
+    semantics = _sers_like_semantics()
+    graph = nx.DiGraph()
+    graph.add_node("left", type="PlasmonicSubstrate")
+    graph.add_node("candidate", type="CandidateHypothesis")
+    graph.add_node("right", type="Nanostructure")
+    graph.add_edge("left", "candidate", relation="CANDIDATE")
+    graph.add_edge("candidate", "right", relation="CANDIDATE")
+
+    selector = CandidateUnitSelector(
+        graph,
+        graph.copy(),
     )
-    assert expected in compact
+    selector.discovery_semantics = semantics
+
+    seen = []
+
+    def fake_is_mechanism_node(node_id, attrs, selected_semantics):
+        del node_id, attrs
+        seen.append(selected_semantics)
+        return True
+
+    monkeypatch.setattr(
+        candidate_unit_selection_module,
+        "is_mechanism_node",
+        fake_is_mechanism_node,
+    )
+
+    continuity, *_ = selector._route_diagnostics(
+        ("left", "candidate", "right"),
+        candidate_id="candidate",
+        entry_id="left",
+        exit_id="right",
+    )
+
+    assert continuity == 1.0
+    assert seen
+    assert all(item is semantics for item in seen)

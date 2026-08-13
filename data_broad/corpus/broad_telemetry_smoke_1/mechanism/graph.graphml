@@ -1,0 +1,312 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d54" for="edge" attr.name="source_edge_id" attr.type="string"/>
+<key id="d53" for="edge" attr.name="source_edge_target" attr.type="string"/>
+<key id="d52" for="edge" attr.name="source_edge_source" attr.type="string"/>
+<key id="d51" for="edge" attr.name="source_edge_key" attr.type="string"/>
+<key id="d50" for="edge" attr.name="source_paper_id" attr.type="string"/>
+<key id="d49" for="edge" attr.name="exploration_cost" attr.type="double"/>
+<key id="d48" for="edge" attr.name="support_count" attr.type="long"/>
+<key id="d47" for="edge" attr.name="derivation_rule" attr.type="string"/>
+<key id="d46" for="edge" attr.name="source_paper_ids_json" attr.type="string"/>
+<key id="d45" for="edge" attr.name="supporting_node_ids_json" attr.type="string"/>
+<key id="d44" for="edge" attr.name="projection_edge_ids_json" attr.type="string"/>
+<key id="d43" for="edge" attr.name="source_edge_ids_json" attr.type="string"/>
+<key id="d42" for="edge" attr.name="source_depth" attr.type="string"/>
+<key id="d41" for="edge" attr.name="requires_verification" attr.type="boolean"/>
+<key id="d40" for="edge" attr.name="evidence_status" attr.type="string"/>
+<key id="d39" for="edge" attr.name="graph_layer" attr.type="string"/>
+<key id="d38" for="edge" attr.name="edge_id" attr.type="string"/>
+<key id="d37" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d36" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d35" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d34" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d33" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d32" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d31" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d30" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d29" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d28" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d27" for="edge" attr.name="section" attr.type="string"/>
+<key id="d26" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d25" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d24" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d23" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d22" for="edge" attr.name="title" attr.type="string"/>
+<key id="d21" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d20" for="node" attr.name="corpus_node_kind" attr.type="string"/>
+<key id="d19" for="node" attr.name="source_paper_ids_json" attr.type="string"/>
+<key id="d18" for="node" attr.name="source_node_id" attr.type="string"/>
+<key id="d17" for="node" attr.name="source_paper_id" attr.type="string"/>
+<key id="d16" for="node" attr.name="node_text" attr.type="string"/>
+<key id="d15" for="node" attr.name="source_depth" attr.type="string"/>
+<key id="d14" for="node" attr.name="requires_verification" attr.type="boolean"/>
+<key id="d13" for="node" attr.name="evidence_status" attr.type="string"/>
+<key id="d12" for="node" attr.name="graph_layer" attr.type="string"/>
+<key id="d11" for="node" attr.name="resolution_member_count" attr.type="long"/>
+<key id="d10" for="node" attr.name="aliases_json" attr.type="string"/>
+<key id="d9" for="node" attr.name="description" attr.type="string"/>
+<key id="d8" for="node" attr.name="basis" attr.type="string"/>
+<key id="d7" for="node" attr.name="statement" attr.type="string"/>
+<key id="d6" for="node" attr.name="claim_type" attr.type="string"/>
+<key id="d5" for="node" attr.name="label" attr.type="string"/>
+<key id="d4" for="node" attr.name="type" attr.type="string"/>
+<key id="d3" for="graph" attr.name="corpus_policy" attr.type="string"/>
+<key id="d2" for="graph" attr.name="projection_mode" attr.type="string"/>
+<key id="d1" for="graph" attr.name="corpus_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="graph_stage" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">corpus_projection</data>
+<data key="d1">broad_telemetry_smoke_1</data>
+<data key="d2">mechanism</data>
+<data key="d3">non_destructive_namespacing_plus_alignment_hubs_v1</data>
+<node id="paper::broad_0774386e5705dc5099bf::claim_cip_general_applicability">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere and biased two-electrode systems.</data>
+  <data key="d6">methodological applicability</data>
+  <data key="d7">The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere and biased two-electrode systems.</data>
+  <data key="d8">computational</data>
+  <data key="d9">The abstract states that numerical and analytical studies demonstrate equivalence for metallic electrodes and inner-sphere reactions, while CIP addresses limitations in outer-sphere and two-electrode systems.</data>
+  <data key="d10">["claim_cip_general_applicability"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere and biased two-electrode systems.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The abstract states that numerical and analytical studies demonstrate equivalence for metallic electrodes and inner-sphere reactions, while CIP addresses limitations in outer-sphere and two-electrode systems.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">claim_cip_general_applicability</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::environment_electrochemical_interface">
+  <data key="d4">InterfacialEnvironment</data>
+  <data key="d5">Electrochemical interface</data>
+  <data key="d9">Electrochemical interfaces are the systems targeted by the first-principles GCE-DFT approach.</data>
+  <data key="d10">["environment_electrochemical_interface"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: InterfacialEnvironment
+label: Electrochemical interface
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrochemical interfaces are the systems targeted by the first-principles GCE-DFT approach.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">environment_electrochemical_interface</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell">
+  <data key="d4">InterfacialEnvironment</data>
+  <data key="d5">Biased two-electrode cell</data>
+  <data key="d9">A biased two-electrode electrochemical system discussed as a case where the constant Fermi-level approach is inadequate.</data>
+  <data key="d10">["environment_two_electrode_cell"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: InterfacialEnvironment
+label: Biased two-electrode cell
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: A biased two-electrode electrochemical system discussed as a case where the constant Fermi-level approach is inadequate.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">environment_two_electrode_cell</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::factor_global_fermi_level">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Global Fermi level</data>
+  <data key="d9">The global Fermi level is the parameter fixed in conventional GCE-DFT calculations and is described as inadequate for some systems.</data>
+  <data key="d10">["factor_global_fermi_level"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Global Fermi level
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The global Fermi level is the parameter fixed in conventional GCE-DFT calculations and is described as inadequate for some systems.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">factor_global_fermi_level</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::factor_local_inner_potential">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Local electrode inner potential</data>
+  <data key="d9">The local electrode inner potential is used by CIP as the thermodynamic parameter for electrode potential.</data>
+  <data key="d10">["factor_local_inner_potential"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Local electrode inner potential
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The local electrode inner potential is used by CIP as the thermodynamic parameter for electrode potential.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">factor_local_inner_potential</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::reaction_inner_sphere">
+  <data key="d4">Reaction</data>
+  <data key="d5">Inner-sphere electrochemical reaction</data>
+  <data key="d9">Inner-sphere reactions are included in the comparison between constant inner potential and constant Fermi-level GCE-DFT approaches.</data>
+  <data key="d10">["reaction_inner_sphere"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Inner-sphere electrochemical reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Inner-sphere reactions are included in the comparison between constant inner potential and constant Fermi-level GCE-DFT approaches.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">reaction_inner_sphere</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::reaction_outer_sphere">
+  <data key="d4">Reaction</data>
+  <data key="d5">Outer-sphere electrochemical reaction</data>
+  <data key="d9">Outer-sphere reactions are identified as systems for which fixing the DFT Fermi level is inadequate.</data>
+  <data key="d10">["reaction_outer_sphere"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Outer-sphere electrochemical reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Outer-sphere reactions are identified as systems for which fixing the DFT Fermi level is inadequate.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">reaction_outer_sphere</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_general_applicability" target="paper::broad_0774386e5705dc5099bf::reaction_outer_sphere" id="paper::broad_0774386e5705dc5099bf::broad:fe7d0a48ec860e689abf::0">
+  <data key="d21">APPLIES_TO</data>
+  <data key="d22">APPLIES_TO</data>
+  <data key="d23">broad_0774386e5705dc5099bf</data>
+  <data key="d24">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d25">abstract</data>
+  <data key="d26">main</data>
+  <data key="d27">[abstract] whole document</data>
+  <data key="d28">[]</data>
+  <data key="d29">[]</data>
+  <data key="d30">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d31">[]</data>
+  <data key="d32">Abstract</data>
+  <data key="d33">author_interpretation</data>
+  <data key="d34">interpretive</data>
+  <data key="d35">CIP can be applied to outer-sphere systems, addressing limitations of the constant Fermi-level approach.</data>
+  <data key="d36">high</data>
+  <data key="d37">False</data>
+  <data key="d38">paper::broad_0774386e5705dc5099bf::projection:4ea1953529fef3852ae6</data>
+  <data key="d39">broad_mechanism_abstract</data>
+  <data key="d40">broad_abstract_support</data>
+  <data key="d41">True</data>
+  <data key="d42">abstract</data>
+  <data key="d43">["paper::broad_0774386e5705dc5099bf::canonical:834b03e92ff9566d772e"]</data>
+  <data key="d44">["paper::broad_0774386e5705dc5099bf::projection:4ea1953529fef3852ae6"]</data>
+  <data key="d45">["paper::broad_0774386e5705dc5099bf::claim_cip_general_applicability", "paper::broad_0774386e5705dc5099bf::reaction_outer_sphere"]</data>
+  <data key="d46">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d47">direct_broad_abstract_canonical_edge</data>
+  <data key="d48">1</data>
+  <data key="d49">1.15</data>
+  <data key="d50">broad_0774386e5705dc5099bf</data>
+  <data key="d51">broad:fe7d0a48ec860e689abf</data>
+  <data key="d52">claim_cip_general_applicability</data>
+  <data key="d53">reaction_outer_sphere</data>
+  <data key="d54">projection:4ea1953529fef3852ae6</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_general_applicability" target="paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell" id="paper::broad_0774386e5705dc5099bf::broad:feaae62a58ac79cdd763::1">
+  <data key="d21">APPLIES_TO</data>
+  <data key="d22">APPLIES_TO</data>
+  <data key="d23">broad_0774386e5705dc5099bf</data>
+  <data key="d24">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d25">abstract</data>
+  <data key="d26">main</data>
+  <data key="d27">[abstract] whole document</data>
+  <data key="d28">[]</data>
+  <data key="d29">[]</data>
+  <data key="d30">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d31">[]</data>
+  <data key="d32">Abstract</data>
+  <data key="d33">author_interpretation</data>
+  <data key="d34">interpretive</data>
+  <data key="d35">CIP can be applied to biased two-electrode systems.</data>
+  <data key="d36">high</data>
+  <data key="d37">False</data>
+  <data key="d38">paper::broad_0774386e5705dc5099bf::projection:729710d9a32d46a4d1d2</data>
+  <data key="d39">broad_mechanism_abstract</data>
+  <data key="d40">broad_abstract_support</data>
+  <data key="d41">True</data>
+  <data key="d42">abstract</data>
+  <data key="d43">["paper::broad_0774386e5705dc5099bf::canonical:424b36c838705a9b9d0a"]</data>
+  <data key="d44">["paper::broad_0774386e5705dc5099bf::projection:729710d9a32d46a4d1d2"]</data>
+  <data key="d45">["paper::broad_0774386e5705dc5099bf::claim_cip_general_applicability", "paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell"]</data>
+  <data key="d46">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d47">direct_broad_abstract_canonical_edge</data>
+  <data key="d48">1</data>
+  <data key="d49">1.15</data>
+  <data key="d50">broad_0774386e5705dc5099bf</data>
+  <data key="d51">broad:feaae62a58ac79cdd763</data>
+  <data key="d52">claim_cip_general_applicability</data>
+  <data key="d53">environment_two_electrode_cell</data>
+  <data key="d54">projection:729710d9a32d46a4d1d2</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::factor_local_inner_potential" target="paper::broad_0774386e5705dc5099bf::factor_global_fermi_level" id="paper::broad_0774386e5705dc5099bf::broad:a44ae34d094a6b118547::2">
+  <data key="d21">MODULATES</data>
+  <data key="d22">MODULATES</data>
+  <data key="d23">broad_0774386e5705dc5099bf</data>
+  <data key="d24">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d25">abstract</data>
+  <data key="d26">main</data>
+  <data key="d27">[abstract] whole document</data>
+  <data key="d28">[]</data>
+  <data key="d29">[]</data>
+  <data key="d30">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d31">[]</data>
+  <data key="d32">Abstract</data>
+  <data key="d33">computational_method</data>
+  <data key="d34">interpretive</data>
+  <data key="d35">CIP uses the local electrode inner potential as the thermodynamic parameter for electrode potential, as opposed to the global Fermi level.</data>
+  <data key="d36">high</data>
+  <data key="d37">False</data>
+  <data key="d38">paper::broad_0774386e5705dc5099bf::projection:d13ff926998d5e10df74</data>
+  <data key="d39">broad_mechanism_abstract</data>
+  <data key="d40">broad_abstract_support</data>
+  <data key="d41">True</data>
+  <data key="d42">abstract</data>
+  <data key="d43">["paper::broad_0774386e5705dc5099bf::canonical:87cd60fc4ccc12829fe3"]</data>
+  <data key="d44">["paper::broad_0774386e5705dc5099bf::projection:d13ff926998d5e10df74"]</data>
+  <data key="d45">["paper::broad_0774386e5705dc5099bf::factor_local_inner_potential", "paper::broad_0774386e5705dc5099bf::factor_global_fermi_level"]</data>
+  <data key="d46">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d47">direct_broad_abstract_canonical_edge</data>
+  <data key="d48">1</data>
+  <data key="d49">1.15</data>
+  <data key="d50">broad_0774386e5705dc5099bf</data>
+  <data key="d51">broad:a44ae34d094a6b118547</data>
+  <data key="d52">factor_local_inner_potential</data>
+  <data key="d53">factor_global_fermi_level</data>
+  <data key="d54">projection:d13ff926998d5e10df74</data>
+</edge>
+</graph></graphml>

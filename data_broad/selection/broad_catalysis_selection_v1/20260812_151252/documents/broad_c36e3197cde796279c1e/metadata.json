@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "structural_landscape",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 4.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 5.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "catalyst structural energy landscape coordination"
+  ],
+  "doi": "10.1002/smsc.202000028",
+  "literature_paper_id": "literature:c36e3197cde796279c1e",
+  "mechanism_buckets": [
+    "structural_landscape"
+  ],
+  "paper_id": "broad_c36e3197cde796279c1e",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W3106145775"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 10.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/smsc.202000028",
+      "license": "cc-by",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smsc.202000028",
+      "source_id": "https://openalex.org/S4210233464",
+      "source_name": "Small Science",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 83,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smsc.202000028"
+    },
+    "openalex_id": "https://openalex.org/W3106145775",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/smsc.202000028",
+      "license": "cc-by",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/smsc.202000028",
+      "source_id": "https://openalex.org/S4210233464",
+      "source_name": "Small Science",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2020-11-18",
+    "relevance_score": 106.97144,
+    "work_type": "article"
+  },
+  "title": "Recent Advances in Strategies for Improving the Performance of CO<sub>2</sub> Reduction Reaction on Single Atom Catalysts",
+  "venue": "Small Science",
+  "year": 2020
+}

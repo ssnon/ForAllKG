@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "working_state_reconstruction",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 2.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 8.0
+  },
+  "discovery_queries": [
+    "electrocatalyst reconstruction"
+  ],
+  "doi": "10.1021/acsami.1c14588",
+  "literature_paper_id": "literature:fff56b0e39ec98f62dab",
+  "mechanism_buckets": [
+    "working_state_reconstruction"
+  ],
+  "paper_id": "broad_fff56b0e39ec98f62dab",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W3210840376"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 17.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 29,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W3210840376",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1021/acsami.1c14588",
+      "source_id": "https://openalex.org/S164001016",
+      "source_name": "ACS Applied Materials & Interfaces",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2021-11-03",
+    "relevance_score": 277.06302,
+    "work_type": "article"
+  },
+  "title": "Surface Reconstruction Enabled Efficient Hydrogen Generation on a Cobalt–Iron Phosphate Electrocatalyst in Neutral Water",
+  "venue": "ACS Applied Materials & Interfaces",
+  "year": 2021
+}

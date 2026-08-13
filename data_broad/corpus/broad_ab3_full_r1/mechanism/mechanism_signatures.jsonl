@@ -1,0 +1,4 @@
+{"edge_count": 1, "paper_ids": ["broad_241a667a6ef693f01c95"], "paper_support": 1, "relation": "INDUCES", "source_type": "Support", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_241a667a6ef693f01c95"], "paper_support": 1, "relation": "MODULATES", "source_type": "MechanisticFactor", "target_type": "Catalyst"}
+{"edge_count": 1, "paper_ids": ["broad_241a667a6ef693f01c95"], "paper_support": 1, "relation": "PROMOTES", "source_type": "Support", "target_type": "MechanisticFactor"}
+{"edge_count": 1, "paper_ids": ["broad_241a667a6ef693f01c95"], "paper_support": 1, "relation": "STABILIZES", "source_type": "Support", "target_type": "Catalyst"}

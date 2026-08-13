@@ -1,0 +1,67 @@
+{
+  "assigned_bucket": "active_site_attribution",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 3.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 2.0,
+    "interfacial_environment": 2.0,
+    "structural_landscape": 1.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.31635/ccschem.019.20190011",
+  "literature_paper_id": "literature:13d015f8decf061a10c6",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_13d015f8decf061a10c6",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W2972739927"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 14.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.31635/ccschem.019.20190011",
+      "license": "cc-by-nc",
+      "source_id": "https://openalex.org/S4210239486",
+      "source_name": "CCS Chemistry",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 148,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": true,
+      "oa_status": "diamond",
+      "oa_url": "https://doi.org/10.31635/ccschem.019.20190011"
+    },
+    "openalex_id": "https://openalex.org/W2972739927",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.31635/ccschem.019.20190011",
+      "license": "cc-by-nc",
+      "source_id": "https://openalex.org/S4210239486",
+      "source_name": "CCS Chemistry",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2019-10-01",
+    "relevance_score": 166.0538,
+    "work_type": "article"
+  },
+  "title": "Unraveling the Reactivity and Selectivity of Atomically Isolated Metal–Nitrogen Sites Anchored on Porphyrinic Triazine Frameworks for Electroreduction of CO <sub>2</sub>",
+  "venue": "CCS Chemistry",
+  "year": 2019
+}

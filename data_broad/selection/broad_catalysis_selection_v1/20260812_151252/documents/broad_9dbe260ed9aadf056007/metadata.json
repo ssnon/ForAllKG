@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "descriptor_failure_counterexamples",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 1.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 1.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1038/s41467-022-28728-4",
+  "literature_paper_id": "literature:9dbe260ed9aadf056007",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_9dbe260ed9aadf056007",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4214848606"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 12.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-022-28728-4",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-022-28728-4.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 839,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://www.nature.com/articles/s41467-022-28728-4.pdf"
+    },
+    "openalex_id": "https://openalex.org/W4214848606",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1038/s41467-022-28728-4",
+      "license": "cc-by",
+      "pdf_url": "https://www.nature.com/articles/s41467-022-28728-4.pdf",
+      "source_id": "https://openalex.org/S64187185",
+      "source_name": "Nature Communications",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2022-03-02",
+    "relevance_score": 208.28842,
+    "work_type": "article"
+  },
+  "title": "Splicing the active phases of copper/cobalt-based catalysts achieves high-rate tandem electroreduction of nitrate to ammonia",
+  "venue": "Nature Communications",
+  "year": 2022
+}

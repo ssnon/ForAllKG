@@ -1,0 +1,29 @@
+{
+  "isolated_node_patterns": [],
+  "observed_validation_issue_counts": {
+    "RELATION_TARGET_TYPE_MISMATCH": 1,
+    "UNDEFINED_EDGE_SOURCE": 9,
+    "UNDEFINED_EDGE_TARGET": 1
+  },
+  "recovery_reason_counts": {
+    "quarantine_reason_class:recovery_exhausted": 2,
+    "recovery_reason:Pre-micro patch, micro-reextract, and post-micro patch budgets were exhausted and the chunk cannot be split safely.": 2
+  },
+  "relation_mismatch_patterns": [
+    {
+      "actual_type": "Material",
+      "code": "RELATION_TARGET_TYPE_MISMATCH",
+      "count": 1,
+      "expected_types": [
+        "Support"
+      ],
+      "relation": "SUPPORTED_ON",
+      "side": "target"
+    }
+  ],
+  "terminal_validation_issue_counts": {
+    "RELATION_TARGET_TYPE_MISMATCH": 1,
+    "UNDEFINED_EDGE_SOURCE": 9,
+    "UNDEFINED_EDGE_TARGET": 1
+  }
+}

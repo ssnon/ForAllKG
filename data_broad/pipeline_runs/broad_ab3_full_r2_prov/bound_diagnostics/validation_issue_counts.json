@@ -1,0 +1,52 @@
+{
+  "isolated_node_patterns": [],
+  "observed_validation_issue_counts": {
+    "MECHANISM_MISSING_SUPPORT": 2,
+    "MISSING_MEASUREMENT_PRODUCER": 3,
+    "RELATION_SOURCE_TYPE_MISMATCH": 5
+  },
+  "recovery_reason_counts": {
+    "quarantine_reason_class:recovery_exhausted": 2,
+    "recovery_reason:Pre-micro patch, micro-reextract, and post-micro patch budgets were exhausted and the chunk cannot be split safely.": 2
+  },
+  "relation_mismatch_patterns": [
+    {
+      "actual_type": "entities",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 3,
+      "expected_types": [
+        "Calculation",
+        "Experiment"
+      ],
+      "relation": "HAS_MEASUREMENT",
+      "side": "source"
+    },
+    {
+      "actual_type": "Catalyst",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 1,
+      "expected_types": [
+        "CatalystModel"
+      ],
+      "relation": "MODELED_BY",
+      "side": "source"
+    },
+    {
+      "actual_type": "entities",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 1,
+      "expected_types": [
+        "Calculation",
+        "Experiment",
+        "Measurement"
+      ],
+      "relation": "SUPPORTS_CLAIM",
+      "side": "source"
+    }
+  ],
+  "terminal_validation_issue_counts": {
+    "MECHANISM_MISSING_SUPPORT": 1,
+    "MISSING_MEASUREMENT_PRODUCER": 3,
+    "RELATION_SOURCE_TYPE_MISMATCH": 5
+  }
+}

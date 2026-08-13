@@ -1,0 +1,3495 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d60" for="edge" attr.name="corpus_edge_kind" attr.type="string"/>
+<key id="d59" for="edge" attr.name="source_edge_id" attr.type="string"/>
+<key id="d58" for="edge" attr.name="source_edge_target" attr.type="string"/>
+<key id="d57" for="edge" attr.name="source_edge_source" attr.type="string"/>
+<key id="d56" for="edge" attr.name="source_edge_key" attr.type="string"/>
+<key id="d55" for="edge" attr.name="source_paper_id" attr.type="string"/>
+<key id="d54" for="edge" attr.name="exploration_cost" attr.type="double"/>
+<key id="d53" for="edge" attr.name="support_count" attr.type="long"/>
+<key id="d52" for="edge" attr.name="derivation_rule" attr.type="string"/>
+<key id="d51" for="edge" attr.name="source_paper_ids_json" attr.type="string"/>
+<key id="d50" for="edge" attr.name="supporting_node_ids_json" attr.type="string"/>
+<key id="d49" for="edge" attr.name="projection_edge_ids_json" attr.type="string"/>
+<key id="d48" for="edge" attr.name="source_edge_ids_json" attr.type="string"/>
+<key id="d47" for="edge" attr.name="source_depth" attr.type="string"/>
+<key id="d46" for="edge" attr.name="requires_verification" attr.type="boolean"/>
+<key id="d45" for="edge" attr.name="evidence_status" attr.type="string"/>
+<key id="d44" for="edge" attr.name="graph_layer" attr.type="string"/>
+<key id="d43" for="edge" attr.name="edge_id" attr.type="string"/>
+<key id="d42" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d41" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d40" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d39" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d38" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d37" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d36" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d35" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d34" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d33" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d32" for="edge" attr.name="section" attr.type="string"/>
+<key id="d31" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d30" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d29" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d28" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d27" for="edge" attr.name="title" attr.type="string"/>
+<key id="d26" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d25" for="node" attr.name="support_count" attr.type="long"/>
+<key id="d24" for="node" attr.name="source_member_ids_json" attr.type="string"/>
+<key id="d23" for="node" attr.name="normalized_signature" attr.type="string"/>
+<key id="d22" for="node" attr.name="entity_type" attr.type="string"/>
+<key id="d21" for="node" attr.name="alignment_type" attr.type="string"/>
+<key id="d20" for="node" attr.name="corpus_node_kind" attr.type="string"/>
+<key id="d19" for="node" attr.name="source_paper_ids_json" attr.type="string"/>
+<key id="d18" for="node" attr.name="source_node_id" attr.type="string"/>
+<key id="d17" for="node" attr.name="source_paper_id" attr.type="string"/>
+<key id="d16" for="node" attr.name="node_text" attr.type="string"/>
+<key id="d15" for="node" attr.name="source_depth" attr.type="string"/>
+<key id="d14" for="node" attr.name="requires_verification" attr.type="boolean"/>
+<key id="d13" for="node" attr.name="evidence_status" attr.type="string"/>
+<key id="d12" for="node" attr.name="graph_layer" attr.type="string"/>
+<key id="d11" for="node" attr.name="resolution_member_count" attr.type="long"/>
+<key id="d10" for="node" attr.name="aliases_json" attr.type="string"/>
+<key id="d9" for="node" attr.name="description" attr.type="string"/>
+<key id="d8" for="node" attr.name="basis" attr.type="string"/>
+<key id="d7" for="node" attr.name="statement" attr.type="string"/>
+<key id="d6" for="node" attr.name="claim_type" attr.type="string"/>
+<key id="d5" for="node" attr.name="label" attr.type="string"/>
+<key id="d4" for="node" attr.name="type" attr.type="string"/>
+<key id="d3" for="graph" attr.name="corpus_policy" attr.type="string"/>
+<key id="d2" for="graph" attr.name="projection_mode" attr.type="string"/>
+<key id="d1" for="graph" attr.name="corpus_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="graph_stage" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">corpus_projection</data>
+<data key="d1">broad_pilot_10</data>
+<data key="d2">mechanism</data>
+<data key="d3">non_destructive_namespacing_plus_alignment_hubs_v1</data>
+<node id="paper::broad_0774386e5705dc5099bf::claim_cip_electrode_parameter">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">The constant inner potential method uses the local electrode inner potential, rather than the global Fermi level, as the thermodynamic parameter for electrode potential.</data>
+  <data key="d6">thermodynamic parameter assignment</data>
+  <data key="d7">The constant inner potential method uses the local electrode inner potential, rather than the global Fermi level, as the thermodynamic parameter for electrode potential.</data>
+  <data key="d8">computational</data>
+  <data key="d9">This is the defining methodological distinction of CIP.</data>
+  <data key="d10">["claim_cip_electrode_parameter"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: The constant inner potential method uses the local electrode inner potential, rather than the global Fermi level, as the thermodynamic parameter for electrode potential.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: This is the defining methodological distinction of CIP.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">claim_cip_electrode_parameter</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::claim_cip_equivalence">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">The constant inner potential and Fermi-level GCE-DFT approaches are equivalent for metallic electrodes and inner-sphere reactions.</data>
+  <data key="d6">methodological equivalence</data>
+  <data key="d7">The constant inner potential and Fermi-level GCE-DFT approaches are equivalent for metallic electrodes and inner-sphere reactions.</data>
+  <data key="d8">computational</data>
+  <data key="d9">The equivalence is reported from numerical and analytical studies.</data>
+  <data key="d10">["claim_cip_equivalence"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: The constant inner potential and Fermi-level GCE-DFT approaches are equivalent for metallic electrodes and inner-sphere reactions.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The equivalence is reported from numerical and analytical studies.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">claim_cip_equivalence</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::claim_cip_general applicability">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere reactions and biased two-electrode systems.</data>
+  <data key="d6">methodological applicability</data>
+  <data key="d7">The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere reactions and biased two-electrode systems.</data>
+  <data key="d8">computational</data>
+  <data key="d9">The abstract states that numerical and analytical studies demonstrate this broader applicability.</data>
+  <data key="d10">["claim_cip_general applicability"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: The constant inner potential approach is more versatile than the constant Fermi-level GCE-DFT approach because it can be applied to outer-sphere reactions and biased two-electrode systems.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The abstract states that numerical and analytical studies demonstrate this broader applicability.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">claim_cip_general applicability</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::descriptor_fermi_level">
+  <data key="d4">Descriptor</data>
+  <data key="d5">Global Fermi level</data>
+  <data key="d9">The global Fermi level is the parameter fixed in conventional GCE-DFT, but it does not always accurately represent the experimentally controlled electrode potential.</data>
+  <data key="d10">["descriptor_fermi_level"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Descriptor
+label: Global Fermi level
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The global Fermi level is the parameter fixed in conventional GCE-DFT, but it does not always accurately represent the experimentally controlled electrode potential.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">descriptor_fermi_level</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::descriptor_inner_potential">
+  <data key="d4">Descriptor</data>
+  <data key="d5">Local electrode inner potential</data>
+  <data key="d9">The local electrode inner potential is proposed as the thermodynamic parameter for electrode potential in the constant inner potential method.</data>
+  <data key="d10">["descriptor_inner_potential"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Descriptor
+label: Local electrode inner potential
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The local electrode inner potential is proposed as the thermodynamic parameter for electrode potential in the constant inner potential method.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">descriptor_inner_potential</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::environment_electrochemical_interface">
+  <data key="d4">InterfacialEnvironment</data>
+  <data key="d5">Electrochemical interface</data>
+  <data key="d9">Electrochemical interfaces are the systems targeted by the proposed first-principles simulation approach.</data>
+  <data key="d10">["environment_electrochemical_interface"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: InterfacialEnvironment
+label: Electrochemical interface
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrochemical interfaces are the systems targeted by the proposed first-principles simulation approach.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">environment_electrochemical_interface</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell">
+  <data key="d4">InterfacialEnvironment</data>
+  <data key="d5">Biased two-electrode cell</data>
+  <data key="d9">A biased two-electrode electrochemical cell is identified as a system challenging for constant Fermi-level GCE-DFT.</data>
+  <data key="d10">["environment_two_electrode_cell"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: InterfacialEnvironment
+label: Biased two-electrode cell
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: A biased two-electrode electrochemical cell is identified as a system challenging for constant Fermi-level GCE-DFT.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">environment_two_electrode_cell</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::factor_constant_inner_potential">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Constant inner potential method</data>
+  <data key="d9">The constant inner potential (CIP) approach is a GCE-DFT framework for simulations under constant potential or bias conditions.</data>
+  <data key="d10">["factor_constant_inner_potential"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Constant inner potential method
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The constant inner potential (CIP) approach is a GCE-DFT framework for simulations under constant potential or bias conditions.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">factor_constant_inner_potential</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::reaction_inner_sphere">
+  <data key="d4">Reaction</data>
+  <data key="d5">Inner-sphere electrochemical reaction</data>
+  <data key="d9">Inner-sphere reactions are used to compare the constant inner potential and constant Fermi-level approaches.</data>
+  <data key="d10">["reaction_inner_sphere"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Inner-sphere electrochemical reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Inner-sphere reactions are used to compare the constant inner potential and constant Fermi-level approaches.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">reaction_inner_sphere</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0774386e5705dc5099bf::reaction_outer_sphere">
+  <data key="d4">Reaction</data>
+  <data key="d5">Outer-sphere electrochemical reaction</data>
+  <data key="d9">Outer-sphere reactions are identified as systems for which fixing the DFT Fermi level is inadequate.</data>
+  <data key="d10">["reaction_outer_sphere"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Outer-sphere electrochemical reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Outer-sphere reactions are identified as systems for which fixing the DFT Fermi level is inadequate.</data>
+  <data key="d17">broad_0774386e5705dc5099bf</data>
+  <data key="d18">reaction_outer_sphere</data>
+  <data key="d19">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::active_site_second_layer_co">
+  <data key="d4">ActiveSite</data>
+  <data key="d5">Exposed second-layer Co metal sites</data>
+  <data key="d9">Second-layer cobalt metal sites exposed as a consequence of oxygen vacancies.</data>
+  <data key="d10">["active_site_second_layer_co"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ActiveSite
+label: Exposed second-layer Co metal sites
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Second-layer cobalt metal sites exposed as a consequence of oxygen vacancies.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">active_site_second_layer_co</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets">
+  <data key="d4">Catalyst</data>
+  <data key="d5">Defect-rich Co3O4 nanosheets</data>
+  <data key="d9">Single-crystalline ultrathin Co3O4 nanosheets with oxygen defects and O-terminated {111} facets.</data>
+  <data key="d10">["catalyst_defect_rich_co3o4_nanosheets"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Catalyst
+label: Defect-rich Co3O4 nanosheets
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Single-crystalline ultrathin Co3O4 nanosheets with oxygen defects and O-terminated {111} facets.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::catalyst_model_defect_rich_co3o4">
+  <data key="d4">CatalystModel</data>
+  <data key="d5">Oxygen-vacancy-rich Co3O4 nanosheet model</data>
+  <data key="d9">Computational model of the defect-rich Co3O4 nanosheet catalyst.</data>
+  <data key="d10">["catalyst_model_defect_rich_co3o4"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: CatalystModel
+label: Oxygen-vacancy-rich Co3O4 nanosheet model
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Computational model of the defect-rich Co3O4 nanosheet catalyst.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">catalyst_model_defect_rich_co3o4</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::claim_oxygen_vacancies_enhance_oer">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">The enhanced OER performance is attributed to oxygen vacancies that consequently expose second-layer Co metal sites, lower the OER activation energy, and improve electrical conductivity.</data>
+  <data key="d6">vacancy-mediated OER enhancement</data>
+  <data key="d7">The enhanced OER performance is attributed to oxygen vacancies that consequently expose second-layer Co metal sites, lower the OER activation energy, and improve electrical conductivity.</data>
+  <data key="d8">computational</data>
+  <data key="d9">Author interpretation based on the reported DFT+U calculation.</data>
+  <data key="d10">["claim_oxygen_vacancies_enhance_oer"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: The enhanced OER performance is attributed to oxygen vacancies that consequently expose second-layer Co metal sites, lower the OER activation energy, and improve electrical conductivity.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Author interpretation based on the reported DFT+U calculation.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">claim_oxygen_vacancies_enhance_oer</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::factor_improved_electrical_conductivity">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Improved electrical conductivity</data>
+  <data key="d9">Improved electrical conductivity identified as contributing to the enhanced electrocatalytic performance.</data>
+  <data key="d10">["factor_improved_electrical_conductivity"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Improved electrical conductivity
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Improved electrical conductivity identified as contributing to the enhanced electrocatalytic performance.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">factor_improved_electrical_conductivity</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::metal_cobalt">
+  <data key="d4">Metal</data>
+  <data key="d5">Co</data>
+  <data key="d9">Cobalt component of Co3O4 and the exposed second-layer cobalt sites.</data>
+  <data key="d10">["metal_cobalt"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Metal
+label: Co
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Cobalt component of Co3O4 and the exposed second-layer cobalt sites.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">metal_cobalt</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::reaction_oer">
+  <data key="d4">Reaction</data>
+  <data key="d5">Oxygen evolution reaction</data>
+  <data key="d9">Electrocatalytic oxygen evolution reaction.</data>
+  <data key="d10">["reaction_oer"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Oxygen evolution reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic oxygen evolution reaction.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">reaction_oer</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::state_o_terminated_111_facets">
+  <data key="d4">StructuralState</data>
+  <data key="d5">O-terminated {111} facets</data>
+  <data key="d9">Facet termination explicitly reported for the single-crystalline nanosheets.</data>
+  <data key="d10">["state_o_terminated_111_facets"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: O-terminated {111} facets
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Facet termination explicitly reported for the single-crystalline nanosheets.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">state_o_terminated_111_facets</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich">
+  <data key="d4">StructuralState</data>
+  <data key="d5">Oxygen-vacancy-rich state</data>
+  <data key="d9">Structural state containing deliberately introduced oxygen defects in the Co3O4 nanosheets.</data>
+  <data key="d10">["state_oxygen_vacancy_rich"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: Oxygen-vacancy-rich state
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Structural state containing deliberately introduced oxygen defects in the Co3O4 nanosheets.</data>
+  <data key="d17">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d18">state_oxygen_vacancy_rich</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::active_site_co085se">
+  <data key="d4">ActiveSite</data>
+  <data key="d5">Co0.85Se active centers</data>
+  <data key="d9">Co0.85Se active centers whose surface states are optimized under working conditions.</data>
+  <data key="d10">["active_site_co085se"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ActiveSite
+label: Co0.85Se active centers
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Co0.85Se active centers whose surface states are optimized under working conditions.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">active_site_co085se</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::adsorbate_hydrogen_behavior">
+  <data key="d4">AdsorbateState</data>
+  <data key="d5">Hydrogen adsorption/desorption behavior</data>
+  <data key="d9">Hydrogen adsorption and desorption behavior associated with the catalyst.</data>
+  <data key="d10">["adsorbate_hydrogen_behavior"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: AdsorbateState
+label: Hydrogen adsorption/desorption behavior
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Hydrogen adsorption and desorption behavior associated with the catalyst.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">adsorbate_hydrogen_behavior</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se">
+  <data key="d4">Catalyst</data>
+  <data key="d5">Pt/np-Co0.85Se</data>
+  <data key="d9">Single-atom platinum decorated nanoporous Co0.85Se electrocatalyst.</data>
+  <data key="d10">["catalyst_pt_np_co085se"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Catalyst
+label: Pt/np-Co0.85Se
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Single-atom platinum decorated nanoporous Co0.85Se electrocatalyst.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">catalyst_pt_np_co085se</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::claim_pt_tunes_her_mechanism">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">Single-atom platinum in Pt/np-Co0.85Se optimizes the surface states of Co0.85Se active centers under realistic working conditions, reduces the energy barriers of water dissociation, and improves hydrogen adsorption/desorption behavior, thereby promoting hydrogen-evolution thermodynamics and kinetics.</data>
+  <data key="d6">catalytic_mechanism</data>
+  <data key="d7">Single-atom platinum in Pt/np-Co0.85Se optimizes the surface states of Co0.85Se active centers under realistic working conditions, reduces the energy barriers of water dissociation, and improves hydrogen adsorption/desorption behavior, thereby promoting hydrogen-evolution thermodynamics and kinetics.</data>
+  <data key="d8">mixed</data>
+  <data key="d9">Mechanistic interpretation attributed to operando X-ray absorption spectroscopy combined with density functional theory calculations.</data>
+  <data key="d10">["claim_pt_tunes_her_mechanism"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: Single-atom platinum in Pt/np-Co0.85Se optimizes the surface states of Co0.85Se active centers under realistic working conditions, reduces the energy barriers of water dissociation, and improves hydrogen adsorption/desorption behavior, thereby promoting hydrogen-evolution thermodynamics and kinetics.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Mechanistic interpretation attributed to operando X-ray absorption spectroscopy combined with density functional theory calculations.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">claim_pt_tunes_her_mechanism</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::metal_platinum">
+  <data key="d4">Metal</data>
+  <data key="d5">Platinum</data>
+  <data key="d9">Platinum present as single atoms in the reported catalyst.</data>
+  <data key="d10">["metal_platinum"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Metal
+label: Platinum
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Platinum present as single atoms in the reported catalyst.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">metal_platinum</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::reaction_her">
+  <data key="d4">Reaction</data>
+  <data key="d5">Hydrogen evolution reaction</data>
+  <data key="d9">Electrocatalytic hydrogen evolution reaction.</data>
+  <data key="d10">["reaction_her"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Hydrogen evolution reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic hydrogen evolution reaction.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">reaction_her</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::state_optimized_surface_co085se">
+  <data key="d4">StructuralState</data>
+  <data key="d5">Optimized Co0.85Se surface states</data>
+  <data key="d9">Surface states of Co0.85Se active centers optimized under realistic working conditions.</data>
+  <data key="d10">["state_optimized_surface_co085se"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: Optimized Co0.85Se surface states
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Surface states of Co0.85Se active centers optimized under realistic working conditions.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">state_optimized_surface_co085se</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::step_water_dissociation">
+  <data key="d4">ReactionStep</data>
+  <data key="d5">Water dissociation</data>
+  <data key="d9">Water-dissociation step in hydrogen evolution.</data>
+  <data key="d10">["step_water_dissociation"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ReactionStep
+label: Water dissociation
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Water-dissociation step in hydrogen evolution.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">step_water_dissociation</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_12549367c327c283ccf7::support_np_co085se">
+  <data key="d4">Support</data>
+  <data key="d5">Nanoporous Co0.85Se</data>
+  <data key="d9">Nanoporous cobalt selenide hosting the single platinum atoms.</data>
+  <data key="d10">["support_np_co085se"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Support
+label: Nanoporous Co0.85Se
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Nanoporous cobalt selenide hosting the single platinum atoms.</data>
+  <data key="d17">broad_12549367c327c283ccf7</data>
+  <data key="d18">support_np_co085se</data>
+  <data key="d19">["broad_12549367c327c283ccf7"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage">
+  <data key="d4">Catalyst</data>
+  <data key="d5">c-CoSe2/CoN heterostructure in hollow carbon cage</data>
+  <data key="d9">A cobalt selenide–cobalt nitride heterostructure embedded in a hollow carbon cage for bifunctional oxygen electrocatalysis.</data>
+  <data key="d10">["cat_cose2_con_cage"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Catalyst
+label: c-CoSe2/CoN heterostructure in hollow carbon cage
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: A cobalt selenide–cobalt nitride heterostructure embedded in a hollow carbon cage for bifunctional oxygen electrocatalysis.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">cat_cose2_con_cage</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::claim_cobalt_site_active">
+  <data key="d4">ObservationClaim</data>
+  <data key="d5">The Co site in c-CoSe2, with an electronic state near the Fermi energy level, is identified as the main active site for ORR/OER.</data>
+  <data key="d6">active_site_assignment</data>
+  <data key="d7">The Co site in c-CoSe2, with an electronic state near the Fermi energy level, is identified as the main active site for ORR/OER.</data>
+  <data key="d8">computational</data>
+  <data key="d9"></data>
+  <data key="d10">["claim_cobalt_site_active"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ObservationClaim
+label: The Co site in c-CoSe2, with an electronic state near the Fermi energy level, is identified as the main active site for ORR/OER.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">claim_cobalt_site_active</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::claim_d_orbital_barriers">
+  <data key="d4">MechanismClaim</data>
+  <data key="d5">In situ CoN incorporation energetically tailors the Co d-orbital electronic structure in the heterostructure and lowers thermodynamic barriers for ORR/OER.</data>
+  <data key="d6">electronic_structure_mechanism</data>
+  <data key="d7">In situ CoN incorporation energetically tailors the Co d-orbital electronic structure in the heterostructure and lowers thermodynamic barriers for ORR/OER.</data>
+  <data key="d8">computational</data>
+  <data key="d9"></data>
+  <data key="d10">["claim_d_orbital_barriers"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanismClaim
+label: In situ CoN incorporation energetically tailors the Co d-orbital electronic structure in the heterostructure and lowers thermodynamic barriers for ORR/OER.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">claim_d_orbital_barriers</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::descriptor_co_d_orbital_structure">
+  <data key="d4">Descriptor</data>
+  <data key="d5">Co d-orbital electronic structure</data>
+  <data key="d9">The d-orbital electronic structure of Co in c-CoSe2, tailored by in situ CoN incorporation.</data>
+  <data key="d10">["descriptor_co_d_orbital_structure"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Descriptor
+label: Co d-orbital electronic structure
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The d-orbital electronic structure of Co in c-CoSe2, tailored by in situ CoN incorporation.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">descriptor_co_d_orbital_structure</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">In situ CoN incorporation</data>
+  <data key="d9">In situ incorporation of CoN during formation of the c-CoSe2/CoN heterostructure.</data>
+  <data key="d10">["factor_c_on_incorporation"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: In situ CoN incorporation
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: In situ incorporation of CoN during formation of the c-CoSe2/CoN heterostructure.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">factor_c_on_incorporation</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::metal_cobalt">
+  <data key="d4">Metal</data>
+  <data key="d5">Cobalt</data>
+  <data key="d9"></data>
+  <data key="d10">["metal_cobalt"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Metal
+label: Cobalt
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">metal_cobalt</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::reaction_oer">
+  <data key="d4">Reaction</data>
+  <data key="d5">Oxygen evolution reaction</data>
+  <data key="d9">OER.</data>
+  <data key="d10">["reaction_oer"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Oxygen evolution reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: OER.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">reaction_oer</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::reaction_orr">
+  <data key="d4">Reaction</data>
+  <data key="d5">Oxygen reduction reaction</data>
+  <data key="d9">ORR.</data>
+  <data key="d10">["reaction_orr"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Oxygen reduction reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: ORR.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">reaction_orr</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::site_co_cose2">
+  <data key="d4">ActiveSite</data>
+  <data key="d5">Co site in cubic CoSe2</data>
+  <data key="d9">The Co site in c-CoSe2 identified as the main active site for ORR/OER.</data>
+  <data key="d10">["site_co_cose2"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ActiveSite
+label: Co site in cubic CoSe2
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The Co site in c-CoSe2 identified as the main active site for ORR/OER.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">site_co_cose2</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface">
+  <data key="d4">StructuralState</data>
+  <data key="d5">Cubic CoSe2/CoN heterointerface</data>
+  <data key="d9">Cubic CoSe2 formed with in situ CoN formation, producing a c-CoSe2/CoN heterointerface.</data>
+  <data key="d10">["state_cubic_cose2_con_interface"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: Cubic CoSe2/CoN heterointerface
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Cubic CoSe2 formed with in situ CoN formation, producing a c-CoSe2/CoN heterointerface.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">state_cubic_cose2_con_interface</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::state_local_coordination_environment">
+  <data key="d4">StructuralState</data>
+  <data key="d5">Modulated local coordination environment</data>
+  <data key="d9">Local coordination environment modulated by heterostructure engineering.</data>
+  <data key="d10">["state_local_coordination_environment"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: Modulated local coordination environment
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Local coordination environment modulated by heterostructure engineering.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">state_local_coordination_environment</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::state_orthorhombic_cose2">
+  <data key="d4">StructuralState</data>
+  <data key="d5">Orthorhombic CoSe2</data>
+  <data key="d9">Initial orthorhombic phase of cobalt selenide.</data>
+  <data key="d10">["state_orthorhombic_cose2"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: StructuralState
+label: Orthorhombic CoSe2
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Initial orthorhombic phase of cobalt selenide.</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">state_orthorhombic_cose2</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1e86b38c448a764b68a3::support_hollow_carbon_cage">
+  <data key="d4">Support</data>
+  <data key="d5">Hollow carbon cage</data>
+  <data key="d9"></data>
+  <data key="d10">["support_hollow_carbon_cage"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Support
+label: Hollow carbon cage
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use</data>
+  <data key="d17">broad_1e86b38c448a764b68a3</data>
+  <data key="d18">support_hollow_carbon_cage</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1f5f4154830ff7beb2d8::claim_distinguished_co2rr_intermediates">
+  <data key="d4">ObservationClaim</data>
+  <data key="d5">Solvent- and applied-voltage-explicit quantum-mechanics molecular-dynamics trajectories enabled the reactive intermediates of the carbon dioxide reduction reaction to be distinguished after resolving the simulated vibrational signals.</data>
+  <data key="d6">computational_observation</data>
+  <data key="d7">Solvent- and applied-voltage-explicit quantum-mechanics molecular-dynamics trajectories enabled the reactive intermediates of the carbon dioxide reduction reaction to be distinguished after resolving the simulated vibrational signals.</data>
+  <data key="d8">computational</data>
+  <data key="d9">The simulation generates vibrational density of states that can be directly compared with reported experimental spectroscopy.</data>
+  <data key="d10">["claim_distinguished_co2rr_intermediates"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: ObservationClaim
+label: Solvent- and applied-voltage-explicit quantum-mechanics molecular-dynamics trajectories enabled the reactive intermediates of the carbon dioxide reduction reaction to be distinguished after resolving the simulated vibrational signals.
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: The simulation generates vibrational density of states that can be directly compared with reported experimental spectroscopy.</data>
+  <data key="d17">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d18">claim_distinguished_co2rr_intermediates</data>
+  <data key="d19">["broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1f5f4154830ff7beb2d8::environment_electrode_electrolyte_explicit_solvent_voltage">
+  <data key="d4">InterfacialEnvironment</data>
+  <data key="d5">Electrode–electrolyte interface with explicit solvent and applied voltage</data>
+  <data key="d9">Operando interfacial environment represented with explicit solvent and applied voltage.</data>
+  <data key="d10">["environment_electrode_electrolyte_explicit_solvent_voltage"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: InterfacialEnvironment
+label: Electrode–electrolyte interface with explicit solvent and applied voltage
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Operando interfacial environment represented with explicit solvent and applied voltage.</data>
+  <data key="d17">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d18">environment_electrode_electrolyte_explicit_solvent_voltage</data>
+  <data key="d19">["broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_1f5f4154830ff7beb2d8::reaction_co2_reduction">
+  <data key="d4">Reaction</data>
+  <data key="d5">Carbon dioxide reduction reaction</data>
+  <data key="d9">Carbon dioxide reduction reaction studied through operando electrode–electrolyte interface simulations.</data>
+  <data key="d10">["reaction_co2_reduction"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Carbon dioxide reduction reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Carbon dioxide reduction reaction studied through operando electrode–electrolyte interface simulations.</data>
+  <data key="d17">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d18">reaction_co2_reduction</data>
+  <data key="d19">["broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac">
+  <data key="d4">Catalyst</data>
+  <data key="d5">POPs-based single-atom catalysts</data>
+  <data key="d9">Single-atom catalysts hosted on porous organic polymers or POPs-derived nanocarbons for heterogeneous electrocatalysis.</data>
+  <data key="d10">["catalyst_pop_sac"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Catalyst
+label: POPs-based single-atom catalysts
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Single-atom catalysts hosted on porous organic polymers or POPs-derived nanocarbons for heterogeneous electrocatalysis.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">catalyst_pop_sac</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::factor_electron_transport">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Electron transport</data>
+  <data key="d9">Favorable electron transport identified as a support-related design consideration.</data>
+  <data key="d10">["factor_electron_transport"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Electron transport
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Favorable electron transport identified as a support-related design consideration.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">factor_electron_transport</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::factor_local_electronic">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Tunable local electronic environment</data>
+  <data key="d9">A tunable local electronic environment around the atomically dispersed metal sites.</data>
+  <data key="d10">["factor_local_electronic"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Tunable local electronic environment
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: A tunable local electronic environment around the atomically dispersed metal sites.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">factor_local_electronic</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::factor_mass_transport">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Mass transport</data>
+  <data key="d9">Favorable mass transport identified as a support-related design consideration.</data>
+  <data key="d10">["factor_mass_transport"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Mass transport
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Favorable mass transport identified as a support-related design consideration.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">factor_mass_transport</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::factor_msi">
+  <data key="d4">MechanisticFactor</data>
+  <data key="d5">Strong metal-support interaction</data>
+  <data key="d9">Strong interaction between atomically dispersed metals and their support.</data>
+  <data key="d10">["factor_msi"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: MechanisticFactor
+label: Strong metal-support interaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Strong interaction between atomically dispersed metals and their support.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">factor_msi</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::metal_atomically_dispersed">
+  <data key="d4">Metal</data>
+  <data key="d5">Atomically dispersed metals</data>
+  <data key="d9">Metal atoms dispersed as single atoms in POPs-based catalyst systems.</data>
+  <data key="d10">["metal_atomically_dispersed"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Metal
+label: Atomically dispersed metals
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Metal atoms dispersed as single atoms in POPs-based catalyst systems.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">metal_atomically_dispersed</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::reaction_co2rr">
+  <data key="d4">Reaction</data>
+  <data key="d5">CO2 reduction reaction</data>
+  <data key="d9">Electrocatalytic carbon dioxide reduction reaction (CO2RR).</data>
+  <data key="d10">["reaction_co2rr"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: CO2 reduction reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic carbon dioxide reduction reaction (CO2RR).</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">reaction_co2rr</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::reaction_her">
+  <data key="d4">Reaction</data>
+  <data key="d5">Hydrogen evolution reaction</data>
+  <data key="d9">Electrocatalytic hydrogen evolution reaction (HER).</data>
+  <data key="d10">["reaction_her"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Hydrogen evolution reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic hydrogen evolution reaction (HER).</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">reaction_her</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::reaction_nrr">
+  <data key="d4">Reaction</data>
+  <data key="d5">Nitrogen reduction reaction</data>
+  <data key="d9">Electrocatalytic nitrogen reduction reaction (NRR).</data>
+  <data key="d10">["reaction_nrr"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Nitrogen reduction reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic nitrogen reduction reaction (NRR).</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">reaction_nrr</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::reaction_oer">
+  <data key="d4">Reaction</data>
+  <data key="d5">Oxygen evolution reaction</data>
+  <data key="d9">Electrocatalytic oxygen evolution reaction (OER).</data>
+  <data key="d10">["reaction_oer"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Oxygen evolution reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic oxygen evolution reaction (OER).</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">reaction_oer</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::reaction_orr">
+  <data key="d4">Reaction</data>
+  <data key="d5">Oxygen reduction reaction</data>
+  <data key="d9">Electrocatalytic oxygen reduction reaction (ORR).</data>
+  <data key="d10">["reaction_orr"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Reaction
+label: Oxygen reduction reaction
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Electrocatalytic oxygen reduction reaction (ORR).</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">reaction_orr</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::support_pops">
+  <data key="d4">Support</data>
+  <data key="d5">Porous organic polymers</data>
+  <data key="d9">Designable and tunable porous organic polymer support platforms for stabilizing atomically dispersed metals.</data>
+  <data key="d10">["support_pops"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Support
+label: Porous organic polymers
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Designable and tunable porous organic polymer support platforms for stabilizing atomically dispersed metals.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">support_pops</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="paper::broad_241a667a6ef693f01c95::support_pops_nanocarbons">
+  <data key="d4">Support</data>
+  <data key="d5">POPs-derived nanocarbons</data>
+  <data key="d9">Nanocarbon supports derived from porous organic polymers and used to host single-atom metals.</data>
+  <data key="d10">["support_pops_nanocarbons"]</data>
+  <data key="d11">1</data>
+  <data key="d12">broad_mechanism_abstract</data>
+  <data key="d13">broad_abstract_support</data>
+  <data key="d14">True</data>
+  <data key="d15">abstract</data>
+  <data key="d16">type: Support
+label: POPs-derived nanocarbons
+source depth: abstract
+epistemic use: exploration/bridge; verify before target-domain premise use
+description: Nanocarbon supports derived from porous organic polymers and used to host single-atom metals.</data>
+  <data key="d17">broad_241a667a6ef693f01c95</data>
+  <data key="d18">support_pops_nanocarbons</data>
+  <data key="d19">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d20">paper_local</data>
+</node>
+<node id="corpus::registry::metal::c4dded0dbcf0bf7eeb62">
+  <data key="d4">CorpusAlignment</data>
+  <data key="d5">Co</data>
+  <data key="d21">registry_entity</data>
+  <data key="d22">Metal</data>
+  <data key="d23">co</data>
+  <data key="d24">["paper::broad_0dc10bb8cea2a03ae330::metal_cobalt", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3"]</data>
+  <data key="d25">2</data>
+  <data key="d12">corpus_alignment</data>
+  <data key="d13">derived_corpus_alignment</data>
+  <data key="d14">False</data>
+  <data key="d20">alignment_hub</data>
+  <data key="d16">type: CorpusAlignment
+entity type: Metal
+normalized signature: co
+papers: broad_0dc10bb8cea2a03ae330, broad_1e86b38c448a764b68a3</data>
+</node>
+<node id="corpus::registry::reaction::d84eea8f4a5b5d10d7bb">
+  <data key="d4">CorpusAlignment</data>
+  <data key="d5">Hydrogen evolution reaction</data>
+  <data key="d21">registry_entity</data>
+  <data key="d22">Reaction</data>
+  <data key="d23">her</data>
+  <data key="d24">["paper::broad_12549367c327c283ccf7::reaction_her", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d19">["broad_12549367c327c283ccf7", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d25">2</data>
+  <data key="d12">corpus_alignment</data>
+  <data key="d13">derived_corpus_alignment</data>
+  <data key="d14">False</data>
+  <data key="d20">alignment_hub</data>
+  <data key="d16">type: CorpusAlignment
+entity type: Reaction
+normalized signature: her
+papers: broad_12549367c327c283ccf7, broad_241a667a6ef693f01c95</data>
+</node>
+<node id="corpus::registry::reaction::3692c8df70f3192bece4">
+  <data key="d4">CorpusAlignment</data>
+  <data key="d5">Oxygen evolution reaction</data>
+  <data key="d21">registry_entity</data>
+  <data key="d22">Reaction</data>
+  <data key="d23">oer</data>
+  <data key="d24">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d19">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d25">3</data>
+  <data key="d12">corpus_alignment</data>
+  <data key="d13">derived_corpus_alignment</data>
+  <data key="d14">False</data>
+  <data key="d20">alignment_hub</data>
+  <data key="d16">type: CorpusAlignment
+entity type: Reaction
+normalized signature: oer
+papers: broad_0dc10bb8cea2a03ae330, broad_1e86b38c448a764b68a3, broad_241a667a6ef693f01c95</data>
+</node>
+<node id="corpus::registry::reaction::e6ded8229072bcc36f17">
+  <data key="d4">CorpusAlignment</data>
+  <data key="d5">Oxygen reduction reaction</data>
+  <data key="d21">registry_entity</data>
+  <data key="d22">Reaction</data>
+  <data key="d23">orr</data>
+  <data key="d24">["paper::broad_1e86b38c448a764b68a3::reaction_orr", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d19">["broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d25">2</data>
+  <data key="d12">corpus_alignment</data>
+  <data key="d13">derived_corpus_alignment</data>
+  <data key="d14">False</data>
+  <data key="d20">alignment_hub</data>
+  <data key="d16">type: CorpusAlignment
+entity type: Reaction
+normalized signature: orr
+papers: broad_1e86b38c448a764b68a3, broad_241a667a6ef693f01c95</data>
+</node>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_electrode_parameter" target="paper::broad_0774386e5705dc5099bf::descriptor_inner_potential" id="paper::broad_0774386e5705dc5099bf::broad:41dc3c4991d3edc5ac30::0">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_0774386e5705dc5099bf</data>
+  <data key="d29">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The local electrode inner potential is the thermodynamic parameter used by CIP for electrode potential.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0774386e5705dc5099bf::projection:d2458652cde63b97ee57</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0774386e5705dc5099bf::canonical:59430ea73bae7ca88aa7"]</data>
+  <data key="d49">["paper::broad_0774386e5705dc5099bf::projection:d2458652cde63b97ee57"]</data>
+  <data key="d50">["paper::broad_0774386e5705dc5099bf::claim_cip_electrode_parameter", "paper::broad_0774386e5705dc5099bf::descriptor_inner_potential"]</data>
+  <data key="d51">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0774386e5705dc5099bf</data>
+  <data key="d56">broad:41dc3c4991d3edc5ac30</data>
+  <data key="d57">claim_cip_electrode_parameter</data>
+  <data key="d58">descriptor_inner_potential</data>
+  <data key="d59">projection:d2458652cde63b97ee57</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_equivalence" target="paper::broad_0774386e5705dc5099bf::reaction_inner_sphere" id="paper::broad_0774386e5705dc5099bf::broad:beebb20e53b87bc7e3e7::1">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_0774386e5705dc5099bf</data>
+  <data key="d29">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">interpretive</data>
+  <data key="d40">CIP and Fermi-level GCE-DFT are reported to be equivalent for inner-sphere reactions.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0774386e5705dc5099bf::projection:1840718e7a84d3e3b946</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0774386e5705dc5099bf::canonical:c649cfcd606d4e0077e4"]</data>
+  <data key="d49">["paper::broad_0774386e5705dc5099bf::projection:1840718e7a84d3e3b946"]</data>
+  <data key="d50">["paper::broad_0774386e5705dc5099bf::claim_cip_equivalence", "paper::broad_0774386e5705dc5099bf::reaction_inner_sphere"]</data>
+  <data key="d51">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0774386e5705dc5099bf</data>
+  <data key="d56">broad:beebb20e53b87bc7e3e7</data>
+  <data key="d57">claim_cip_equivalence</data>
+  <data key="d58">reaction_inner_sphere</data>
+  <data key="d59">projection:1840718e7a84d3e3b946</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_general applicability" target="paper::broad_0774386e5705dc5099bf::reaction_outer_sphere" id="paper::broad_0774386e5705dc5099bf::broad:2c5b445dd2bd937f1c7b::2">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_0774386e5705dc5099bf</data>
+  <data key="d29">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">interpretive</data>
+  <data key="d40">CIP is described as applicable to outer-sphere reactions.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0774386e5705dc5099bf::projection:5bc607d06d22e3440558</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0774386e5705dc5099bf::canonical:749f67957e88ce0525bd"]</data>
+  <data key="d49">["paper::broad_0774386e5705dc5099bf::projection:5bc607d06d22e3440558"]</data>
+  <data key="d50">["paper::broad_0774386e5705dc5099bf::claim_cip_general applicability", "paper::broad_0774386e5705dc5099bf::reaction_outer_sphere"]</data>
+  <data key="d51">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0774386e5705dc5099bf</data>
+  <data key="d56">broad:2c5b445dd2bd937f1c7b</data>
+  <data key="d57">claim_cip_general applicability</data>
+  <data key="d58">reaction_outer_sphere</data>
+  <data key="d59">projection:5bc607d06d22e3440558</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::claim_cip_general applicability" target="paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell" id="paper::broad_0774386e5705dc5099bf::broad:819f8f96922969248693::3">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_0774386e5705dc5099bf</data>
+  <data key="d29">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">interpretive</data>
+  <data key="d40">CIP is described as applicable to biased two-electrode systems.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0774386e5705dc5099bf::projection:3fdcd6419e43a54d7465</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0774386e5705dc5099bf::canonical:15c6909f91581b2286d9"]</data>
+  <data key="d49">["paper::broad_0774386e5705dc5099bf::projection:3fdcd6419e43a54d7465"]</data>
+  <data key="d50">["paper::broad_0774386e5705dc5099bf::claim_cip_general applicability", "paper::broad_0774386e5705dc5099bf::environment_two_electrode_cell"]</data>
+  <data key="d51">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0774386e5705dc5099bf</data>
+  <data key="d56">broad:819f8f96922969248693</data>
+  <data key="d57">claim_cip_general applicability</data>
+  <data key="d58">environment_two_electrode_cell</data>
+  <data key="d59">projection:3fdcd6419e43a54d7465</data>
+</edge>
+<edge source="paper::broad_0774386e5705dc5099bf::descriptor_inner_potential" target="paper::broad_0774386e5705dc5099bf::factor_constant_inner_potential" id="paper::broad_0774386e5705dc5099bf::broad:2dfd343f4386c60d0c06::4">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_0774386e5705dc5099bf</data>
+  <data key="d29">broad_0774386e5705dc5099bf:abstract:7dea9285ed45dd415bbe</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">computational_method</data>
+  <data key="d39">direct</data>
+  <data key="d40">The CIP method is based on using the local electrode inner potential as the thermodynamic parameter.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0774386e5705dc5099bf::projection:c395b7c7c00b55bfc1c6</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0774386e5705dc5099bf::canonical:6add7f5b2c4437ab7667"]</data>
+  <data key="d49">["paper::broad_0774386e5705dc5099bf::projection:c395b7c7c00b55bfc1c6"]</data>
+  <data key="d50">["paper::broad_0774386e5705dc5099bf::descriptor_inner_potential", "paper::broad_0774386e5705dc5099bf::factor_constant_inner_potential"]</data>
+  <data key="d51">["broad_0774386e5705dc5099bf"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0774386e5705dc5099bf</data>
+  <data key="d56">broad:2dfd343f4386c60d0c06</data>
+  <data key="d57">descriptor_inner_potential</data>
+  <data key="d58">factor_constant_inner_potential</data>
+  <data key="d59">projection:c395b7c7c00b55bfc1c6</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" target="paper::broad_0dc10bb8cea2a03ae330::metal_cobalt" id="paper::broad_0dc10bb8cea2a03ae330::broad:9e73d7d63773c46ca2e0::0">
+  <data key="d26">HAS_METAL</data>
+  <data key="d27">HAS_METAL</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">Co3O4 nanosheets contain cobalt as the metal component.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:59d7ea5ecc7e96ee6ca9</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:137ef84b2ca457782425"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:59d7ea5ecc7e96ee6ca9"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets", "paper::broad_0dc10bb8cea2a03ae330::metal_cobalt"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:9e73d7d63773c46ca2e0</data>
+  <data key="d57">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d58">metal_cobalt</data>
+  <data key="d59">projection:59d7ea5ecc7e96ee6ca9</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" target="paper::broad_0dc10bb8cea2a03ae330::reaction_oer" id="paper::broad_0dc10bb8cea2a03ae330::broad:cbf3d386c4bcf97553c7::1">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">experimental_observation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Defect-rich Co3O4 nanosheets show enhanced electrocatalytic performance for the oxygen evolution reaction.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:bb95b40a96916acdf507</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:6bee755e7aa7b22333f1"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:bb95b40a96916acdf507"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets", "paper::broad_0dc10bb8cea2a03ae330::reaction_oer"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:cbf3d386c4bcf97553c7</data>
+  <data key="d57">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d58">reaction_oer</data>
+  <data key="d59">projection:bb95b40a96916acdf507</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" target="paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich" id="paper::broad_0dc10bb8cea2a03ae330::broad:04b371cafe3631e9a53f::2">
+  <data key="d26">HAS_STRUCTURAL_STATE</data>
+  <data key="d27">HAS_STRUCTURAL_STATE</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">Oxygen defects are deliberately introduced into the Co3O4 nanosheets, producing defect-rich nanosheets.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:20dc4f222a7b9b607108</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:23cfb95710d78a819e27"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:20dc4f222a7b9b607108"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets", "paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:04b371cafe3631e9a53f</data>
+  <data key="d57">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d58">state_oxygen_vacancy_rich</data>
+  <data key="d59">projection:20dc4f222a7b9b607108</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" target="paper::broad_0dc10bb8cea2a03ae330::state_o_terminated_111_facets" id="paper::broad_0dc10bb8cea2a03ae330::broad:96f26f1596389abf2ece::3">
+  <data key="d26">HAS_STRUCTURAL_STATE</data>
+  <data key="d27">HAS_STRUCTURAL_STATE</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">The nanosheets have O-terminated {111} facets.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:e094de338c2550c41fd8</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:9241a46c22a83ecf86b0"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:e094de338c2550c41fd8"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets", "paper::broad_0dc10bb8cea2a03ae330::state_o_terminated_111_facets"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:96f26f1596389abf2ece</data>
+  <data key="d57">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d58">state_o_terminated_111_facets</data>
+  <data key="d59">projection:e094de338c2550c41fd8</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" target="paper::broad_0dc10bb8cea2a03ae330::active_site_second_layer_co" id="paper::broad_0dc10bb8cea2a03ae330::broad:8f342b9e6bcdbc448c75::4">
+  <data key="d26">HAS_ACTIVE_SITE</data>
+  <data key="d27">HAS_ACTIVE_SITE</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">DFT+U attributes the enhanced performance to oxygen vacancies and consequently exposed second-layered Co metal sites.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:3043c66530f8063a6ca7</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:a4e2929c65767499cad0"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:3043c66530f8063a6ca7"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets", "paper::broad_0dc10bb8cea2a03ae330::active_site_second_layer_co"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:8f342b9e6bcdbc448c75</data>
+  <data key="d57">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d58">active_site_second_layer_co</data>
+  <data key="d59">projection:3043c66530f8063a6ca7</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::catalyst_model_defect_rich_co3o4" target="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" id="paper::broad_0dc10bb8cea2a03ae330::broad:56283f4aaf4013524bf7::5">
+  <data key="d26">MODEL_OF</data>
+  <data key="d27">MODEL_OF</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">computational_method</data>
+  <data key="d39">direct</data>
+  <data key="d40">DFT+U calculations analyze the defect-rich Co3O4 nanosheet catalyst.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:ca8350fbf0a12d735053</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:f0628c69204a474c686e"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:ca8350fbf0a12d735053"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::catalyst_model_defect_rich_co3o4", "paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:56283f4aaf4013524bf7</data>
+  <data key="d57">catalyst_model_defect_rich_co3o4</data>
+  <data key="d58">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d59">projection:ca8350fbf0a12d735053</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::claim_oxygen_vacancies_enhance_oer" target="paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets" id="paper::broad_0dc10bb8cea2a03ae330::broad:3e7b03fdc7495e12beb1::6">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">interpretive</data>
+  <data key="d40">The enhanced OER performance is attributed to oxygen vacancies, exposed second-layered Co metal sites, and improved electrical conductivity.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:1389bc25b24a51e06dfb</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:ab19ac6f49319d7d3ecb"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:1389bc25b24a51e06dfb"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::claim_oxygen_vacancies_enhance_oer", "paper::broad_0dc10bb8cea2a03ae330::catalyst_defect_rich_co3o4_nanosheets"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:3e7b03fdc7495e12beb1</data>
+  <data key="d57">claim_oxygen_vacancies_enhance_oer</data>
+  <data key="d58">catalyst_defect_rich_co3o4_nanosheets</data>
+  <data key="d59">projection:1389bc25b24a51e06dfb</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::metal_cobalt" target="corpus::registry::metal::c4dded0dbcf0bf7eeb62" id="align:3656ec5968ae051a584e">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::metal_cobalt", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:8ff40afc087ca3d054c9"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:8ff40afc087ca3d054c9</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::reaction_oer" target="corpus::registry::reaction::3692c8df70f3192bece4" id="align:967f25234e05b106b7c2">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:454b954c8098892b4125"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:454b954c8098892b4125</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich" target="paper::broad_0dc10bb8cea2a03ae330::active_site_second_layer_co" id="paper::broad_0dc10bb8cea2a03ae330::broad:a312b28a0352e9f47b3b::7">
+  <data key="d26">INDUCES</data>
+  <data key="d27">INDUCES</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">Oxygen vacancies consequently expose second-layered Co metal sites.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:030392d2bebc5aaa2429</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:6439aed0c74bc215ad33"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:030392d2bebc5aaa2429"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich", "paper::broad_0dc10bb8cea2a03ae330::active_site_second_layer_co"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:a312b28a0352e9f47b3b</data>
+  <data key="d57">state_oxygen_vacancy_rich</data>
+  <data key="d58">active_site_second_layer_co</data>
+  <data key="d59">projection:030392d2bebc5aaa2429</data>
+</edge>
+<edge source="paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich" target="paper::broad_0dc10bb8cea2a03ae330::factor_improved_electrical_conductivity" id="paper::broad_0dc10bb8cea2a03ae330::broad:99decabf3fc16aa6e6e4::8">
+  <data key="d26">INDUCES</data>
+  <data key="d27">INDUCES</data>
+  <data key="d28">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d29">broad_0dc10bb8cea2a03ae330:abstract:f1b7bca0de6970f1b447</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">The oxygen-vacancy-related structure is reported to improve electrical conductivity.</data>
+  <data key="d41">medium</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_0dc10bb8cea2a03ae330::projection:2f31f2b52fd61c5e2186</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_0dc10bb8cea2a03ae330::canonical:182f33f5509364603f7b"]</data>
+  <data key="d49">["paper::broad_0dc10bb8cea2a03ae330::projection:2f31f2b52fd61c5e2186"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::state_oxygen_vacancy_rich", "paper::broad_0dc10bb8cea2a03ae330::factor_improved_electrical_conductivity"]</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_0dc10bb8cea2a03ae330</data>
+  <data key="d56">broad:99decabf3fc16aa6e6e4</data>
+  <data key="d57">state_oxygen_vacancy_rich</data>
+  <data key="d58">factor_improved_electrical_conductivity</data>
+  <data key="d59">projection:2f31f2b52fd61c5e2186</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::metal_platinum" id="paper::broad_12549367c327c283ccf7::broad:4329bd33eafb9470f27a::0">
+  <data key="d26">HAS_METAL</data>
+  <data key="d27">HAS_METAL</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum decorated nanoporous Co0.85Se (Pt/np-Co0.85Se).</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:6240f409d844781be7a3</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:c60acfb132a84edd2c10"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:6240f409d844781be7a3"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::metal_platinum"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:4329bd33eafb9470f27a</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">metal_platinum</data>
+  <data key="d59">projection:6240f409d844781be7a3</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::support_np_co085se" id="paper::broad_12549367c327c283ccf7::broad:3db5646204e33e407ee0::1">
+  <data key="d26">SUPPORTED_ON</data>
+  <data key="d27">SUPPORTED_ON</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum decorated nanoporous Co0.85Se.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:cdb7ecb9f0da75a033fb</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:8ca8c668b169f35cbca1"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:cdb7ecb9f0da75a033fb"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::support_np_co085se"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:3db5646204e33e407ee0</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">support_np_co085se</data>
+  <data key="d59">projection:cdb7ecb9f0da75a033fb</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::reaction_her" id="paper::broad_12549367c327c283ccf7::broad:1906b530699f1a25ab62::2">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">experimental_observation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Pt/np-Co0.85Se is reported as an efficient electrocatalyst for hydrogen evolution.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:7d9b7ba821097871200d</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:d930ba1c7b9a143ce6fd"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:7d9b7ba821097871200d"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::reaction_her"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:1906b530699f1a25ab62</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">reaction_her</data>
+  <data key="d59">projection:7d9b7ba821097871200d</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::active_site_co085se" id="paper::broad_12549367c327c283ccf7::broad:e213a183e83037e8149d::3">
+  <data key="d26">HAS_ACTIVE_SITE</data>
+  <data key="d27">HAS_ACTIVE_SITE</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum can optimize surface states of Co0.85Se active centers under realistic working conditions.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:87d8f1874397892cf4f5</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:59f84242cff7088f058e"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:87d8f1874397892cf4f5"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::active_site_co085se"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:e213a183e83037e8149d</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">active_site_co085se</data>
+  <data key="d59">projection:87d8f1874397892cf4f5</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::state_optimized_surface_co085se" id="paper::broad_12549367c327c283ccf7::broad:d665fde1ad6b5b45a24f::4">
+  <data key="d26">HAS_STRUCTURAL_STATE</data>
+  <data key="d27">HAS_STRUCTURAL_STATE</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum ... can optimize surface states of Co0.85Se active centers under realistic working conditions.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:c1e99eacfa9bb85510ed</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:67f4016c43f130f8c735"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:c1e99eacfa9bb85510ed"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::state_optimized_surface_co085se"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:d665fde1ad6b5b45a24f</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">state_optimized_surface_co085se</data>
+  <data key="d59">projection:c1e99eacfa9bb85510ed</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::state_optimized_surface_co085se" id="paper::broad_12549367c327c283ccf7::broad:b15353bb04807a98eb1a::5">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum ... can optimize surface states of Co0.85Se active centers.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:899cb5cc9cade09febbc</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:355b906b0b91a509d8c9"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:899cb5cc9cade09febbc"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::state_optimized_surface_co085se"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:b15353bb04807a98eb1a</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">state_optimized_surface_co085se</data>
+  <data key="d59">projection:899cb5cc9cade09febbc</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::step_water_dissociation" id="paper::broad_12549367c327c283ccf7::broad:ec26d09ba2a10f0d60d6::6">
+  <data key="d26">FACILITATES_STEP</data>
+  <data key="d27">FACILITATES_STEP</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum ... can significantly reduce energy barriers of water dissociation.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:5655cfa791387f78f907</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:b4c799abac78c21ddf61"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:5655cfa791387f78f907"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::step_water_dissociation"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:ec26d09ba2a10f0d60d6</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">step_water_dissociation</data>
+  <data key="d59">projection:5655cfa791387f78f907</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::adsorbate_hydrogen_behavior" id="paper::broad_12549367c327c283ccf7::broad:5d11851a0fe504e3a431::7">
+  <data key="d26">HAS_ADSORBATE_STATE</data>
+  <data key="d27">HAS_ADSORBATE_STATE</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The catalyst improves adsorption/desorption behavior of hydrogen.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:7a2d1f7cb8f4f8a6fd53</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:749e8d061e17e321baa9"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:7a2d1f7cb8f4f8a6fd53"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::adsorbate_hydrogen_behavior"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:5d11851a0fe504e3a431</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">adsorbate_hydrogen_behavior</data>
+  <data key="d59">projection:7a2d1f7cb8f4f8a6fd53</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" target="paper::broad_12549367c327c283ccf7::adsorbate_hydrogen_behavior" id="paper::broad_12549367c327c283ccf7::broad:056c7d42ab25e834192e::8">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Single-atom platinum ... can improve adsorption/desorption behavior of hydrogen.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:d1aedabc063d425bb65c</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:9211df6ad667f05076c8"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:d1aedabc063d425bb65c"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se", "paper::broad_12549367c327c283ccf7::adsorbate_hydrogen_behavior"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:056c7d42ab25e834192e</data>
+  <data key="d57">catalyst_pt_np_co085se</data>
+  <data key="d58">adsorbate_hydrogen_behavior</data>
+  <data key="d59">projection:d1aedabc063d425bb65c</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::claim_pt_tunes_her_mechanism" target="paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se" id="paper::broad_12549367c327c283ccf7::broad:09681c346b9876348004::9">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_12549367c327c283ccf7</data>
+  <data key="d29">broad_12549367c327c283ccf7:abstract:367394008233bc28ff2f</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The reported mechanism is assigned to single-atom platinum in Pt/np-Co0.85Se.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_12549367c327c283ccf7::projection:249bfce8f174520d0918</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_12549367c327c283ccf7::canonical:887763ee89be92820617"]</data>
+  <data key="d49">["paper::broad_12549367c327c283ccf7::projection:249bfce8f174520d0918"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::claim_pt_tunes_her_mechanism", "paper::broad_12549367c327c283ccf7::catalyst_pt_np_co085se"]</data>
+  <data key="d51">["broad_12549367c327c283ccf7"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_12549367c327c283ccf7</data>
+  <data key="d56">broad:09681c346b9876348004</data>
+  <data key="d57">claim_pt_tunes_her_mechanism</data>
+  <data key="d58">catalyst_pt_np_co085se</data>
+  <data key="d59">projection:249bfce8f174520d0918</data>
+</edge>
+<edge source="paper::broad_12549367c327c283ccf7::reaction_her" target="corpus::registry::reaction::d84eea8f4a5b5d10d7bb" id="align:cf032b245fc108ee5735">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_12549367c327c283ccf7", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::reaction_her", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:00c4a481ef2b148eb112"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:00c4a481ef2b148eb112</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::metal_cobalt" id="paper::broad_1e86b38c448a764b68a3::broad:86816b7e5fed93f19cbc::0">
+  <data key="d26">HAS_METAL</data>
+  <data key="d27">HAS_METAL</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">The heterostructure consists of CoSe2 and cobalt nitride (CoN).</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:dbad721f8818143439d5</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:b7790e5f3454146630ec"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:dbad721f8818143439d5"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:86816b7e5fed93f19cbc</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">metal_cobalt</data>
+  <data key="d59">projection:dbad721f8818143439d5</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::support_hollow_carbon_cage" id="paper::broad_1e86b38c448a764b68a3::broad:3063d06edb4aca10eba4::1">
+  <data key="d26">SUPPORTED_ON</data>
+  <data key="d27">SUPPORTED_ON</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">CoSe2 and CoN are embedded in a hollow carbon cage.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:5d521c1b81812b8f7dc6</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:63b21011a4afa56c46f0"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:5d521c1b81812b8f7dc6"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::support_hollow_carbon_cage"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:3063d06edb4aca10eba4</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">support_hollow_carbon_cage</data>
+  <data key="d59">projection:5d521c1b81812b8f7dc6</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::reaction_orr" id="paper::broad_1e86b38c448a764b68a3::broad:da2ec7e32f7d5c5854f2::2">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">experimental_observation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The c-CoSe2/CoN heterointerface exhibits highly stable activity for ORR.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:eb52e35f7fd64000456b</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:51487c726a4a1569d2d5"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:eb52e35f7fd64000456b"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::reaction_orr"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:da2ec7e32f7d5c5854f2</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">reaction_orr</data>
+  <data key="d59">projection:eb52e35f7fd64000456b</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::reaction_oer" id="paper::broad_1e86b38c448a764b68a3::broad:d18caf059bee22f54175::3">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">experimental_observation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The c-CoSe2/CoN heterointerface exhibits highly stable activity for OER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:806a3f0145bea5e62874</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:67628f5956ce0b00dda8"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:806a3f0145bea5e62874"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::reaction_oer"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:d18caf059bee22f54175</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">reaction_oer</data>
+  <data key="d59">projection:806a3f0145bea5e62874</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::state_orthorhombic_cose2" id="paper::broad_1e86b38c448a764b68a3::broad:3c44d7782a4a0bb104e5::4">
+  <data key="d26">HAS_STRUCTURAL_STATE</data>
+  <data key="d27">HAS_STRUCTURAL_STATE</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">The catalyst is based on a phase transformation of orthorhombic-CoSe2.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:47a302f2f358b1d0f428</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:c8e2fb5ac35d02f6ab1d"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:47a302f2f358b1d0f428"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::state_orthorhombic_cose2"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:3c44d7782a4a0bb104e5</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">state_orthorhombic_cose2</data>
+  <data key="d59">projection:47a302f2f358b1d0f428</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface" id="paper::broad_1e86b38c448a764b68a3::broad:7d10dbb1b4a01260385e::5">
+  <data key="d26">HAS_STRUCTURAL_STATE</data>
+  <data key="d27">HAS_STRUCTURAL_STATE</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">The c-CoSe2/CoN heterointerface is constructed through simultaneous phase/interface engineering.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:7b7aa337630fe2836f9b</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:d5de82f86a122ce95ef1"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:7b7aa337630fe2836f9b"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:7d10dbb1b4a01260385e</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">state_cubic_cose2_con_interface</data>
+  <data key="d59">projection:7b7aa337630fe2836f9b</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::site_co_cose2" id="paper::broad_1e86b38c448a764b68a3::broad:36e7c113335e3c405eb5::6">
+  <data key="d26">HAS_ACTIVE_SITE</data>
+  <data key="d27">HAS_ACTIVE_SITE</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">The Co-site in c-CoSe2 is the main active site for ORR/OER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:3d9ce3c29142a890201f</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:c9e309a439ee012eb624"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:3d9ce3c29142a890201f"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::site_co_cose2"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:36e7c113335e3c405eb5</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">site_co_cose2</data>
+  <data key="d59">projection:3d9ce3c29142a890201f</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" target="paper::broad_1e86b38c448a764b68a3::descriptor_co_d_orbital_structure" id="paper::broad_1e86b38c448a764b68a3::broad:55ef142dec42fd3100f3::7">
+  <data key="d26">HAS_DESCRIPTOR</data>
+  <data key="d27">HAS_DESCRIPTOR</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">The d-orbital electronic structure of the Co atom of c-CoSe2 is energetically tailored in the heterostructure.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:ba7dc565cee42db753d6</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:29f335357f1d3d8de0a3"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:ba7dc565cee42db753d6"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage", "paper::broad_1e86b38c448a764b68a3::descriptor_co_d_orbital_structure"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:55ef142dec42fd3100f3</data>
+  <data key="d57">cat_cose2_con_cage</data>
+  <data key="d58">descriptor_co_d_orbital_structure</data>
+  <data key="d59">projection:ba7dc565cee42db753d6</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::claim_cobalt_site_active" target="paper::broad_1e86b38c448a764b68a3::site_co_cose2" id="paper::broad_1e86b38c448a764b68a3::broad:c198d9332f74480a7e28::8">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">The Co-site in c-CoSe2 is the main active site for ORR/OER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:c92c41976d7f2cd0e7f1</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:8632ea4e0fba97e9573a"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:c92c41976d7f2cd0e7f1"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::claim_cobalt_site_active", "paper::broad_1e86b38c448a764b68a3::site_co_cose2"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:c198d9332f74480a7e28</data>
+  <data key="d57">claim_cobalt_site_active</data>
+  <data key="d58">site_co_cose2</data>
+  <data key="d59">projection:c92c41976d7f2cd0e7f1</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::claim_d_orbital_barriers" target="paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage" id="paper::broad_1e86b38c448a764b68a3::broad:9209bf6d09a2052d24a7::9">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">In situ CoN incorporation in the heterostructure tailors Co d-orbital electronic structure and lowers ORR/OER thermodynamic barriers.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:2b2254e873ba921714e5</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:297971875d93063ccd06"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:2b2254e873ba921714e5"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::claim_d_orbital_barriers", "paper::broad_1e86b38c448a764b68a3::cat_cose2_con_cage"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:9209bf6d09a2052d24a7</data>
+  <data key="d57">claim_d_orbital_barriers</data>
+  <data key="d58">cat_cose2_con_cage</data>
+  <data key="d59">projection:2b2254e873ba921714e5</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation" target="paper::broad_1e86b38c448a764b68a3::descriptor_co_d_orbital_structure" id="paper::broad_1e86b38c448a764b68a3::broad:0bf099e41751c1eadc72::10">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">In situ CoN incorporation energetically tailors the d-orbital electronic structure of the Co atom of c-CoSe2.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:2c084c72b1e3c874da58</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:5e940daa108c11456de9"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:2c084c72b1e3c874da58"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation", "paper::broad_1e86b38c448a764b68a3::descriptor_co_d_orbital_structure"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:0bf099e41751c1eadc72</data>
+  <data key="d57">factor_c_on_incorporation</data>
+  <data key="d58">descriptor_co_d_orbital_structure</data>
+  <data key="d59">projection:2c084c72b1e3c874da58</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation" target="paper::broad_1e86b38c448a764b68a3::reaction_orr" id="paper::broad_1e86b38c448a764b68a3::broad:eae701c9ec409108de91::11">
+  <data key="d26">PROMOTES</data>
+  <data key="d27">PROMOTES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">Energetic tailoring by in situ CoN incorporation lowers thermodynamic barriers for ORR.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:a08b877e56c04f4d7171</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:b3b6575ee7fab45a6567"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:a08b877e56c04f4d7171"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation", "paper::broad_1e86b38c448a764b68a3::reaction_orr"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:eae701c9ec409108de91</data>
+  <data key="d57">factor_c_on_incorporation</data>
+  <data key="d58">reaction_orr</data>
+  <data key="d59">projection:a08b877e56c04f4d7171</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation" target="paper::broad_1e86b38c448a764b68a3::reaction_oer" id="paper::broad_1e86b38c448a764b68a3::broad:a2f70f17719c439328a1::12">
+  <data key="d26">PROMOTES</data>
+  <data key="d27">PROMOTES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">Energetic tailoring by in situ CoN incorporation lowers thermodynamic barriers for OER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:d7983752356437ada700</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:de88c53e6c743d09b31a"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:d7983752356437ada700"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::factor_c_on_incorporation", "paper::broad_1e86b38c448a764b68a3::reaction_oer"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:a2f70f17719c439328a1</data>
+  <data key="d57">factor_c_on_incorporation</data>
+  <data key="d58">reaction_oer</data>
+  <data key="d59">projection:d7983752356437ada700</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::metal_cobalt" target="corpus::registry::metal::c4dded0dbcf0bf7eeb62" id="align:26225b8ef1008da56919">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::metal_cobalt", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:3a6925b1915b23734add"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:3a6925b1915b23734add</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::reaction_oer" target="corpus::registry::reaction::3692c8df70f3192bece4" id="align:6576f1cecee8722efcc8">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:ee131937c8ae4fa2524a"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:ee131937c8ae4fa2524a</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::reaction_orr" target="corpus::registry::reaction::e6ded8229072bcc36f17" id="align:de586eacb92337057242">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::reaction_orr", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:6f3ff5bcde583ef5ce1a"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:6f3ff5bcde583ef5ce1a</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface" target="paper::broad_1e86b38c448a764b68a3::state_local_coordination_environment" id="paper::broad_1e86b38c448a764b68a3::broad:aca4a5cd16dc67c4649c::13">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The heterostructure can modulate the local coordination environment and increase Co-Se/N bond lengths.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:178a1aa7f91d83886133</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:ae51515760442561580e"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:178a1aa7f91d83886133"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface", "paper::broad_1e86b38c448a764b68a3::state_local_coordination_environment"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:aca4a5cd16dc67c4649c</data>
+  <data key="d57">state_cubic_cose2_con_interface</data>
+  <data key="d58">state_local_coordination_environment</data>
+  <data key="d59">projection:178a1aa7f91d83886133</data>
+</edge>
+<edge source="paper::broad_1e86b38c448a764b68a3::state_orthorhombic_cose2" target="paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface" id="paper::broad_1e86b38c448a764b68a3::broad:58d1c1254f677c1f9705::14">
+  <data key="d26">RECONSTRUCTS_TO</data>
+  <data key="d27">RECONSTRUCTS_TO</data>
+  <data key="d28">broad_1e86b38c448a764b68a3</data>
+  <data key="d29">broad_1e86b38c448a764b68a3:abstract:caf0015eb3fe15f542e7</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37"></data>
+  <data key="d38">structural_characterization</data>
+  <data key="d39">direct</data>
+  <data key="d40">Phase transition of orthorhombic-CoSe2 to cubic-CoSe2 accompanied by in situ CoN formation builds the c-CoSe2/CoN heterointerface.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1e86b38c448a764b68a3::projection:23264e925f959a14062d</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1e86b38c448a764b68a3::canonical:d4d7c65b13154c3ce646"]</data>
+  <data key="d49">["paper::broad_1e86b38c448a764b68a3::projection:23264e925f959a14062d"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::state_orthorhombic_cose2", "paper::broad_1e86b38c448a764b68a3::state_cubic_cose2_con_interface"]</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1e86b38c448a764b68a3</data>
+  <data key="d56">broad:58d1c1254f677c1f9705</data>
+  <data key="d57">state_orthorhombic_cose2</data>
+  <data key="d58">state_cubic_cose2_con_interface</data>
+  <data key="d59">projection:23264e925f959a14062d</data>
+</edge>
+<edge source="paper::broad_1f5f4154830ff7beb2d8::claim_distinguished_co2rr_intermediates" target="paper::broad_1f5f4154830ff7beb2d8::reaction_co2_reduction" id="paper::broad_1f5f4154830ff7beb2d8::broad:ba9b676721a533fea206::0">
+  <data key="d26">APPLIES_TO</data>
+  <data key="d27">APPLIES_TO</data>
+  <data key="d28">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d29">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Significance</data>
+  <data key="d38">computational_result</data>
+  <data key="d39">direct</data>
+  <data key="d40">The distinguished reactive intermediates are associated with the carbon dioxide reduction reaction studied in the work.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1f5f4154830ff7beb2d8::projection:79ffd67ccbed697b9007</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1f5f4154830ff7beb2d8::canonical:11399e8920b5d64b6cec"]</data>
+  <data key="d49">["paper::broad_1f5f4154830ff7beb2d8::projection:79ffd67ccbed697b9007"]</data>
+  <data key="d50">["paper::broad_1f5f4154830ff7beb2d8::claim_distinguished_co2rr_intermediates", "paper::broad_1f5f4154830ff7beb2d8::reaction_co2_reduction"]</data>
+  <data key="d51">["broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d56">broad:ba9b676721a533fea206</data>
+  <data key="d57">claim_distinguished_co2rr_intermediates</data>
+  <data key="d58">reaction_co2_reduction</data>
+  <data key="d59">projection:79ffd67ccbed697b9007</data>
+</edge>
+<edge source="paper::broad_1f5f4154830ff7beb2d8::reaction_co2_reduction" target="paper::broad_1f5f4154830ff7beb2d8::environment_electrode_electrolyte_explicit_solvent_voltage" id="paper::broad_1f5f4154830ff7beb2d8::broad:82ef0a8403daaa64a9e9::1">
+  <data key="d26">HAS_ENVIRONMENT</data>
+  <data key="d27">HAS_ENVIRONMENT</data>
+  <data key="d28">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d29">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Significance</data>
+  <data key="d38">computational_method</data>
+  <data key="d39">direct</data>
+  <data key="d40">Advanced QM-based simulation of the electrode–electrolyte interface with explicit consideration of solvent and applied voltage.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_1f5f4154830ff7beb2d8::projection:8ae69d6634d8c38e78f8</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_1f5f4154830ff7beb2d8::canonical:f2456cdb1ca7bc8d17cb"]</data>
+  <data key="d49">["paper::broad_1f5f4154830ff7beb2d8::projection:8ae69d6634d8c38e78f8"]</data>
+  <data key="d50">["paper::broad_1f5f4154830ff7beb2d8::reaction_co2_reduction", "paper::broad_1f5f4154830ff7beb2d8::environment_electrode_electrolyte_explicit_solvent_voltage"]</data>
+  <data key="d51">["broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d56">broad:82ef0a8403daaa64a9e9</data>
+  <data key="d57">reaction_co2_reduction</data>
+  <data key="d58">environment_electrode_electrolyte_explicit_solvent_voltage</data>
+  <data key="d59">projection:8ae69d6634d8c38e78f8</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::support_pops" id="paper::broad_241a667a6ef693f01c95::broad:99c81d187acfc797d9d1::0">
+  <data key="d26">SUPPORTED_ON</data>
+  <data key="d27">SUPPORTED_ON</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs have demonstrated promise as support platforms for the design of SACs.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:199b866333cdf47c90da</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:d770d965eef6c54ee0ef"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:199b866333cdf47c90da"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::support_pops"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:99c81d187acfc797d9d1</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">support_pops</data>
+  <data key="d59">projection:199b866333cdf47c90da</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::support_pops_nanocarbons" id="paper::broad_241a667a6ef693f01c95::broad:221acb5f0e2858b9c8ce::1">
+  <data key="d26">SUPPORTED_ON</data>
+  <data key="d27">SUPPORTED_ON</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Fabrication approaches utilizing POPs and POPs-derived nanocarbons to host single-atom metals are discussed.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:02049ab694e8acc67fe3</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:eb1f6c0796e4b16fc6e8"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:02049ab694e8acc67fe3"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::support_pops_nanocarbons"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:221acb5f0e2858b9c8ce</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">support_pops_nanocarbons</data>
+  <data key="d59">projection:02049ab694e8acc67fe3</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::metal_atomically_dispersed" id="paper::broad_241a667a6ef693f01c95::broad:b11c36c410fc04966831::2">
+  <data key="d26">HAS_METAL</data>
+  <data key="d27">HAS_METAL</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SACs host atomically dispersed metals.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:6a8f30afccdaba63b3ba</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:3f839a8ffc4aa55c2bc8"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:6a8f30afccdaba63b3ba"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::metal_atomically_dispersed"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:b11c36c410fc04966831</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">metal_atomically_dispersed</data>
+  <data key="d59">projection:6a8f30afccdaba63b3ba</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::reaction_orr" id="paper::broad_241a667a6ef693f01c95::broad:dcad5935b509d1a64c57::3">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SAC applications in heterogeneous electrocatalysis include ORR.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:63846cf557ab1d612dc9</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:e394aa9d7db3ff87d08f"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:63846cf557ab1d612dc9"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:dcad5935b509d1a64c57</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">reaction_orr</data>
+  <data key="d59">projection:63846cf557ab1d612dc9</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::reaction_oer" id="paper::broad_241a667a6ef693f01c95::broad:f3b92d83546edebd9e5c::4">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SAC applications in heterogeneous electrocatalysis include OER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:39636533493bf14da694</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:3a0ded25d3474ca63414"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:39636533493bf14da694"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:f3b92d83546edebd9e5c</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">reaction_oer</data>
+  <data key="d59">projection:39636533493bf14da694</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::reaction_her" id="paper::broad_241a667a6ef693f01c95::broad:f22e6cec4709c270258f::5">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SAC applications in heterogeneous electrocatalysis include HER.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:c90468eb7db4742724f6</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:96be887526cf14b57fab"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:c90468eb7db4742724f6"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:f22e6cec4709c270258f</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">reaction_her</data>
+  <data key="d59">projection:c90468eb7db4742724f6</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::reaction_co2rr" id="paper::broad_241a667a6ef693f01c95::broad:993b4c50518423ff8c6d::6">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SAC applications in heterogeneous electrocatalysis include CO2RR.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:cbc24892a028b478786d</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:e9a968dd06619d0896ec"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:cbc24892a028b478786d"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::reaction_co2rr"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:993b4c50518423ff8c6d</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">reaction_co2rr</data>
+  <data key="d59">projection:cbc24892a028b478786d</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" target="paper::broad_241a667a6ef693f01c95::reaction_nrr" id="paper::broad_241a667a6ef693f01c95::broad:13befc269993911f4bd9::7">
+  <data key="d26">CATALYZES</data>
+  <data key="d27">CATALYZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">POPs-based SAC applications in heterogeneous electrocatalysis include NRR.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:3c8b84404257f34085de</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:d37cd9947154a558c05d"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:3c8b84404257f34085de"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::catalyst_pop_sac", "paper::broad_241a667a6ef693f01c95::reaction_nrr"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:13befc269993911f4bd9</data>
+  <data key="d57">catalyst_pop_sac</data>
+  <data key="d58">reaction_nrr</data>
+  <data key="d59">projection:3c8b84404257f34085de</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::factor_electron_transport" target="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" id="paper::broad_241a667a6ef693f01c95::broad:a75bcaeb1afa2195063b::8">
+  <data key="d26">PROMOTES</data>
+  <data key="d27">PROMOTES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Favorable electron transport is identified among the support characteristics relevant to SAC design.</data>
+  <data key="d41">medium</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:c1f32746972e0eb40f85</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:5a2a7cfb190102b38320"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:c1f32746972e0eb40f85"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::factor_electron_transport", "paper::broad_241a667a6ef693f01c95::catalyst_pop_sac"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:a75bcaeb1afa2195063b</data>
+  <data key="d57">factor_electron_transport</data>
+  <data key="d58">catalyst_pop_sac</data>
+  <data key="d59">projection:c1f32746972e0eb40f85</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::factor_local_electronic" target="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" id="paper::broad_241a667a6ef693f01c95::broad:5fb9855d070cd254cf33::9">
+  <data key="d26">MODULATES</data>
+  <data key="d27">MODULATES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">The abstract identifies a tunable local electronic environment as a support-related feature for SAC design.</data>
+  <data key="d41">medium</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:57f5cdf741ac9ca433df</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:e91cfa104cd8754bda56"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:57f5cdf741ac9ca433df"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::factor_local_electronic", "paper::broad_241a667a6ef693f01c95::catalyst_pop_sac"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:5fb9855d070cd254cf33</data>
+  <data key="d57">factor_local_electronic</data>
+  <data key="d58">catalyst_pop_sac</data>
+  <data key="d59">projection:57f5cdf741ac9ca433df</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::factor_mass_transport" target="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" id="paper::broad_241a667a6ef693f01c95::broad:60bafbd44a2cd2d2d2e2::10">
+  <data key="d26">PROMOTES</data>
+  <data key="d27">PROMOTES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Favorable mass transport is identified among the support characteristics relevant to SAC design.</data>
+  <data key="d41">medium</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:2c4f4c1d667df0d1f9d1</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:37359727d2fe7dd5c949"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:2c4f4c1d667df0d1f9d1"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::factor_mass_transport", "paper::broad_241a667a6ef693f01c95::catalyst_pop_sac"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:60bafbd44a2cd2d2d2e2</data>
+  <data key="d57">factor_mass_transport</data>
+  <data key="d58">catalyst_pop_sac</data>
+  <data key="d59">projection:2c4f4c1d667df0d1f9d1</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::factor_msi" target="paper::broad_241a667a6ef693f01c95::catalyst_pop_sac" id="paper::broad_241a667a6ef693f01c95::broad:882ee2eb4bf8e78874b1::11">
+  <data key="d26">STABILIZES</data>
+  <data key="d27">STABILIZES</data>
+  <data key="d28">broad_241a667a6ef693f01c95</data>
+  <data key="d29">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d30">abstract</data>
+  <data key="d31">main</data>
+  <data key="d32">[abstract] whole document</data>
+  <data key="d33">[]</data>
+  <data key="d34">[]</data>
+  <data key="d35">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d36">[]</data>
+  <data key="d37">Abstract</data>
+  <data key="d38">author_interpretation</data>
+  <data key="d39">direct</data>
+  <data key="d40">Reliable supports are described as imperative for stabilizing atomically dispersed metals with strong metal-support interaction.</data>
+  <data key="d41">high</data>
+  <data key="d42">False</data>
+  <data key="d43">paper::broad_241a667a6ef693f01c95::projection:7c030b91d42d2971e961</data>
+  <data key="d44">broad_mechanism_abstract</data>
+  <data key="d45">broad_abstract_support</data>
+  <data key="d46">True</data>
+  <data key="d47">abstract</data>
+  <data key="d48">["paper::broad_241a667a6ef693f01c95::canonical:1fa00fa8b38da1b79941"]</data>
+  <data key="d49">["paper::broad_241a667a6ef693f01c95::projection:7c030b91d42d2971e961"]</data>
+  <data key="d50">["paper::broad_241a667a6ef693f01c95::factor_msi", "paper::broad_241a667a6ef693f01c95::catalyst_pop_sac"]</data>
+  <data key="d51">["broad_241a667a6ef693f01c95"]</data>
+  <data key="d52">direct_broad_abstract_canonical_edge</data>
+  <data key="d53">1</data>
+  <data key="d54">1.15</data>
+  <data key="d55">broad_241a667a6ef693f01c95</data>
+  <data key="d56">broad:882ee2eb4bf8e78874b1</data>
+  <data key="d57">factor_msi</data>
+  <data key="d58">catalyst_pop_sac</data>
+  <data key="d59">projection:7c030b91d42d2971e961</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::reaction_her" target="corpus::registry::reaction::d84eea8f4a5b5d10d7bb" id="align:cf92f99292eb6f8c2ef7">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_12549367c327c283ccf7", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::reaction_her", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:dcc5feb023e9f2784340"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:dcc5feb023e9f2784340</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::reaction_oer" target="corpus::registry::reaction::3692c8df70f3192bece4" id="align:916ade6af914bf0944c0">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:c425008c462e65fa62d3"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:c425008c462e65fa62d3</data>
+</edge>
+<edge source="paper::broad_241a667a6ef693f01c95::reaction_orr" target="corpus::registry::reaction::e6ded8229072bcc36f17" id="align:e65d7e3647b6fc12d852">
+  <data key="d26">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d27">ALIGNS_TO_REGISTRY_ENTITY</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::reaction_orr", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:de5a5cc20e84e01a6316"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:de5a5cc20e84e01a6316</data>
+</edge>
+<edge source="corpus::registry::metal::c4dded0dbcf0bf7eeb62" target="paper::broad_0dc10bb8cea2a03ae330::metal_cobalt" id="align:7dbf9a16084f488b9c01">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::metal_cobalt", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:0bce4b91c1ea84a2eb4d"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:0bce4b91c1ea84a2eb4d</data>
+</edge>
+<edge source="corpus::registry::metal::c4dded0dbcf0bf7eeb62" target="paper::broad_1e86b38c448a764b68a3::metal_cobalt" id="align:6f26a10c02377bceafd1">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::metal_cobalt", "paper::broad_1e86b38c448a764b68a3::metal_cobalt"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:71c8044d761a8f6e8ef5"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:71c8044d761a8f6e8ef5</data>
+</edge>
+<edge source="corpus::registry::reaction::d84eea8f4a5b5d10d7bb" target="paper::broad_12549367c327c283ccf7::reaction_her" id="align:24b8492fa39da394f3df">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_12549367c327c283ccf7", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::reaction_her", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:5e9ae7fe5c834b87bfa1"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:5e9ae7fe5c834b87bfa1</data>
+</edge>
+<edge source="corpus::registry::reaction::d84eea8f4a5b5d10d7bb" target="paper::broad_241a667a6ef693f01c95::reaction_her" id="align:723ee60b226f232a8ee8">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_12549367c327c283ccf7", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_12549367c327c283ccf7::reaction_her", "paper::broad_241a667a6ef693f01c95::reaction_her"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:4e5254aab21a34cc3e73"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:4e5254aab21a34cc3e73</data>
+</edge>
+<edge source="corpus::registry::reaction::3692c8df70f3192bece4" target="paper::broad_0dc10bb8cea2a03ae330::reaction_oer" id="align:2e49d1dcaf3b313820a8">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:fb9c432dccd48069cddf"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:fb9c432dccd48069cddf</data>
+</edge>
+<edge source="corpus::registry::reaction::3692c8df70f3192bece4" target="paper::broad_1e86b38c448a764b68a3::reaction_oer" id="align:560c2347a2c618c532f8">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:9e6730528f8f0347082e"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:9e6730528f8f0347082e</data>
+</edge>
+<edge source="corpus::registry::reaction::3692c8df70f3192bece4" target="paper::broad_241a667a6ef693f01c95::reaction_oer" id="align:eed1210a49b496f67e8f">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_0dc10bb8cea2a03ae330", "broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_0dc10bb8cea2a03ae330::reaction_oer", "paper::broad_1e86b38c448a764b68a3::reaction_oer", "paper::broad_241a667a6ef693f01c95::reaction_oer"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:6eb062c329ce8296db82"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">3</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:6eb062c329ce8296db82</data>
+</edge>
+<edge source="corpus::registry::reaction::e6ded8229072bcc36f17" target="paper::broad_1e86b38c448a764b68a3::reaction_orr" id="align:fb1cfce7e24a772e48a9">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::reaction_orr", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:a250ac4ec1d32177d63a"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:a250ac4ec1d32177d63a</data>
+</edge>
+<edge source="corpus::registry::reaction::e6ded8229072bcc36f17" target="paper::broad_241a667a6ef693f01c95::reaction_orr" id="align:278964e676ecb65ab61e">
+  <data key="d26">HAS_PAPER_MENTION</data>
+  <data key="d27">HAS_PAPER_MENTION</data>
+  <data key="d44">corpus_alignment</data>
+  <data key="d45">derived_corpus_alignment</data>
+  <data key="d46">False</data>
+  <data key="d51">["broad_1e86b38c448a764b68a3", "broad_241a667a6ef693f01c95"]</data>
+  <data key="d50">["paper::broad_1e86b38c448a764b68a3::reaction_orr", "paper::broad_241a667a6ef693f01c95::reaction_orr"]</data>
+  <data key="d48">[]</data>
+  <data key="d49">["corpus_projection:06208d7ab193f00a0a24"]</data>
+  <data key="d35">[]</data>
+  <data key="d52">exact_registry_safe_normalized_signature</data>
+  <data key="d53">2</data>
+  <data key="d60">alignment</data>
+  <data key="d43">corpus_projection:06208d7ab193f00a0a24</data>
+</edge>
+</graph></graphml>

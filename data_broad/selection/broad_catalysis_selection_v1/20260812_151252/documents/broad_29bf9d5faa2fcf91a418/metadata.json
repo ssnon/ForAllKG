@@ -1,0 +1,58 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 5.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "interfacial water electrocatalysis reaction barrier"
+  ],
+  "doi": "10.1002/adma.202104638",
+  "literature_paper_id": "literature:29bf9d5faa2fcf91a418",
+  "mechanism_buckets": [
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_29bf9d5faa2fcf91a418",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W3202348700"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 15.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "cited_by_count": 122,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": false,
+      "is_oa": false,
+      "oa_status": "closed",
+      "oa_url": null
+    },
+    "openalex_id": "https://openalex.org/W3202348700",
+    "primary_location": {
+      "is_oa": false,
+      "landing_page_url": "https://doi.org/10.1002/adma.202104638",
+      "source_id": "https://openalex.org/S99352657",
+      "source_name": "Advanced Materials",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2021-10-08",
+    "relevance_score": 222.41525,
+    "work_type": "article"
+  },
+  "title": "Surface‐Dependent Intermediate Adsorption Modulation on Iridium‐Modified Black Phosphorus Electrocatalysts for Efficient pH‐Universal Water Splitting",
+  "venue": "Advanced Materials",
+  "year": 2021
+}

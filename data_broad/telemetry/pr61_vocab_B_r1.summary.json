@@ -1,0 +1,210 @@
+{
+  "schema_version": "llm-telemetry-summary-v1.1",
+  "calls": 11,
+  "artifact_resolution_records": 11,
+  "resolved_calls": 11,
+  "unresolved_calls": 0,
+  "provider_input_tokens": 67904,
+  "provider_output_tokens": 23533,
+  "provider_total_tokens": 91437,
+  "pipeline_call_counts": {
+    "extraction": 11
+  },
+  "provider_usage_scope_counts": {
+    "direct_provider_call": 11
+  },
+  "call_outcome_counts": {
+    "success": 10,
+    "validation_error": 1
+  },
+  "outcome_counts": {
+    "success": 10,
+    "validation_error": 1
+  },
+  "artifact_outcome_counts": {
+    "accepted": 2,
+    "accepted_after_repair": 2,
+    "rejected": 7
+  },
+  "terminal_contribution_counts": {
+    "discarded": 7,
+    "non_terminal": 1,
+    "terminal": 3
+  },
+  "response_model_counts": {
+    "BroadMechanismGraphDraft": 6,
+    "KnowledgeGraphDraft": 1,
+    "KnowledgeGraphPatch": 4
+  },
+  "by_stage": {
+    "extraction:graph_generation": {
+      "calls": 7,
+      "input_tokens": 42294,
+      "output_tokens": 21238,
+      "total_tokens": 63532,
+      "source_bearing_calls": 7,
+      "estimated_source_tokens": 2268,
+      "provider_input_to_estimated_source_ratio": 18.64814814814815
+    },
+    "extraction:semantic_patch": {
+      "calls": 4,
+      "input_tokens": 25610,
+      "output_tokens": 2295,
+      "total_tokens": 27905,
+      "source_bearing_calls": 4,
+      "estimated_source_tokens": 1197,
+      "provider_input_to_estimated_source_ratio": 21.39515455304929
+    }
+  },
+  "source_overhead_by_stage": {
+    "extraction:graph_generation": {
+      "calls": 7,
+      "provider_input_tokens": 42294,
+      "estimated_source_tokens": 2268,
+      "provider_input_to_estimated_source_ratio": 18.64814814814815
+    },
+    "extraction:semantic_patch": {
+      "calls": 4,
+      "provider_input_tokens": 25610,
+      "estimated_source_tokens": 1197,
+      "provider_input_to_estimated_source_ratio": 21.39515455304929
+    }
+  },
+  "graph_generation_source_overhead": {
+    "calls": 7,
+    "provider_input_tokens": 42294,
+    "estimated_source_tokens": 2268,
+    "provider_input_to_estimated_source_ratio": 18.64814814814815
+  },
+  "component_estimates": {
+    "asset_context": {
+      "observations": 11,
+      "estimated_tokens": 3725,
+      "share_of_provider_input": 0.05485685673892554
+    },
+    "current_draft": {
+      "observations": 4,
+      "estimated_tokens": 18866,
+      "share_of_provider_input": 0.2778334118755891
+    },
+    "schema": {
+      "observations": 11,
+      "estimated_tokens": 20935,
+      "share_of_provider_input": 0.30830289820923656
+    },
+    "source": {
+      "observations": 11,
+      "estimated_tokens": 3465,
+      "share_of_provider_input": 0.05102792177191329
+    },
+    "system": {
+      "observations": 11,
+      "estimated_tokens": 18392,
+      "share_of_provider_input": 0.27085296889726673
+    },
+    "user_prompt": {
+      "observations": 11,
+      "estimated_tokens": 30346,
+      "share_of_provider_input": 0.44689561734213007
+    },
+    "vocabulary": {
+      "observations": 6,
+      "estimated_tokens": 3240,
+      "share_of_provider_input": 0.04771442035815269
+    }
+  },
+  "provider_input_to_estimated_source_ratio": 19.597113997113997,
+  "source_scoped_overhead": {
+    "calls": 11,
+    "provider_input_tokens": 67904,
+    "estimated_source_tokens": 3465
+  },
+  "token_estimate_gap": {
+    "observations": 11,
+    "mean": -160.8181818181818,
+    "min": -217,
+    "max": -52
+  },
+  "repeated_serialization": [
+    {
+      "component": "system",
+      "fingerprint": "e82cd5dc2d82f4cadc7d3054bbf8858af2f496ebe75b23a91a74da3d5accca60",
+      "calls": 6,
+      "estimated_tokens_per_call": 2865,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 17190
+    },
+    {
+      "component": "schema",
+      "fingerprint": "965fcdcb2982fdb14adc74206b17d6a8d8ee21f6f5e58f6ffba302e52a67c056",
+      "calls": 6,
+      "estimated_tokens_per_call": 2250,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 13500
+    },
+    {
+      "component": "schema",
+      "fingerprint": "0238a667ae0bb98da39c83921cbac2e636811428040b10dcad5b11b834bd1d56",
+      "calls": 4,
+      "estimated_tokens_per_call": 1091,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 4364
+    },
+    {
+      "component": "vocabulary",
+      "fingerprint": "fd32c2557953e2cbdb984c625d0483b1a6df52f1a9423d53cf9839b6b1a9c2d3",
+      "calls": 6,
+      "estimated_tokens_per_call": 540,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 3240
+    },
+    {
+      "component": "system",
+      "fingerprint": "0aed8e5a99d30fd35949e2f696957eb3e53078fed5fe1f925437f2e98874fa52",
+      "calls": 4,
+      "estimated_tokens_per_call": 274,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 1096
+    },
+    {
+      "component": "source",
+      "fingerprint": "2f3f1db7d4bc09dfee96be1be597a5a9284f0ddc54c8e2e49b77dc53e7fb6ac6",
+      "calls": 3,
+      "estimated_tokens_per_call": 319,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 957
+    },
+    {
+      "component": "source",
+      "fingerprint": "57d54e68f180c45e932d1e0e47a9c0be0555e6cf98b16387e5618657ccd03112",
+      "calls": 2,
+      "estimated_tokens_per_call": 361,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 722
+    },
+    {
+      "component": "source",
+      "fingerprint": "66eee5e42d17b756d02fab6939a0e93768d094ce30a9af38d434a5938a07f803",
+      "calls": 2,
+      "estimated_tokens_per_call": 278,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 556
+    },
+    {
+      "component": "source",
+      "fingerprint": "7e9a794e91e48db49929326f3f2f57a331a81f872b0ce8bdc4ffc73395a40994",
+      "calls": 2,
+      "estimated_tokens_per_call": 239,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 478
+    },
+    {
+      "component": "asset_context",
+      "fingerprint": "f5ae9e403d7234c9b9975ea311359b7caa71ec5a150f9e4fa789a0c52063784c",
+      "calls": 10,
+      "estimated_tokens_per_call": 7,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 70
+    }
+  ]
+}

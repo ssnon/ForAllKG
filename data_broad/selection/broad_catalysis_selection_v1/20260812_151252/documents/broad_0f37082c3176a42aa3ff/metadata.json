@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "cooperative_bifunctional_mechanisms",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 3.0,
+    "cross_reaction_atomic_site_mechanisms": 0.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 0.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1002/advs.202206096",
+  "literature_paper_id": "literature:0f37082c3176a42aa3ff",
+  "mechanism_buckets": [
+    "active_site_attribution"
+  ],
+  "paper_id": "broad_0f37082c3176a42aa3ff",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4313453263"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 12.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/advs.202206096",
+      "license": "cc-by",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/advs.202206096",
+      "source_id": "https://openalex.org/S2737737698",
+      "source_name": "Advanced Science",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 151,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/advs.202206096"
+    },
+    "openalex_id": "https://openalex.org/W4313453263",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1002/advs.202206096",
+      "license": "cc-by",
+      "pdf_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/advs.202206096",
+      "source_id": "https://openalex.org/S2737737698",
+      "source_name": "Advanced Science",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2023-01-03",
+    "relevance_score": 164.08685,
+    "work_type": "article"
+  },
+  "title": "Synergistic Mechanism of Sub‐Nanometric Ru Clusters Anchored on Tungsten Oxide Nanowires for High‐Efficient Bifunctional Hydrogen Electrocatalysis",
+  "venue": "Advanced Science",
+  "year": 2023
+}

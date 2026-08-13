@@ -43,7 +43,12 @@ def test_custom_sers_like_novelty_semantics_are_not_her_bound():
 
 
 def test_registry_has_expected_builtin_profiles():
-    assert available_domain_profiles() == ('dac_her', 'sers_au_ag')
+    assert available_domain_profiles() == (
+        'catalysis_mechanism',
+        'dac_her',
+        'sers_au_ag',
+    )
     assert get_domain_profile().profile_id == 'dac_her'
     assert get_domain_profile('default').profile_id == 'dac_her'
     assert get_domain_profile('sers').profile_id == 'sers_au_ag'
+    assert get_domain_profile('broad').profile_id == 'catalysis_mechanism'

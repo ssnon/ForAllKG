@@ -1,0 +1,449 @@
+{
+  "schema_version": "graphagentsdac-broad-pilot-run-v3",
+  "corpus_id": "pr61_vocab_B_r2",
+  "domain_profile": "catalysis_mechanism",
+  "data_root": "/home/rldnr7959/GraphAgentsDAC/data_broad",
+  "papers_yaml": "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+  "max_abstract_source_tokens": 1200,
+  "requested_paper_count": 6,
+  "requested_paper_ids": [
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_241a667a6ef693f01c95",
+    "broad_444fa95d3a7db533ade0",
+    "broad_1e86b38c448a764b68a3",
+    "broad_12549367c327c283ccf7",
+    "broad_2906a6cb4ffcfb858fea"
+  ],
+  "usable_paper_count": 4,
+  "usable_paper_ids": [
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_241a667a6ef693f01c95",
+    "broad_444fa95d3a7db533ade0",
+    "broad_12549367c327c283ccf7"
+  ],
+  "skipped_paper_count": 2,
+  "skipped_papers": [
+    {
+      "paper_id": "broad_1e86b38c448a764b68a3",
+      "failed_stage": "extract",
+      "action": "excluded_from_broad_corpus"
+    },
+    {
+      "paper_id": "broad_2906a6cb4ffcfb858fea",
+      "failed_stage": "extract",
+      "action": "excluded_from_broad_corpus"
+    }
+  ],
+  "paper_success_fraction": 0.6666666666666666,
+  "status": "complete_with_skips",
+  "updated_at": "2026-08-13T00:55:59.078610+00:00",
+  "records": [
+    {
+      "label": "broad_29bf9d5faa2fcf91a418:extract",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_29bf9d5faa2fcf91a418",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 11.572477160996641
+    },
+    {
+      "label": "broad_29bf9d5faa2fcf91a418:paper_graph",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_29bf9d5faa2fcf91a418/broad_29bf9d5faa2fcf91a418.graphml"
+    },
+    {
+      "label": "broad_29bf9d5faa2fcf91a418:paper_graph",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_paper_graph",
+        "--paper-id",
+        "broad_29bf9d5faa2fcf91a418",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml"
+      ],
+      "elapsed_seconds": 0.3890230580000207
+    },
+    {
+      "label": "broad_29bf9d5faa2fcf91a418:projection",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_29bf9d5faa2fcf91a418/graphagents/mechanism/graph.graphml"
+    },
+    {
+      "label": "broad_29bf9d5faa2fcf91a418:projection",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_broad_projection",
+        "--paper-id",
+        "broad_29bf9d5faa2fcf91a418",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad"
+      ],
+      "elapsed_seconds": 0.30873137099843007
+    },
+    {
+      "label": "broad_241a667a6ef693f01c95:extract",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_241a667a6ef693f01c95",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 14.3704638709969
+    },
+    {
+      "label": "broad_241a667a6ef693f01c95:paper_graph",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_241a667a6ef693f01c95/broad_241a667a6ef693f01c95.graphml"
+    },
+    {
+      "label": "broad_241a667a6ef693f01c95:paper_graph",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_paper_graph",
+        "--paper-id",
+        "broad_241a667a6ef693f01c95",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml"
+      ],
+      "elapsed_seconds": 0.37808776299789315
+    },
+    {
+      "label": "broad_241a667a6ef693f01c95:projection",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_241a667a6ef693f01c95/graphagents/mechanism/graph.graphml"
+    },
+    {
+      "label": "broad_241a667a6ef693f01c95:projection",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_broad_projection",
+        "--paper-id",
+        "broad_241a667a6ef693f01c95",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad"
+      ],
+      "elapsed_seconds": 0.3041277860029368
+    },
+    {
+      "label": "broad_444fa95d3a7db533ade0:extract",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_444fa95d3a7db533ade0",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 33.181592291002744
+    },
+    {
+      "label": "broad_444fa95d3a7db533ade0:paper_graph",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_444fa95d3a7db533ade0/broad_444fa95d3a7db533ade0.graphml"
+    },
+    {
+      "label": "broad_444fa95d3a7db533ade0:paper_graph",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_paper_graph",
+        "--paper-id",
+        "broad_444fa95d3a7db533ade0",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml"
+      ],
+      "elapsed_seconds": 0.38092640999821015
+    },
+    {
+      "label": "broad_444fa95d3a7db533ade0:projection",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_444fa95d3a7db533ade0/graphagents/mechanism/graph.graphml"
+    },
+    {
+      "label": "broad_444fa95d3a7db533ade0:projection",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_broad_projection",
+        "--paper-id",
+        "broad_444fa95d3a7db533ade0",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad"
+      ],
+      "elapsed_seconds": 0.306771829003992
+    },
+    {
+      "label": "broad_1e86b38c448a764b68a3:extract",
+      "status": "failed",
+      "return_code": 2,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_1e86b38c448a764b68a3",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 21.462498663000588
+    },
+    {
+      "label": "broad_12549367c327c283ccf7:extract",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_12549367c327c283ccf7",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 17.716444962003152
+    },
+    {
+      "label": "broad_12549367c327c283ccf7:paper_graph",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_12549367c327c283ccf7/broad_12549367c327c283ccf7.graphml"
+    },
+    {
+      "label": "broad_12549367c327c283ccf7:paper_graph",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_paper_graph",
+        "--paper-id",
+        "broad_12549367c327c283ccf7",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml"
+      ],
+      "elapsed_seconds": 0.38231425199774094
+    },
+    {
+      "label": "broad_12549367c327c283ccf7:projection",
+      "status": "cache_invalidated",
+      "reason": "upstream_rebuilt",
+      "expected_output": "/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_12549367c327c283ccf7/graphagents/mechanism/graph.graphml"
+    },
+    {
+      "label": "broad_12549367c327c283ccf7:projection",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_broad_projection",
+        "--paper-id",
+        "broad_12549367c327c283ccf7",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad"
+      ],
+      "elapsed_seconds": 0.3082512190012494
+    },
+    {
+      "label": "broad_2906a6cb4ffcfb858fea:extract",
+      "status": "failed",
+      "return_code": 2,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.extract_paper",
+        "--paper-id",
+        "broad_2906a6cb4ffcfb858fea",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--config",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad/selection/broad_catalysis_selection_v1/20260812_151252/papers.yaml",
+        "--concurrency",
+        "1",
+        "--force",
+        "--broad-compact-schema",
+        "--broad-prune-metric-vocabulary"
+      ],
+      "elapsed_seconds": 26.40073420200497
+    },
+    {
+      "label": "extraction_diagnostics",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.audit_broad_extraction",
+        "--corpus-id",
+        "pr61_vocab_B_r2",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--paper-ids",
+        "broad_29bf9d5faa2fcf91a418",
+        "broad_241a667a6ef693f01c95",
+        "broad_444fa95d3a7db533ade0",
+        "broad_1e86b38c448a764b68a3",
+        "broad_12549367c327c283ccf7",
+        "broad_2906a6cb4ffcfb858fea"
+      ],
+      "elapsed_seconds": 0.020701616995211225
+    },
+    {
+      "label": "corpus_graph",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.build_corpus_graph",
+        "--corpus-id",
+        "pr61_vocab_B_r2",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--mode",
+        "mechanism",
+        "--no-pattern-alignment",
+        "--paper-ids",
+        "broad_29bf9d5faa2fcf91a418",
+        "broad_241a667a6ef693f01c95",
+        "broad_444fa95d3a7db533ade0",
+        "broad_12549367c327c283ccf7"
+      ],
+      "elapsed_seconds": 0.17031720699742436
+    },
+    {
+      "label": "broad_audit",
+      "status": "passed",
+      "return_code": 0,
+      "command": [
+        "/home/rldnr7959/anaconda3/envs/graphAgent311/bin/python",
+        "-m",
+        "scripts.audit_broad_corpus",
+        "--corpus-id",
+        "pr61_vocab_B_r2",
+        "--domain-profile",
+        "catalysis_mechanism",
+        "--data-root",
+        "/home/rldnr7959/GraphAgentsDAC/data_broad",
+        "--paper-ids",
+        "broad_29bf9d5faa2fcf91a418",
+        "broad_241a667a6ef693f01c95",
+        "broad_444fa95d3a7db533ade0",
+        "broad_12549367c327c283ccf7"
+      ],
+      "elapsed_seconds": 0.1663540860026842
+    }
+  ]
+}

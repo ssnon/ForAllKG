@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from dac_her.draft_schema import KnowledgeGraphDraft
+from dac_her.graph_domain import RelationConstraint
 from dac_her.graph_normalization import normalize_graph_vocabularies
 from dac_her.graph_validation import collect_graph_issues
 from dac_her.measurement_scalarization import (
@@ -41,8 +42,15 @@ class FinalizationResult:
     vocabulary_issues: list[Any]
 
 
-def validate_draft(draft: KnowledgeGraphDraft) -> ValidationReport:
-    return collect_graph_issues(draft)
+def validate_draft(
+    draft: KnowledgeGraphDraft,
+    *,
+    relation_constraints: tuple[RelationConstraint, ...] | None = None,
+) -> ValidationReport:
+    return collect_graph_issues(
+        draft,
+        relation_constraints=relation_constraints,
+    )
 
 
 def finalize_draft(
@@ -51,8 +59,12 @@ def finalize_draft(
     context: ValidationContext,
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
+    relation_constraints: tuple[RelationConstraint, ...] | None = None,
 ) -> FinalizationResult:
-    report = validate_draft(draft)
+    report = validate_draft(
+        draft,
+        relation_constraints=relation_constraints,
+    )
     if not report.valid:
         return FinalizationResult(report=report, graph=None, vocabulary_issues=[])
 

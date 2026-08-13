@@ -1,0 +1,174 @@
+{
+  "schema_version": "llm-telemetry-summary-v1.1",
+  "calls": 8,
+  "artifact_resolution_records": 8,
+  "resolved_calls": 8,
+  "unresolved_calls": 0,
+  "provider_input_tokens": 56623,
+  "provider_output_tokens": 25151,
+  "provider_total_tokens": 81774,
+  "pipeline_call_counts": {
+    "extraction": 8
+  },
+  "provider_usage_scope_counts": {
+    "direct_provider_call": 8
+  },
+  "call_outcome_counts": {
+    "success": 8
+  },
+  "outcome_counts": {
+    "success": 8
+  },
+  "artifact_outcome_counts": {
+    "accepted": 4,
+    "rejected": 4
+  },
+  "terminal_contribution_counts": {
+    "discarded": 4,
+    "terminal": 4
+  },
+  "response_model_counts": {
+    "BroadMechanismGraphDraft": 6,
+    "KnowledgeGraphDraft": 1,
+    "KnowledgeGraphPatch": 1
+  },
+  "by_stage": {
+    "extraction:graph_generation": {
+      "calls": 7,
+      "input_tokens": 49947,
+      "output_tokens": 23909,
+      "total_tokens": 73856,
+      "source_bearing_calls": 7,
+      "estimated_source_tokens": 2227,
+      "provider_input_to_estimated_source_ratio": 22.427929950606195
+    },
+    "extraction:semantic_patch": {
+      "calls": 1,
+      "input_tokens": 6676,
+      "output_tokens": 1242,
+      "total_tokens": 7918,
+      "source_bearing_calls": 1,
+      "estimated_source_tokens": 239,
+      "provider_input_to_estimated_source_ratio": 27.93305439330544
+    }
+  },
+  "source_overhead_by_stage": {
+    "extraction:graph_generation": {
+      "calls": 7,
+      "provider_input_tokens": 49947,
+      "estimated_source_tokens": 2227,
+      "provider_input_to_estimated_source_ratio": 22.427929950606195
+    },
+    "extraction:semantic_patch": {
+      "calls": 1,
+      "provider_input_tokens": 6676,
+      "estimated_source_tokens": 239,
+      "provider_input_to_estimated_source_ratio": 27.93305439330544
+    }
+  },
+  "graph_generation_source_overhead": {
+    "calls": 7,
+    "provider_input_tokens": 49947,
+    "estimated_source_tokens": 2227,
+    "provider_input_to_estimated_source_ratio": 22.427929950606195
+  },
+  "component_estimates": {
+    "asset_context": {
+      "observations": 8,
+      "estimated_tokens": 5098,
+      "share_of_provider_input": 0.09003408508909808
+    },
+    "current_draft": {
+      "observations": 1,
+      "estimated_tokens": 5043,
+      "share_of_provider_input": 0.08906274835314272
+    },
+    "schema": {
+      "observations": 8,
+      "estimated_tokens": 17662,
+      "share_of_provider_input": 0.3119227169171538
+    },
+    "source": {
+      "observations": 8,
+      "estimated_tokens": 2466,
+      "share_of_provider_input": 0.04355120710665277
+    },
+    "system": {
+      "observations": 8,
+      "estimated_tokens": 17570,
+      "share_of_provider_input": 0.3102979354679194
+    },
+    "user_prompt": {
+      "observations": 8,
+      "estimated_tokens": 22910,
+      "share_of_provider_input": 0.404605902195221
+    },
+    "vocabulary": {
+      "observations": 6,
+      "estimated_tokens": 9516,
+      "share_of_provider_input": 0.16805891598820266
+    }
+  },
+  "provider_input_to_estimated_source_ratio": 22.96147607461476,
+  "source_scoped_overhead": {
+    "calls": 8,
+    "provider_input_tokens": 56623,
+    "estimated_source_tokens": 2466
+  },
+  "token_estimate_gap": {
+    "observations": 8,
+    "mean": -189.875,
+    "min": -212,
+    "max": -65
+  },
+  "repeated_serialization": [
+    {
+      "component": "system",
+      "fingerprint": "e82cd5dc2d82f4cadc7d3054bbf8858af2f496ebe75b23a91a74da3d5accca60",
+      "calls": 6,
+      "estimated_tokens_per_call": 2865,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 17190
+    },
+    {
+      "component": "schema",
+      "fingerprint": "965fcdcb2982fdb14adc74206b17d6a8d8ee21f6f5e58f6ffba302e52a67c056",
+      "calls": 6,
+      "estimated_tokens_per_call": 2250,
+      "counted_in_estimated_sum": true,
+      "estimated_serialized_tokens": 13500
+    },
+    {
+      "component": "vocabulary",
+      "fingerprint": "f043e322279c0f4025e76ed1c4a57457149d76bc0bbd76fe72f0b15231cc6038",
+      "calls": 6,
+      "estimated_tokens_per_call": 1586,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 9516
+    },
+    {
+      "component": "source",
+      "fingerprint": "66eee5e42d17b756d02fab6939a0e93768d094ce30a9af38d434a5938a07f803",
+      "calls": 2,
+      "estimated_tokens_per_call": 278,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 556
+    },
+    {
+      "component": "source",
+      "fingerprint": "7e9a794e91e48db49929326f3f2f57a331a81f872b0ce8bdc4ffc73395a40994",
+      "calls": 2,
+      "estimated_tokens_per_call": 239,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 478
+    },
+    {
+      "component": "asset_context",
+      "fingerprint": "f5ae9e403d7234c9b9975ea311359b7caa71ec5a150f9e4fa789a0c52063784c",
+      "calls": 7,
+      "estimated_tokens_per_call": 7,
+      "counted_in_estimated_sum": false,
+      "estimated_serialized_tokens": 49
+    }
+  ]
+}

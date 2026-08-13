@@ -1,0 +1,28 @@
+{
+  "alignment_edges": 18,
+  "alignment_hubs": 3,
+  "corpus_id": "pr61_vocab_A_r1",
+  "destructive_cross_paper_merges": 0,
+  "direct_cross_paper_source_edges": 0,
+  "edges": 73,
+  "expected_papers": [
+    "broad_1e86b38c448a764b68a3",
+    "broad_241a667a6ef693f01c95",
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_444fa95d3a7db533ade0"
+  ],
+  "graph_stage": "corpus_projection",
+  "issue_count": 0,
+  "issues": [],
+  "nodes": 55,
+  "paper_local_nodes": 52,
+  "passes_structural_gate": true,
+  "projection_mode": "mechanism",
+  "seen_papers": [
+    "broad_1e86b38c448a764b68a3",
+    "broad_241a667a6ef693f01c95",
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_444fa95d3a7db533ade0"
+  ],
+  "source_projection_edges": 55
+}

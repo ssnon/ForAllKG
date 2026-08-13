@@ -1,0 +1,290 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d48" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d47" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d46" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d45" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d44" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d43" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d42" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d41" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d40" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d39" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d38" for="edge" attr.name="section" attr.type="string"/>
+<key id="d37" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d36" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d35" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d34" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d33" for="edge" attr.name="title" attr.type="string"/>
+<key id="d32" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d31" for="node" attr.name="basis" attr.type="string"/>
+<key id="d30" for="node" attr.name="statement" attr.type="string"/>
+<key id="d29" for="node" attr.name="claim_type" attr.type="string"/>
+<key id="d28" for="node" attr.name="method_details" attr.type="string"/>
+<key id="d27" for="node" attr.name="conditions_json" attr.type="string"/>
+<key id="d26" for="node" attr.name="calculation_type" attr.type="string"/>
+<key id="d25" for="node" attr.name="resolution_member_count" attr.type="long"/>
+<key id="d24" for="node" attr.name="aliases_json" attr.type="string"/>
+<key id="d23" for="node" attr.name="description" attr.type="string"/>
+<key id="d22" for="node" attr.name="label" attr.type="string"/>
+<key id="d21" for="node" attr.name="type" attr.type="string"/>
+<key id="d20" for="graph" attr.name="applied_resolution_aliases" attr.type="long"/>
+<key id="d19" for="graph" attr.name="approved_same_entity_decisions" attr.type="long"/>
+<key id="d18" for="graph" attr.name="resolution_source_format" attr.type="string"/>
+<key id="d17" for="graph" attr.name="resolution_file" attr.type="string"/>
+<key id="d16" for="graph" attr.name="extraction_coverage_sensitive_queries_allowed" attr.type="boolean"/>
+<key id="d15" for="graph" attr.name="extraction_absence_claims_allowed" attr.type="boolean"/>
+<key id="d14" for="graph" attr.name="extraction_coverage_exact" attr.type="boolean"/>
+<key id="d13" for="graph" attr.name="extraction_failed_chunk_count" attr.type="long"/>
+<key id="d12" for="graph" attr.name="extraction_quarantined_chunk_count" attr.type="long"/>
+<key id="d11" for="graph" attr.name="extraction_active_chunk_count" attr.type="long"/>
+<key id="d10" for="graph" attr.name="extraction_quarantine_token_fraction" attr.type="double"/>
+<key id="d9" for="graph" attr.name="extraction_source_token_coverage" attr.type="double"/>
+<key id="d8" for="graph" attr.name="extraction_quality_status" attr.type="string"/>
+<key id="d7" for="graph" attr.name="extraction_complete" attr.type="boolean"/>
+<key id="d6" for="graph" attr.name="graph_adapter_id" attr.type="string"/>
+<key id="d5" for="graph" attr.name="domain_profile_id" attr.type="string"/>
+<key id="d4" for="graph" attr.name="graph_stage" attr.type="string"/>
+<key id="d3" for="graph" attr.name="source_extraction_attempt_id" attr.type="string"/>
+<key id="d2" for="graph" attr.name="run_fingerprint" attr.type="string"/>
+<key id="d1" for="graph" attr.name="run_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="paper_id" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">broad_1f5f4154830ff7beb2d8</data>
+<data key="d1">5b7461d95ae2594d</data>
+<data key="d2">5b7461d95ae2594df915fdcdc590805ecb0376b236d52307df6ddc2d37679e98</data>
+<data key="d3">20260812T222844.592191Z</data>
+<data key="d4">canonical</data>
+<data key="d5">catalysis_mechanism</data>
+<data key="d6">catalysis_mechanism</data>
+<data key="d7">True</data>
+<data key="d8">complete</data>
+<data key="d9">1.0</data>
+<data key="d10">0.0</data>
+<data key="d11">1</data>
+<data key="d12">0</data>
+<data key="d13">0</data>
+<data key="d14">True</data>
+<data key="d15">True</data>
+<data key="d16">True</data>
+<data key="d17">/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_1f5f4154830ff7beb2d8/resolution/decisions.jsonl</data>
+<data key="d18">jsonl_reviewed_decisions</data>
+<data key="d19">0</data>
+<data key="d20">0</data>
+<node id="paper_broad_1f5f4154830ff7beb2d8">
+  <data key="d21">Paper</data>
+  <data key="d22">Reaction intermediates during operando electrocatalysis identified from full solvent quantum mechanics molecular dynamics</data>
+  <data key="d23"></data>
+  <data key="d24">["paper_broad_1f5f4154830ff7beb2d8"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="reaction_co2_reduction">
+  <data key="d21">Reaction</data>
+  <data key="d22">Carbon dioxide reduction reaction</data>
+  <data key="d23">Electrocatalytic carbon dioxide reduction reaction studied under operando conditions.</data>
+  <data key="d24">["reaction_co2_reduction"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="environment_electrode_electrolyte">
+  <data key="d21">InterfacialEnvironment</data>
+  <data key="d22">Electrode–electrolyte interface with explicit solvent and applied voltage</data>
+  <data key="d23">The simulated operando electrode–electrolyte interface includes explicit solvent and an applied voltage.</data>
+  <data key="d24">["environment_electrode_electrolyte"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="intermediates_co2rr_reactive">
+  <data key="d21">Intermediate</data>
+  <data key="d22">Reactive CO2RR intermediates</data>
+  <data key="d23">Reactive intermediates identified and distinguished for the carbon dioxide reduction reaction.</data>
+  <data key="d24">["intermediates_co2rr_reactive"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="calc_full_solvent_qm_md">
+  <data key="d21">Calculation</data>
+  <data key="d22">Full-solvent quantum mechanics molecular dynamics of the electrode–electrolyte interface</data>
+  <data key="d26">quantum_mechanics_molecular_dynamics</data>
+  <data key="d27">[]</data>
+  <data key="d28">QM-based simulation with explicit solvent and applied voltage; reactive trajectories are generated for subsequent vibrational-density-of-states analysis.</data>
+  <data key="d24">["calc_full_solvent_qm_md"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="calc_two_phase_thermodynamics_vdos">
+  <data key="d21">Calculation</data>
+  <data key="d22">Two-phase thermodynamics vibrational-density-of-states analysis</data>
+  <data key="d26">vibrational_density_of_states_calculation</data>
+  <data key="d27">[]</data>
+  <data key="d28">Two-phase thermodynamics model applied to reactive trajectories to generate vibrational densities of states for comparison with experimental spectroscopy.</data>
+  <data key="d24">["calc_two_phase_thermodynamics_vdos"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="obs_distinguished_co2rr_intermediates">
+  <data key="d21">ObservationClaim</data>
+  <data key="d22">Reactive intermediates in the carbon dioxide reduction reaction were distinguished by resolving simulated vibrational signals for comparison with reported experimental spectroscopy.</data>
+  <data key="d29">intermediate_identification</data>
+  <data key="d30">Reactive intermediates in the carbon dioxide reduction reaction were distinguished by resolving simulated vibrational signals for comparison with reported experimental spectroscopy.</data>
+  <data key="d31">computational</data>
+  <data key="d23">The abstract reports successful distinction of reactive CO2RR intermediates using the solvent- and voltage-inclusive simulation workflow.</data>
+  <data key="d24">["obs_distinguished_co2rr_intermediates"]</data>
+  <data key="d25">1</data>
+</node>
+<node id="mech_atomic_scale_co2rr_understanding">
+  <data key="d21">MechanismClaim</data>
+  <data key="d22">Explicit consideration of solvent and applied voltage at the electrode–electrolyte interface enables reactive-trajectory and vibrational-signal analysis that provides atomic-scale understanding of the carbon dioxide reduction reaction.</data>
+  <data key="d29">atomic_scale_mechanistic_understanding</data>
+  <data key="d30">Explicit consideration of solvent and applied voltage at the electrode–electrolyte interface enables reactive-trajectory and vibrational-signal analysis that provides atomic-scale understanding of the carbon dioxide reduction reaction.</data>
+  <data key="d31">computational</data>
+  <data key="d23">This is the authors' stated interpretation of the operando QM simulation approach and its identification of reactive intermediates.</data>
+  <data key="d24">["mech_atomic_scale_co2rr_understanding"]</data>
+  <data key="d25">1</data>
+</node>
+<edge source="paper_broad_1f5f4154830ff7beb2d8" target="reaction_co2_reduction" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:0:0">
+  <data key="d32">STUDIES</data>
+  <data key="d33">STUDIES</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">bibliographic_metadata</data>
+  <data key="d45">direct</data>
+  <data key="d46">In this work ... we successfully distinguished the reactive intermediates in a carbon dioxide reduction reaction.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="reaction_co2_reduction" target="environment_electrode_electrolyte" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:1:1">
+  <data key="d32">HAS_ENVIRONMENT</data>
+  <data key="d33">HAS_ENVIRONMENT</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">computational_method</data>
+  <data key="d45">direct</data>
+  <data key="d46">The electrode–electrolyte interface is simulated with explicit consideration of solvent and applied voltage to represent the operando experimental condition.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="reaction_co2_reduction" target="intermediates_co2rr_reactive" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:2:2">
+  <data key="d32">INVOLVES_INTERMEDIATE</data>
+  <data key="d33">INVOLVES_INTERMEDIATE</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">computational_result</data>
+  <data key="d45">direct</data>
+  <data key="d46">We successfully distinguished the reactive intermediates in a carbon dioxide reduction reaction.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="calc_full_solvent_qm_md" target="obs_distinguished_co2rr_intermediates" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:3:3">
+  <data key="d32">SUPPORTS_CLAIM</data>
+  <data key="d33">SUPPORTS_CLAIM</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">computational_result</data>
+  <data key="d45">direct</data>
+  <data key="d46">Full-solvent quantum mechanics molecular dynamics produced reactive trajectories used to resolve signals and distinguish reactive intermediates.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="calc_two_phase_thermodynamics_vdos" target="obs_distinguished_co2rr_intermediates" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:4:4">
+  <data key="d32">SUPPORTS_CLAIM</data>
+  <data key="d33">SUPPORTS_CLAIM</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">computational_method</data>
+  <data key="d45">direct</data>
+  <data key="d46">Reactive trajectories were used as input for a two-phase thermodynamics model generating vibrational density of states directly comparable with reported experimental spectroscopy.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="obs_distinguished_co2rr_intermediates" target="mech_atomic_scale_co2rr_understanding" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:5:5">
+  <data key="d32">INTERPRETED_AS</data>
+  <data key="d33">INTERPRETED_AS</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">author_interpretation</data>
+  <data key="d45">interpretive</data>
+  <data key="d46">Distinguishing reactive intermediates provides an atomic-scale understanding of the carbon dioxide reduction reaction.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="obs_distinguished_co2rr_intermediates" target="reaction_co2_reduction" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:6:6">
+  <data key="d32">APPLIES_TO</data>
+  <data key="d33">APPLIES_TO</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">computational_result</data>
+  <data key="d45">direct</data>
+  <data key="d46">The distinguished reactive intermediates are associated with the carbon dioxide reduction reaction.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+<edge source="mech_atomic_scale_co2rr_understanding" target="environment_electrode_electrolyte" id="broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e:7:7">
+  <data key="d32">APPLIES_TO</data>
+  <data key="d33">APPLIES_TO</data>
+  <data key="d34">broad_1f5f4154830ff7beb2d8</data>
+  <data key="d35">broad_1f5f4154830ff7beb2d8:abstract:17b1605263d1f40d6a7e</data>
+  <data key="d36">abstract</data>
+  <data key="d37">main</data>
+  <data key="d38">[abstract] whole document</data>
+  <data key="d39">[]</data>
+  <data key="d40">[]</data>
+  <data key="d41">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d42">[]</data>
+  <data key="d43">Significance</data>
+  <data key="d44">author_interpretation</data>
+  <data key="d45">interpretive</data>
+  <data key="d46">The simulation explicitly considers solvent and applied voltage at the electrode–electrolyte interface to address operando conditions and provide atomic-scale understanding.</data>
+  <data key="d47">high</data>
+  <data key="d48">False</data>
+</edge>
+</graph></graphml>

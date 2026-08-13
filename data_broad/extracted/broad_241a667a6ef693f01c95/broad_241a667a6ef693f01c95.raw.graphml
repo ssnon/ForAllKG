@@ -1,0 +1,468 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d36" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d35" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d34" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d33" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d32" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d31" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d30" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d29" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d28" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d27" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d26" for="edge" attr.name="section" attr.type="string"/>
+<key id="d25" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d24" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d23" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d22" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d21" for="edge" attr.name="title" attr.type="string"/>
+<key id="d20" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d19" for="node" attr.name="description" attr.type="string"/>
+<key id="d18" for="node" attr.name="label" attr.type="string"/>
+<key id="d17" for="node" attr.name="type" attr.type="string"/>
+<key id="d16" for="graph" attr.name="extraction_coverage_sensitive_queries_allowed" attr.type="boolean"/>
+<key id="d15" for="graph" attr.name="extraction_absence_claims_allowed" attr.type="boolean"/>
+<key id="d14" for="graph" attr.name="extraction_coverage_exact" attr.type="boolean"/>
+<key id="d13" for="graph" attr.name="extraction_failed_chunk_count" attr.type="long"/>
+<key id="d12" for="graph" attr.name="extraction_quarantined_chunk_count" attr.type="long"/>
+<key id="d11" for="graph" attr.name="extraction_active_chunk_count" attr.type="long"/>
+<key id="d10" for="graph" attr.name="extraction_quarantine_token_fraction" attr.type="double"/>
+<key id="d9" for="graph" attr.name="extraction_source_token_coverage" attr.type="double"/>
+<key id="d8" for="graph" attr.name="extraction_quality_status" attr.type="string"/>
+<key id="d7" for="graph" attr.name="extraction_complete" attr.type="boolean"/>
+<key id="d6" for="graph" attr.name="graph_adapter_id" attr.type="string"/>
+<key id="d5" for="graph" attr.name="domain_profile_id" attr.type="string"/>
+<key id="d4" for="graph" attr.name="graph_stage" attr.type="string"/>
+<key id="d3" for="graph" attr.name="source_extraction_attempt_id" attr.type="string"/>
+<key id="d2" for="graph" attr.name="run_fingerprint" attr.type="string"/>
+<key id="d1" for="graph" attr.name="run_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="paper_id" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">broad_241a667a6ef693f01c95</data>
+<data key="d1">7396ca62aed2fa3c</data>
+<data key="d2">7396ca62aed2fa3c73e2b6c7833cb53d10b8f7414625b626e969a33287ee8324</data>
+<data key="d3">20260813T005649.728762Z</data>
+<data key="d4">raw_merged</data>
+<data key="d5">catalysis_mechanism</data>
+<data key="d6">catalysis_mechanism</data>
+<data key="d7">True</data>
+<data key="d8">complete</data>
+<data key="d9">1.0</data>
+<data key="d10">0.0</data>
+<data key="d11">1</data>
+<data key="d12">0</data>
+<data key="d13">0</data>
+<data key="d14">True</data>
+<data key="d15">True</data>
+<data key="d16">True</data>
+<node id="paper_1">
+  <data key="d17">Paper</data>
+  <data key="d18">POPs-Based Single-Atom Catalysts for Sustainable Energy-Related Electrocatalysis</data>
+  <data key="d19">Review of porous organic polymer-based single-atom catalysts for electrocatalytic energy conversion and storage reactions.</data>
+</node>
+<node id="catalyst_1">
+  <data key="d17">Catalyst</data>
+  <data key="d18">POPs-based single-atom catalysts</data>
+  <data key="d19">Single-atom catalysts supported by porous organic polymers or POPs-derived nanocarbons.</data>
+</node>
+<node id="support_1">
+  <data key="d17">Support</data>
+  <data key="d18">Porous organic polymers</data>
+  <data key="d19">Designable porous organic polymer platforms used to stabilize atomically dispersed metals and host single-atom catalysts.</data>
+</node>
+<node id="metal_1">
+  <data key="d17">Metal</data>
+  <data key="d18">Atomically dispersed metals</data>
+  <data key="d19">Metal species stabilized as isolated atoms in POPs-based single-atom catalysts.</data>
+</node>
+<node id="active_site_1">
+  <data key="d17">ActiveSite</data>
+  <data key="d18">Atomically dispersed metal sites</data>
+  <data key="d19">Single-atom catalytic sites hosted by porous organic polymer-based supports.</data>
+</node>
+<node id="state_1">
+  <data key="d17">StructuralState</data>
+  <data key="d18">Atomically dispersed metal configuration</data>
+  <data key="d19">Structural state in which metals are atomically dispersed rather than present as larger metallic particles.</data>
+</node>
+<node id="environment_1">
+  <data key="d17">InterfacialEnvironment</data>
+  <data key="d18">Tunable local electronic environment</data>
+  <data key="d19">Local electronic environment around the supported single-atom metal sites.</data>
+</node>
+<node id="factor_1">
+  <data key="d17">MechanisticFactor</data>
+  <data key="d18">Strong metal–support interaction</data>
+  <data key="d19">Metal–support interaction identified as a factor for stabilizing atomically dispersed metals.</data>
+</node>
+<node id="factor_2">
+  <data key="d17">MechanisticFactor</data>
+  <data key="d18">Favorable electron and mass transport</data>
+  <data key="d19">Electron and mass transport properties identified as relevant support characteristics for electrocatalysis.</data>
+</node>
+<node id="reaction_orr">
+  <data key="d17">Reaction</data>
+  <data key="d18">Oxygen reduction reaction</data>
+  <data key="d19">Electrocatalytic transformation discussed for POPs-based single-atom catalysts.</data>
+</node>
+<node id="reaction_oer">
+  <data key="d17">Reaction</data>
+  <data key="d18">Oxygen evolution reaction</data>
+  <data key="d19">Electrocatalytic transformation discussed for POPs-based single-atom catalysts.</data>
+</node>
+<node id="reaction_her">
+  <data key="d17">Reaction</data>
+  <data key="d18">Hydrogen evolution reaction</data>
+  <data key="d19">Electrocatalytic transformation discussed for POPs-based single-atom catalysts.</data>
+</node>
+<node id="reaction_co2rr">
+  <data key="d17">Reaction</data>
+  <data key="d18">CO2 reduction reaction</data>
+  <data key="d19">Electrocatalytic transformation discussed for POPs-based single-atom catalysts.</data>
+</node>
+<node id="reaction_nrr">
+  <data key="d17">Reaction</data>
+  <data key="d18">Nitrogen reduction reaction</data>
+  <data key="d19">Electrocatalytic transformation discussed for POPs-based single-atom catalysts.</data>
+</node>
+<edge source="paper_1" target="catalyst_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:0">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review concerns porous organic polymers-based single-atom catalysts for sustainable energy-related electrocatalysis.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_1" target="reaction_orr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:8">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review discusses applications in the oxygen reduction reaction (ORR).</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_1" target="reaction_oer" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:9">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review discusses applications in the oxygen evolution reaction (OER).</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_1" target="reaction_her" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:10">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review discusses applications in the hydrogen evolution reaction (HER).</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_1" target="reaction_co2rr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:11">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review discusses applications in the CO2 reduction reaction (CO2RR).</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="paper_1" target="reaction_nrr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:12">
+  <data key="d20">STUDIES</data>
+  <data key="d21">STUDIES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">bibliographic_metadata</data>
+  <data key="d33">direct</data>
+  <data key="d34">The review discusses applications in the nitrogen reduction reaction (NRR).</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="support_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:1">
+  <data key="d20">SUPPORTED_ON</data>
+  <data key="d21">SUPPORTED_ON</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based supports are described as platforms for hosting single-atom metals.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="metal_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:2">
+  <data key="d20">HAS_METAL</data>
+  <data key="d21">HAS_METAL</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">The catalysts host atomically dispersed metals as single atoms.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="active_site_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:3">
+  <data key="d20">HAS_ACTIVE_SITE</data>
+  <data key="d21">HAS_ACTIVE_SITE</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">The material class is explicitly described as single-atom catalysts, implying atomically dispersed metal sites as the discussed catalytic site class.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="state_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:4">
+  <data key="d20">HAS_STRUCTURAL_STATE</data>
+  <data key="d21">HAS_STRUCTURAL_STATE</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">structural_characterization</data>
+  <data key="d33">direct</data>
+  <data key="d34">The abstract describes POPs as supports that stabilize atomically dispersed metals.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="environment_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:5">
+  <data key="d20">HAS_ENVIRONMENT</data>
+  <data key="d21">HAS_ENVIRONMENT</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">The abstract identifies a tunable local electronic environment as a feature of reliable supports for dispersed metals.</data>
+  <data key="d35">high</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="factor_2" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:7">
+  <data key="d20">HAS_ENVIRONMENT</data>
+  <data key="d21">HAS_ENVIRONMENT</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">Favorable electron and mass transport are identified among the support properties relevant to electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="reaction_orr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:13">
+  <data key="d20">CATALYZES</data>
+  <data key="d21">CATALYZES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based single-atom catalysts are discussed in applications to ORR electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="reaction_oer" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:14">
+  <data key="d20">CATALYZES</data>
+  <data key="d21">CATALYZES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based single-atom catalysts are discussed in applications to OER electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="reaction_her" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:15">
+  <data key="d20">CATALYZES</data>
+  <data key="d21">CATALYZES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based single-atom catalysts are discussed in applications to HER electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="reaction_co2rr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:16">
+  <data key="d20">CATALYZES</data>
+  <data key="d21">CATALYZES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based single-atom catalysts are discussed in applications to CO2RR electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="catalyst_1" target="reaction_nrr" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:17">
+  <data key="d20">CATALYZES</data>
+  <data key="d21">CATALYZES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">direct</data>
+  <data key="d34">POPs-based single-atom catalysts are discussed in applications to NRR electrocatalysis.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+<edge source="support_1" target="factor_1" id="broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0:6">
+  <data key="d20">INDUCES</data>
+  <data key="d21">INDUCES</data>
+  <data key="d22">broad_241a667a6ef693f01c95</data>
+  <data key="d23">broad_241a667a6ef693f01c95:abstract:6d91da74c78cb74f09d0</data>
+  <data key="d24">abstract</data>
+  <data key="d25">main</data>
+  <data key="d26">[abstract] whole document</data>
+  <data key="d27">[]</data>
+  <data key="d28">[]</data>
+  <data key="d29">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d30">[]</data>
+  <data key="d31">Abstract</data>
+  <data key="d32">author_interpretation</data>
+  <data key="d33">interpretive</data>
+  <data key="d34">POPs-based supports are described as stabilizing atomically dispersed metals through strong metal–support interaction.</data>
+  <data key="d35">medium</data>
+  <data key="d36">False</data>
+</edge>
+</graph></graphml>

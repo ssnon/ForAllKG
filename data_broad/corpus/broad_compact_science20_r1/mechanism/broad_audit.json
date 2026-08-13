@@ -1,0 +1,158 @@
+{
+  "core_mechanism_nodes": 71,
+  "direct_mechanism_edge_fraction": 0.25,
+  "direct_mechanism_edges": 40,
+  "edges": 216,
+  "expected_paper_count": 15,
+  "mechanism_bearing_paper_count": 13,
+  "mechanism_bearing_paper_fraction": 0.8666666666666667,
+  "node_type_counts": {
+    "ActiveSite": 9,
+    "AdsorbateState": 4,
+    "Catalyst": 17,
+    "CatalystModel": 4,
+    "CoordinationMotif": 5,
+    "CorpusAlignment": 9,
+    "Descriptor": 3,
+    "InterfacialEnvironment": 6,
+    "Intermediate": 3,
+    "Material": 1,
+    "MechanismClaim": 6,
+    "MechanisticFactor": 17,
+    "Metal": 14,
+    "ObservationClaim": 4,
+    "Reaction": 25,
+    "ReactionStep": 4,
+    "StructuralState": 19,
+    "Support": 8
+  },
+  "nodes": 158,
+  "observed_paper_count": 15,
+  "observed_paper_ids": [
+    "broad_0774386e5705dc5099bf",
+    "broad_0dc10bb8cea2a03ae330",
+    "broad_0f37082c3176a42aa3ff",
+    "broad_1e86b38c448a764b68a3",
+    "broad_1f5f4154830ff7beb2d8",
+    "broad_241a667a6ef693f01c95",
+    "broad_29bf9d5faa2fcf91a418",
+    "broad_2b8814d5e0a2d97d4db2",
+    "broad_2bf509ad99d14e3b72f5",
+    "broad_323433beead65749162b",
+    "broad_4127da7ec24cf0263479",
+    "broad_444fa95d3a7db533ade0",
+    "broad_452536858d7422b6fd93",
+    "broad_464f52760ac95870b108",
+    "broad_490025521a9c4878732b"
+  ],
+  "per_paper": {
+    "broad_0774386e5705dc5099bf": {
+      "direct_mechanism_edges": 1,
+      "edges": 3,
+      "nodes": 4
+    },
+    "broad_0dc10bb8cea2a03ae330": {
+      "direct_mechanism_edges": 3,
+      "edges": 11,
+      "nodes": 12
+    },
+    "broad_0f37082c3176a42aa3ff": {
+      "direct_mechanism_edges": 2,
+      "edges": 11,
+      "nodes": 11
+    },
+    "broad_1e86b38c448a764b68a3": {
+      "direct_mechanism_edges": 3,
+      "edges": 17,
+      "nodes": 15
+    },
+    "broad_1f5f4154830ff7beb2d8": {
+      "direct_mechanism_edges": 0,
+      "edges": 5,
+      "nodes": 5
+    },
+    "broad_241a667a6ef693f01c95": {
+      "direct_mechanism_edges": 0,
+      "edges": 7,
+      "nodes": 8
+    },
+    "broad_29bf9d5faa2fcf91a418": {
+      "direct_mechanism_edges": 7,
+      "edges": 16,
+      "nodes": 12
+    },
+    "broad_2b8814d5e0a2d97d4db2": {
+      "direct_mechanism_edges": 4,
+      "edges": 21,
+      "nodes": 17
+    },
+    "broad_2bf509ad99d14e3b72f5": {
+      "direct_mechanism_edges": 4,
+      "edges": 16,
+      "nodes": 9
+    },
+    "broad_323433beead65749162b": {
+      "direct_mechanism_edges": 1,
+      "edges": 4,
+      "nodes": 4
+    },
+    "broad_4127da7ec24cf0263479": {
+      "direct_mechanism_edges": 2,
+      "edges": 5,
+      "nodes": 5
+    },
+    "broad_444fa95d3a7db533ade0": {
+      "direct_mechanism_edges": 4,
+      "edges": 19,
+      "nodes": 18
+    },
+    "broad_452536858d7422b6fd93": {
+      "direct_mechanism_edges": 6,
+      "edges": 11,
+      "nodes": 9
+    },
+    "broad_464f52760ac95870b108": {
+      "direct_mechanism_edges": 2,
+      "edges": 10,
+      "nodes": 10
+    },
+    "broad_490025521a9c4878732b": {
+      "direct_mechanism_edges": 1,
+      "edges": 4,
+      "nodes": 10
+    }
+  },
+  "recurring_mechanism_signatures": 3,
+  "relation_counts": {
+    "APPLIES_TO": 10,
+    "CATALYZES": 22,
+    "CORRELATES_WITH": 1,
+    "DEPENDS_ON": 1,
+    "DERIVED_FROM": 1,
+    "FACILITATES_STEP": 1,
+    "HAS_ACTIVE_SITE": 10,
+    "HAS_ADSORBATE_STATE": 4,
+    "HAS_DESCRIPTOR": 3,
+    "HAS_ENVIRONMENT": 6,
+    "HAS_METAL": 17,
+    "HAS_MOTIF": 6,
+    "HAS_STRUCTURAL_STATE": 20,
+    "INDUCES": 10,
+    "INHIBITS_STEP": 1,
+    "INTERPRETED_AS": 2,
+    "INVOLVES_INTERMEDIATE": 3,
+    "INVOLVES_STEP": 3,
+    "MODEL_OF": 3,
+    "MODULATES": 14,
+    "PROMOTES": 6,
+    "RECONSTRUCTS_TO": 3,
+    "STABILIZES": 3,
+    "SUPPORTED_ON": 10
+  },
+  "schema_version": "graphagentsdac-broad-corpus-audit-v1",
+  "source_scientific_edges": 160,
+  "unique_mechanism_signatures": 31,
+  "verification_required_edge_fraction": 1.0,
+  "zero_edge_papers": [],
+  "zero_node_papers": []
+}

@@ -1,0 +1,69 @@
+{
+  "assigned_bucket": "descriptor_failure_counterexamples",
+  "bucket_scores": {
+    "active_site_attribution": 0.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 1.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 0.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier"
+  ],
+  "doi": "10.1039/d2cs00233g",
+  "literature_paper_id": "literature:be48958eedafc82fb2f3",
+  "mechanism_buckets": [
+    "elementary_step_kinetics"
+  ],
+  "paper_id": "broad_be48958eedafc82fb2f3",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4302276317"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 12.0,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1039/d2cs00233g",
+      "license": "cc-by-nc",
+      "pdf_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d2cs00233g",
+      "source_id": "https://openalex.org/S316438",
+      "source_name": "Chemical Society Reviews",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 251,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "hybrid",
+      "oa_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d2cs00233g"
+    },
+    "openalex_id": "https://openalex.org/W4302276317",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1039/d2cs00233g",
+      "license": "cc-by-nc",
+      "pdf_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d2cs00233g",
+      "source_id": "https://openalex.org/S316438",
+      "source_name": "Chemical Society Reviews",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2022-01-01",
+    "relevance_score": 317.65292,
+    "work_type": "article"
+  },
+  "title": "Multi-atom cluster catalysts for efficient electrocatalysis",
+  "venue": "Chemical Society Reviews",
+  "year": 2022
+}

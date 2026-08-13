@@ -1,0 +1,73 @@
+{
+  "assigned_bucket": "interfacial_environment",
+  "bucket_scores": {
+    "active_site_attribution": 4.0,
+    "cooperative_bifunctional_mechanisms": 0.0,
+    "cross_reaction_atomic_site_mechanisms": 1.0,
+    "descriptor_failure_counterexamples": 0.0,
+    "elementary_step_kinetics": 4.0,
+    "interfacial_environment": 5.0,
+    "structural_landscape": 0.0,
+    "working_state_reconstruction": 0.0
+  },
+  "discovery_queries": [
+    "electrocatalysis constant potential DFT reaction barrier",
+    "interfacial water electrocatalysis reaction barrier",
+    "selective poisoning active site electrocatalysis"
+  ],
+  "doi": "10.1039/d1cs00270h",
+  "literature_paper_id": "literature:b9e84837d528c558fecc",
+  "mechanism_buckets": [
+    "active_site_attribution",
+    "elementary_step_kinetics",
+    "interfacial_environment"
+  ],
+  "paper_id": "broad_b9e84837d528c558fecc",
+  "provider_references": [
+    {
+      "provider": "openalex",
+      "provider_id": "W4200034351"
+    }
+  ],
+  "schema_version": "graphagentsdac-broad-abstract-package-v01",
+  "selection_mode": "bucket_quota",
+  "selection_score": 13.5,
+  "source_depth": "abstract",
+  "source_metadata": {
+    "best_oa_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1039/d1cs00270h",
+      "license": "cc-by-nc",
+      "pdf_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d1cs00270h",
+      "source_id": "https://openalex.org/S316438",
+      "source_name": "Chemical Society Reviews",
+      "version": "publishedVersion"
+    },
+    "cited_by_count": 131,
+    "is_paratext": false,
+    "is_retracted": false,
+    "language": "en",
+    "open_access": {
+      "any_repository_has_fulltext": true,
+      "is_oa": true,
+      "oa_status": "hybrid",
+      "oa_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d1cs00270h"
+    },
+    "openalex_id": "https://openalex.org/W4200034351",
+    "primary_location": {
+      "is_oa": true,
+      "landing_page_url": "https://doi.org/10.1039/d1cs00270h",
+      "license": "cc-by-nc",
+      "pdf_url": "https://pubs.rsc.org/en/content/articlepdf/2022/cs/d1cs00270h",
+      "source_id": "https://openalex.org/S316438",
+      "source_name": "Chemical Society Reviews",
+      "version": "publishedVersion"
+    },
+    "publication_date": "2021-12-06",
+    "relevance_score": 201.85472,
+    "work_type": "article"
+  },
+  "title": "Catalyst overcoating engineering towards high-performance electrocatalysis",
+  "venue": "Chemical Society Reviews",
+  "year": 2021
+}

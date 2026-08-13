@@ -1,0 +1,315 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d44" for="edge" attr.name="human_verified" attr.type="boolean"/>
+<key id="d43" for="edge" attr.name="confidence" attr.type="string"/>
+<key id="d42" for="edge" attr.name="evidence_text" attr.type="string"/>
+<key id="d41" for="edge" attr.name="evidence_strength" attr.type="string"/>
+<key id="d40" for="edge" attr.name="evidence_type" attr.type="string"/>
+<key id="d39" for="edge" attr.name="subsection" attr.type="string"/>
+<key id="d38" for="edge" attr.name="evidence_asset_ids_json" attr.type="string"/>
+<key id="d37" for="edge" attr.name="evidence_pointers_json" attr.type="string"/>
+<key id="d36" for="edge" attr.name="asset_ids_json" attr.type="string"/>
+<key id="d35" for="edge" attr.name="page_ids_json" attr.type="string"/>
+<key id="d34" for="edge" attr.name="section" attr.type="string"/>
+<key id="d33" for="edge" attr.name="document_role" attr.type="string"/>
+<key id="d32" for="edge" attr.name="document_id" attr.type="string"/>
+<key id="d31" for="edge" attr.name="chunk_id" attr.type="string"/>
+<key id="d30" for="edge" attr.name="paper_id" attr.type="string"/>
+<key id="d29" for="edge" attr.name="title" attr.type="string"/>
+<key id="d28" for="edge" attr.name="relation" attr.type="string"/>
+<key id="d27" for="node" attr.name="method_details" attr.type="string"/>
+<key id="d26" for="node" attr.name="conditions_json" attr.type="string"/>
+<key id="d25" for="node" attr.name="calculation_type" attr.type="string"/>
+<key id="d24" for="node" attr.name="resolution_member_count" attr.type="long"/>
+<key id="d23" for="node" attr.name="aliases_json" attr.type="string"/>
+<key id="d22" for="node" attr.name="description" attr.type="string"/>
+<key id="d21" for="node" attr.name="label" attr.type="string"/>
+<key id="d20" for="node" attr.name="type" attr.type="string"/>
+<key id="d19" for="graph" attr.name="applied_resolution_aliases" attr.type="long"/>
+<key id="d18" for="graph" attr.name="approved_same_entity_decisions" attr.type="long"/>
+<key id="d17" for="graph" attr.name="resolution_source_format" attr.type="string"/>
+<key id="d16" for="graph" attr.name="resolution_file" attr.type="string"/>
+<key id="d15" for="graph" attr.name="extraction_coverage_sensitive_queries_allowed" attr.type="boolean"/>
+<key id="d14" for="graph" attr.name="extraction_absence_claims_allowed" attr.type="boolean"/>
+<key id="d13" for="graph" attr.name="extraction_coverage_exact" attr.type="boolean"/>
+<key id="d12" for="graph" attr.name="extraction_failed_chunk_count" attr.type="long"/>
+<key id="d11" for="graph" attr.name="extraction_quarantined_chunk_count" attr.type="long"/>
+<key id="d10" for="graph" attr.name="extraction_active_chunk_count" attr.type="long"/>
+<key id="d9" for="graph" attr.name="extraction_quarantine_token_fraction" attr.type="double"/>
+<key id="d8" for="graph" attr.name="extraction_source_token_coverage" attr.type="double"/>
+<key id="d7" for="graph" attr.name="extraction_quality_status" attr.type="string"/>
+<key id="d6" for="graph" attr.name="extraction_complete" attr.type="boolean"/>
+<key id="d5" for="graph" attr.name="graph_adapter_id" attr.type="string"/>
+<key id="d4" for="graph" attr.name="domain_profile_id" attr.type="string"/>
+<key id="d3" for="graph" attr.name="graph_stage" attr.type="string"/>
+<key id="d2" for="graph" attr.name="run_fingerprint" attr.type="string"/>
+<key id="d1" for="graph" attr.name="run_id" attr.type="string"/>
+<key id="d0" for="graph" attr.name="paper_id" attr.type="string"/>
+<graph edgedefault="directed"><data key="d0">broad_0af1f93bd0e0360bf3dd</data>
+<data key="d1">3fc037dbeb49b8cf</data>
+<data key="d2">3fc037dbeb49b8cf66b88a402a0e7ffbaa4605845c3f9cdd22e83b4422fda3bf</data>
+<data key="d3">canonical</data>
+<data key="d4">catalysis_mechanism</data>
+<data key="d5">catalysis_mechanism</data>
+<data key="d6">True</data>
+<data key="d7">complete</data>
+<data key="d8">1.0</data>
+<data key="d9">0.0</data>
+<data key="d10">1</data>
+<data key="d11">0</data>
+<data key="d12">0</data>
+<data key="d13">True</data>
+<data key="d14">True</data>
+<data key="d15">True</data>
+<data key="d16">/home/rldnr7959/GraphAgentsDAC/data_broad/extracted/broad_0af1f93bd0e0360bf3dd/resolution/decisions.jsonl</data>
+<data key="d17">jsonl_reviewed_decisions</data>
+<data key="d18">0</data>
+<data key="d19">0</data>
+<node id="paper_broad_0af1f93bd0e0360bf3dd">
+  <data key="d20">Paper</data>
+  <data key="d21">MoC Quantum Dots@N-Doped-Carbon for Low-Cost and Efficient Hydrogen Evolution Reaction</data>
+  <data key="d22">Study of MoC quantum dots on N-doped porous carbon for electrocatalytic and photocatalytic HER.</data>
+  <data key="d23">["paper_broad_0af1f93bd0e0360bf3dd"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="catalyst_moc_nc">
+  <data key="d20">Catalyst</data>
+  <data key="d21">MoC@NC</data>
+  <data key="d22">Bifunctional catalyst consisting of molybdenum carbide quantum dots immobilized on N-doped porous carbon.</data>
+  <data key="d23">["catalyst_moc_nc"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="material_moc_quantum_dots">
+  <data key="d20">Metal</data>
+  <data key="d21">MoC quantum dots</data>
+  <data key="d22">Molybdenum carbide quantum dots used as the catalytic component.</data>
+  <data key="d23">["material_moc_quantum_dots"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="support_n_doped_porous_carbon">
+  <data key="d20">Support</data>
+  <data key="d21">N-doped porous carbon</data>
+  <data key="d22">N-doped porous carbon onto which MoC quantum dots are in situ synthesized and immobilized.</data>
+  <data key="d23">["support_n_doped_porous_carbon"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="material_g_c3n4">
+  <data key="d20">Material</data>
+  <data key="d21">2D graphitic carbon nitride</data>
+  <data key="d22">Two-dimensional graphitic carbon nitride coupled with MoC@NC for photocatalytic HER.</data>
+  <data key="d23">["material_g_c3n4"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="reaction_her">
+  <data key="d20">Reaction</data>
+  <data key="d21">Hydrogen evolution reaction</data>
+  <data key="d22">Hydrogen evolution from water under electrocatalytic or photocatalytic conditions.</data>
+  <data key="d23">["reaction_her"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="descriptor_delta_g_h_star">
+  <data key="d20">Descriptor</data>
+  <data key="d21">Gibbs free energy for atomic hydrogen adsorption (ΔG H*)</data>
+  <data key="d22">Hydrogen adsorption free-energy descriptor discussed for assessing HER suitability.</data>
+  <data key="d23">["descriptor_delta_g_h_star"]</data>
+  <data key="d24">1</data>
+</node>
+<node id="calc_dft_moc_nc">
+  <data key="d20">Calculation</data>
+  <data key="d21">DFT calculation of hydrogen adsorption</data>
+  <data key="d25">density_functional_theory</data>
+  <data key="d26">[]</data>
+  <data key="d27">Density functional theory calculation; the functional and other settings are not specified.</data>
+  <data key="d23">["calc_dft_moc_nc"]</data>
+  <data key="d24">1</data>
+</node>
+<edge source="paper_broad_0af1f93bd0e0360bf3dd" target="catalyst_moc_nc" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:0:0">
+  <data key="d28">STUDIES</data>
+  <data key="d29">STUDIES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">bibliographic_metadata</data>
+  <data key="d41">direct</data>
+  <data key="d42">The study reports MoC quantum dots onto N-doped porous carbon, resulting in the bifunctional catalyst MoC@NC.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="paper_broad_0af1f93bd0e0360bf3dd" target="reaction_her" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:4:1">
+  <data key="d28">STUDIES</data>
+  <data key="d29">STUDIES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">bibliographic_metadata</data>
+  <data key="d41">direct</data>
+  <data key="d42">The paper concerns hydrogen evolution reaction from water through electrocatalysis and photocatalysis.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="catalyst_moc_nc" target="material_moc_quantum_dots" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:1:2">
+  <data key="d28">HAS_METAL</data>
+  <data key="d29">HAS_METAL</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">structural_characterization</data>
+  <data key="d41">direct</data>
+  <data key="d42">MoC quantum dots are the molybdenum carbide component of MoC@NC.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="catalyst_moc_nc" target="support_n_doped_porous_carbon" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:2:3">
+  <data key="d28">SUPPORTED_ON</data>
+  <data key="d29">SUPPORTED_ON</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">structural_characterization</data>
+  <data key="d41">direct</data>
+  <data key="d42">Molybdenum carbide quantum dots are synthesized onto and immobilized on N-doped porous carbon.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="catalyst_moc_nc" target="reaction_her" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:3:4">
+  <data key="d28">CATALYZES</data>
+  <data key="d29">CATALYZES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">experimental_observation</data>
+  <data key="d41">direct</data>
+  <data key="d42">MoC@NC is used for both electrocatalytic and photocatalytic hydrogen evolution reactions.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="catalyst_moc_nc" target="descriptor_delta_g_h_star" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:5:5">
+  <data key="d28">HAS_DESCRIPTOR</data>
+  <data key="d29">HAS_DESCRIPTOR</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">computational_result</data>
+  <data key="d41">direct</data>
+  <data key="d42">DFT suggests that MoC@NC has a suitable Gibbs free energy (ΔG H*) for atomic hydrogen adsorption.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="catalyst_moc_nc" target="material_g_c3n4" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:9:6">
+  <data key="d28">COMPARED_WITH</data>
+  <data key="d29">COMPARED_WITH</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">experimental_observation</data>
+  <data key="d41">direct</data>
+  <data key="d42">The photocatalytic performance of MoC@NC coupled with 2D graphitic carbon nitride is compared with that of pure g-C3N4.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="material_g_c3n4" target="reaction_her" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:8:7">
+  <data key="d28">PROMOTES</data>
+  <data key="d29">PROMOTES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">experimental_observation</data>
+  <data key="d41">direct</data>
+  <data key="d42">Coupling MoC@NC with 2D graphitic carbon nitride significantly reduces the photocatalytic HER energy barrier and enhances separation efficiency of photogenerated carriers, resulting in an outstanding photocatalytic H2 evolution rate.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="descriptor_delta_g_h_star" target="reaction_her" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:7:8">
+  <data key="d28">PROMOTES</data>
+  <data key="d29">PROMOTES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">author_interpretation</data>
+  <data key="d41">interpretive</data>
+  <data key="d42">The suitable ΔG H* is described as beneficial to both electrocatalytic and photocatalytic HERs.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+<edge source="calc_dft_moc_nc" target="descriptor_delta_g_h_star" id="broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b:6:9">
+  <data key="d28">CALCULATES</data>
+  <data key="d29">CALCULATES</data>
+  <data key="d30">broad_0af1f93bd0e0360bf3dd</data>
+  <data key="d31">broad_0af1f93bd0e0360bf3dd:abstract:053c335f92bfabbb670b</data>
+  <data key="d32">abstract</data>
+  <data key="d33">main</data>
+  <data key="d34">[abstract] whole document</data>
+  <data key="d35">[]</data>
+  <data key="d36">[]</data>
+  <data key="d37">[{"document_id": "abstract", "document_role": "main", "page_id": null, "asset_ids": [], "locator_text": "Abstract"}]</data>
+  <data key="d38">[]</data>
+  <data key="d39">Abstract</data>
+  <data key="d40">computational_result</data>
+  <data key="d41">direct</data>
+  <data key="d42">Density functional theory calculation suggests a suitable Gibbs free energy for atomic hydrogen adsorption.</data>
+  <data key="d43">high</data>
+  <data key="d44">False</data>
+</edge>
+</graph></graphml>

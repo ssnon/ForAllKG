@@ -1,0 +1,5 @@
+# Pulse potential mediated selectivity for the electrocatalytic oxidation of glycerol to glyceric acid
+
+## Abstract
+
+Abstract Preventing the deactivation of noble metal-based catalysts due to self-oxidation and poisonous adsorption is a significant challenge in organic electro-oxidation. In this study, we employ a pulsed potential electrolysis strategy for the selective electrocatalytic oxidation of glycerol to glyceric acid over a Pt-based catalyst. In situ Fourier-transform infrared spectroscopy, quasi-in situ X-ray photoelectron spectroscopy, and finite element simulations reveal that the pulsed potential could tailor the catalyst’s oxidation and surface micro-environment. This prevents the overaccumulation of poisoning intermediate species and frees up active sites for the re-adsorption of OH adsorbate and glycerol. The pulsed potential electrolysis strategy results in a higher glyceric acid selectivity (81.8%) than constant-potential electrocatalysis with 0.7 V RHE (37.8%). This work offers an efficient strategy to mitigate the deactivation of noble metal-based electrocatalysts.

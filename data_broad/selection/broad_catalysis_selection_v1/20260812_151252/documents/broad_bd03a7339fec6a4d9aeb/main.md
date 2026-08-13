@@ -1,0 +1,5 @@
+# The Influence of Nanoconfinement on Electrocatalysis
+
+## Abstract
+
+The use of nanoparticles and nanostructured electrodes are abundant in electrocatalysis. These nanometric systems contain elements of nanoconfinement in different degrees, depending on the geometry, which can have a much greater effect on the activity and selectivity than often considered. In this Review, we firstly identify the systems containing different degrees of nanoconfinement and how they can affect the activity and selectivity of electrocatalytic reactions. Then we follow with a fundamental understanding of how electrochemistry and electrocatalysis are affected by nanoconfinement, which is beginning to be uncovered, thanks to the development of new, atomically precise manufacturing and fabrication techniques as well as advances in theoretical modeling. The aim of this Review is to help us look beyond using nanostructuring as just a way to increase surface area, but also as a way to break the scaling relations imposed on electrocatalysis by thermodynamics.

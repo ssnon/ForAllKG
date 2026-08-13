@@ -1,0 +1,5 @@
+# Enhanced oxygen reduction with single-atomic-site iron catalysts for a zinc-air battery and hydrogen-air fuel cell
+
+## Abstract
+
+Efficient, durable and inexpensive electrocatalysts that accelerate sluggish oxygen reduction reaction kinetics and achieve high-performance are highly desirable. Here we develop a strategy to fabricate a catalyst comprised of single iron atomic sites supported on a nitrogen, phosphorus and sulfur co-doped hollow carbon polyhedron from a metal-organic framework@polymer composite. The polymer-based coating facilitates the construction of a hollow structure via the Kirkendall effect and electronic modulation of an active metal center by long-range interaction with sulfur and phosphorus. Benefiting from structure functionalities and electronic control of a single-atom iron active center, the catalyst shows a remarkable performance with enhanced kinetics and activity for oxygen reduction in both alkaline and acid media. Moreover, the catalyst shows promise for substitution of expensive platinum to drive the cathodic oxygen reduction reaction in zinc-air batteries and hydrogen-air fuel cells.

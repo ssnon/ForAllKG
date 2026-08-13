@@ -1,0 +1,183 @@
+{
+  "call_kind_counts": {
+    "graph_generation": 14,
+    "semantic_patch": 7
+  },
+  "data_root": "/home/rldnr7959/GraphAgentsDAC/data_broad",
+  "direct_mechanism_edges": 19,
+  "generation_attempts": 14,
+  "graph_usable_paper_count": 6,
+  "graph_usable_paper_fraction": 0.6,
+  "input_tokens": 161517,
+  "llm_calls": 21,
+  "llm_calls_per_direct_mechanism_edge": 1.105263157894737,
+  "llm_calls_per_requested_paper": 2.1,
+  "llm_calls_per_usable_paper": 3.5,
+  "materialization_status_counts": {
+    "complete": 6,
+    "rejected": 4
+  },
+  "mechanism_bearing_fraction_of_requested": 0.6,
+  "mechanism_bearing_fraction_of_usable": 1.0,
+  "mechanism_bearing_paper_count": 6,
+  "micro_reextract_attempts": 0,
+  "most_expensive_papers": [
+    {
+      "direct_mechanism_edges": 0,
+      "graph_materialization_status": "rejected",
+      "llm_calls": 8,
+      "paper_id": "broad_13d015f8decf061a10c6",
+      "total_tokens": 94074
+    },
+    {
+      "direct_mechanism_edges": 0,
+      "graph_materialization_status": "rejected",
+      "llm_calls": 2,
+      "paper_id": "broad_1e86b38c448a764b68a3",
+      "total_tokens": 17994
+    },
+    {
+      "direct_mechanism_edges": 6,
+      "graph_materialization_status": "complete",
+      "llm_calls": 2,
+      "paper_id": "broad_2906a6cb4ffcfb858fea",
+      "total_tokens": 16954
+    },
+    {
+      "direct_mechanism_edges": 2,
+      "graph_materialization_status": "rejected",
+      "llm_calls": 2,
+      "paper_id": "broad_0af1f93bd0e0360bf3dd",
+      "total_tokens": 16372
+    },
+    {
+      "direct_mechanism_edges": 2,
+      "graph_materialization_status": "rejected",
+      "llm_calls": 2,
+      "paper_id": "broad_0dc10bb8cea2a03ae330",
+      "total_tokens": 15037
+    },
+    {
+      "direct_mechanism_edges": 3,
+      "graph_materialization_status": "complete",
+      "llm_calls": 1,
+      "paper_id": "broad_0f37082c3176a42aa3ff",
+      "total_tokens": 10639
+    },
+    {
+      "direct_mechanism_edges": 3,
+      "graph_materialization_status": "complete",
+      "llm_calls": 1,
+      "paper_id": "broad_12549367c327c283ccf7",
+      "total_tokens": 10115
+    },
+    {
+      "direct_mechanism_edges": 0,
+      "graph_materialization_status": "complete",
+      "llm_calls": 1,
+      "paper_id": "broad_0774386e5705dc5099bf",
+      "total_tokens": 10059
+    },
+    {
+      "direct_mechanism_edges": 3,
+      "graph_materialization_status": "complete",
+      "llm_calls": 1,
+      "paper_id": "broad_241a667a6ef693f01c95",
+      "total_tokens": 9965
+    },
+    {
+      "direct_mechanism_edges": 0,
+      "graph_materialization_status": "complete",
+      "llm_calls": 1,
+      "paper_id": "broad_1f5f4154830ff7beb2d8",
+      "total_tokens": 8741
+    }
+  ],
+  "observed_validation_issue_counts": {
+    "CLAIM_MISSING_APPLICATION_TARGET": 1,
+    "ISOLATED_NODE": 18,
+    "MECHANISM_MISSING_SUPPORT": 1,
+    "RELATION_SOURCE_TYPE_MISMATCH": 4,
+    "RELATION_TARGET_TYPE_MISMATCH": 2
+  },
+  "output_tokens": 48433,
+  "paper_ids": [
+    "broad_0774386e5705dc5099bf",
+    "broad_0af1f93bd0e0360bf3dd",
+    "broad_0dc10bb8cea2a03ae330",
+    "broad_0f37082c3176a42aa3ff",
+    "broad_12549367c327c283ccf7",
+    "broad_13d015f8decf061a10c6",
+    "broad_1e86b38c448a764b68a3",
+    "broad_1f5f4154830ff7beb2d8",
+    "broad_241a667a6ef693f01c95",
+    "broad_2906a6cb4ffcfb858fea"
+  ],
+  "patch_attempts": 7,
+  "patch_operation_count": 3,
+  "post_micro_patch_attempts": 0,
+  "projection_paper_count": 8,
+  "recovery_reason_counts": {
+    "quarantine_reason_class:recovery_exhausted": 6,
+    "recovery_reason:Pre-micro patch, micro-reextract, and post-micro patch budgets were exhausted and the chunk cannot be split safely.": 6
+  },
+  "rejected_paper_ids": [
+    "broad_0af1f93bd0e0360bf3dd",
+    "broad_0dc10bb8cea2a03ae330",
+    "broad_13d015f8decf061a10c6",
+    "broad_1e86b38c448a764b68a3"
+  ],
+  "relation_mismatch_patterns": [
+    {
+      "actual_type": "",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 2,
+      "expected_types": [
+        "Catalyst",
+        "CoordinationMotif",
+        "Material",
+        "Support"
+      ],
+      "relation": "CHARACTERIZED_BY",
+      "side": "source"
+    },
+    {
+      "actual_type": "entities",
+      "code": "RELATION_TARGET_TYPE_MISMATCH",
+      "count": 2,
+      "expected_types": [
+        "Experiment"
+      ],
+      "relation": "CHARACTERIZED_BY",
+      "side": "target"
+    },
+    {
+      "actual_type": "Catalyst",
+      "code": "RELATION_SOURCE_TYPE_MISMATCH",
+      "count": 2,
+      "expected_types": [
+        "CatalystModel"
+      ],
+      "relation": "MODEL_OF",
+      "side": "source"
+    }
+  ],
+  "requested_paper_count": 10,
+  "run_found_count": 10,
+  "run_missing_count": 0,
+  "schema_version": "graphagentsdac-broad-extraction-diagnostics-v2",
+  "terminal_validation_issue_counts": {
+    "CLAIM_MISSING_APPLICATION_TARGET": 1,
+    "ISOLATED_NODE": 15,
+    "MECHANISM_MISSING_SUPPORT": 1,
+    "RELATION_SOURCE_TYPE_MISMATCH": 4,
+    "RELATION_TARGET_TYPE_MISMATCH": 2
+  },
+  "tokens_per_direct_mechanism_edge": 11050.0,
+  "tokens_per_usable_paper": 34991.666666666664,
+  "total_tokens": 209950,
+  "wasted_call_fraction": 0.6666666666666666,
+  "wasted_llm_calls": 14,
+  "wasted_token_fraction": 0.6833865206001429,
+  "wasted_tokens": 143477
+}
