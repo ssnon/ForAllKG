@@ -46,6 +46,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--broad-compact-domain-recovery",
+        action="store_true",
+        help=(
+            "Use the adapter-owned compact schema for targeted Broad "
+            "domain-gate recovery. Requires --broad-compact-schema."
+        ),
+    )
+    parser.add_argument(
         "--broad-prune-metric-vocabulary",
         action="store_true",
         help=(
@@ -97,6 +105,9 @@ def main() -> None:
             extract_concurrency=args.extract_concurrency,
             force_extract=args.force_extract,
             broad_compact_schema=args.broad_compact_schema,
+            broad_compact_domain_recovery=(
+                args.broad_compact_domain_recovery
+            ),
             broad_prune_metric_vocabulary=(
                 args.broad_prune_metric_vocabulary
             ),

@@ -27,6 +27,9 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
         CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
     ),
     compact_generation_response_model=BroadMechanismGraphDraft,
+    compact_domain_gate_recovery_response_model=(
+        BroadMechanismGraphDraft
+    ),
     allowed_entity_types=frozenset({
         "Paper",
         "Catalyst",

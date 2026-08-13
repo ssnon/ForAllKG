@@ -25,6 +25,9 @@ class ExtractionDomainAdapter:
     relation_aliases: tuple[tuple[str, str], ...] = ()
     strict_relation_constraints: tuple[RelationConstraint, ...] = ()
     compact_generation_response_model: type[BaseModel] | None = None
+    compact_domain_gate_recovery_response_model: (
+        type[BaseModel] | None
+    ) = None
 
     def canonical_relation(self, relation: str) -> str:
         aliases = dict(self.relation_aliases)
@@ -43,6 +46,20 @@ class ExtractionDomainAdapter:
                 f"domain {self.domain_profile_id!r}"
             )
         return self.compact_generation_response_model
+
+    def domain_gate_recovery_response_model(
+        self,
+        *,
+        compact: bool = False,
+    ) -> type[BaseModel]:
+        if not compact:
+            return KnowledgeGraphDraft
+        if self.compact_domain_gate_recovery_response_model is None:
+            raise ValueError(
+                "compact domain-gate recovery schema is not configured for "
+                f"domain {self.domain_profile_id!r}"
+            )
+        return self.compact_domain_gate_recovery_response_model
 
     def canonicalize_generation_output(
         self,

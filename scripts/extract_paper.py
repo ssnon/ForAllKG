@@ -123,6 +123,15 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--broad-compact-domain-recovery",
+        action="store_true",
+        help=(
+            "For catalysis_mechanism Broad extraction, use the "
+            "adapter-owned compact schema for the targeted domain-gate "
+            "recovery call. Requires --broad-compact-schema."
+        ),
+    )
+    parser.add_argument(
         "--broad-prune-metric-vocabulary",
         action="store_true",
         help=(
@@ -306,9 +315,22 @@ def main() -> None:
             "--broad-prune-metric-vocabulary is only valid with "
             "--domain-profile catalysis_mechanism"
         )
+    if (
+        args.broad_compact_domain_recovery
+        and not args.broad_compact_schema
+    ):
+        raise ValueError(
+            "--broad-compact-domain-recovery requires "
+            "--broad-compact-schema"
+        )
     generation_response_schema_id = (
         broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
         if args.broad_compact_schema
+        else "knowledge-graph-draft-full"
+    )
+    domain_gate_recovery_response_schema_id = (
+        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
+        if args.broad_compact_domain_recovery
         else "knowledge-graph-draft-full"
     )
     data_root = args.data_root or extraction_adapter.default_data_root
@@ -375,6 +397,9 @@ def main() -> None:
             "extraction_adapter_id": extraction_adapter.adapter_id,
             "extraction_policy_id": extraction_policy_id,
             "generation_response_schema_id": generation_response_schema_id,
+            "domain_gate_recovery_response_schema_id": (
+                domain_gate_recovery_response_schema_id
+            ),
             "data_root": str(data_root),
             **(
                 {
@@ -697,6 +722,11 @@ def main() -> None:
     print("Extraction adapter:", extraction_adapter.adapter_id, flush=True)
     print("Extraction policy:", extraction_policy_id, flush=True)
     print("Generation response schema:", generation_response_schema_id, flush=True)
+    print(
+        "Domain-gate recovery response schema:",
+        domain_gate_recovery_response_schema_id,
+        flush=True,
+    )
     print("Data root:", data_root, flush=True)
     print("Paper ID:", paper.paper_id, flush=True)
     print("Run ID:", run_id, flush=True)
@@ -735,6 +765,9 @@ def main() -> None:
                     force=(args.force or args.force_vision),
                     extraction_adapter=extraction_adapter,
                     compact_generation_schema=args.broad_compact_schema,
+                    compact_domain_gate_recovery=(
+                        args.broad_compact_domain_recovery
+                    ),
                 ): chunk
                 for chunk in logical_batch
             }

@@ -91,6 +91,7 @@ class BroadPilotOptions:
     extract_concurrency: int = 1
     force_extract: bool = False
     broad_compact_schema: bool = False
+    broad_compact_domain_recovery: bool = False
     broad_prune_metric_vocabulary: bool = False
     allow_partial: bool = False
     skip_extraction: bool = False
@@ -181,6 +182,8 @@ class BroadCorpusPilotPipeline:
                 command.append("--force")
             if self.options.broad_compact_schema:
                 command.append("--broad-compact-schema")
+            if self.options.broad_compact_domain_recovery:
+                command.append("--broad-compact-domain-recovery")
             if self.options.broad_prune_metric_vocabulary:
                 command.append("--broad-prune-metric-vocabulary")
             if self.options.allow_partial:

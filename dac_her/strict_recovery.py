@@ -238,6 +238,16 @@ def _finalize_and_save(
     return finalized.graph, finalized.vocabulary_issues, finalized.report
 
 
+def _domain_gate_recovery_response_model(
+    extraction_adapter: ExtractionDomainAdapter,
+    *,
+    compact: bool,
+):
+    return extraction_adapter.domain_gate_recovery_response_model(
+        compact=compact,
+    )
+
+
 def extract_one_chunk(
     *,
     chunk: ChunkSpec,
@@ -252,10 +262,17 @@ def extract_one_chunk(
     force: bool = False,
     extraction_adapter: ExtractionDomainAdapter | None = None,
     compact_generation_schema: bool = False,
+    compact_domain_gate_recovery: bool = False,
 ) -> dict[str, Any]:
     extraction_adapter = extraction_adapter or get_extraction_adapter("dac_her")
     generation_response_model = extraction_adapter.generation_response_model(
         compact=compact_generation_schema,
+    )
+    domain_gate_recovery_response_model = (
+        _domain_gate_recovery_response_model(
+            extraction_adapter,
+            compact=compact_domain_gate_recovery,
+        )
     )
     relation_constraints = extraction_adapter.strict_relation_constraints
     output_path = chunk_output_path(chunk, chunk_output_dir)
@@ -421,7 +438,7 @@ def extract_one_chunk(
                     / f"{safe_chunk_id}__domain_gate_recovery_0.json"
                 )
                 try:
-                    recovered_draft = recovery_llm.generate_structured(
+                    recovered_generated = recovery_llm.generate_structured(
                         system_prompt=(
                             extraction_adapter.micro_reextract_system_prompt
                         ),
@@ -442,10 +459,15 @@ def extract_one_chunk(
                             ),
                             domain_error=str(last_domain_gate_error),
                         ),
-                        response_model=KnowledgeGraphDraft,
+                        response_model=domain_gate_recovery_response_model,
                         temperature=0.0,
                         max_tokens=policy.max_completion_tokens,
                         debug_path=domain_recovery_debug_path,
+                    )
+                    recovered_draft = (
+                        extraction_adapter.canonicalize_generation_output(
+                            recovered_generated
+                        )
                     )
                     recovered_draft = _enforce_chunk_metadata(
                         recovered_draft,
