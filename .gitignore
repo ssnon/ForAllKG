@@ -2,7 +2,6 @@ Notebooks/GRAPHDATA_OUTPUT_MATERIALPROPERTIES/pfas_and_domain_knowledge_graph.gr
 .env
 data_dac/
 data_sers/
-os.environ[OPENROUTER_EXTRACT_MODEL]
 
 */__pycache__
 __pycache__/
@@ -12,7 +11,6 @@ runs/
 figures/
 data_broad/*.bak
 *.bak
-data_broad/*
 
 # ==================================================
 # Repository hygiene
@@ -36,3 +34,27 @@ data_broad/telemetry/
 data_broad/pipeline_runs/
 data_broad/discovery/
 data_broad/extracted/
+
+# --------------------------------------------------
+# Calibration transient outputs
+# --------------------------------------------------
+/calibration/bridge_semantic/current_predictions.json
+/calibration/bridge_semantic/predictions.csv
+/calibration/bridge_semantic/reports/
+/calibration/bridge_semantic/gold_backup.csv
+
+# --------------------------------------------------
+# Legacy/generated experiment outputs
+# --------------------------------------------------
+/Experiments/GRAPHDATA_OUTPUT_*/
+
+# --------------------------------------------------
+# Evaluation transient / operational artifacts
+# --------------------------------------------------
+/evaluation/**/*-dryrun/
+/evaluation/**/manifest.before_*.json
+/evaluation/**/operational_incident_*.json
+
+# Generated benchmark runs
+/benchmarks/hypothesis_v262/candidate_*_smoke*/
+/benchmarks/hypothesis_v262/candidate_*_stability_*/
