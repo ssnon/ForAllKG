@@ -21,6 +21,9 @@ from dac_her.corpus_acquisition.access_contracts import (
 from dac_her.corpus_acquisition.access_priority import (
     access_location_priority,
 )
+from dac_her.corpus_acquisition.access_recovery import (
+    suppressed_download_urls,
+)
 from dac_her.literature_catalog_contracts import CatalogWork
 
 
@@ -90,7 +93,15 @@ class MainArtifactDownloader:
         resolution: AccessResolution,
         output_root: Path,
     ) -> SourceArtifact:
-        locations = ordered_download_locations(resolution)
+        all_locations = ordered_download_locations(resolution)
+        suppressed_urls = suppressed_download_urls(output_root, work.work_id)
+        locations = [
+            location
+            for location in all_locations
+            if str(location.url_for_pdf or location.url or "").strip()
+            not in suppressed_urls
+        ]
+        suppressed_count = len(all_locations) - len(locations)
 
         if (
             not self.policy.auto_download_main
@@ -110,7 +121,16 @@ class MainArtifactDownloader:
                     resolution.selected_download_url
                     or None
                 ),
-                acquisition_method=None,
+                acquisition_method=(
+                    "access_recovery_suppressed_hard_failed_locations"
+                    if suppressed_count and not locations
+                    else None
+                ),
+                error=(
+                    "all_direct_locations_suppressed_after_hard_failure"
+                    if suppressed_count and not locations
+                    else None
+                ),
                 attempted_location_count=0,
                 positive_evidence_promotion_performed=False,
             )

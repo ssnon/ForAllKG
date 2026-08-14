@@ -1,0 +1,59 @@
+schema_version: pre-extraction-gate-policy-v1
+policy_id: sers_au_ag_strict_bridge_pre_extraction_v1
+
+identity:
+  front_matter_chars: 12000
+  doi_scan_chars: 6000
+  verified_title_token_f1: 0.78
+  weak_title_token_f1: 0.55
+  min_title_token_count: 3
+
+suitability:
+  min_main_markdown_chars: 1500
+  min_suitable_axes: 1
+  min_axis_indicator_hits_per_axis: 1
+  min_relation_context_blocks_per_axis: 1
+  relation_signal_terms:
+    - dependence
+    - dependent
+    - effect of
+    - influence
+    - relationship
+    - correlation
+    - comparison
+    - compared with
+    - versus
+    - varying
+    - varied
+    - tunable
+    - increase
+    - increased
+    - decrease
+    - decreased
+    - enhancement
+    - enhancement factor
+    - optimization
+    - mechanism
+    - simulation
+    - calculated
+    - measured
+    - observed
+    - electric field
+    - plasmon coupling
+    - stability
+    - robustness
+    - reproducibility
+    - repeatability
+    - uniformity
+    - relative standard deviation
+    - rsd
+    - calibration
+    - limit of detection
+    - detection limit
+
+# Strict positive-evidence automation is fail-closed: only bibliographically
+# verified and full-text-suitable papers are handed to the automatic extractor.
+allowed_identity_statuses:
+  - verified
+allowed_suitability_statuses:
+  - suitable

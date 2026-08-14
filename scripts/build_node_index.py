@@ -11,6 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build an exact cosine-search embedding index for corpus navigation nodes.")
     parser.add_argument("--corpus-id", required=True)
+    parser.add_argument("--data-root", default="data_dac")
     parser.add_argument("--mode", choices=("evidence", "mechanism", "exploratory"), default="exploratory")
     parser.add_argument("--model", default=DEFAULT_EMBED_MODEL)
     parser.add_argument("--device", default=None)
@@ -24,7 +25,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    mode_root = PROJECT_ROOT / "data_dac" / "corpus" / args.corpus_id / args.mode
+    data_root = Path(args.data_root)
+    if not data_root.is_absolute():
+        data_root = PROJECT_ROOT / data_root
+    mode_root = data_root / "corpus" / args.corpus_id / args.mode
     navigation_root = mode_root / "navigation"
     graph_path = Path(args.navigation_graphml) if args.navigation_graphml else navigation_root / "graph.graphml"
     node_text_path = Path(args.node_text) if args.node_text else mode_root / "node_text.jsonl"

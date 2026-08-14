@@ -145,11 +145,11 @@ def assess_candidate(
         str,
         list[str],
     ] = {}
-    matched_axes: set[str] = set(
-        axis_id
-        for axis_id in work.retrieval_axis_ids
-        if axis_id in axes
-    )
+    # Keep discovery provenance separate from content-grounded axis evidence.
+    # A work being retrieved by an axis query is useful ranking provenance,
+    # but it must not satisfy require_axis_match or consume that axis quota
+    # unless the title/abstract actually contains an axis indicator.
+    matched_axes: set[str] = set()
     for axis in profile.axes:
         hits = _matching_terms(
             combined,
@@ -565,8 +565,14 @@ def select_candidates(
                 "scientific result direction, causality, or effect sign."
             ),
             (
-                "One work may match multiple axes, but it is charged to at "
-                "most one primary quota axis to preserve corpus diversity."
+                "matched_axes records only title/abstract indicator matches; "
+                "retrieval_axis_ids remains discovery provenance and may "
+                "contribute only the configured retrieval ranking bonus."
+            ),
+            (
+                "One work may match multiple evidence-grounded axes, but it "
+                "is charged to at most one primary quota axis to preserve "
+                "corpus diversity."
             ),
             (
                 "Selected metadata is not positive KG evidence. Promotion "

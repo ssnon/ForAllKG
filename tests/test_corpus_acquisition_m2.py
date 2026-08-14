@@ -194,3 +194,83 @@ def test_quota_selection_charges_each_work_to_one_primary_axis():
     ]
     assert len(charged) == len(set(charged))
     assert report.positive_evidence_promotion_performed is False
+
+
+def test_retrieval_axis_does_not_satisfy_required_axis_match_without_indicator():
+    profile = _profile()
+    work = _work(
+        "retrieval-only",
+        "Gold SERS substrate performance study",
+        abstract="silver SERS substrate performance and reproducibility",
+        axis="gap",
+    )
+
+    row = assess_candidate(work, profile)
+
+    assert row.eligibility_status == "excluded"
+    assert row.matched_axes == []
+    assert row.matched_terms_by_axis == {}
+    assert "no_acquisition_axis_match" in row.exclusion_reasons
+    # Retrieval provenance is still allowed to affect ranking metadata.
+    assert row.score_components["retrieval_axis"] == 1.0
+    assert "axis_indicators" not in row.score_components
+
+
+def test_retrieval_axis_does_not_claim_quota_when_axis_match_is_optional():
+    profile = _profile().model_copy(
+        update={
+            "scope": _profile().scope.model_copy(
+                update={"require_axis_match": False}
+            ),
+            "selection": SelectionPolicy(target_total=1),
+            "axes": [
+                AcquisitionAxis(
+                    axis_id="gap",
+                    target_selected=1,
+                    queries=["SERS nanogap"],
+                    indicators=["nanogap"],
+                )
+            ],
+        }
+    )
+    work = _work(
+        "retrieval-only",
+        "Gold SERS substrate performance study",
+        abstract="silver SERS substrate performance and reproducibility",
+        axis="gap",
+    )
+    packet = _packet([work])
+
+    assessments = assess_catalog(packet, profile)
+    selected, report = select_candidates(
+        packet=packet,
+        profile=profile,
+        assessments=assessments,
+    )
+
+    assert assessments[0].eligibility_status == "eligible"
+    assert assessments[0].matched_axes == []
+    assert len(selected) == 1
+    assert selected[0].matched_axes == []
+    assert selected[0].primary_quota_axis is None
+    assert report.axis_candidate_counts["gap"] == 0
+    assert report.axis_primary_selected_counts["gap"] == 0
+    assert report.unfilled_axis_quotas == {"gap": 1}
+
+
+def test_indicator_match_counts_as_evidence_axis_even_from_other_retrieval_axis():
+    profile = _profile()
+    work = _work(
+        "cross-axis",
+        "Gold SERS nanogap experiment",
+        abstract="silver SERS nanogap response",
+        axis="shell",
+    )
+
+    row = assess_candidate(work, profile)
+
+    assert row.eligibility_status == "eligible"
+    assert row.matched_axes == ["gap"]
+    assert row.matched_terms_by_axis == {"gap": ["nanogap"]}
+    assert row.score_components["retrieval_axis"] == 1.0
+    assert row.score_components["axis_indicators"] == 1.0
