@@ -18,6 +18,9 @@ from dac_her.corpus_acquisition.access_contracts import (
     SourceAcquisitionPolicy,
     SourceArtifact,
 )
+from dac_her.corpus_acquisition.access_priority import (
+    access_location_priority,
+)
 from dac_her.literature_catalog_contracts import CatalogWork
 
 
@@ -37,16 +40,7 @@ def _pdf_magic(prefix: bytes) -> bool:
 
 
 def _location_priority(row: AccessLocation) -> tuple:
-    return (
-        0
-        if row.resolver == "unpaywall" and row.is_best
-        else 1
-        if row.resolver == "unpaywall"
-        else 2
-        if row.resolver == "catalog_open_access"
-        else 3,
-        row.location_id,
-    )
+    return access_location_priority(row)
 
 
 def ordered_download_locations(

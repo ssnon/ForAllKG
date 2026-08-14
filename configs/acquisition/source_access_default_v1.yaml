@@ -4,7 +4,12 @@ policy_id: generic_oa_source_acquisition_v1
 unpaywall_email_env: UNPAYWALL_EMAIL
 fallback_email_env: CROSSREF_MAILTO
 
+openalex_api_key_env: OPENALEX_API_KEY
+openalex_mailto_env: OPENALEX_MAILTO
+openalex_require_api_key: true
+
 use_unpaywall: true
+use_openalex: true
 use_catalog_open_access_url: true
 request_timeout_seconds: 45.0
 retries: 2

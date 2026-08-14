@@ -73,6 +73,14 @@ def parse_args() -> argparse.Namespace:
             "download_failed. Downloaded/not-attempted states remain resumable."
         ),
     )
+    parser.add_argument(
+        "--retry-access-misses",
+        action="store_true",
+        help=(
+            "Re-resolve prior unresolved/landing-only work states whose main "
+            "artifact was not_attempted. Useful after adding a new resolver."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -137,13 +145,24 @@ def main() -> int:
         state_path = state_root / safe_state_name(work.work_id)
         prior = load_work_state(state_path)
 
-        should_resume = (
+        retry_prior = (
             prior is not None
             and (
-                prior[1].status != "download_failed"
-                or not args.retry_failed
+                (
+                    args.retry_failed
+                    and prior[1].status == "download_failed"
+                )
+                or (
+                    args.retry_access_misses
+                    and prior[1].status == "not_attempted"
+                    and prior[0].status in {
+                        "resolved_landing_only",
+                        "unresolved",
+                    }
+                )
             )
         )
+        should_resume = prior is not None and not retry_prior
         if should_resume:
             resolution, artifact = prior
             print(
@@ -224,6 +243,64 @@ def main() -> int:
         for row in resolutions
     )
 
+    openalex_attempts = [
+        attempt
+        for row in resolutions
+        for attempt in row.resolver_attempts
+        if attempt.resolver == "openalex"
+        and attempt.status != "skipped"
+    ]
+    openalex_successes = [
+        attempt
+        for attempt in openalex_attempts
+        if attempt.status == "success"
+    ]
+    openalex_skipped_count = sum(
+        attempt.resolver == "openalex" and attempt.status == "skipped"
+        for row in resolutions
+        for attempt in row.resolver_attempts
+    )
+    openalex_location_count = sum(
+        location.resolver == "openalex"
+        for row in resolutions
+        for location in row.locations
+    )
+    openalex_direct_pdf_work_count = sum(
+        any(
+            location.resolver == "openalex"
+            and location.automatic_download_eligible
+            for location in row.locations
+        )
+        for row in resolutions
+    )
+    openalex_incremental_direct_pdf_work_count = sum(
+        any(
+            location.resolver == "openalex"
+            and location.automatic_download_eligible
+            for location in row.locations
+        )
+        and not any(
+            location.resolver != "openalex"
+            and location.automatic_download_eligible
+            for location in row.locations
+        )
+        for row in resolutions
+    )
+    openalex_artifact_download_count = 0
+    for resolution, artifact in zip(resolutions, artifacts):
+        if artifact.status != "downloaded" or not artifact.selected_location_id:
+            continue
+        selected_location = next(
+            (
+                location
+                for location in resolution.locations
+                if location.location_id == artifact.selected_location_id
+            ),
+            None,
+        )
+        if selected_location is not None and selected_location.resolver == "openalex":
+            openalex_artifact_download_count += 1
+
     all_download_attempts = [
         attempt
         for artifact in artifacts
@@ -291,6 +368,15 @@ def main() -> int:
         ],
         unpaywall_attempt_count=len(unpaywall_attempts),
         unpaywall_success_count=len(unpaywall_successes),
+        openalex_attempt_count=len(openalex_attempts),
+        openalex_success_count=len(openalex_successes),
+        openalex_skipped_count=openalex_skipped_count,
+        openalex_location_count=openalex_location_count,
+        openalex_direct_pdf_work_count=openalex_direct_pdf_work_count,
+        openalex_incremental_direct_pdf_work_count=(
+            openalex_incremental_direct_pdf_work_count
+        ),
+        openalex_artifact_download_count=openalex_artifact_download_count,
         catalog_oa_fallback_count=catalog_fallback,
         total_download_location_attempts=len(all_download_attempts),
         multi_location_recovery_count=multi_location_recovery_count,
@@ -330,6 +416,19 @@ def main() -> int:
         f"downloaded={report.artifact_downloaded_count}",
         f"failed={report.artifact_download_failed_count}",
         f"not_attempted={report.artifact_not_attempted_count}",
+    )
+    print(
+        "OpenAlex:",
+        f"attempts={report.openalex_attempt_count}",
+        f"successes={report.openalex_success_count}",
+        f"skipped={report.openalex_skipped_count}",
+        f"locations={report.openalex_location_count}",
+        f"direct_pdf_works={report.openalex_direct_pdf_work_count}",
+        (
+            "incremental_direct_pdf_works="
+            f"{report.openalex_incremental_direct_pdf_work_count}"
+        ),
+        f"downloads={report.openalex_artifact_download_count}",
     )
     print(
         "Download diagnostics:",

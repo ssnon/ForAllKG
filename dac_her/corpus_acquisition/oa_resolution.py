@@ -18,6 +18,12 @@ from dac_her.corpus_acquisition.access_contracts import (
     ResolverAttempt,
     SourceAcquisitionPolicy,
 )
+from dac_her.corpus_acquisition.access_priority import (
+    access_location_priority,
+)
+from dac_her.corpus_acquisition.openalex_access import (
+    OpenAlexAccessResolver,
+)
 from dac_her.literature_catalog_contracts import CatalogWork
 
 
@@ -287,6 +293,21 @@ class OpenAccessResolver:
                             self.policy.resolver_delay_seconds
                         )
 
+        if self.policy.use_openalex:
+            probe = OpenAlexAccessResolver(self.policy).resolve(work)
+            attempts.append(probe.attempt)
+            for location in probe.locations:
+                if all(
+                    location.location_id != existing.location_id
+                    for existing in locations
+                ):
+                    locations.append(location)
+            if probe.attempt.status == "failed":
+                notes.append(
+                    "OpenAlex access lookup failed; existing resolvers and "
+                    "catalog fallback remain available."
+                )
+
         if self.policy.use_catalog_open_access_url:
             fallback = _catalog_location(work)
             if fallback is not None:
@@ -311,30 +332,10 @@ class OpenAccessResolver:
                     )
                 )
 
-        # Stable priority: best direct Unpaywall PDF, other direct Unpaywall
-        # PDFs, catalog OA PDF candidate, then landing-only locations.
+        # Stable provider-aware priority shared with the downloader.
         locations = sorted(
             locations,
-            key=lambda row: (
-                0
-                if (
-                    row.resolver == "unpaywall"
-                    and row.is_best
-                    and row.automatic_download_eligible
-                )
-                else 1
-                if (
-                    row.resolver == "unpaywall"
-                    and row.automatic_download_eligible
-                )
-                else 2
-                if (
-                    row.resolver == "catalog_open_access"
-                    and row.automatic_download_eligible
-                )
-                else 3,
-                row.location_id,
-            ),
+            key=access_location_priority,
         )
 
         selected = next(

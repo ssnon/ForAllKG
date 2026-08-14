@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from email.message import Message
 from typing import Any, Callable, Mapping, Protocol
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from ..contracts import LiteratureRecord
@@ -45,7 +45,8 @@ class UrllibOpenAlexTransport:
         timeout: float,
         headers: Mapping[str, str],
     ) -> TransportResponse:
-        target = f"{url}?{urlencode(params)}"
+        query = urlencode(params)
+        target = f"{url}?{query}" if query else url
         request = Request(target, headers=dict(headers), method="GET")
         try:
             with urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed HTTPS API URL
@@ -139,6 +140,35 @@ def _retry_after_seconds(headers: Mapping[str, str]) -> float | None:
     return max(0.0, seconds)
 
 
+def _openalex_work_lookup_url(identifier: str) -> str:
+    text = str(identifier or "").strip().rstrip("/")
+    if not text:
+        raise ValueError("OpenAlex work identifier must not be empty")
+
+    lowered = text.casefold()
+    if lowered.startswith("https://openalex.org/"):
+        provider_id = _openalex_provider_id(text)
+        return f"{OPENALEX_WORKS_URL}/{provider_id}"
+    if text[:1].upper() == "W" and text[1:].isdigit():
+        return f"{OPENALEX_WORKS_URL}/{text.upper()}"
+
+    for prefix in (
+        "https://doi.org/",
+        "http://doi.org/",
+        "https://dx.doi.org/",
+        "http://dx.doi.org/",
+        "doi:",
+    ):
+        if lowered.startswith(prefix):
+            text = text[len(prefix):].strip()
+            break
+    if not text.startswith("10.") or "/" not in text:
+        raise ValueError(f"Unsupported OpenAlex work identifier: {identifier!r}")
+
+    doi_url = f"https://doi.org/{text}"
+    return f"{OPENALEX_WORKS_URL}/{quote(doi_url, safe=':/')}"
+
+
 class OpenAlexProvider:
     provider_name = "openalex"
 
@@ -209,22 +239,17 @@ class OpenAlexProvider:
 
         return records[: request.limit]
 
-    def _request_page(
+    def _request_json(
         self,
+        url: str,
         *,
-        query: str,
-        cursor: str,
-        per_page: int,
+        params: Mapping[str, str],
     ) -> dict[str, Any]:
-        params = {
-            "search": query,
-            "per_page": str(per_page),
-            "cursor": cursor,
-        }
+        request_params = dict(params)
         if self.api_key:
-            params["api_key"] = self.api_key
+            request_params["api_key"] = self.api_key
         if self.mailto:
-            params["mailto"] = self.mailto
+            request_params["mailto"] = self.mailto
 
         headers = {
             "Accept": "application/json",
@@ -235,8 +260,8 @@ class OpenAlexProvider:
         while True:
             try:
                 response = self.transport.get(
-                    OPENALEX_WORKS_URL,
-                    params=params,
+                    url,
+                    params=request_params,
                     timeout=self.timeout,
                     headers=headers,
                 )
@@ -266,6 +291,29 @@ class OpenAlexProvider:
 
             message = _response_error_message(response.body)
             raise OpenAlexHTTPError(response.status, message)
+
+    def _request_page(
+        self,
+        *,
+        query: str,
+        cursor: str,
+        per_page: int,
+    ) -> dict[str, Any]:
+        return self._request_json(
+            OPENALEX_WORKS_URL,
+            params={
+                "search": query,
+                "per_page": str(per_page),
+                "cursor": cursor,
+            },
+        )
+
+    def get_work(self, identifier: str) -> dict[str, Any]:
+        """Fetch one work by OpenAlex ID or DOI using shared retry machinery."""
+        return self._request_json(
+            _openalex_work_lookup_url(identifier),
+            params={},
+        )
 
     def _normalize_work(
         self,
@@ -322,7 +370,7 @@ class OpenAlexProvider:
         )
 
 
-def _location_metadata(value: Any) -> dict[str, Any] | None:
+def openalex_location_metadata(value: Any) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         return None
     source = value.get("source") if isinstance(value.get("source"), dict) else {}
@@ -334,9 +382,15 @@ def _location_metadata(value: Any) -> dict[str, Any] | None:
         "version": value.get("version"),
         "source_id": source.get("id"),
         "source_name": source.get("display_name"),
+        "source_type": source.get("type"),
     }
     cleaned = {key: item for key, item in result.items() if item is not None}
     return cleaned or None
+
+
+def _location_metadata(value: Any) -> dict[str, Any] | None:
+    # Compatibility wrapper for existing discovery normalization.
+    return openalex_location_metadata(value)
 
 
 def _response_error_message(body: bytes) -> str:

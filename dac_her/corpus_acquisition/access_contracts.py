@@ -46,6 +46,8 @@ class AccessLocation(StrictModel):
     host_type: str | None = None
     version: str | None = None
     license: str | None = None
+    source_id: str | None = None
+    source_name: str | None = None
     automatic_download_eligible: bool = False
     reason_codes: list[str] = Field(default_factory=list)
 
@@ -114,7 +116,11 @@ class SourceAcquisitionPolicy(StrictModel):
     policy_id: str
     unpaywall_email_env: str = "UNPAYWALL_EMAIL"
     fallback_email_env: str = "CROSSREF_MAILTO"
+    openalex_api_key_env: str = "OPENALEX_API_KEY"
+    openalex_mailto_env: str = "OPENALEX_MAILTO"
+    openalex_require_api_key: bool = True
     use_unpaywall: bool = True
+    use_openalex: bool = True
     use_catalog_open_access_url: bool = True
     request_timeout_seconds: float = Field(default=45.0, gt=0)
     retries: int = Field(default=2, ge=0, le=6)
@@ -156,6 +162,13 @@ class CorpusSourceAcquisitionReport(StrictModel):
     artifact_not_attempted_count: int = 0
     unpaywall_attempt_count: int = 0
     unpaywall_success_count: int = 0
+    openalex_attempt_count: int = 0
+    openalex_success_count: int = 0
+    openalex_skipped_count: int = 0
+    openalex_location_count: int = 0
+    openalex_direct_pdf_work_count: int = 0
+    openalex_incremental_direct_pdf_work_count: int = 0
+    openalex_artifact_download_count: int = 0
     catalog_oa_fallback_count: int = 0
     total_download_location_attempts: int = 0
     multi_location_recovery_count: int = 0
