@@ -1,0 +1,40 @@
+schema_version: document-materialization-policy-v1
+policy_id: generic_document_materialization_v1
+
+pdf_materializer: marker_cli
+marker_command: marker_single
+marker_extra_args: []
+marker_timeout_seconds: 1200
+
+# Marker/Surya loads GNU OpenMP (libgomp) through parts of the scientific
+# Python stack. Use oneMKL's GNU threading layer in the Marker child process
+# only, and remove any inherited force-Intel override.
+marker_environment_overrides:
+  MKL_THREADING_LAYER: GNU
+marker_environment_unset:
+  - MKL_SERVICE_FORCE_INTEL
+
+materialize_pdf: true
+materialize_txt: true
+materialize_csv: true
+materialize_xlsx: true
+materialize_docx: true
+materialize_pptx: true
+
+unsupported_extensions:
+  - ".zip"
+  - ".xls"
+  - ".doc"
+  - ".bin"
+
+xlsx_max_sheets: 20
+xlsx_max_rows_per_sheet: 5000
+xlsx_max_columns: 100
+csv_max_rows: 10000
+text_max_bytes: 52428800
+
+main_selection_mode: whole_document
+si_selection_mode: referenced_blocks
+si_fallback: skip
+si_reference_scope: whole_main
+figure_processing_mode: caption_first

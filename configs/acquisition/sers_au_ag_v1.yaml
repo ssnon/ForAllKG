@@ -1,0 +1,203 @@
+schema_version: corpus-acquisition-profile-v1
+profile_id: sers_au_ag_corpus_acquisition_v1
+domain_profile_id: sers_au_ag
+description: >
+  First production acquisition profile for Au/Ag plasmonic SERS.
+  The generic engine is domain-independent; only this configuration is SERS-specific.
+
+discovery:
+  results_per_query: 50
+  default_providers:
+    - semantic_scholar
+    - crossref
+
+scope:
+  required_term_groups:
+    - ["surface-enhanced raman", "surface enhanced raman", "sers"]
+    - ["gold", "silver", "au", "ag", "auag", "bimetallic"]
+  excluded_title_terms:
+    - "review"
+    - "perspective"
+    - "editorial"
+    - "corrigendum"
+    - "bibliometric"
+  excluded_publication_types:
+    - "Review"
+    - "Editorial"
+    - "MetaAnalysis"
+  min_year: 1990
+  max_year: null
+  require_abstract: false
+  manual_review_if_no_abstract: true
+  require_axis_match: true
+
+scoring:
+  open_access_bonus: 2.0
+  abstract_available_bonus: 1.0
+  retrieval_axis_bonus: 1.0
+  axis_indicator_bonus: 1.0
+  max_axis_bonus: 4.0
+  signals:
+    - signal_id: controlled_parameter_sweep
+      terms:
+        - "systematic"
+        - "varying"
+        - "varied"
+        - "dependence"
+        - "effect of"
+        - "tunable"
+        - "optimization"
+      weight: 3.0
+      match_mode: any
+    - signal_id: matched_comparison
+      terms:
+        - "comparison"
+        - "compared with"
+        - "versus"
+      weight: 2.0
+      match_mode: any
+    - signal_id: mechanism_simulation
+      terms:
+        - "mechanism"
+        - "fdtd"
+        - "finite difference time domain"
+        - "dda"
+        - "discrete dipole approximation"
+        - "electromagnetic simulation"
+        - "electric field enhancement"
+      weight: 2.0
+      match_mode: any
+    - signal_id: reproducibility
+      terms:
+        - "reproducibility"
+        - "repeatability"
+        - "relative standard deviation"
+        - "rsd"
+        - "uniformity"
+      weight: 2.0
+      match_mode: any
+    - signal_id: protocol_metric
+      terms:
+        - "enhancement factor"
+        - "limit of detection"
+        - "calibration"
+        - "detection limit"
+      weight: 1.0
+      match_mode: any
+  citation_bonuses:
+    - min_citations: 20
+      bonus: 0.5
+    - min_citations: 100
+      bonus: 0.5
+
+selection:
+  target_total: 100
+  include_manual_review: false
+
+axes:
+  - axis_id: nanogap
+    target_selected: 12
+    weight: 1.0
+    queries:
+      - "surface enhanced Raman SERS gold silver nanogap"
+      - "SERS interior nanogap Au Ag hotspot gap size"
+    indicators:
+      - "nanogap"
+      - "gap size"
+      - "interior gap"
+      - "hotspot"
+
+  - axis_id: shell_thickness
+    target_selected: 10
+    weight: 1.0
+    queries:
+      - "SERS gold silver shell thickness core shell"
+      - "Au Ag SERS silver shell thickness"
+    indicators:
+      - "shell thickness"
+      - "core shell"
+      - "core-shell"
+
+  - axis_id: composition_ratio
+    target_selected: 14
+    weight: 1.0
+    queries:
+      - "Au Ag ratio composition SERS"
+      - "gold silver alloy composition SERS bimetallic"
+    indicators:
+      - "Au Ag ratio"
+      - "gold silver ratio"
+      - "composition"
+      - "alloy"
+      - "bimetallic"
+
+  - axis_id: architecture_comparison
+    target_selected: 14
+    weight: 1.0
+    queries:
+      - "SERS Au Ag architecture comparison nanocube nanorod nanoplate"
+      - "gold silver SERS core shell alloy architecture"
+    indicators:
+      - "nanocube"
+      - "nanorod"
+      - "nanoplate"
+      - "nanostar"
+      - "core shell"
+      - "alloy"
+      - "architecture"
+
+  - axis_id: mechanism_simulation
+    target_selected: 12
+    weight: 1.0
+    queries:
+      - "SERS Au Ag FDTD plasmon coupling electric field simulation"
+      - "gold silver SERS mechanism DDA electromagnetic simulation"
+    indicators:
+      - "fdtd"
+      - "dda"
+      - "plasmon coupling"
+      - "electric field"
+      - "electromagnetic"
+      - "simulation"
+
+  - axis_id: reproducibility_uniformity
+    target_selected: 14
+    weight: 1.0
+    queries:
+      - "SERS Au Ag reproducibility RSD uniformity substrate"
+      - "gold silver SERS repeatability batch spot reproducibility"
+    indicators:
+      - "reproducibility"
+      - "repeatability"
+      - "relative standard deviation"
+      - "rsd"
+      - "uniformity"
+      - "batch to batch"
+      - "spot to spot"
+
+  - axis_id: metric_definition_protocol
+    target_selected: 12
+    weight: 1.0
+    queries:
+      - "SERS enhancement factor definition Au Ag protocol"
+      - "SERS limit of detection calibration gold silver measurement protocol"
+    indicators:
+      - "enhancement factor"
+      - "limit of detection"
+      - "detection limit"
+      - "calibration"
+      - "measurement protocol"
+
+  - axis_id: boundary_robustness
+    target_selected: 12
+    weight: 1.0
+    queries:
+      - "SERS Au Ag stability robustness substrate aging"
+      - "gold silver SERS environmental stability substrate reuse"
+    indicators:
+      - "stability"
+      - "robustness"
+      - "aging"
+      - "reusable"
+      - "reusability"
+      - "environment"

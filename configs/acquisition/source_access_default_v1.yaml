@@ -1,0 +1,23 @@
+schema_version: source-acquisition-policy-v1
+policy_id: generic_oa_source_acquisition_v1
+
+unpaywall_email_env: UNPAYWALL_EMAIL
+fallback_email_env: CROSSREF_MAILTO
+
+use_unpaywall: true
+use_catalog_open_access_url: true
+request_timeout_seconds: 45.0
+retries: 2
+retry_backoff_seconds: 1.0
+resolver_delay_seconds: 0.10
+max_artifact_bytes: 104857600
+require_pdf_magic: true
+user_agent: GraphAgentsDAC-CorpusAcquisition/M3
+download_user_agent: "Mozilla/5.0 (compatible; GraphAgentsDAC-CorpusAcquisition/M3)"
+try_all_direct_pdf_locations: true
+send_landing_page_referer: true
+auto_download_main: true
+allow_catalog_oa_fallback: true
+
+# Publisher-specific supplementary discovery is deliberately not guessed in M3.
+supplementary_discovery: deferred_to_m3_1

@@ -1,0 +1,20 @@
+schema_version: acquisition-aware-backfill-policy-v1
+policy_id: quality_pass_fulltext_backfill_v1
+
+required_quality_status: pass
+preserve_axis_quotas: true
+
+# Never modify scientific score with OA availability. For candidates with the
+# exact same scientific total_score, an existing OA hint may break the tie.
+oa_hint_tiebreak_only: true
+
+reuse_existing_downloaded_main: true
+treat_existing_non_downloaded_as_exhausted: true
+
+# First exhaust quota-matching candidates. If some quota is impossible to fill,
+# continue acquiring other quality-pass works to maximize usable corpus size,
+# while reporting the quota deficit explicitly.
+global_fill_after_quota_attempts: true
+
+# null = continue until target is reached or the quality-pass pool is exhausted.
+max_new_candidate_attempts: null

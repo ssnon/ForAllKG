@@ -1,0 +1,93 @@
+schema_version: corpus-quality-policy-v1
+policy_id: sers_au_ag_primary_evidence_quality_v1
+
+# Hard bibliographic/epistemic exclusions for an automatically ingested
+# primary-evidence corpus.
+hard_exclude_title_patterns:
+  - '^\s*retracted\b'
+  - '\bretracted article\b'
+  - '\bretraction\b'
+  - '^\s*withdrawn\b'
+  - '\bwithdrawal notice\b'
+  - '^\s*corrigendum\b'
+  - '^\s*erratum\b'
+  - '^\s*correction to\b'
+  - '\breview\b'
+  - '^\s*editorial\b'
+  - '\bbibliometric\b'
+
+# These are not asserted to be invalid science. They simply require a human
+# decision before entering the automatic positive-evidence acquisition lane.
+manual_review_title_patterns:
+  - '\brecent advances\b'
+  - '\brecent progress\b'
+  - '\bprogress in\b'
+  - '\boverview\b'
+  - '\bstate[- ]of[- ]the[- ]art\b'
+  - '\bperspective\b'
+  - '\bconference abstract\b'
+  - '\bmeeting abstract\b'
+  - '\bthesis\b'
+  - '\bdissertation\b'
+
+hard_exclude_publication_types:
+  - Review
+  - Editorial
+  - MetaAnalysis
+
+manual_review_publication_types:
+  - Conference
+  - ConferencePaper
+  - Book
+  - BookChapter
+  - Thesis
+
+# Preprints can be retained for manual inspection but are not auto-selected
+# into the frozen primary-evidence corpus.
+manual_review_doi_prefixes:
+  - '10.2139/ssrn.'
+  - '10.26434/chemrxiv.'
+  - '10.21203/rs.'
+
+manual_review_venue_terms:
+  - SSRN
+  - ChemRxiv
+  - Research Square
+
+primary_topic_terms:
+  - SERS
+  - surface-enhanced Raman
+  - surface enhanced Raman
+  - surface-enhanced raman scattering
+  - surface enhanced raman scattering
+
+# If SERS is absent from the title but is present in the abstract, the title
+# must still be grounded in at least two substrate/material/structure terms.
+title_context_terms:
+  - gold
+  - silver
+  - Au@Ag
+  - Ag@Au
+  - Au-Ag
+  - AuAg
+  - bimetallic
+  - plasmonic
+  - substrate
+  - nanogap
+  - core-shell
+  - core shell
+  - nanoshell
+  - nanorod
+  - nanocube
+  - nanoplate
+  - nanostar
+  - nanowire
+  - nanoalloy
+  - alloy
+  - LSPR
+  - Raman
+
+min_title_context_matches_without_primary_topic: 2
+require_primary_topic_signal: true
+require_title_grounding: true
+allow_manual_review_for_auto_selection: false

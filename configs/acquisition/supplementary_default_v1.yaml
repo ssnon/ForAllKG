@@ -1,0 +1,22 @@
+schema_version: supplementary-discovery-policy-v1
+policy_id: generic_supplementary_discovery_v1
+
+crossref_mailto_env: CROSSREF_MAILTO
+
+use_crossref_relations: true
+use_public_landing_html: true
+
+request_timeout_seconds: 30.0
+retries: 2
+retry_backoff_seconds: 1.0
+resolver_delay_seconds: 0.25
+
+max_landing_pages_per_work: 3
+max_candidates_per_work: 12
+max_html_bytes: 5242880
+max_artifact_bytes: 157286400
+
+auto_download_high_confidence_direct_files: true
+allow_medium_confidence_direct_files: false
+
+user_agent: GraphAgentsDAC-CorpusAcquisition/M3.1
