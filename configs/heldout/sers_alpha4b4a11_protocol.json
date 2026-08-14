@@ -1,0 +1,193 @@
+{
+  "acceptance_policy": {
+    "destructive_cross_paper_merges_must_equal": 0,
+    "detection_limit_numeric_ranking_must_equal": 0,
+    "global_entity_concentration_consumed_must_equal": false,
+    "manual_resolution_allowed": false,
+    "maximum_different_protocol_pairs": null,
+    "maximum_unknown_contexts": null,
+    "minimum_metric_definition_known": null,
+    "minimum_numeric_ranking_allowed": null,
+    "minimum_same_protocol_pairs": null,
+    "missing_context_is_not_quarantine_must_equal": true,
+    "note": "No holdout distribution count is a success target. Heterogeneity and unresolved identity are first-class observations.",
+    "structural_gates_required": true
+  },
+  "anomaly_taxonomy": {
+    "expected_new_content": "New observables, evidence distributions, or paper-specific content. Never tune policy merely to reduce this category.",
+    "implementation_bug_candidate": "Runtime inconsistency or impossible internal state. Diagnose without tuning to holdout output counts.",
+    "spec_violation": "Frozen schema/provenance/identity/safety invariant violation. Any permitted generic fix requires calibration replay and a new holdout epoch.",
+    "unsupported_context": "Unknown/ambiguous/different protocol or metric definition, or unresolved same-lineage result identity. Preserve fail-closed; non-fatal unless a structural invariant is violated."
+  },
+  "calibration_freeze": {
+    "calibration_replay_report": "evaluation/sers_alpha4b4/measurement_result_identity_v1/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1/calibration_identity_replay_report.json",
+    "comparison_summary": "data_sers/corpus/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_corpus/exploratory/comparison/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_comparison/summary.json",
+    "corpus_manifest": "data_sers/corpus/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_corpus/exploratory/manifest.json",
+    "expected": {
+      "calibration_papers": [
+        "Kiwook_SERS_1",
+        "Kiwook_SERS_5",
+        "Kiwook_SERS_8"
+      ],
+      "calibration_replay_id": "sers_alpha4b4a11_method_reconstruction_calibration_replay_v1",
+      "comparison_assessment_count": 598,
+      "comparison_context_count": 188,
+      "comparison_semantics_id": "sers_au_ag_comparison_v7_alpha4b3b321",
+      "consolidated_exact_result_count": 1,
+      "corpus_semantics_id": "sers_au_ag_corpus_v1_alpha4b3a",
+      "identity_aware_domain_reconstruction_id": "identity_aware_domain_reconstruction_v1_alpha4b4a11",
+      "measurement_merge_invariant_id": "measurement_payload_isolation_v1_alpha4b4a",
+      "measurement_result_identity_semantics_id": "measurement_result_identity_v1_alpha4b4a1",
+      "measurement_source_mention_count": 189,
+      "method_semantics_id": "sers_au_ag_method_v4_alpha4b3b321",
+      "metric_definition_compatibility_counts": {
+        "different_definition": 1,
+        "not_applicable": 323,
+        "same_definition": 2,
+        "unknown": 272
+      },
+      "metric_definition_context_count": 44,
+      "metric_definition_known_count": 5,
+      "metric_definition_ranking_relevant_assessment_count": 248,
+      "metric_definition_ranking_relevant_gate_pass_count": 0,
+      "metric_definition_semantics_id": "sers_au_ag_metric_definition_v2_alpha4b3b4b1",
+      "metric_definition_unknown_count": 39,
+      "numeric_ranking_allowed_count": 0,
+      "protocol_comparability_counts": {
+        "different_protocol": 211,
+        "unknown": 387
+      },
+      "quality_gate_semantics_id": "quality_aware_numeric_gate_v2_alpha4b3b4c1",
+      "reproducibility_evidence_count": 4,
+      "reproducibility_semantics_id": "sers_au_ag_reproducibility_v2_alpha4b3b4a1",
+      "sample_preparation_protocol_mismatch_count": 6,
+      "sample_preparation_status_counts": {
+        "ambiguous": 0,
+        "known": 13,
+        "unknown": 175
+      },
+      "scientific_result_count": 188,
+      "unresolved_same_lineage_group_count": 0
+    },
+    "invalidated_by_invariant_fix": false,
+    "measurement_result_identity_summary": "data_sers/corpus/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_corpus/exploratory/measurement_result_identity/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_measurement_identity/summary.json",
+    "metric_definition_summary": "data_sers/corpus/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_corpus/exploratory/metric_definition/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_metric_definition/summary.json",
+    "refreeze_status": "passed_and_frozen",
+    "reproducibility_summary": "data_sers/corpus/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_corpus/exploratory/reproducibility/sers_alpha4b4a11_method_reconstruction_calibration_replay_v1_reproducibility/summary.json"
+  },
+  "calibration_papers": [
+    "Kiwook_SERS_1",
+    "Kiwook_SERS_5",
+    "Kiwook_SERS_8"
+  ],
+  "campaign_name": "sers-alpha4b4a11-refrozen-evidence-substrate-holdout",
+  "config_path": "configs/papers_sers_au_ag.yaml",
+  "data_root": "data_sers",
+  "domain_profile": "sers_au_ag",
+  "frozen_git_blobs": {
+    "configs/heldout/sers_alpha4b4_protocol.json": "45fdb2affc22f594a046cfab2740dc237fe36f4d",
+    "configs/papers_sers_au_ag.yaml": "607b923855d72f7dcecd915215e186371093df64",
+    "dac_her/comparison_context.py": "84db6bdcc64f82fe9f261fe6e05e66c3d30e2d21",
+    "dac_her/comparison_domain.py": "12a20922422753ec28f350b770a717b9120012b0",
+    "dac_her/corpus_graph.py": "a0f6a912d77d2104ecf1267fe54a776b428c2522",
+    "dac_her/domain_profile.py": "ff73d46b85e0175787d4036f05006f19a6e31d44",
+    "dac_her/domains/sers_au_ag.py": "84fc56a9811ca5e82462b71622d4374fe5e28407",
+    "dac_her/domains/sers_au_ag_bridge.py": "b7a2e7be146f7d1b5e860b53c93a471b279fb536",
+    "dac_her/domains/sers_au_ag_comparison.py": "6ee412939ecf2fd3c67b6ac3f47a339d0ee22b06",
+    "dac_her/domains/sers_au_ag_metric_definition.py": "03343f31afde85d4060acbb2f37e9b73969b8b65",
+    "dac_her/domains/sers_au_ag_reproducibility.py": "5c41d36bbf0ee84b7beeb728a0f257a4124c790e",
+    "dac_her/graphagents_adapter.py": "671287fc44871b443c3d9c1f783cf43225c32947",
+    "dac_her/measurement_merge_invariants.py": "190ce698489cffec678c22b68d9dfdc59fa49e1e",
+    "dac_her/measurement_result_identity.py": "9fdd5ab02cfec1a50cc53d9daca9f59be2e3c16f",
+    "dac_her/metric_definition_domain.py": "250b80be078e60cb3ae3c0ac56e07359f1e5fec2",
+    "dac_her/quality_aware_comparison.py": "71d9685e537fbc08077669cc58efebc6c1203657",
+    "dac_her/reproducibility_domain.py": "70607d2173aba8d17fb1302380b7f1da41227d4c",
+    "dac_her/semantic_audit.py": "2cfc391cceb3aeef14cb21ddaca34351cfd33df2",
+    "scripts/build_comparison_contexts.py": "76aba46c521d63569e09ea7be1a72117f604c0fd",
+    "scripts/build_corpus_graph.py": "40f6bbfb50808e1c54523abf292637f1ee3f88e7",
+    "scripts/build_graphagents_projection.py": "3bdebfc0b251dded835f01daa28cbd673097fd39",
+    "scripts/build_measurement_result_identities.py": "06b8d5b0c20f957ebb7799e9dd560ee5c9ef0ceb",
+    "scripts/build_metric_definition_contexts.py": "7349358270244aa11e446004bd024b601be800ba",
+    "scripts/build_paper_graph.py": "8f0eeb13ed1a4826b48f887e10f3244ac1517c02",
+    "scripts/build_reproducibility_evidence.py": "7edf7beaba920d1670028dc685270cebdf563218",
+    "scripts/extract_bridge_graph.py": "83718fbc3ae39eb6d8917f7fe7e5f93a843a950b",
+    "scripts/inspect_graphml.py": "a9755d0e2f9ebdc7d0838952b1d81e16213ad34e",
+    "scripts/prepare_sers_alpha4b4a11_holdout_inputs.py": "a593203baa73e548275c6cce6635877801625595",
+    "scripts/run_sers_alpha4b4_holdout.py": "ea04ff9f194c8bebee1f0d2b3fc9cf058e2391e5",
+    "scripts/run_sers_alpha4b4a11_holdout.py": "3f239d60fa2426acb92f2dff33730b560c49215b"
+  },
+  "frozen_invariants": {
+    "measurement_merge": "measurement_payload_isolation_v1_alpha4b4a"
+  },
+  "frozen_semantics": {
+    "comparison": "sers_au_ag_comparison_v7_alpha4b3b321",
+    "corpus": "sers_au_ag_corpus_v1_alpha4b3a",
+    "identity_aware_domain_reconstruction": "identity_aware_domain_reconstruction_v1_alpha4b4a11",
+    "measurement_result_identity": "measurement_result_identity_v1_alpha4b4a1",
+    "method": "sers_au_ag_method_v4_alpha4b3b321",
+    "metric_definition": "sers_au_ag_metric_definition_v2_alpha4b3b4b1",
+    "projection": "sers_au_ag_projection_v2_alpha4b2c3",
+    "quality_gate": "quality_aware_numeric_gate_v2_alpha4b3b4c1",
+    "reproducibility": "sers_au_ag_reproducibility_v2_alpha4b3b4a1"
+  },
+  "holdout_epoch": "alpha4b4a11_refrozen_v1",
+  "holdout_execution_state": "enabled",
+  "holdout_input_refreeze": {
+    "canonical_source": "same_frozen_strict_runs",
+    "count_targets_used": false,
+    "llm_calls_allowed": false,
+    "refreeze_id": "sers_alpha4b4a11_holdout_input_refreeze_v1",
+    "report": "evaluation/sers_alpha4b4a11/input_refreeze/sers_alpha4b4a11_holdout_input_refreeze_v1/holdout_input_refreeze_report.json",
+    "required": true
+  },
+  "holdout_papers": [
+    "Kiwook_SERS_2",
+    "Kiwook_SERS_6",
+    "Kiwook_SERS_10"
+  ],
+  "holdout_scope": "evidence_substrate_from_same_frozen_strict_runs_after_generic_merge_invariant_refreeze",
+  "mode": "exploratory",
+  "protocol_version": "alpha4b4a11-v1-refrozen-holdout",
+  "required_campaign_id_prefix": "sers_alpha4b4a11_",
+  "required_pipeline_order": [
+    "canonical_input_refreeze",
+    "bridge",
+    "projection",
+    "corpus",
+    "measurement_result_identity",
+    "reproducibility",
+    "metric_definition",
+    "comparison_and_method",
+    "quality_aware_numeric_gate"
+  ],
+  "retired_epoch": {
+    "known_retired_campaign_ids": [
+      "sers_alpha4b4_holdout_v1_real_campaign",
+      "sers_alpha4b4_holdout_v1"
+    ],
+    "old_holdout_campaign_must_not_resume": true,
+    "protocol": "configs/heldout/sers_alpha4b4_protocol.json",
+    "reason": "Held-out SERS_10 exposed a generic same-ID Measurement merge invariant bug; the old epoch is permanently retired."
+  },
+  "upstream_policy": {
+    "bridge": "explicit_existing_adoption_recommended_or_fresh_frozen_policy",
+    "bridge_backoff_seconds": [
+      0,
+      60,
+      180
+    ],
+    "bridge_concurrency": 4,
+    "bridge_max_outer_passes": 3,
+    "bridge_model_environment": "OPENROUTER_BRIDGE_MODEL",
+    "canonical_graph": "rematerialize_once_under_frozen_measurement_merge_invariant_then_hash_lock",
+    "manual_resolution_during_holdout": false,
+    "projection_modes": [
+      "evidence",
+      "mechanism",
+      "exploratory"
+    ],
+    "provider_environment": "OPENROUTER_PROVIDER",
+    "strict_extraction": "adopt_existing_frozen_run_only",
+    "strict_model_fallback_environment": "OPENROUTER_EXTRACT_MODEL"
+  }
+}
