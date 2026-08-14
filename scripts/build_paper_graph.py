@@ -26,6 +26,11 @@ from dac_her.extraction_quality import (
     quality_from_active_payload,
 )
 from dac_her.locator_index import load_locator_index
+from dac_her.measurement_merge_invariants import (
+    MEASUREMENT_MERGE_INVARIANT_ID,
+    assert_measurement_value_xor,
+    measurement_mentions_conflict,
+)
 from dac_her.provenance_backfill import (
     backfill_edge_asset_provenance,
     refresh_run_asset_manifest,
@@ -155,12 +160,32 @@ def merge_chunk_graph(
         target_node_id = local_node_id
 
         if local_node_id in merged:
-            existing_type = str(merged.nodes[local_node_id].get("type", ""))
+            existing_data = dict(merged.nodes[local_node_id])
+            existing_type = str(existing_data.get("type", ""))
+            collision_reason = ""
+            collision_action = ""
+
             if (
                 existing_type
                 and incoming_type
                 and existing_type != incoming_type
             ):
+                collision_reason = "node_type_mismatch"
+                collision_action = "preserved_as_chunk_scoped_mention"
+            elif (
+                existing_type == "Measurement"
+                and incoming_type == "Measurement"
+                and measurement_mentions_conflict(
+                    existing_data,
+                    dict(node_data),
+                )
+            ):
+                collision_reason = "measurement_payload_conflict"
+                collision_action = (
+                    "preserved_as_chunk_scoped_measurement_mention"
+                )
+
+            if collision_reason:
                 target_node_id = _collision_safe_node_id(
                     chunk_id=chunk_id,
                     local_node_id=local_node_id,
@@ -168,7 +193,10 @@ def merge_chunk_graph(
                 )
                 suffix = 1
                 base_target = target_node_id
-                while target_node_id in merged or target_node_id in node_id_map.values():
+                while (
+                    target_node_id in merged
+                    or target_node_id in node_id_map.values()
+                ):
                     target_node_id = f"{base_target}_{suffix}"
                     suffix += 1
                 collisions.append({
@@ -178,7 +206,8 @@ def merge_chunk_graph(
                     "existing_type": existing_type,
                     "preserved_node_id": target_node_id,
                     "incoming_type": incoming_type,
-                    "action": "preserved_as_chunk_scoped_mention",
+                    "collision_reason": collision_reason,
+                    "action": collision_action,
                 })
 
         node_id_map[local_node_id] = target_node_id
@@ -210,6 +239,9 @@ def merge_chunk_graph(
                 ensure_ascii=False,
                 sort_keys=True,
             )
+            incoming["id_collision_reason"] = collision[
+                "collision_reason"
+            ]
             merged.add_node(target_node_id, **incoming)
         elif target_node_id in merged:
             merged.nodes[target_node_id].update(
@@ -244,8 +276,9 @@ def write_id_collision_report(
     report = {
         "collision_count": len(collisions),
         "policy": (
-            "Same local node ID with different types is preserved as a "
-            "chunk-scoped mention; no type coercion or automatic merge."
+            "Same local node ID with different types, or same-ID Measurement "
+            "mentions with conflicting scientific payloads, are preserved as "
+            "chunk-scoped mentions; no coercion or destructive value merge."
         ),
         "collisions": collisions,
     }
@@ -259,6 +292,7 @@ def write_id_collision_report(
         "existing_type",
         "preserved_node_id",
         "incoming_type",
+        "collision_reason",
         "action",
     ]
     with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
@@ -555,6 +589,10 @@ def main() -> None:
         loaded_chunks += 1
         loaded_chunk_ids.append(result.chunk_id)
 
+    assert_measurement_value_xor(
+        merged,
+        stage="raw_merged_after_chunk_merge",
+    )
     write_id_collision_report(run_dir, id_collisions)
     write_semantic_role_report(
         run_dir,
@@ -659,6 +697,13 @@ def main() -> None:
             graph_adapter=graph_adapter,
             paper_id=paper.paper_id,
         )
+    )
+    assert_measurement_value_xor(
+        canonical,
+        stage="canonical_after_resolution_and_domain_canonicalization",
+    )
+    canonical.graph["measurement_merge_invariant_id"] = (
+        MEASUREMENT_MERGE_INVARIANT_ID
     )
     model_of_repairs = repair_model_of_targets(canonical)
     write_generic_rows_report(

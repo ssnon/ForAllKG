@@ -13,6 +13,13 @@ from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.metric_definition_registry import get_metric_definition_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.metric_definition_context import audit_metric_definition_contexts
+from dac_her.measurement_result_identity import (
+    MEASUREMENT_RESULT_IDENTITY_SEMANTICS_ID,
+    apply_identity_to_metric_definition_contexts,
+    graph_has_measurement_payload_collisions,
+    identity_source_hashes,
+    load_measurement_result_identity_sidecar,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -53,6 +60,14 @@ def parse_args() -> argparse.Namespace:
         default="exploratory",
     )
     parser.add_argument("--metric-definition-id", required=True)
+    parser.add_argument(
+        "--measurement-result-identity-id",
+        default=None,
+        help=(
+            "Frozen MeasurementResultIdentity sidecar ID. Required when "
+            "canonical graphs contain measurement_payload_conflict mentions."
+        ),
+    )
     parser.add_argument("--output-dir", default=None)
     return parser.parse_args()
 
@@ -105,6 +120,24 @@ def main() -> int:
     if len(set(paper_ids)) != len(paper_ids):
         raise ValueError("Corpus manifest contains duplicate paper IDs.")
 
+    identity_by_paper = {}
+    identity_summary: dict[str, Any] = {}
+    identity_audit: dict[str, Any] = {}
+    identity_hashes: dict[str, str] = {}
+    if args.measurement_result_identity_id:
+        (
+            identity_by_paper,
+            identity_summary,
+            identity_audit,
+        ) = load_measurement_result_identity_sidecar(
+            corpus_root=corpus_root,
+            identity_id=str(args.measurement_result_identity_id),
+            profile_id=profile.profile_id,
+            corpus_id=args.corpus_id,
+            corpus_mode=args.mode,
+        )
+        identity_hashes = identity_source_hashes(identity_summary)
+
     source_graphs: dict[str, nx.Graph] = {}
     source_rows: list[dict[str, object]] = []
     contexts = []
@@ -120,13 +153,41 @@ def main() -> int:
                 "Canonical graph/domain mismatch for "
                 f"{paper_id}: {graph_domain!r} != {profile.profile_id!r}."
             )
+        graph_hash = _sha256_file(graph_path)
         source_graphs[paper_id] = graph
+
+        if args.measurement_result_identity_id:
+            observed_identity_hash = identity_hashes.get(paper_id, "")
+            if observed_identity_hash != graph_hash:
+                raise ValueError(
+                    "Measurement-result identity canonical graph hash mismatch "
+                    f"for {paper_id}: {observed_identity_hash!r} != "
+                    f"{graph_hash!r}."
+                )
+        elif graph_has_measurement_payload_collisions(graph):
+            raise ValueError(
+                "Canonical graph contains measurement_payload_conflict "
+                "mentions; --measurement-result-identity-id is required."
+            )
+
         paper_contexts = adapter.extract_contexts(graph, paper_id)
+        if args.measurement_result_identity_id:
+            paper_identities = identity_by_paper.get(paper_id, [])
+            if not paper_identities:
+                raise ValueError(
+                    f"Measurement-result identity rows missing for {paper_id}."
+                )
+            paper_contexts = (
+                apply_identity_to_metric_definition_contexts(
+                    paper_contexts,
+                    paper_identities,
+                )
+            )
         contexts.extend(paper_contexts)
         source_rows.append({
             "paper_id": paper_id,
             "canonical_graphml": str(graph_path),
-            "canonical_graph_sha256": _sha256_file(graph_path),
+            "canonical_graph_sha256": graph_hash,
             "metric_definition_context_count": len(paper_contexts),
         })
 
@@ -166,6 +227,15 @@ def main() -> int:
         "corpus_mode": args.mode,
         "corpus_manifest": str(manifest_path),
         "corpus_semantics_id": str(corpus_manifest.get("corpus_semantics_id", "")),
+        "measurement_result_identity_id": str(
+            args.measurement_result_identity_id or ""
+        ),
+        "measurement_result_identity_semantics_id": (
+            MEASUREMENT_RESULT_IDENTITY_SEMANTICS_ID
+            if args.measurement_result_identity_id
+            else ""
+        ),
+        "measurement_result_identity_source_audit": identity_audit,
         "paper_ids": paper_ids,
         "paper_count": len(paper_ids),
         "source_graphs": source_rows,
@@ -192,6 +262,17 @@ def main() -> int:
     print("Domain profile:", profile.profile_id)
     print("Metric-definition semantics:", adapter.semantics_id)
     print("Papers:", len(paper_ids))
+    if args.measurement_result_identity_id:
+        print(
+            "Measurement-result identity:",
+            args.measurement_result_identity_id,
+        )
+        print(
+            "Measurement source mentions / scientific results:",
+            identity_summary.get("source_mention_count"),
+            "/",
+            identity_summary.get("scientific_result_count"),
+        )
     print("Contexts:", len(contexts))
     print("Observables:", json.dumps(summary["observable_counts"], sort_keys=True))
     print("Definition status:", json.dumps(summary["definition_status_counts"], sort_keys=True))

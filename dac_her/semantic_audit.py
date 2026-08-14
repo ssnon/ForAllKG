@@ -11,6 +11,9 @@ from dac_her.claim_overlap import ClaimOverlapCandidate
 from dac_her.graph_normalization import refine_semantic_metric_id
 from dac_her.resolution_candidates import normalize_scientific_text
 from dac_her.semantic_repairs import node_composition_signature
+from dac_her.measurement_merge_invariants import (
+    measurement_value_payload_issues,
+)
 
 
 _VISUAL_LOCATOR_RE = re.compile(
@@ -78,6 +81,7 @@ def model_of_composition_issues(graph: nx.Graph) -> list[dict[str, Any]]:
 
 def metric_semantic_issues(graph: nx.Graph) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    rows.extend(measurement_value_payload_issues(graph))
     for node_id, data in graph.nodes(data=True):
         if str(data.get("type", "")) != "Measurement":
             continue

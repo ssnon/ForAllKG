@@ -30,6 +30,16 @@ from dac_her.metric_definition_context import (
     audit_metric_definition_contexts,
 )
 from dac_her.metric_definition_domain import MetricDefinitionContext
+from dac_her.measurement_result_identity import (
+    IDENTITY_AWARE_DOMAIN_RECONSTRUCTION_ID,
+    MEASUREMENT_RESULT_IDENTITY_SEMANTICS_ID,
+    attach_identity_provenance_to_comparison_contexts,
+    attach_identity_provenance_to_method_contexts,
+    build_identity_interpretation_graph,
+    graph_has_measurement_payload_collisions,
+    identity_source_hashes,
+    load_measurement_result_identity_sidecar,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -85,6 +95,7 @@ def _load_metric_definition_sidecar(
     metric_adapter,
     source_graphs: dict[str, nx.Graph],
     source_rows: list[dict[str, str]],
+    measurement_result_identity_id: str,
 ) -> tuple[list[MetricDefinitionContext], dict[str, Any], dict[str, Any]]:
     root = (
         corpus_root
@@ -117,6 +128,9 @@ def _load_metric_definition_sidecar(
         "corpus_mode": corpus_mode,
         "metric_definition_semantics_id": (
             metric_adapter.semantics_id
+        ),
+        "measurement_result_identity_id": (
+            measurement_result_identity_id
         ),
     }
     for key, expected in expected_fields.items():
@@ -195,6 +209,14 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Frozen MetricDefinitionContext sidecar ID used by the "
             "quality-aware numeric gate."
+        ),
+    )
+    parser.add_argument(
+        "--measurement-result-identity-id",
+        default=None,
+        help=(
+            "Frozen MeasurementResultIdentity sidecar ID. Required when "
+            "canonical graphs contain measurement_payload_conflict mentions."
         ),
     )
     parser.add_argument("--output-dir", default=None)
@@ -283,6 +305,24 @@ def main() -> None:
     if len(set(paper_ids)) != len(paper_ids):
         raise ValueError("Corpus manifest contains duplicate paper IDs.")
 
+    identity_by_paper = {}
+    identity_summary: dict[str, Any] = {}
+    identity_audit: dict[str, Any] = {}
+    identity_hashes: dict[str, str] = {}
+    if args.measurement_result_identity_id:
+        (
+            identity_by_paper,
+            identity_summary,
+            identity_audit,
+        ) = load_measurement_result_identity_sidecar(
+            corpus_root=corpus_root,
+            identity_id=str(args.measurement_result_identity_id),
+            profile_id=profile.profile_id,
+            corpus_id=args.corpus_id,
+            corpus_mode=args.mode,
+        )
+        identity_hashes = identity_source_hashes(identity_summary)
+
     source_graphs: dict[str, nx.Graph] = {}
     source_rows: list[dict[str, str]] = []
     contexts = []
@@ -313,21 +353,66 @@ def main() -> None:
                 f"{profile.profile_id!r}."
             )
 
+        graph_hash = _sha256_file(graph_path)
         source_graphs[paper_id] = graph
+
+        paper_identities = []
+        interpretation_graph = graph
+        if args.measurement_result_identity_id:
+            observed_identity_hash = identity_hashes.get(paper_id, "")
+            if observed_identity_hash != graph_hash:
+                raise ValueError(
+                    "Measurement-result identity canonical graph hash mismatch "
+                    f"for {paper_id}: {observed_identity_hash!r} != "
+                    f"{graph_hash!r}."
+                )
+            paper_identities = identity_by_paper.get(paper_id, [])
+            if not paper_identities:
+                raise ValueError(
+                    f"Measurement-result identity rows missing for {paper_id}."
+                )
+            interpretation_graph = build_identity_interpretation_graph(
+                graph,
+                paper_identities,
+            )
+        elif graph_has_measurement_payload_collisions(graph):
+            raise ValueError(
+                "Canonical graph contains measurement_payload_conflict "
+                "mentions; --measurement-result-identity-id is required."
+            )
+
+        # Re-extract through the domain adapter on the transient scientific-
+        # result graph. This preserves domain-specific composition semantics
+        # such as sample_preparation=drop_cast+mixing instead of generically
+        # treating two compatible preparation steps as conflicting labels.
         paper_method_contexts = adapter.extract_method_contexts(
-            graph,
+            interpretation_graph,
             paper_id,
         )
-        method_contexts.extend(paper_method_contexts)
         paper_contexts = adapter.extract_contexts(
-            graph,
+            interpretation_graph,
             paper_id,
         )
+        if args.measurement_result_identity_id:
+            paper_method_contexts = (
+                attach_identity_provenance_to_method_contexts(
+                    paper_method_contexts,
+                    paper_identities,
+                )
+            )
+            paper_contexts = (
+                attach_identity_provenance_to_comparison_contexts(
+                    paper_contexts,
+                    paper_identities,
+                )
+            )
+
+        method_contexts.extend(paper_method_contexts)
         contexts.extend(paper_contexts)
         source_rows.append({
             "paper_id": paper_id,
             "canonical_graphml": str(graph_path),
-            "canonical_graph_sha256": _sha256_file(graph_path),
+            "canonical_graph_sha256": graph_hash,
             "context_count": str(len(paper_contexts)),
         })
 
@@ -364,6 +449,9 @@ def main() -> None:
             metric_adapter=metric_definition_adapter,
             source_graphs=source_graphs,
             source_rows=source_rows,
+            measurement_result_identity_id=str(
+                args.measurement_result_identity_id or ""
+            ),
         )
         metric_definition_assessments = (
             build_metric_definition_assessments(
@@ -442,6 +530,20 @@ def main() -> None:
         "corpus_semantics_id": str(
             corpus_manifest.get("corpus_semantics_id", "")
         ),
+        "measurement_result_identity_id": str(
+            args.measurement_result_identity_id or ""
+        ),
+        "measurement_result_identity_semantics_id": (
+            MEASUREMENT_RESULT_IDENTITY_SEMANTICS_ID
+            if args.measurement_result_identity_id
+            else ""
+        ),
+        "identity_aware_domain_reconstruction_id": (
+            IDENTITY_AWARE_DOMAIN_RECONSTRUCTION_ID
+            if args.measurement_result_identity_id
+            else ""
+        ),
+        "measurement_result_identity_source_audit": identity_audit,
         "paper_ids": paper_ids,
         "paper_count": len(paper_ids),
         "dimensions": list(adapter.dimensions),
@@ -593,6 +695,21 @@ def main() -> None:
     print("Comparison semantics:", adapter.semantics_id)
     print("Corpus:", args.corpus_id, f"({args.mode})")
     print("Papers:", len(paper_ids))
+    if args.measurement_result_identity_id:
+        print(
+            "Measurement-result identity:",
+            args.measurement_result_identity_id,
+        )
+        print(
+            "Measurement source mentions / scientific results:",
+            identity_summary.get("source_mention_count"),
+            "/",
+            identity_summary.get("scientific_result_count"),
+        )
+        print(
+            "Identity-aware domain reconstruction:",
+            IDENTITY_AWARE_DOMAIN_RECONSTRUCTION_ID,
+        )
     print("Contexts:", len(contexts))
     print("Numeric contexts:", summary["numeric_context_count"])
     print("Assessments:", len(assessments))
