@@ -728,20 +728,6 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
-  SERS_API_72593d37137a:
-    enabled: true
-    documents:
-    - document_id: main
-      role: main
-      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_72593d37137a/main/main
-      markdown_file: normalized.md
-      metadata_file: metadata.json
-      selection:
-        mode: whole_document
-      figure_processing:
-        mode: caption_first
-        vision_assets: []
-    resolution_file: null
   SERS_API_729485b4e1fc:
     enabled: true
     documents:
@@ -926,32 +912,6 @@ papers:
     - document_id: si1
       role: supporting_information
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_93b3911e7925/si1/si_1
-      markdown_file: normalized.md
-      metadata_file: metadata.json
-      selection:
-        mode: referenced_blocks
-        fallback: skip
-        reference_scope: whole_main
-      figure_processing:
-        mode: caption_first
-        vision_assets: []
-    resolution_file: null
-  SERS_API_94ffb97bff63:
-    enabled: true
-    documents:
-    - document_id: main
-      role: main
-      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_94ffb97bff63/main/main
-      markdown_file: normalized.md
-      metadata_file: metadata.json
-      selection:
-        mode: whole_document
-      figure_processing:
-        mode: caption_first
-        vision_assets: []
-    - document_id: si1
-      role: supporting_information
-      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_94ffb97bff63/si1/si_1
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:
@@ -1278,20 +1238,6 @@ papers:
     - document_id: main
       role: main
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_b9c13f59461a/main/main
-      markdown_file: normalized.md
-      metadata_file: metadata.json
-      selection:
-        mode: whole_document
-      figure_processing:
-        mode: caption_first
-        vision_assets: []
-    resolution_file: null
-  SERS_API_bcaf294c2fcc:
-    enabled: true
-    documents:
-    - document_id: main
-      role: main
-      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bcaf294c2fcc/main/main
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:
