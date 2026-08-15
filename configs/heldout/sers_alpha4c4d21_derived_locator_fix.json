@@ -1,0 +1,34 @@
+{
+  "classification": "operational_input_preparation_invariant_fix",
+  "holdout_papers": [
+    "Kiwook_SERS_21",
+    "Kiwook_SERS_38",
+    "Kiwook_SERS_12",
+    "Kiwook_SERS_28",
+    "Kiwook_SERS_17",
+    "Kiwook_SERS_22",
+    "Kiwook_SERS_23",
+    "Kiwook_SERS_11"
+  ],
+  "holdout_split_changed": false,
+  "immutable_strict_inputs": [
+    "latest_run.json",
+    "run.json",
+    "active_chunks.json",
+    "active strict-valid chunk JSONs"
+  ],
+  "input_lock_existed_at_fix": false,
+  "installed_prepare_blob": "ba422314365f3c02d475102a1a52691234ce64c4",
+  "installed_support_blob": "d76742d169614a24060542e2ab1bd3b47260b81d",
+  "locator_index_role": "derived_build_time_provenance_artifact",
+  "new_prepare_blob": "ba422314365f3c02d475102a1a52691234ce64c4",
+  "new_support_blob": "d76742d169614a24060542e2ab1bd3b47260b81d",
+  "old_prepare_blob": "ecc25e188ee90797f67a37bf0a7552b2a462ccd9",
+  "old_support_blob": "18d3af580314d9f71ce04d07272d8c4256b9cecf",
+  "phase": "alpha4c.4d.2.1",
+  "protocol_version": "sers-alpha4c4d21-derived-locator-fix-v1",
+  "resume_safe_first_snapshot_immutable": true,
+  "scientific_semantics_changed": false,
+  "source_split_sha256": "6eebae74732070408e920154ba898841c879a8e97cb866a8971cb9feef526966",
+  "trend_outputs_inspected": false
+}

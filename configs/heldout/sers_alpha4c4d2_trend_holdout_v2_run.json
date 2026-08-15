@@ -1,0 +1,72 @@
+{
+  "artifact_ids": {
+    "assessment": "sers_alpha4c4d2_holdout_v2_assessment",
+    "comparison": "sers_alpha4c4d2_holdout_v2_comparison",
+    "context": "sers_alpha4c4d2_holdout_v2_context",
+    "corpus": "sers_alpha4c4d2_holdout_v2_corpus",
+    "measurement_result_identity": "sers_alpha4c4d2_holdout_v2_measurement_identity",
+    "metric_definition": "sers_alpha4c4d2_holdout_v2_metric_definition",
+    "precision": "sers_alpha4c4d2_holdout_v2_precision",
+    "trend": "sers_alpha4c4d2_holdout_v2_trend"
+  },
+  "bridge_used": false,
+  "canonical_input_lock": "evaluation/sers_alpha4c4d2/holdout_v2/canonical_input_lock.json",
+  "data_root": "data_sers",
+  "domain_profile": "sers_au_ag",
+  "epoch_policy": {
+    "low_or_zero_yield_is_not_bug": true,
+    "next_blind_source_if_repaired": "alpha4c.4d.1 reserved_future_v3 only",
+    "scientific_failure_after_execution_consumes_all_8": true,
+    "v2_must_not_resume_after_scientific_code_change": true
+  },
+  "evaluation_root": "evaluation/sers_alpha4c4d2/holdout_v2",
+  "frozen_semantics": {
+    "comparison": "sers_au_ag_comparison_v7_alpha4b3b321",
+    "cross_context_assessment": "cross_context_trend_assessment_v1_alpha4c3c",
+    "measurement_merge_invariant": "measurement_payload_isolation_v1_alpha4b4a",
+    "measurement_result_identity": "measurement_result_identity_v1_alpha4b4a1",
+    "method": "sers_au_ag_method_v4_alpha4b3b321",
+    "metric_definition": "sers_au_ag_metric_definition_v3_alpha4c4c1",
+    "trend": "sers_au_ag_trend_v5_alpha4c2121",
+    "trend_context": "sers_au_ag_trend_context_v1_alpha4c3b",
+    "trend_precision": "sers_au_ag_trend_precision_v5_alpha4c21211"
+  },
+  "holdout_acceptance_policy": {
+    "all_insufficient_valid": true,
+    "count_thresholds_used": false,
+    "cross_context_builder_called_when_zero_local_results": false,
+    "zero_cross_paper_pairs_valid": true,
+    "zero_local_results_terminal_status": "not_applicable_zero_local_results",
+    "zero_local_results_valid": true,
+    "zero_trend_evidence_valid": true
+  },
+  "holdout_papers": [
+    "Kiwook_SERS_21",
+    "Kiwook_SERS_38",
+    "Kiwook_SERS_12",
+    "Kiwook_SERS_28",
+    "Kiwook_SERS_17",
+    "Kiwook_SERS_22",
+    "Kiwook_SERS_23",
+    "Kiwook_SERS_11"
+  ],
+  "input_preparation_policy": {
+    "active_chunks_complete_flag_is_diagnostic_only": true,
+    "canonical_and_resolution_sha_lock_required": true,
+    "canonical_refreeze_only_if_invariant_or_xor_not_ready": true,
+    "complete_allowed": true,
+    "manual_resolution_decisions_must_be_preserved": true,
+    "new_llm_extraction_allowed": false,
+    "partial_acceptable_allowed": true,
+    "partial_critical_allowed_with_allow_incomplete": true,
+    "preexisting_resolution_provenance_allowed": true,
+    "rejected_allowed": false
+  },
+  "llm_calls_allowed": false,
+  "mode": "evidence",
+  "phase": "alpha4c.4d.2",
+  "protocol_version": "sers-alpha4c4d2-v2-holdout-run-v1",
+  "source_protocol": "configs/heldout/sers_alpha4c4d1_trend_holdout_v2.json",
+  "source_split_sha256": "6eebae74732070408e920154ba898841c879a8e97cb866a8971cb9feef526966",
+  "state": "installed_input_preparation_required"
+}
