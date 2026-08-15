@@ -1,5 +1,19 @@
 version: 3
 papers:
+  SERS_API_01921cd84531:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_01921cd84531/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_0221d034645e:
     enabled: true
     documents:
@@ -14,12 +28,134 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_040768ed2f39:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_040768ed2f39/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_0d0263472fb5:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_0d0263472fb5/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_1332c5b995f8:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_1332c5b995f8/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_1332c5b995f8/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_16e675635e87:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_16e675635e87/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_16e675635e87/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_172ac5630e7b:
     enabled: true
     documents:
     - document_id: main
       role: main
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_172ac5630e7b/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_197fc0b77442:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_197fc0b77442/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_1a0620dfd77e:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_1a0620dfd77e/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_1c6f7e486dc3:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_1c6f7e486dc3/main/main
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:
@@ -54,6 +190,74 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_254d473846ac:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_254d473846ac/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_2665212aa536:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_2665212aa536/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_2665212aa536/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_2c7a993aad45:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_2c7a993aad45/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_2cb05125a4ba:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_2cb05125a4ba/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_2fcc3db3d63a:
     enabled: true
     documents:
@@ -64,6 +268,248 @@ papers:
       metadata_file: metadata.json
       selection:
         mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_304e65e707a3:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_304e65e707a3/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_304e65e707a3/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_32f064111010:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_32f064111010/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_33320499bb64:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_33320499bb64/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_38a4b7390bb1:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_38a4b7390bb1/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_4211a7ef3630:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_4211a7ef3630/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_43f1a62c5fab:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_43f1a62c5fab/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_47981897ab54:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_47981897ab54/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_483d9c313a0b:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_483d9c313a0b/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_4b201e715535:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_4b201e715535/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_4b6cd0a2606d:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_4b6cd0a2606d/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_4f223f26d920:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_4f223f26d920/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_503e9f9f917f:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_503e9f9f917f/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_59fe73772a59:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_59fe73772a59/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_59fe73772a59/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si2
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_59fe73772a59/si2/si_2
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si3
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_59fe73772a59/si3/si_3
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si4
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_59fe73772a59/si4/si_4
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
       figure_processing:
         mode: caption_first
         vision_assets: []
@@ -96,6 +542,60 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_606a4a10ccee:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_606a4a10ccee/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_6499f81524ab:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6499f81524ab/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6499f81524ab/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_68cc92658f50:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_68cc92658f50/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_69defc43e148:
     enabled: true
     documents:
@@ -106,6 +606,58 @@ papers:
       metadata_file: metadata.json
       selection:
         mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_6d439d24d1c1:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6d439d24d1c1/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6d439d24d1c1/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_6dab732f4928:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6dab732f4928/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6dab732f4928/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
       figure_processing:
         mode: caption_first
         vision_assets: []
@@ -132,6 +684,88 @@ papers:
         mode: referenced_blocks
         fallback: skip
         reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_6f697291781e:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6f697291781e/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_6f697291781e/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_717435d28cc6:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_717435d28cc6/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_72593d37137a:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_72593d37137a/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_735dab40b6e2:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_735dab40b6e2/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_73b406fca781:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_73b406fca781/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
       figure_processing:
         mode: caption_first
         vision_assets: []
@@ -178,12 +812,188 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_7de897244e37:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_7de897244e37/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_869a4a20648d:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_869a4a20648d/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_8ba80ea40d34:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_8ba80ea40d34/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_8e8b4966f124:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_8e8b4966f124/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_905ff07ad255:
     enabled: true
     documents:
     - document_id: main
       role: main
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_905ff07ad255/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_91ae414cf166:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_91ae414cf166/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_93b3911e7925:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_93b3911e7925/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_93b3911e7925/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_94ffb97bff63:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_94ffb97bff63/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_94ffb97bff63/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_966f5ed34706:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_966f5ed34706/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_966f5ed34706/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_98d6d877f2fc:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_98d6d877f2fc/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_99bf8ec140fd:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_99bf8ec140fd/main/main
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:
@@ -230,6 +1040,58 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_9ad4309b21c8:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_9ad4309b21c8/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_9ad4309b21c8/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_9afa12fd21fc:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_9afa12fd21fc/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_9afa12fd21fc/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_9d80f54ad83c:
     enabled: true
     documents:
@@ -258,12 +1120,122 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_a8b251e90599:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_a8b251e90599/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_a8e5ce0b7f2f:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_a8e5ce0b7f2f/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_a956e52da22a:
     enabled: true
     documents:
     - document_id: main
       role: main
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_a956e52da22a/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_ac7385d1846b:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_ac7385d1846b/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_ae2a6fcb719d:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_ae2a6fcb719d/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_b03bed6c9732:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_b03bed6c9732/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_b03bed6c9732/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_b131529dd737:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_b131529dd737/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_b8e4e7a8f8c5:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_b8e4e7a8f8c5/main/main
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:
@@ -286,6 +1258,114 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_bcaf294c2fcc:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bcaf294c2fcc/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_bd22835139e7:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bd22835139e7/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_bd2556011ec6:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bd2556011ec6/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_bee822cedf4a:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bee822cedf4a/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_bf8723b5c05c:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bf8723b5c05c/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_bf8723b5c05c/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_c51d7286781b:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_c51d7286781b/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_c51d7286781b/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_c78e96b6855a:
     enabled: true
     documents:
@@ -296,6 +1376,208 @@ papers:
       metadata_file: metadata.json
       selection:
         mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_cd58216c067b:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_cd58216c067b/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_cdd5aa31ce95:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_cdd5aa31ce95/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d30735fcb6dd:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d30735fcb6dd/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d4fbdbf3ac68:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d4fbdbf3ac68/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d51c1d23acf3:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d51c1d23acf3/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d51c1d23acf3/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d64e154ae189:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d64e154ae189/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d652473616e5:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d652473616e5/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d652473616e5/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_d7e7dd68a228:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_d7e7dd68a228/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_dda844f4ef69:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_dda844f4ef69/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_dda844f4ef69/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_e046c0200db7:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_e046c0200db7/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_e2fde0425c86:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_e2fde0425c86/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    - document_id: si1
+      role: supporting_information
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_e2fde0425c86/si1/si_1
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: referenced_blocks
+        fallback: skip
+        reference_scope: whole_main
       figure_processing:
         mode: caption_first
         vision_assets: []
@@ -354,12 +1636,110 @@ papers:
         mode: caption_first
         vision_assets: []
     resolution_file: null
+  SERS_API_e6668bb90d09:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_e6668bb90d09/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_e746ae286c67:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_e746ae286c67/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
   SERS_API_ec3b8fbcb2ac:
     enabled: true
     documents:
     - document_id: main
       role: main
       package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_ec3b8fbcb2ac/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_edeab7baeb58:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_edeab7baeb58/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_f137bb64fd95:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_f137bb64fd95/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_f36d39fe1cd2:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_f36d39fe1cd2/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_f9336c430ab4:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_f9336c430ab4/main/main
+      markdown_file: normalized.md
+      metadata_file: metadata.json
+      selection:
+        mode: whole_document
+      figure_processing:
+        mode: caption_first
+        vision_assets: []
+    resolution_file: null
+  SERS_API_feeac9f0b66e:
+    enabled: true
+    documents:
+    - document_id: main
+      role: main
+      package_dir: data_acquisition/sers_au_ag_v1/m4/packages/SERS_API_feeac9f0b66e/main/main
       markdown_file: normalized.md
       metadata_file: metadata.json
       selection:

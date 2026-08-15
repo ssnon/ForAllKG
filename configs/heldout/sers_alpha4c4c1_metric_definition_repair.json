@@ -1,0 +1,32 @@
+{
+  "consumed_holdout_promoted_to_seen": [
+    "Kiwook_SERS_16",
+    "Kiwook_SERS_35",
+    "Kiwook_SERS_34",
+    "Kiwook_SERS_19",
+    "Kiwook_SERS_13",
+    "Kiwook_SERS_37",
+    "Kiwook_SERS_30",
+    "Kiwook_SERS_25",
+    "Kiwook_SERS_4",
+    "Kiwook_SERS_18"
+  ],
+  "failure_class": "scientific_contract_failure_metric_definition",
+  "failure_stage": "metric_definition",
+  "future_holdout_policy": {
+    "current_v1_retired": true,
+    "distribution_difference_is_not_bug": true,
+    "reserve_only_for_next_blind_epoch": true,
+    "select_v2_only_after_repair_replay_pass": true
+  },
+  "generic_contract_changed": false,
+  "generic_contract_git_blob": "250b80be078e60cb3ae3c0ac56e07359f1e5fec2",
+  "new_adapter_git_blob": "698447755caaab49d80556af9736975bd753a5fd",
+  "new_metric_definition_semantics_id": "sers_au_ag_metric_definition_v3_alpha4c4c1",
+  "old_adapter_git_blob": "03343f31afde85d4060acbb2f37e9b73969b8b65",
+  "old_metric_definition_semantics_id": "sers_au_ag_metric_definition_v2_alpha4b3b4b1",
+  "phase": "alpha4c.4c.1",
+  "protocol_version": "sers-alpha4c4c1-metric-definition-repair-v1",
+  "source_split_sha256": "46d3e42e721ad9e8f92dc41508c3916b3766e8f0bd5ca01617f115d80d55988f",
+  "state": "repair_installed_replay_required"
+}

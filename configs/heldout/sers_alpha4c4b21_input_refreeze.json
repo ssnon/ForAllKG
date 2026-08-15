@@ -1,0 +1,73 @@
+{
+  "data_root": "data_sers",
+  "domain_profile": "sers_au_ag",
+  "evaluation_root": "evaluation/sers_alpha4c4b1/input_refreeze/sers_alpha4c4b21_canonical_input_refreeze_v1",
+  "forbidden_if_exists": {
+    "canonical_input_lock": "evaluation/sers_alpha4c4b1/holdout_v1/canonical_input_lock.json",
+    "holdout_manifest": "evaluation/sers_alpha4c4b1/holdout_v1/manifest.json",
+    "holdout_report": "evaluation/sers_alpha4c4b1/holdout_v1/holdout_report.json"
+  },
+  "frozen_implementation_blobs": {
+    "configs/papers_sers_au_ag.yaml": "607b923855d72f7dcecd915215e186371093df64",
+    "dac_her/extraction_quality.py": "dcd8b9d2c8377e27912f65b59703c5a3abc73986",
+    "dac_her/measurement_merge_invariants.py": "190ce698489cffec678c22b68d9dfdc59fa49e1e",
+    "scripts/build_paper_graph.py": "8f0eeb13ed1a4826b48f887e10f3244ac1517c02",
+    "scripts/prepare_sers_alpha4c4b1_holdout_inputs.py": "1c561daf12dbbbe468ff16890e0cccf853446aca",
+    "scripts/run_sers_alpha4c4b1_trend_holdout.py": "7758223adca3d1cc58049c3838ac674f350e1a82"
+  },
+  "holdout_papers": [
+    "Kiwook_SERS_16",
+    "Kiwook_SERS_35",
+    "Kiwook_SERS_34",
+    "Kiwook_SERS_19",
+    "Kiwook_SERS_13",
+    "Kiwook_SERS_37",
+    "Kiwook_SERS_30",
+    "Kiwook_SERS_25",
+    "Kiwook_SERS_4",
+    "Kiwook_SERS_18"
+  ],
+  "new_llm_extraction_allowed": false,
+  "paper_config": "configs/papers_sers_au_ag.yaml",
+  "phase": "alpha4c.4b.2.1",
+  "post_refreeze_requirement": {
+    "command": "python -m scripts.run_sers_alpha4c4b1_trend_holdout --preflight-only",
+    "runner": "scripts.run_sers_alpha4c4b1_trend_holdout"
+  },
+  "protocol_version": "sers-alpha4c4b21-canonical-input-refreeze-v1",
+  "refreeze_id": "sers_alpha4c4b21_canonical_input_refreeze_v1",
+  "refreeze_semantics_id": "canonical_input_epoch_refreeze_v2_alpha4c4b21",
+  "repository": "ssnon/GraphAgentsDAC",
+  "resolution_policy": {
+    "automatic_or_unreviewed_candidate_sync_may_change": true,
+    "existing_manual_decisions_must_be_preserved": true,
+    "new_manual_decisions_forbidden": true,
+    "pre_and_post_decision_files_are_archived": true
+  },
+  "source_branch": "feat/SERS-PaperExtraction-v2.9.2",
+  "source_holdout_protocol": {
+    "path": "configs/heldout/sers_alpha4c4b1_trend_holdout_run.json",
+    "sha256": "057dd4941464fceab5cf1c7129326bbb4098a3b6b3aad401b7520b166ad65472"
+  },
+  "source_readiness_policy": {
+    "absence_claims_required": false,
+    "active_chunks_complete_flag_is_diagnostic_only": true,
+    "authority": "dac_her.extraction_quality.quality_from_active_payload plus scripts.build_paper_graph",
+    "complete_allowed": true,
+    "coverage_sensitive_queries_required": false,
+    "partial_acceptable_allowed": true,
+    "partial_critical_allowed_with_explicit_override": true,
+    "partial_critical_build_flag": "--allow-incomplete",
+    "positive_evidence_queries_required": true,
+    "rejected_allowed": false
+  },
+  "source_split_sha256": "46d3e42e721ad9e8f92dc41508c3916b3766e8f0bd5ca01617f115d80d55988f",
+  "strict_source_policy": {
+    "active_chunk_json_hash_locked": true,
+    "latest_run_run_json_active_chunks_hash_locked": true,
+    "locator_index_presence_and_hash_locked": true,
+    "source_must_remain_unchanged_during_refreeze": true
+  },
+  "target_measurement_merge_invariant_id": "measurement_payload_isolation_v1_alpha4b4a",
+  "trend_outputs_allowed": false
+}

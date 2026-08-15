@@ -14,7 +14,7 @@ from dac_her.metric_definition_domain import (
 
 
 SERS_METRIC_DEFINITION_SEMANTICS_ID = (
-    "sers_au_ag_metric_definition_v2_alpha4b3b4b1"
+    "sers_au_ag_metric_definition_v3_alpha4c4c1"
 )
 
 SERS_SUPPORTED_OBSERVABLES = frozenset({
@@ -437,6 +437,40 @@ def _lod_definition(text: str) -> tuple[str, str, str]:
     )
 
 
+def _finalize_definition_interpretation(
+    *,
+    status: str,
+    criterion: str,
+    formula_text: str,
+    normalization_basis: str,
+    reference_basis: str,
+) -> tuple[str, str, str, str]:
+    """Conservatively enforce the generic unknown-definition contract.
+
+    Raw source_expression and provenance are intentionally preserved elsewhere.
+    Only interpreted definition fields are cleared when status is unknown.
+    """
+    if status != "unknown":
+        return (
+            criterion,
+            formula_text,
+            normalization_basis,
+            reference_basis,
+        )
+
+    safe_normalization = (
+        normalization_basis
+        if normalization_basis in {"unspecified", "not_applicable"}
+        else "unspecified"
+    )
+    safe_reference = (
+        reference_basis
+        if reference_basis in {"unspecified", "not_applicable"}
+        else "unspecified"
+    )
+    return "", "", safe_normalization, safe_reference
+
+
 def _build_context(
     *,
     graph: nx.Graph,
@@ -470,6 +504,16 @@ def _build_context(
         formula = ""
     else:
         raise ValueError(f"Unsupported SERS metric definition observable: {observable!r}")
+
+    criterion, formula, normalization, reference = (
+        _finalize_definition_interpretation(
+            status=status,
+            criterion=criterion,
+            formula_text=formula,
+            normalization_basis=normalization,
+            reference_basis=reference,
+        )
+    )
 
     return MetricDefinitionContext(
         context_id=stable_metric_definition_id(
