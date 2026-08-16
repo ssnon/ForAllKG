@@ -767,6 +767,19 @@ def _canonicalize_works(
     return canonical, supplementary_collapsed
 
 
+
+def canonicalize_prior_art_works(
+    raw_works: list[PriorArtWork],
+) -> tuple[list[PriorArtWork], int]:
+    """Canonicalize records under the shared production identity contract.
+
+    DOI-family identity is authoritative over title identity. This delegates to
+    the already-validated conservative canonicalizer so initial retrieval and
+    targeted packet merging use exactly the same identity rules.
+    """
+    return _canonicalize_works(raw_works)
+
+
 def canonicalize_prior_art_packet(packet: PriorArtPacket) -> PriorArtPacket:
     """Re-canonicalize an alpha5 packet without repeating network retrieval.
 
@@ -776,7 +789,7 @@ def canonicalize_prior_art_packet(packet: PriorArtPacket) -> PriorArtPacket:
     count from the original run.
     """
     raw = list(packet.works)
-    works, supplementary_collapsed = _canonicalize_works(raw)
+    works, supplementary_collapsed = canonicalize_prior_art_works(raw)
     works = sorted(
         works,
         key=lambda row: (-(row.citation_count or 0), -(row.year or 0), row.title.lower()),
@@ -857,7 +870,7 @@ class LiteratureRetriever:
                     )
 
         searched_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-        canonical, supplementary_records_collapsed = _canonicalize_works(raw_works)
+        canonical, supplementary_records_collapsed = canonicalize_prior_art_works(raw_works)
         works = sorted(
             canonical,
             key=lambda row: (

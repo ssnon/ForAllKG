@@ -11,7 +11,10 @@ from dac_her.external_novelty_contracts import (
     PriorArtWork,
     QueryExecution,
 )
-from dac_her.literature_retrieval import LiteratureRetriever
+from dac_her.literature_retrieval import (
+    LiteratureRetriever,
+    canonicalize_prior_art_works,
+)
 from dac_her.novelty_refinement_contracts import NoveltyGap
 
 
@@ -96,56 +99,18 @@ def build_augmented_query_plan(
     return full, delta
 
 
-def _work_key(work: PriorArtWork) -> str:
-    doi = (work.doi or "").lower().strip()
-    if doi:
-        if doi.startswith("https://doi.org/"):
-            doi = doi[16:]
-        return "doi:" + doi
-    return "title:" + " ".join(work.title.lower().split())
-
-
-def _merge_work(left: PriorArtWork, right: PriorArtWork) -> PriorArtWork:
-    abstracts = [x for x in [left.abstract, right.abstract] if x]
-    abstract = max(abstracts, key=len) if abstracts else None
-    return PriorArtWork(
-        work_id=left.work_id,
-        title=left.title if len(left.title) >= len(right.title) else right.title,
-        year=left.year if left.year is not None else right.year,
-        publication_date=left.publication_date or right.publication_date,
-        doi=left.doi or right.doi,
-        url=left.url or right.url,
-        open_access_url=left.open_access_url or right.open_access_url,
-        abstract=abstract,
-        authors=sorted(set(left.authors) | set(right.authors)),
-        venue=left.venue or right.venue,
-        citation_count=max(
-            [x for x in [left.citation_count, right.citation_count] if x is not None],
-            default=None,
-        ),
-        providers=sorted(set(left.providers) | set(right.providers)),
-        provider_ids={**left.provider_ids, **right.provider_ids},
-        retrieval_query_ids=sorted(
-            set(left.retrieval_query_ids) | set(right.retrieval_query_ids)
-        ),
-        retrieval_claim_ids=sorted(
-            set(left.retrieval_claim_ids) | set(right.retrieval_claim_ids)
-        ),
-    )
-
-
 def merge_prior_art_packets(
     base: PriorArtPacket,
     delta: PriorArtPacket,
     augmented_plan: LiteratureQueryPlan,
 ) -> PriorArtPacket:
-    """Merge old + targeted search evidence under the augmented query plan."""
-    index: dict[str, PriorArtWork] = {}
-    for work in list(base.works) + list(delta.works):
-        key = _work_key(work)
-        index[key] = _merge_work(index[key], work) if key in index else work
+    """Merge old + targeted evidence using the shared canonical identity seam."""
+    merged_input = list(base.works) + list(delta.works)
+    canonical, cross_packet_supplementary_collapsed = (
+        canonicalize_prior_art_works(merged_input)
+    )
     works = sorted(
-        index.values(),
+        canonical,
         key=lambda x: (-(x.citation_count or 0), -(x.year or 0), x.title.lower()),
     )
     executions: list[QueryExecution] = list(base.executions) + list(delta.executions)
@@ -177,6 +142,7 @@ def merge_prior_art_packets(
         "supplementary_records_collapsed": (
             base.supplementary_records_collapsed
             + delta.supplementary_records_collapsed
+            + cross_packet_supplementary_collapsed
         ),
         "epistemic_usage": "prior_art_only_not_positive_premise",
     }
