@@ -43,13 +43,34 @@ You are given ONE claim and a bounded set of retrieved literature records. Use O
 
 For each truly relevant record, classify its relationship to the claim as one of:
 - DIRECT_PRIOR_ART: the record directly states/tests essentially the same scientific relation or distinctive prediction.
-- PARTIAL_PRIOR_ART: an ABSTRACT-BACKED record establishes a substantial subset or a closely neighboring relation, but not the full claim.
+- PARTIAL_PRIOR_ART: an ABSTRACT-BACKED record preserves the claim's RELATION NUCLEUS and establishes a substantial subset of that scientific relation, but not the full claim.
 - TITLE_ONLY_NEIGHBOR: the title suggests a neighboring relation but the abstract is missing, so the substantive overlap cannot be confirmed.
-- COMPONENT_ONLY: the record establishes one or more ingredients/components but not their proposed interaction/conditional relation.
+- COMPONENT_ONLY: the record establishes one or more ingredients/components, variables, mechanisms, contexts, materials, or one arm of a comparison, but does not establish the claim's proposed interaction, dependence, mediation, conditionality, comparison, directional relation, or other relation nucleus.
 - CONTEXTUAL_CONFLICT: the record challenges a broader descriptor/mechanistic assumption but differs materially in reaction domain, catalyst class, or site scope.
 - CONFLICTING_PRIOR_ART: the record directly reports a materially opposing relation/result in a sufficiently overlapping scientific scope.
 - UNRELATED: despite retrieval similarity, it does not materially bear on the claim.
 - INSUFFICIENT_METADATA: the supplied metadata is too weak to judge.
+
+RELATION-NUCLEUS RULES:
+1. Shared entities, variables, mechanisms, contexts, materials, or thematic proximity alone are NOT sufficient for PARTIAL_PRIOR_ART. Use COMPONENT_ONLY unless the record actually establishes a substantial part of the asserted relation.
+2. A thematically neighboring relation is not, by itself, PARTIAL_PRIOR_ART.
+3. For mediator claims, PARTIAL_PRIOR_ART requires evidence linking the proposed mediator to the relevant relation or outcome. Evidence that merely discusses the mediator variable is COMPONENT_ONLY.
+4. For moderator_interaction or descriptor_interaction claims, PARTIAL_PRIOR_ART requires an interaction, dependence, conditionality, or joint effect relevant to the asserted relation. Separate main effects or separate components are COMPONENT_ONLY.
+5. For context_condition claims, PARTIAL_PRIOR_ART requires a comparison across contexts or an explicit context-dependent effect. Evidence from only one context is COMPONENT_ONLY.
+6. For distinctive_prediction claims, PARTIAL_PRIOR_ART requires the same dependent relation or contrast even if direction, material scope, or a control condition is incomplete. Evidence for only one arm of the comparison or only the dependent variable is COMPONENT_ONLY.
+7. For mechanistic_link claims, PARTIAL_PRIOR_ART requires substantially the same mechanistic link. Sharing mechanism ingredients without the link is COMPONENT_ONLY.
+8. A scope mismatch can still permit PARTIAL_PRIOR_ART when the relation nucleus is preserved; scope similarity alone cannot create PARTIAL_PRIOR_ART.
+
+SELF-CONSISTENCY CHECK:
+If your rationale says that a record "does not compare X versus Y", "does not establish the claimed relationship", "only addresses one condition", "does not link X to Y", or an equivalent statement, PARTIAL_PRIOR_ART is usually inconsistent. Use COMPONENT_ONLY unless the same record still establishes another substantial part of the claim's relation nucleus.
+
+WORK-ID COPY CONTRACT:
+1. Every returned work_id MUST be copied byte-for-byte from the explicit ALLOWED_WORK_IDS block in the user message.
+2. Never invent, reconstruct, shorten, normalize, index, or alias a work ID.
+3. Never return candidate numbers, list indices, ordinal labels, or placeholders as work IDs. Examples of forbidden forms include "6", "work:6", "paper:6", and "prior_art_work:6" unless that exact string itself appears in ALLOWED_WORK_IDS.
+4. Return at most one match per allowed work_id. Do not duplicate a work ID.
+5. If you cannot copy the exact supplied ID for a record, OMIT that record. Do not create a match merely to mention that an ID is missing or invalid.
+6. The set of returned work IDs must be a subset of ALLOWED_WORK_IDS.
 
 Do not infer detailed results from a generic title alone. For CONFLICTING_PRIOR_ART, require not only an opposing result but also substantially matching reaction and catalyst/site scope; otherwise use CONTEXTUAL_CONFLICT. The deterministic compiler will independently enforce these constraints.
 
@@ -218,8 +239,23 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
                     "",
                 ]
             )
+        allowed_work_ids = [
+            str(work["work_id"])
+            for work in works
+        ]
         lines.extend(
             [
+                "ALLOWED_WORK_IDS",
+                "================",
+                *allowed_work_ids,
+                "",
+                "WORK-ID OUTPUT REQUIREMENT",
+                "==========================",
+                "Every returned work_id must be copied byte-for-byte from ALLOWED_WORK_IDS above.",
+                "Return at most one match per allowed work_id.",
+                "Do not return candidate numbers, list indices, abbreviated IDs, reconstructed IDs, or placeholders.",
+                "If you cannot copy the exact supplied work_id, omit that record.",
+                "",
                 "Only classify records that materially bear on the claim.",
                 "Do not infer literature-wide absence from this bounded candidate set.",
             ]

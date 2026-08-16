@@ -15,6 +15,10 @@ from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.feasibility_registry import resolve_feasibility_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.feasibility_domain import FeasibilityDomainAdapter
+from dac_her.literature_provider_plan import (
+    require_standard_or_full_auto_plan,
+    resolve_literature_provider_plan,
+)
 
 
 def _now() -> str:
@@ -243,6 +247,44 @@ def _check_alpha6_available() -> None:
 def run_pipeline(args: argparse.Namespace) -> int:
     runner = PipelineRunner(args)
     runner.prepare()
+
+    provider_arg = str(args.providers or "").strip()
+    if provider_arg.lower() == "auto":
+        provider_requested = None
+    else:
+        provider_requested = [
+            x.strip()
+            for x in provider_arg.split(",")
+            if x.strip()
+        ]
+    literature_provider_plan = resolve_literature_provider_plan(
+        requested=provider_requested
+    )
+    require_standard_or_full_auto_plan(
+        literature_provider_plan
+    )
+    literature_provider_plan_path = (
+        runner.run_dir / "literature_provider_plan.json"
+    )
+    _write_json(
+        literature_provider_plan_path,
+        literature_provider_plan.model_dump(mode="json"),
+    )
+    runner.manifest["literature_provider_plan"] = {
+        "plan_id": literature_provider_plan.plan_id,
+        "plan_sha256": literature_provider_plan.plan_sha256,
+        "requested_mode": literature_provider_plan.requested_mode,
+        "mode": literature_provider_plan.mode,
+        "active_providers": list(
+            literature_provider_plan.active_providers
+        ),
+        "artifact": str(literature_provider_plan_path),
+        "provider_set_frozen_for_run": True,
+        "runtime_failure_changes_provider_set": False,
+        "secret_values_persisted": False,
+    }
+    runner._save_manifest()
+
     _check_alpha6_available()
     domain_profile = get_domain_profile(args.domain_profile)
     feasibility_adapter = _resolve_feasibility_capability(domain_profile)
@@ -706,7 +748,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--domain-profile", domain_profile.profile_id,
             "--lineage", str(lineage),
             *_base_model_args(args, critic=True),
-            "--providers", args.providers,
+            "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),
             "--output-prefix", str(external_prefix),
             "--save-prompts",
@@ -743,7 +785,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--critic-model", args.critic_model,
             *( ["--base-url", args.base_url] if args.base_url else [] ),
             "--api-key-env", args.api_key_env,
-            "--providers", args.providers,
+            "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),
             "--output-prefix", str(refinement_prefix),
         ],
@@ -914,7 +956,15 @@ def parse_args() -> argparse.Namespace:
         default=os.getenv("OPENAI_BASE_URL") or "https://openrouter.ai/api/v1",
     )
     parser.add_argument("--api-key-env", default="OPENROUTER_API_KEY")
-    parser.add_argument("--providers", default="semantic_scholar,crossref")
+    parser.add_argument(
+        "--providers",
+        default="auto",
+        help=(
+            "Literature provider set. Default 'auto' freezes OpenAlex+Crossref "
+            "for the whole E2E run, adding Semantic Scholar only when "
+            "SEMANTIC_SCHOLAR_API_KEY is configured."
+        ),
+    )
     parser.add_argument("--results-per-query", type=int, default=12)
     parser.add_argument(
         "--overwrite-run",

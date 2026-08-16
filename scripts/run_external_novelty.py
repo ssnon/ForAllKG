@@ -18,10 +18,14 @@ from dac_her.external_novelty_llm import (
 )
 from dac_her.hypothesis_contracts import HypothesisPortfolio
 from dac_her.literature_retrieval import (
-    CrossrefProvider,
     LiteratureRetriever,
-    SemanticScholarProvider,
     canonicalize_prior_art_packet,
+)
+from dac_her.literature_provider_plan import (
+    build_literature_providers,
+    load_literature_provider_plan,
+    require_standard_or_full_auto_plan,
+    resolve_literature_provider_plan,
 )
 from dac_her.node_mapping import DEFAULT_EMBED_MODEL, SentenceTransformerEncoder
 from dac_her.novelty_claim_decomposition import (
@@ -51,8 +55,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embed-model", default=DEFAULT_EMBED_MODEL)
     parser.add_argument(
         "--providers",
-        default="semantic_scholar,crossref",
-        help="Comma-separated: semantic_scholar,crossref",
+        default="auto",
+        help=(
+            "Provider set. Default 'auto' resolves OpenAlex+Crossref, "
+            "plus Semantic Scholar only when SEMANTIC_SCHOLAR_API_KEY "
+            "is configured. Advanced explicit sets may use "
+            "openalex,crossref,semantic_scholar."
+        ),
+    )
+    parser.add_argument(
+        "--provider-plan",
+        default=None,
+        help=(
+            "Optional frozen literature-provider plan JSON. When supplied, "
+            "the run uses exactly that provider set and verifies environment "
+            "configuration has not drifted."
+        ),
     )
     parser.add_argument("--results-per-query", type=int, default=12)
     parser.add_argument("--max-claims", type=int, default=4)
@@ -134,6 +152,8 @@ def main() -> None:
         report_path.unlink()
     _write(prefix.with_suffix(".claims_queries.json"), plan)
 
+    provider_plan = None
+    provider_plan_path = None
     if args.reuse_prior_art:
         packet = PriorArtPacket.model_validate_json(
             Path(args.reuse_prior_art).read_text(encoding="utf-8")
@@ -145,15 +165,31 @@ def main() -> None:
             )
         packet = canonicalize_prior_art_packet(packet)
     else:
-        requested = [x.strip() for x in args.providers.split(",") if x.strip()]
-        providers = []
-        for name in requested:
-            if name == "semantic_scholar":
-                providers.append(SemanticScholarProvider())
-            elif name == "crossref":
-                providers.append(CrossrefProvider())
+        if args.provider_plan:
+            provider_plan = load_literature_provider_plan(
+                args.provider_plan
+            )
+        else:
+            provider_arg = str(args.providers or "").strip()
+            if provider_arg.lower() == "auto":
+                requested = None
             else:
-                raise ValueError(f"Unknown provider: {name}")
+                requested = [
+                    x.strip()
+                    for x in provider_arg.split(",")
+                    if x.strip()
+                ]
+            provider_plan = resolve_literature_provider_plan(
+                requested=requested
+            )
+        require_standard_or_full_auto_plan(provider_plan)
+        provider_plan_path = prefix.with_suffix(
+            ".provider_plan.json"
+        )
+        _write(provider_plan_path, provider_plan)
+        providers = build_literature_providers(
+            provider_plan
+        )
         packet = LiteratureRetriever(
             providers,
             results_per_query=args.results_per_query,
@@ -225,6 +261,10 @@ def main() -> None:
     print("Domain profile:", domain_profile.profile_id)
     print("Prior-art packet:", packet.packet_id)
     print("Search providers:", ", ".join(packet.providers_requested))
+    if provider_plan is not None:
+        print("Provider mode:", provider_plan.mode)
+        print("Provider plan:", provider_plan.plan_id)
+        print("Provider plan artifact:", provider_plan_path)
     print("Unique works:", len(packet.works))
     print(
         "Canonicalization:",

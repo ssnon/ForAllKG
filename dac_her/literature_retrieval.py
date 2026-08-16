@@ -13,6 +13,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from dac_her.provider_resilience import (
+    ProviderRequestPacer,
+    RequestTelemetry,
+    resilient_request_json,
+)
+
 from dac_her.external_novelty_contracts import (
     LiteratureQuery,
     LiteratureQueryPlan,
@@ -106,25 +112,18 @@ def _request_json(
     timeout: float = 30.0,
     retries: int = 2,
     retry_backoff: float = 1.0,
+    pacer: ProviderRequestPacer | None = None,
+    telemetry: RequestTelemetry | None = None,
 ) -> Any:
-    last: Exception | None = None
-    for attempt in range(retries + 1):
-        try:
-            request = Request(url, headers=headers or {})
-            with urlopen(request, timeout=timeout) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except HTTPError as exc:
-            last = exc
-            if exc.code not in {429, 500, 502, 503, 504} or attempt >= retries:
-                raise
-        except URLError as exc:
-            last = exc
-            if attempt >= retries:
-                raise
-        time.sleep(retry_backoff * (2**attempt))
-    if last is not None:
-        raise last
-    raise RuntimeError("request failed without an exception")
+    return resilient_request_json(
+        url,
+        headers=headers,
+        timeout=timeout,
+        retries=retries,
+        retry_backoff=retry_backoff,
+        pacer=pacer,
+        telemetry=telemetry,
+    )
 
 
 class LiteratureSearchProvider(Protocol):
@@ -149,10 +148,28 @@ class SemanticScholarProvider:
         api_key_env: str = "SEMANTIC_SCHOLAR_API_KEY",
         timeout: float = 30.0,
         delay_seconds: float = 0.35,
+        minimum_interval_seconds: float = 1.05,
     ) -> None:
         self.api_key = api_key if api_key is not None else os.getenv(api_key_env)
         self.timeout = float(timeout)
         self.delay_seconds = float(delay_seconds)
+        self.minimum_interval_seconds = max(
+            0.0,
+            float(minimum_interval_seconds),
+            self.delay_seconds,
+        )
+        self._request_pacer = ProviderRequestPacer(
+            self.minimum_interval_seconds
+        )
+        self._request_telemetry = RequestTelemetry()
+
+    def health_snapshot(self) -> dict[str, Any]:
+        return {
+            "provider": self.provider_name,
+            "api_key_configured": bool(self.api_key),
+            "minimum_interval_seconds": self.minimum_interval_seconds,
+            "telemetry": self._request_telemetry.snapshot(),
+        }
 
     def search(self, query: LiteratureQuery, *, limit: int) -> list[PriorArtWork]:
         fields = (
@@ -169,15 +186,13 @@ class SemanticScholarProvider:
         headers = {"User-Agent": "GraphAgentsDAC-ExternalNovelty/alpha5"}
         if self.api_key:
             headers["x-api-key"] = self.api_key
-        started = time.perf_counter()
         payload = _request_json(
             "https://api.semanticscholar.org/graph/v1/paper/search?" + params,
             headers=headers,
             timeout=self.timeout,
+            pacer=self._request_pacer,
+            telemetry=self._request_telemetry,
         )
-        elapsed = time.perf_counter() - started
-        if self.delay_seconds > elapsed:
-            time.sleep(self.delay_seconds - elapsed)
 
         rows: list[PriorArtWork] = []
         for item in payload.get("data", []) if isinstance(payload, dict) else []:
@@ -216,6 +231,342 @@ class SemanticScholarProvider:
                     provider_ids=({self.provider_name: provider_id} if provider_id else {}),
                     retrieval_query_ids=[query.query_id],
                     retrieval_claim_ids=([query.claim_id] if query.claim_id else []),
+                )
+            )
+        return rows
+
+
+
+class OpenAlexProviderError(RuntimeError):
+    """Sanitized OpenAlex request failure.
+
+    OpenAlex requires api_key in the query string. This exception deliberately
+    omits request URLs so QueryExecution.error cannot persist the API key.
+    """
+
+
+def reconstruct_openalex_abstract(
+    value: Any,
+) -> str | None:
+    """Reconstruct OpenAlex abstract_inverted_index deterministically.
+
+    Malformed/colliding position maps return None rather than guessing.
+    """
+    if not isinstance(value, dict) or not value:
+        return None
+
+    by_position: dict[int, str] = {}
+    for token, raw_positions in value.items():
+        word = str(token).strip()
+        if not word or not isinstance(raw_positions, list):
+            return None
+        for raw_position in raw_positions:
+            if (
+                not isinstance(raw_position, int)
+                or isinstance(raw_position, bool)
+                or raw_position < 0
+            ):
+                return None
+            existing = by_position.get(raw_position)
+            if existing is not None and existing != word:
+                return None
+            by_position[raw_position] = word
+
+    if not by_position:
+        return None
+
+    # Avoid constructing pathological sparse records while preserving ordinary
+    # OpenAlex abstracts. We join only observed positions; gaps are not filled.
+    if len(by_position) > 100_000:
+        return None
+    ordered = [
+        by_position[position]
+        for position in sorted(by_position)
+    ]
+    text = " ".join(ordered).strip()
+    return text or None
+
+
+class OpenAlexProvider:
+    """OpenAlex /works search adapter.
+
+    Uses the same frozen LiteratureQuery.query_text as other providers. The
+    API key is supplied only to the outbound query string and is never stored
+    in PriorArtWork, provider-plan provenance, or sanitized exceptions.
+    """
+
+    provider_name = "openalex"
+
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        api_key_env: str = "OPENALEX_API_KEY",
+        timeout: float = 30.0,
+        minimum_interval_seconds: float = 0.0,
+    ) -> None:
+        self.api_key = (
+            api_key
+            if api_key is not None
+            else os.getenv(api_key_env)
+        )
+        self.api_key = str(self.api_key or "").strip()
+        if not self.api_key:
+            raise ValueError(
+                "OpenAlexProvider requires OPENALEX_API_KEY."
+            )
+        self.timeout = float(timeout)
+        self.minimum_interval_seconds = max(
+            0.0,
+            float(minimum_interval_seconds),
+        )
+        self._request_pacer = ProviderRequestPacer(
+            self.minimum_interval_seconds
+        )
+        self._request_telemetry = RequestTelemetry()
+
+    def health_snapshot(self) -> dict[str, Any]:
+        return {
+            "provider": self.provider_name,
+            "api_key_configured": bool(self.api_key),
+            "minimum_interval_seconds":
+                self.minimum_interval_seconds,
+            "telemetry":
+                self._request_telemetry.snapshot(),
+        }
+
+    def _safe_request(
+        self,
+        url: str,
+    ) -> Any:
+        try:
+            return _request_json(
+                url,
+                timeout=self.timeout,
+                pacer=self._request_pacer,
+                telemetry=self._request_telemetry,
+            )
+        except HTTPError as exc:
+            reason = str(
+                getattr(exc, "reason", None)
+                or getattr(exc, "msg", None)
+                or "HTTP error"
+            )
+            raise OpenAlexProviderError(
+                f"HTTPError: HTTP Error {int(exc.code)}: {reason}"
+            ) from None
+        except URLError as exc:
+            reason = getattr(exc, "reason", None)
+            reason_type = (
+                type(reason).__name__
+                if reason is not None
+                else "unknown"
+            )
+            raise OpenAlexProviderError(
+                f"URLError: {reason_type}"
+            ) from None
+        except Exception as exc:
+            raise OpenAlexProviderError(
+                f"{type(exc).__name__}: OpenAlex request failed"
+            ) from None
+
+    def search(
+        self,
+        query: LiteratureQuery,
+        *,
+        limit: int,
+    ) -> list[PriorArtWork]:
+        params = urlencode(
+            {
+                "search": query.query_text,
+                "per_page": max(
+                    1,
+                    min(100, int(limit)),
+                ),
+                "api_key": self.api_key,
+                "select": (
+                    "id,doi,display_name,publication_year,"
+                    "publication_date,cited_by_count,"
+                    "abstract_inverted_index,authorships,"
+                    "primary_location,best_oa_location"
+                ),
+            }
+        )
+        payload = self._safe_request(
+            "https://api.openalex.org/works?"
+            + params
+        )
+
+        results = (
+            payload.get("results", [])
+            if isinstance(payload, dict)
+            else []
+        )
+        rows: list[PriorArtWork] = []
+        for item in results:
+            if not isinstance(item, dict):
+                continue
+            title = str(
+                item.get("display_name")
+                or item.get("title")
+                or ""
+            ).strip()
+            if not title:
+                continue
+
+            provider_id = str(
+                item.get("id") or ""
+            ).strip()
+            doi = _norm_doi(
+                item.get("doi")
+            )
+
+            authors: list[str] = []
+            for authorship in (
+                item.get("authorships")
+                or []
+            ):
+                if not isinstance(
+                    authorship,
+                    dict,
+                ):
+                    continue
+                author = (
+                    authorship.get("author")
+                    or {}
+                )
+                if not isinstance(author, dict):
+                    continue
+                name = str(
+                    author.get(
+                        "display_name"
+                    )
+                    or ""
+                ).strip()
+                if name:
+                    authors.append(name)
+
+            primary = (
+                item.get(
+                    "primary_location"
+                )
+                or {}
+            )
+            if not isinstance(primary, dict):
+                primary = {}
+            best_oa = (
+                item.get(
+                    "best_oa_location"
+                )
+                or {}
+            )
+            if not isinstance(best_oa, dict):
+                best_oa = {}
+
+            source = (
+                primary.get("source")
+                or {}
+            )
+            if not isinstance(source, dict):
+                source = {}
+
+            primary_url = str(
+                primary.get(
+                    "landing_page_url"
+                )
+                or ""
+            ).strip()
+            open_access_url = str(
+                best_oa.get("pdf_url")
+                or best_oa.get(
+                    "landing_page_url"
+                )
+                or ""
+            ).strip()
+
+            year = item.get(
+                "publication_year"
+            )
+            citation_count = item.get(
+                "cited_by_count"
+            )
+
+            rows.append(
+                PriorArtWork(
+                    work_id=_stable_id(
+                        "prior_art_work",
+                        doi
+                        or provider_id
+                        or title,
+                    ),
+                    title=title,
+                    year=(
+                        int(year)
+                        if year is not None
+                        else None
+                    ),
+                    publication_date=(
+                        str(
+                            item.get(
+                                "publication_date"
+                            )
+                        )
+                        if item.get(
+                            "publication_date"
+                        )
+                        else None
+                    ),
+                    doi=doi,
+                    url=(
+                        primary_url
+                        or provider_id
+                        or None
+                    ),
+                    open_access_url=(
+                        open_access_url
+                        or None
+                    ),
+                    abstract=(
+                        reconstruct_openalex_abstract(
+                            item.get(
+                                "abstract_inverted_index"
+                            )
+                        )
+                    ),
+                    authors=authors,
+                    venue=(
+                        str(
+                            source.get(
+                                "display_name"
+                            )
+                        ).strip()
+                        or None
+                    ),
+                    citation_count=(
+                        int(citation_count)
+                        if citation_count
+                        is not None
+                        else None
+                    ),
+                    providers=[
+                        self.provider_name
+                    ],
+                    provider_ids=(
+                        {
+                            self.provider_name:
+                                provider_id
+                        }
+                        if provider_id
+                        else {}
+                    ),
+                    retrieval_query_ids=[
+                        query.query_id
+                    ],
+                    retrieval_claim_ids=(
+                        [query.claim_id]
+                        if query.claim_id
+                        else []
+                    ),
                 )
             )
         return rows
@@ -342,25 +693,51 @@ def _merge_work(left: PriorArtWork, right: PriorArtWork) -> PriorArtWork:
 
 
 def _deduplicate_by_title(works: list[PriorArtWork]) -> list[PriorArtWork]:
-    """Collapse exact normalized-title duplicates after DOI-family merging.
+    """Conservatively collapse exact normalized-title duplicates.
 
-    This catches provider duplicates where one record has a DOI and another does
-    not, as well as supplementary-record variants that survived provider-level
-    metadata differences. Very short titles are not merged to avoid accidental
-    collisions on generic names.
+    DOI-family identity is stronger than title identity. After DOI-family
+    merging, exact-title fallback is permitted only when the title group does
+    not contain multiple distinct non-empty DOI families.
+
+    Rules:
+    - zero DOI families: exact-title fallback may merge DOI-less duplicates;
+    - one DOI family: DOI-less records may merge into that unambiguous family;
+    - two or more DOI families: no title-based merging is performed for the
+      group, because title equality cannot override conflicting strong IDs.
+
+    Very short titles are not merged to avoid collisions on generic names.
     """
-    by_title: dict[str, PriorArtWork] = {}
+    by_title: dict[str, list[PriorArtWork]] = {}
     passthrough: list[PriorArtWork] = []
+
     for work in works:
         title = _norm_title(work.title)
         if len(title) < 20:
             passthrough.append(work)
             continue
-        if title in by_title:
-            by_title[title] = _merge_work(by_title[title], work)
-        else:
-            by_title[title] = work
-    return list(by_title.values()) + passthrough
+        by_title.setdefault(title, []).append(work)
+
+    canonical: list[PriorArtWork] = []
+    for rows in by_title.values():
+        families = {
+            family
+            for family in (_doi_family(row.doi) for row in rows)
+            if family
+        }
+
+        if len(families) >= 2:
+            # Conflicting strong identifiers: preserve every record that
+            # survived DOI-family merging. A title alone is not sufficient
+            # authority to collapse these records.
+            canonical.extend(rows)
+            continue
+
+        merged = rows[0]
+        for row in rows[1:]:
+            merged = _merge_work(merged, row)
+        canonical.append(merged)
+
+    return canonical + passthrough
 
 
 def _canonicalize_works(

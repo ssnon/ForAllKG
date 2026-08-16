@@ -18,10 +18,12 @@ from dac_her.external_novelty_contracts import (
 from dac_her.external_novelty_llm import InstructorOpenAICompatibleExternalNoveltyBackend
 from dac_her.hypothesis_contracts import HypothesisPortfolio
 from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
-from dac_her.literature_retrieval import (
-    CrossrefProvider,
-    LiteratureRetriever,
-    SemanticScholarProvider,
+from dac_her.literature_retrieval import LiteratureRetriever
+from dac_her.literature_provider_plan import (
+    build_literature_providers,
+    load_literature_provider_plan,
+    require_standard_or_full_auto_plan,
+    resolve_literature_provider_plan,
 )
 from dac_her.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
 from dac_her.novelty_claim_decomposition import NoveltyClaimDecomposer
@@ -75,7 +77,20 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", default=None)
     p.add_argument(
         "--providers",
-        default="semantic_scholar,crossref",
+        default="auto",
+        help=(
+            "Provider set. Default 'auto' resolves OpenAlex+Crossref, "
+            "plus Semantic Scholar only with SEMANTIC_SCHOLAR_API_KEY."
+        ),
+    )
+    p.add_argument(
+        "--provider-plan",
+        default=None,
+        type=Path,
+        help=(
+            "Optional frozen literature-provider plan JSON shared with "
+            "the initial external-novelty stage."
+        ),
     )
     p.add_argument("--results-per-query", type=int, default=12)
     p.add_argument("--target-claims", type=int, default=2)
@@ -129,15 +144,29 @@ def main() -> int:
     if not args.model or not args.critic_model:
         raise SystemExit("--model and --critic-model are required")
 
-    requested = [x.strip() for x in args.providers.split(",") if x.strip()]
-    providers = []
-    for name in requested:
-        if name == "semantic_scholar":
-            providers.append(SemanticScholarProvider())
-        elif name == "crossref":
-            providers.append(CrossrefProvider())
+    if args.provider_plan:
+        provider_plan = load_literature_provider_plan(
+            args.provider_plan
+        )
+    else:
+        provider_arg = str(args.providers or "").strip()
+        if provider_arg.lower() == "auto":
+            requested = None
         else:
-            raise ValueError(f"unknown provider: {name}")
+            requested = [
+                x.strip()
+                for x in provider_arg.split(",")
+                if x.strip()
+            ]
+        provider_plan = resolve_literature_provider_plan(
+            requested=requested
+        )
+    require_standard_or_full_auto_plan(provider_plan)
+    _write(
+        Path(str(args.output_prefix) + ".provider_plan.json"),
+        provider_plan,
+    )
+    providers = build_literature_providers(provider_plan)
     retriever = LiteratureRetriever(
         providers,
         results_per_query=args.results_per_query,
@@ -232,6 +261,8 @@ def main() -> int:
     print()
     print("Targeted novelty refinement complete")
     print("Domain profile:", domain_profile.profile_id)
+    print("Provider mode:", provider_plan.mode)
+    print("Provider plan:", provider_plan.plan_id)
     print("Final hypotheses:", len(outcome.portfolio.hypotheses))
     print("Accepted refinements:", outcome.report.accepted_refinement_count)
     print("Kept originals:", outcome.report.kept_original_count)
