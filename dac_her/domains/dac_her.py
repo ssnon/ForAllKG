@@ -144,6 +144,14 @@ DAC_HER_PROFILE = ScientificDomainProfile(
         mismatch_multiplier=0.55,
         domain_mismatch_reason='reaction_domain_mismatch',
         low_scope_reason='low_catalyst_scope_overlap',
+        targeted_query_templates=(
+            "{core}",
+            "{core} hydrogen evolution reaction mechanism",
+            "{core} dual atom catalyst nitrogen coordination",
+        ),
+        contextual_conflict_query_templates=(
+            "{core} nitrogen coordinated dual atom HER",
+        ),
     ),
     extraction_adapter_id='dac_her',
     graph_adapter_id='dac_her',

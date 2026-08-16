@@ -186,6 +186,14 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         mismatch_multiplier=0.35,
         domain_mismatch_reason="sers_domain_mismatch",
         low_scope_reason="low_sers_system_scope_overlap",
+        targeted_query_templates=(
+            "{core}",
+            "{core} SERS mechanism",
+            "{core} Au Ag plasmonic nanostructure",
+        ),
+        contextual_conflict_query_templates=(
+            "{core} Au Ag SERS",
+        ),
     ),
     extraction_adapter_id="sers_au_ag",
     graph_adapter_id="sers_au_ag",

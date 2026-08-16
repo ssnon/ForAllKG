@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
-from typing import Any
+from typing import Any, Iterable
 
 from dac_her.discovery_axis_contracts import DiscoveryAxisSynthesisReport
 from dac_her.external_novelty_contracts import (
@@ -234,14 +234,12 @@ class ExternalNoveltyAssessor:
             "The claim-level prior-art pattern does not support a reliable external-novelty category under the current policy.",
         )
 
-    def assess(
+    def _validate_report_sources(
         self,
         portfolio: HypothesisPortfolio,
         plan: LiteratureQueryPlan,
         packet: PriorArtPacket,
-        *,
-        lineage: DiscoveryAxisSynthesisReport | None = None,
-    ) -> ExternalNoveltyReport:
+    ) -> None:
         if plan.source_portfolio_id != portfolio.portfolio_id:
             raise ValueError("query plan source_portfolio_id mismatch")
         if packet.source_portfolio_id != portfolio.portfolio_id:
@@ -249,58 +247,110 @@ class ExternalNoveltyAssessor:
         if packet.source_query_plan_id != plan.plan_id:
             raise ValueError("prior-art packet source_query_plan_id mismatch")
 
-        claim_rows = {
-            row.hypothesis_id: row
-            for row in plan.claims
-        }
+    def compile_report_from_claim_reviews(
+        self,
+        portfolio: HypothesisPortfolio,
+        plan: LiteratureQueryPlan,
+        packet: PriorArtPacket,
+        claim_reviews: Iterable[ClaimPriorArtReview],
+        *,
+        lineage: DiscoveryAxisSynthesisReport | None = None,
+    ) -> ExternalNoveltyReport:
+        """Compile a production ExternalNoveltyReport from frozen claim reviews.
+
+        This seam is deterministic. It performs no retrieval, ranking, or LLM
+        review. Claim-level review semantics and coverage remain authoritative;
+        only hypothesis-level coverage/status/card/report assembly is recomputed
+        from the supplied production artifacts.
+        """
+        self._validate_report_sources(portfolio, plan, packet)
+
+        portfolio_ids = [row.hypothesis_id for row in portfolio.hypotheses]
+        if len(portfolio_ids) != len(set(portfolio_ids)):
+            raise ValueError("duplicate hypothesis_id in portfolio")
+        portfolio_id_set = set(portfolio_ids)
+
+        group_ids = [row.hypothesis_id for row in plan.claims]
+        if len(group_ids) != len(set(group_ids)):
+            raise ValueError("duplicate hypothesis claim group in query plan")
+        if set(group_ids) != portfolio_id_set:
+            missing = sorted(portfolio_id_set - set(group_ids))
+            unexpected = sorted(set(group_ids) - portfolio_id_set)
+            raise ValueError(
+                "query-plan hypothesis claim groups do not match portfolio: "
+                f"missing={missing}, unexpected={unexpected}"
+            )
+
+        planned_by_id: dict[str, object] = {}
+        planned_order_by_hypothesis: dict[str, list[str]] = {}
+        for group in plan.claims:
+            ordered_ids: list[str] = []
+            for claim in group.claims:
+                if claim.hypothesis_id != group.hypothesis_id:
+                    raise ValueError(
+                        "query-plan claim hypothesis_id mismatch: "
+                        f"claim={claim.claim_id}, claim_hypothesis={claim.hypothesis_id}, "
+                        f"group_hypothesis={group.hypothesis_id}"
+                    )
+                if claim.claim_id in planned_by_id:
+                    raise ValueError(f"duplicate planned claim_id: {claim.claim_id}")
+                planned_by_id[claim.claim_id] = claim
+                ordered_ids.append(claim.claim_id)
+            planned_order_by_hypothesis[group.hypothesis_id] = ordered_ids
+
+        reviews = list(claim_reviews)
+        review_ids = [row.claim_id for row in reviews]
+        if len(review_ids) != len(set(review_ids)):
+            duplicates = sorted(
+                claim_id for claim_id in set(review_ids)
+                if review_ids.count(claim_id) > 1
+            )
+            raise ValueError(f"duplicate claim review IDs: {duplicates}")
+
+        planned_ids = set(planned_by_id)
+        supplied_ids = set(review_ids)
+        if supplied_ids != planned_ids:
+            missing = sorted(planned_ids - supplied_ids)
+            unexpected = sorted(supplied_ids - planned_ids)
+            raise ValueError(
+                "claim review set does not exactly match query plan: "
+                f"missing={missing}, unexpected={unexpected}"
+            )
+
+        review_by_id = {row.claim_id: row for row in reviews}
+        for claim_id, planned in planned_by_id.items():
+            review = review_by_id[claim_id]
+            if review.hypothesis_id != planned.hypothesis_id:
+                raise ValueError(
+                    f"claim review hypothesis_id drift for {claim_id}: "
+                    f"expected {planned.hypothesis_id}, got {review.hypothesis_id}"
+                )
+            if review.claim_text != planned.text:
+                raise ValueError(f"claim review text drift for {claim_id}")
+            if review.importance != planned.importance:
+                raise ValueError(
+                    f"claim review importance drift for {claim_id}: "
+                    f"expected {planned.importance}, got {review.importance}"
+                )
+            if review.coverage.claim_id != review.claim_id:
+                raise ValueError(
+                    f"claim review coverage claim_id mismatch for {claim_id}: "
+                    f"coverage={review.coverage.claim_id}"
+                )
+
         lineages = {
             row.hypothesis_id: row
             for row in (lineage.lineages if lineage is not None else [])
         }
         cards: list[ExternalNoveltyCard] = []
-
         for hypothesis in portfolio.hypotheses:
-            decomposition = claim_rows.get(hypothesis.hypothesis_id)
-            if decomposition is None:
-                raise ValueError(
-                    f"query plan lacks claims for hypothesis {hypothesis.hypothesis_id}"
-                )
-            reviews: list[ClaimPriorArtReview] = []
-            for claim in decomposition.claims:
-                candidates = self.ranker.rank(claim, packet, plan)
-                work_index = {row.work_id: row for row in packet.works}
-                review_input = []
-                for ranked in candidates.ranked_works:
-                    work = work_index[ranked.work_id]
-                    review_input.append(
-                        {
-                            "work_id": work.work_id,
-                            "title": work.title,
-                            "year": work.year,
-                            "doi": work.doi,
-                            "abstract": work.abstract,
-                            "semantic_similarity": ranked.semantic_similarity,
-                            "lexical_coverage": ranked.lexical_coverage,
-                            "reaction_domain_relevance": ranked.reaction_domain_relevance,
-                            "catalyst_scope_relevance": ranked.catalyst_scope_relevance,
-                            "relevance_score": ranked.relevance_score,
-                        }
-                    )
-                draft = self.review_backend.review_claim(claim, review_input)
-                reviews.append(
-                    self.compiler.compile(
-                        claim,
-                        candidates,
-                        draft,
-                        packet,
-                        plan,
-                    )
-                )
+            ordered_claim_ids = planned_order_by_hypothesis[hypothesis.hypothesis_id]
+            rows = [review_by_id[claim_id] for claim_id in ordered_claim_ids]
+            coverage = self._coverage(hypothesis, rows, packet, plan)
+            status, reasons, interpretation = self._status(rows, coverage)
 
-            coverage = self._coverage(hypothesis, reviews, packet, plan)
-            status, reasons, interpretation = self._status(reviews, coverage)
             strongest: list[tuple[float, str]] = []
-            for review in reviews:
+            for review in rows:
                 for match in review.matches:
                     if match.relationship in {
                         "DIRECT_PRIOR_ART",
@@ -317,9 +367,10 @@ class ExternalNoveltyAssessor:
                 row[1]
                 for row in sorted(strongest, reverse=True)[:5]
             ]
-            contextual_conflict_ids = []
+
+            contextual_conflict_ids: list[str] = []
             seen_contextual: set[str] = set()
-            for review in reviews:
+            for review in rows:
                 for match in review.matches:
                     if (
                         match.relationship == "CONTEXTUAL_CONFLICT"
@@ -327,6 +378,7 @@ class ExternalNoveltyAssessor:
                     ):
                         seen_contextual.add(match.work_id)
                         contextual_conflict_ids.append(match.work_id)
+
             lineage_row = lineages.get(hypothesis.hypothesis_id)
             limitations = [
                 "Assessment is bounded by the recorded providers, queries, returned metadata, and ranking limits; it is not an exhaustive literature review.",
@@ -340,7 +392,7 @@ class ExternalNoveltyAssessor:
                     hypothesis_id=hypothesis.hypothesis_id,
                     title=hypothesis.title,
                     status=status,
-                    claim_reviews=reviews,
+                    claim_reviews=rows,
                     coverage=coverage,
                     strongest_prior_art_work_ids=strongest_ids,
                     contextual_conflict_work_ids=contextual_conflict_ids[:5],
@@ -376,3 +428,63 @@ class ExternalNoveltyAssessor:
             "epistemic_usage": "prior_art_only_not_positive_premise",
         }
         return ExternalNoveltyReport(**body, report_sha256=_sha256_json(body))
+
+    def assess(
+        self,
+        portfolio: HypothesisPortfolio,
+        plan: LiteratureQueryPlan,
+        packet: PriorArtPacket,
+        *,
+        lineage: DiscoveryAxisSynthesisReport | None = None,
+    ) -> ExternalNoveltyReport:
+        self._validate_report_sources(portfolio, plan, packet)
+
+        claim_rows = {
+            row.hypothesis_id: row
+            for row in plan.claims
+        }
+        reviews: list[ClaimPriorArtReview] = []
+        for hypothesis in portfolio.hypotheses:
+            decomposition = claim_rows.get(hypothesis.hypothesis_id)
+            if decomposition is None:
+                raise ValueError(
+                    f"query plan lacks claims for hypothesis {hypothesis.hypothesis_id}"
+                )
+            for claim in decomposition.claims:
+                candidates = self.ranker.rank(claim, packet, plan)
+                work_index = {row.work_id: row for row in packet.works}
+                review_input = []
+                for ranked in candidates.ranked_works:
+                    work = work_index[ranked.work_id]
+                    review_input.append(
+                        {
+                            "work_id": work.work_id,
+                            "title": work.title,
+                            "year": work.year,
+                            "doi": work.doi,
+                            "abstract": work.abstract,
+                            "semantic_similarity": ranked.semantic_similarity,
+                            "lexical_coverage": ranked.lexical_coverage,
+                            "reaction_domain_relevance": ranked.reaction_domain_relevance,
+                            "catalyst_scope_relevance": ranked.catalyst_scope_relevance,
+                            "relevance_score": ranked.relevance_score,
+                        }
+                    )
+                draft = self.review_backend.review_claim(claim, review_input)
+                reviews.append(
+                    self.compiler.compile(
+                        claim,
+                        candidates,
+                        draft,
+                        packet,
+                        plan,
+                    )
+                )
+
+        return self.compile_report_from_claim_reviews(
+            portfolio,
+            plan,
+            packet,
+            reviews,
+            lineage=lineage,
+        )

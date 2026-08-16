@@ -39,10 +39,8 @@ def build_augmented_query_plan(
     The delta plan is only for network retrieval. The augmented plan is the
     audit/reassessment plan and keeps original claim provenance intact.
     """
-    claim_ids = set(gap.target_claim_ids)
-    target_claim = next(iter(claim_ids), None)
     new_queries = []
-    for index, text in enumerate(gap.targeted_queries, start=1):
+    for index, target in enumerate(gap.targeted_queries, start=1):
         new_queries.append(
             LiteratureQuery(
                 query_id=_stable_id(
@@ -50,12 +48,14 @@ def build_augmented_query_plan(
                     base.plan_id,
                     gap.gap_id,
                     index,
-                    text,
+                    target.claim_id,
+                    target.query_role,
+                    target.query_text,
                 ),
                 hypothesis_id=gap.hypothesis_id,
-                claim_id=target_claim,
+                claim_id=target.claim_id,
                 query_kind="claim_variant",
-                query_text=text,
+                query_text=target.query_text,
             )
         )
 

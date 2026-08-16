@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from dac_her.external_novelty_contracts import ExternalNoveltyStatus
 from dac_her.hypothesis_contracts import HypothesisPortfolio
@@ -19,6 +19,19 @@ GapAction = Literal[
     "refine_away_from_conflict",
     "reject",
 ]
+TargetedGapQueryRole = Literal[
+    "relation_primary",
+    "relation_variant",
+    "scope_check",
+]
+
+
+class TargetedGapQuery(StrictModel):
+    claim_id: str = Field(min_length=1)
+    query_role: TargetedGapQueryRole
+    query_text: str = Field(min_length=1)
+
+
 RefinementDecision = Literal[
     "kept_original",
     "accepted_refinement",
@@ -43,18 +56,29 @@ class NoveltyGap(StrictModel):
     already_known_boundary: list[str] = Field(default_factory=list)
     unresolved_boundary: list[str] = Field(default_factory=list)
     contextual_conflict_work_ids: list[str] = Field(default_factory=list)
-    targeted_queries: list[str] = Field(default_factory=list)
+    targeted_queries: list[TargetedGapQuery] = Field(default_factory=list)
     reason_codes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _targeted_query_claims_must_be_bound(self) -> "NoveltyGap":
+        allowed = set(self.target_claim_ids)
+        unknown = sorted({row.claim_id for row in self.targeted_queries} - allowed)
+        if unknown:
+            raise ValueError(
+                "targeted query claim_id must be present in target_claim_ids: "
+                f"{unknown}"
+            )
+        return self
 
 
 class NoveltyGapPlan(StrictModel):
-    schema_version: Literal["novelty-gap-plan-v1"] = "novelty-gap-plan-v1"
+    schema_version: Literal["novelty-gap-plan-v2"] = "novelty-gap-plan-v2"
     plan_id: str
     plan_sha256: str
     source_portfolio_id: str
     source_external_report_id: str
     gaps: list[NoveltyGap] = Field(default_factory=list)
-    policy_version: Literal["novelty-gap-policy-v1"] = "novelty-gap-policy-v1"
+    policy_version: Literal["novelty-gap-policy-v2"] = "novelty-gap-policy-v2"
 
 
 class TargetedSearchRecord(StrictModel):

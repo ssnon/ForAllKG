@@ -128,6 +128,7 @@ def main() -> int:
     gap_analyzer = NoveltyGapAnalyzer(
         max_target_claims=args.target_claims,
         queries_per_gap=args.target_queries,
+        domain_profile=domain_profile,
     )
     gap_plan = gap_analyzer.build(portfolio, external, query_plan)
     _write(Path(str(args.output_prefix) + ".gap_plan.json"), gap_plan)
@@ -137,7 +138,10 @@ def main() -> int:
         print(f"[{i}] {gap.action} | {gap.source_external_status}")
         print("    differentiator:", gap.differentiator)
         for q in gap.targeted_queries:
-            print("    query:", q)
+            print(
+                f"    query[{q.claim_id}|{q.query_role}]:",
+                q.query_text,
+            )
 
     if args.dry_run_gap_plan:
         return 0

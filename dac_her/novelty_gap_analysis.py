@@ -4,6 +4,8 @@ import hashlib
 import json
 import re
 
+from dac_her.domain_profile import ScientificDomainProfile
+from dac_her.domains.registry import get_domain_profile
 from dac_her.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
@@ -11,7 +13,11 @@ from dac_her.external_novelty_contracts import (
     LiteratureQueryPlan,
 )
 from dac_her.hypothesis_contracts import HypothesisPortfolio
-from dac_her.novelty_refinement_contracts import NoveltyGap, NoveltyGapPlan
+from dac_her.novelty_refinement_contracts import (
+    NoveltyGap,
+    NoveltyGapPlan,
+    TargetedGapQuery,
+)
 
 
 def _canonical_json(value: object) -> str:
@@ -45,7 +51,6 @@ def _claim_priority(review: ClaimPriorArtReview) -> tuple[int, int, float, str]:
         "DIRECT_PRIOR_ART": 5,
         "CONFLICTING_PRIOR_ART": 6,
     }
-    abstract_count = review.coverage.abstract_work_count
     best_scope = max(
         (x.catalyst_scope_relevance for x in review.matches),
         default=0.0,
@@ -83,61 +88,130 @@ class NoveltyGapAnalyzer:
     """Deterministic external-novelty gap planner.
 
     It never turns external prior art into scientific premises. It only identifies
-    what the next bounded search/refinement should discriminate.
+    what the next bounded search/refinement should discriminate. Targeted query
+    expansion is owned by the selected ScientificDomainProfile.
     """
 
-    def __init__(self, *, max_target_claims: int = 2, queries_per_gap: int = 3) -> None:
+    ACTION_BY_STATUS = {
+        "PLAUSIBLY_NOVEL": "keep",
+        "NEW_COMBINATION_OF_KNOWN_EFFECTS": "keep",
+        "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP": "targeted_search_only",
+        "INSUFFICIENT_SEARCH_EVIDENCE": "targeted_search_then_refine",
+        "CONFLICTING_PRIOR_ART": "refine_away_from_conflict",
+        "WELL_ESTABLISHED": "targeted_search_then_refine",
+        "LITERATURE_SUPPORTED_EXTENSION": "targeted_search_then_refine",
+    }
+
+    def __init__(
+        self,
+        *,
+        max_target_claims: int = 2,
+        queries_per_gap: int = 3,
+        domain_profile: ScientificDomainProfile | None = None,
+    ) -> None:
         self.max_target_claims = max(1, int(max_target_claims))
         self.queries_per_gap = max(1, int(queries_per_gap))
+        self.domain_profile = domain_profile or get_domain_profile("dac_her")
 
     def _action(self, card: ExternalNoveltyCard) -> str:
-        if card.status in {"PLAUSIBLY_NOVEL", "NEW_COMBINATION_OF_KNOWN_EFFECTS"}:
-            return "keep"
-        if card.status == "INSUFFICIENT_SEARCH_EVIDENCE":
-            return "targeted_search_then_refine"
-        if card.status == "CONFLICTING_PRIOR_ART":
-            return "refine_away_from_conflict"
-        if card.status == "WELL_ESTABLISHED":
-            return "targeted_search_then_refine"
-        if card.status == "LITERATURE_SUPPORTED_EXTENSION":
-            return "targeted_search_then_refine"
-        return "targeted_search_only"
+        try:
+            return self.ACTION_BY_STATUS[card.status]
+        except KeyError as exc:
+            raise ValueError(
+                f"unsupported external novelty status for gap planning: {card.status}"
+            ) from exc
 
     def _queries(
         self,
         card: ExternalNoveltyCard,
         targets: list[ClaimPriorArtReview],
         existing_plan: LiteratureQueryPlan,
-    ) -> list[str]:
+    ) -> list[TargetedGapQuery]:
         existing = {
-            q.query_text.strip().lower()
+            (
+                q.claim_id,
+                q.query_text.strip().lower(),
+            )
             for q in existing_plan.queries
-            if q.hypothesis_id == card.hypothesis_id
+            if (
+                q.hypothesis_id == card.hypothesis_id
+                and q.claim_id is not None
+            )
         }
-        candidates: list[str] = []
+        novelty = self.domain_profile.novelty
+        per_claim: list[list[TargetedGapQuery]] = []
         for review in targets:
             core = _query_terms(review.claim_text)
+            rows: list[TargetedGapQuery] = []
             if core:
-                candidates.extend(
-                    [
-                        core,
-                        f"{core} hydrogen evolution reaction mechanism",
-                        f"{core} dual atom catalyst nitrogen coordination",
-                    ]
+                variants = novelty.targeted_query_variants(core)
+                for index, query in enumerate(variants):
+                    rows.append(
+                        TargetedGapQuery(
+                            claim_id=review.claim_id,
+                            query_role=(
+                                "relation_primary"
+                                if index == 0
+                                else "relation_variant"
+                            ),
+                            query_text=query,
+                        )
+                    )
+            per_claim.append(rows)
+
+        candidates: list[TargetedGapQuery] = []
+
+        # Phase 1: every target claim gets a primary relation query before
+        # any claim consumes budget on secondary variants.
+        for rows in per_claim:
+            if rows:
+                candidates.append(rows[0])
+
+        # Phase 2: contextual-conflict scope checks are bound only to a target
+        # claim whose frozen review actually contains that contextual conflict.
+        contextual_ids = set(card.contextual_conflict_work_ids)
+        if contextual_ids:
+            for review in targets:
+                has_contextual_conflict = any(
+                    (
+                        match.relationship == "CONTEXTUAL_CONFLICT"
+                        and match.work_id in contextual_ids
+                    )
+                    for match in review.matches
                 )
-        # A contextual conflict should be tested in the actual target scope.
-        if card.contextual_conflict_work_ids and targets:
-            core = _query_terms(targets[0].claim_text)
-            candidates.append(f"{core} nitrogen coordinated dual atom HER")
-        result: list[str] = []
+                if not has_contextual_conflict:
+                    continue
+                core = _query_terms(review.claim_text)
+                if not core:
+                    continue
+                for query in novelty.contextual_conflict_query_variants(core):
+                    candidates.append(
+                        TargetedGapQuery(
+                            claim_id=review.claim_id,
+                            query_role="scope_check",
+                            query_text=query,
+                        )
+                    )
+
+        # Phase 3: secondary relation variants are allocated round-robin
+        # across target claims so one claim cannot monopolize the query budget.
+        max_variants = max((len(rows) for rows in per_claim), default=0)
+        for variant_index in range(1, max_variants):
+            for rows in per_claim:
+                if variant_index < len(rows):
+                    candidates.append(rows[variant_index])
+
+        result: list[TargetedGapQuery] = []
         seen = set(existing)
         for query in candidates:
-            query = " ".join(query.split())
-            key = query.lower()
-            if not query or key in seen:
+            normalized = " ".join(query.query_text.split())
+            key = (query.claim_id, normalized.lower())
+            if not normalized or key in seen:
                 continue
             seen.add(key)
-            result.append(query[:300])
+            result.append(
+                query.model_copy(update={"query_text": normalized[:300]})
+            )
             if len(result) >= self.queries_per_gap:
                 break
         return result
@@ -161,7 +235,20 @@ class NoveltyGapAnalyzer:
                 raise ValueError(
                     f"external report lacks hypothesis {hypothesis.hypothesis_id}"
                 )
+            action = self._action(card)
             ordered = sorted(card.claim_reviews, key=_claim_priority)
+            if action == "refine_away_from_conflict":
+                conflicting = [
+                    row
+                    for row in ordered
+                    if row.status == "CONFLICTING_PRIOR_ART"
+                ]
+                non_conflicting = [
+                    row
+                    for row in ordered
+                    if row.status != "CONFLICTING_PRIOR_ART"
+                ]
+                ordered = conflicting + non_conflicting
             targets = ordered[: self.max_target_claims]
             known = []
             unresolved = []
@@ -177,7 +264,6 @@ class NoveltyGapAnalyzer:
                 if targets
                 else _compact(hypothesis.hypothesis_statement, 320)
             )
-            action = self._action(card)
             reasons = [f"source_status:{card.status}"]
             if card.contextual_conflict_work_ids:
                 reasons.append("contextual_conflict_requires_target_scope_check")
@@ -215,8 +301,10 @@ class NoveltyGapAnalyzer:
                     contextual_conflict_work_ids=list(
                         card.contextual_conflict_work_ids[:5]
                     ),
-                    targeted_queries=self._queries(
-                        card, targets, existing_plan
+                    targeted_queries=(
+                        []
+                        if action == "keep"
+                        else self._queries(card, targets, existing_plan)
                     ),
                     reason_codes=sorted(set(reasons)),
                 )
@@ -229,11 +317,11 @@ class NoveltyGapAnalyzer:
             *(f"{x.gap_id}:{x.action}" for x in gaps),
         )
         body = {
-            "schema_version": "novelty-gap-plan-v1",
+            "schema_version": "novelty-gap-plan-v2",
             "plan_id": plan_id,
             "source_portfolio_id": portfolio.portfolio_id,
             "source_external_report_id": external.report_id,
             "gaps": [x.model_dump(mode="json") for x in gaps],
-            "policy_version": "novelty-gap-policy-v1",
+            "policy_version": "novelty-gap-policy-v2",
         }
         return NoveltyGapPlan(**body, plan_sha256=_sha256_json(body))

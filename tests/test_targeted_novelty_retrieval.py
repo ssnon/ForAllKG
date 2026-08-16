@@ -4,7 +4,10 @@ from dac_her.external_novelty_contracts import (
     HypothesisNoveltyClaims,
     PriorArtPacket,
 )
-from dac_her.novelty_refinement_contracts import NoveltyGap
+from dac_her.novelty_refinement_contracts import (
+    NoveltyGap,
+    TargetedGapQuery,
+)
 from dac_her.targeted_novelty_retrieval import build_augmented_query_plan
 
 
@@ -41,7 +44,11 @@ def test_targeted_query_plan_preserves_claims_and_adds_delta():
         target_claim_ids=["c1"],
         differentiator=claim.text,
         targeted_queries=[
-            "nitrogen coordination charge donation d band HER"
+            TargetedGapQuery(
+                claim_id="c1",
+                query_role="relation_primary",
+                query_text="nitrogen coordination charge donation d band HER",
+            )
         ],
     )
     full, delta = build_augmented_query_plan(base, gap)

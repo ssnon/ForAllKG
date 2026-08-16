@@ -112,6 +112,46 @@ class NoveltySemantics:
     mismatch_multiplier: float = 1.0
     domain_mismatch_reason: str = 'domain_mismatch'
     low_scope_reason: str = 'low_system_scope_overlap'
+    targeted_query_templates: tuple[str, ...] = ("{core}",)
+    contextual_conflict_query_templates: tuple[str, ...] = ()
+
+    @staticmethod
+    def _render_query_templates(
+        templates: tuple[str, ...],
+        core: str,
+    ) -> tuple[str, ...]:
+        normalized_core = " ".join(str(core).split())
+        if not normalized_core:
+            return ()
+        result: list[str] = []
+        seen: set[str] = set()
+        for template in templates:
+            if "{core}" not in template:
+                raise ValueError(
+                    "targeted novelty query template must contain {core}: "
+                    f"{template!r}"
+                )
+            try:
+                rendered = template.format(core=normalized_core)
+            except (KeyError, IndexError, ValueError) as exc:
+                raise ValueError(
+                    f"invalid targeted novelty query template: {template!r}"
+                ) from exc
+            rendered = " ".join(rendered.split())
+            key = rendered.lower()
+            if rendered and key not in seen:
+                seen.add(key)
+                result.append(rendered)
+        return tuple(result)
+
+    def targeted_query_variants(self, core: str) -> tuple[str, ...]:
+        return self._render_query_templates(self.targeted_query_templates, core)
+
+    def contextual_conflict_query_variants(self, core: str) -> tuple[str, ...]:
+        return self._render_query_templates(
+            self.contextual_conflict_query_templates,
+            core,
+        )
 
     def compiled_domain_patterns(self) -> dict[str, tuple[re.Pattern[str], ...]]:
         return _compiled(self.domain_patterns)
