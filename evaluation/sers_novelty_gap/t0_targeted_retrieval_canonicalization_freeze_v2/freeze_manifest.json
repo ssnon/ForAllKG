@@ -1,0 +1,31 @@
+{
+  "automatic_next_stage_authorized": false,
+  "canonicalization_algorithm_changed": false,
+  "files": {
+    "dac_her/literature_retrieval.py": "1f8b9c997b2dba7b9d22455a2483868f155fb4e52a2470a0ed9b66adbbc93c6f",
+    "dac_her/sers_targeted_retrieval_t0_offline_validation.py": "663f973489f4e6bd8be9d8341473b0803a8ab35ce3b09437e0a6f91028f617a7",
+    "dac_her/targeted_novelty_retrieval.py": "43ed10d1f1eaae49dc66186cbb063a74e946b6fd4d7dc0923a8824a5cdcc16ff",
+    "evaluation/sers_novelty_gap/t0_targeted_retrieval_canonicalization_v1_run/STRUCTURAL_PASS.json": "989fa7359638093833652c31e62b07d1fef6af633cd1cf60d5a4b7bb93cd05ae",
+    "evaluation/sers_novelty_gap/t0_targeted_retrieval_canonicalization_v1_run/t0_offline_report.json": "06b5cc620c1a08ada74abc994353f9e503a810c0135812c5fc8030f40bd8eb4b",
+    "scripts/run_sers_targeted_retrieval_t0_offline.py": "3bc061694351e57ea42f84049ab0ce46ec2f8d932a14788fab72adbb1e6819f8",
+    "scripts/verify_sers_targeted_retrieval_t0_freeze_v2.py": "96f7c6dcfd621b969858cee2a2db786c19514dfafdfc5e8ad6ed236349cd0eab",
+    "scripts/verify_sers_targeted_retrieval_t0_offline.py": "8a21f436722a5d3a6ad92731cfeca6c76650afd2aa7de5dcff8bb9cd2652fec4",
+    "tests/test_sers_targeted_retrieval_canonicalization_t0.py": "0591f929a07080a533983732e2309badc0431f319b93c2d324aa54bb3c6ebf07"
+  },
+  "freeze_id": "sers_targeted_retrieval_t0_freeze_v2:e6f582c672e77945060a",
+  "fresh_reserve_c_consumed": false,
+  "llm_calls_in_freeze": 0,
+  "manifest_sha256": "e6f582c672e77945060a616e08ae2d3edd647c0253367bfc1f267a60b5f8bd05",
+  "network_calls_in_freeze": 0,
+  "parent_commit": "95a70c8431bbcfd5699cf76ae6d9866d7d0062dc",
+  "parent_freeze_verification_mode": "isolated_detached_worktree_at_parent_commit",
+  "parent_g0_g2_freeze_id": "sers_novelty_gap_g0_g2_production_freeze_v1:edb8c1d7e219050dfcd1",
+  "sanctioned_delta_reconstructed_from_parent": true,
+  "sanctioned_production_files": [
+    "dac_her/literature_retrieval.py",
+    "dac_her/targeted_novelty_retrieval.py"
+  ],
+  "schema_version": "sers-targeted-retrieval-t0-freeze-v2",
+  "scope": "shared_prior_art_canonicalization_identity_seam",
+  "t0_offline_run_id": "sers_targeted_retrieval_t0_canonicalization_offline:12919b841e9f689471b5"
+}
