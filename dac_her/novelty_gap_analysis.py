@@ -63,25 +63,192 @@ def _claim_priority(review: ClaimPriorArtReview) -> tuple[int, int, float, str]:
     )
 
 
-def _query_terms(text: str) -> str:
-    text = re.sub(r"[^A-Za-z0-9 Δδ\-]+", " ", text)
-    words = [x for x in text.split() if len(x) > 2]
-    stop = {
-        "the", "and", "that", "with", "from", "when", "into", "may", "can",
-        "should", "different", "effect", "through", "rather", "than", "only",
-        "between", "across", "sites", "site",
-    }
-    out = []
-    seen = set()
-    for word in words:
-        key = word.lower()
-        if key in stop or key in seen:
+_QUERY_TOKEN_RE = re.compile(r"[A-Za-z0-9]+(?:[-/][A-Za-z0-9]+)?")
+
+_QUERY_RELATION_CUES = {
+    "affect", "affects", "affecting", "alter", "alters", "altering",
+    "associate", "associated", "associating", "change", "changes", "changing",
+    "compare", "compared", "comparing", "control", "controls", "controlling",
+    "correlate", "correlates", "correlating", "depend", "depends", "depending",
+    "differ", "differs", "differing", "drive", "drives", "driving",
+    "generate", "generates", "generating", "govern", "governs", "governing",
+    "influence", "influences", "influencing", "link", "links", "linking",
+    "mediate", "mediates", "mediating", "measure", "measured", "measuring",
+    "modulate", "modulates", "modulating", "produce", "produces", "producing",
+    "promote", "promotes", "promoting", "regulate", "regulates", "regulating",
+    "support", "supports", "supporting", "trigger", "triggers", "triggering",
+    "yield", "yields", "yielding",
+}
+
+_QUERY_CONTRAST_CUES = {
+    "after", "before", "between", "compared", "comparable", "contrast",
+    "different", "difference", "differs", "during", "post", "pre", "relative",
+    "solution", "versus", "vs", "whereas", "while",
+}
+
+_QUERY_UNSAFE_FINAL_TOKENS = _QUERY_RELATION_CUES | {
+    "a", "an", "and", "as", "at", "before", "between", "both", "by",
+    "for", "from", "in", "into", "of", "on", "or", "relative", "than",
+    "the", "to", "versus", "vs", "with", "without",
+    "localized", "electromagnetic", "comparable", "relevant",
+}
+
+
+def _query_tokenize(text: str) -> list[str]:
+    return [token.lower() for token in _QUERY_TOKEN_RE.findall(text)]
+
+
+def _query_text(tokens: list[str], start: int, end: int) -> str:
+    return " ".join(tokens[start:end])
+
+
+def _query_fits(
+    tokens: list[str],
+    start: int,
+    end: int,
+    max_chars: int,
+) -> bool:
+    return len(_query_text(tokens, start, end)) <= max_chars
+
+
+def _query_max_end(
+    tokens: list[str],
+    start: int,
+    max_chars: int,
+) -> int:
+    end = start
+    while (
+        end < len(tokens)
+        and _query_fits(tokens, start, end + 1, max_chars)
+    ):
+        end += 1
+    return end
+
+
+def _query_score_window(
+    tokens: list[str],
+    start: int,
+    end: int,
+) -> tuple[int, int, int, int]:
+    window = tokens[start:end]
+    rel = sum(token in _QUERY_RELATION_CUES for token in window)
+    contrast = sum(token in _QUERY_CONTRAST_CUES for token in window)
+    prefix_bonus = 1 if start == 0 else 0
+    return (rel, contrast, prefix_bonus, end - start)
+
+
+def _query_choose_window(
+    tokens: list[str],
+    max_chars: int,
+) -> tuple[int, int]:
+    if len(" ".join(tokens)) <= max_chars:
+        return 0, len(tokens)
+
+    starts = {0}
+    for idx, token in enumerate(tokens):
+        if token in _QUERY_RELATION_CUES:
+            starts.add(max(0, idx - 10))
+        if token in _QUERY_CONTRAST_CUES:
+            starts.add(max(0, idx - 8))
+
+    candidates: list[
+        tuple[tuple[int, int, int, int], int, int]
+    ] = []
+    for start in sorted(starts):
+        end = _query_max_end(tokens, start, max_chars)
+        if end <= start:
             continue
-        seen.add(key)
-        out.append(word)
-        if len(out) >= 14:
+        candidates.append(
+            (_query_score_window(tokens, start, end), start, end)
+        )
+
+    if not candidates:
+        return 0, _query_max_end(tokens, 0, max_chars)
+    _, start, end = max(candidates, key=lambda row: row[0])
+    return start, end
+
+
+def _query_tail_is_incomplete(
+    tokens: list[str],
+    start: int,
+    end: int,
+) -> bool:
+    if end <= start:
+        return True
+    tail = tokens[start:end]
+    if tail[-1] in _QUERY_UNSAFE_FINAL_TOKENS:
+        return True
+    if len(tail) >= 2 and tail[-2:] == [
+        "localized",
+        "electromagnetic",
+    ]:
+        return True
+    for idx in range(max(start, end - 4), end):
+        if (
+            tokens[idx] in _QUERY_RELATION_CUES
+            and end - idx - 1 < 2
+        ):
+            return True
+    return False
+
+
+def _query_repair_tail(
+    tokens: list[str],
+    start: int,
+    end: int,
+    max_chars: int,
+) -> tuple[int, int]:
+    while (
+        _query_tail_is_incomplete(tokens, start, end)
+        and end < len(tokens)
+    ):
+        target_end = end + 1
+        while (
+            start < end
+            and not _query_fits(
+                tokens,
+                start,
+                target_end,
+                max_chars,
+            )
+        ):
+            start += 1
+        if _query_fits(tokens, start, target_end, max_chars):
+            end = target_end
+        else:
             break
-    return " ".join(out)
+
+    while (
+        end > start
+        and _query_tail_is_incomplete(tokens, start, end)
+    ):
+        end -= 1
+    return start, end
+
+
+def _query_terms(text: str, *, max_chars: int = 270) -> str:
+    """Build a bounded, source-faithful relation query.
+
+    Source token order is preserved and no scientific token is invented.
+    Short claims are preserved whole. Long claims use one contiguous,
+    relation-rich source window with incomplete-tail repair.
+    """
+    tokens = _query_tokenize(text)
+    if not tokens:
+        return ""
+    start, end = _query_choose_window(tokens, max_chars)
+    start, end = _query_repair_tail(
+        tokens,
+        start,
+        end,
+        max_chars,
+    )
+    return _query_text(tokens, start, end)
+
+
+def _query_has_incomplete_tail(text: str) -> bool:
+    tokens = _query_tokenize(text)
+    return _query_tail_is_incomplete(tokens, 0, len(tokens))
 
 
 class NoveltyGapAnalyzer:
