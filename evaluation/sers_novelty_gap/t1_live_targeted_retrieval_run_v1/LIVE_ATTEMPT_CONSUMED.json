@@ -1,0 +1,13 @@
+{
+  "attempt_started_at_utc": "2026-08-16T23:43:39+00:00",
+  "fresh_reserve_c_consumed": false,
+  "guarded_preflight_passed": true,
+  "one_shot": true,
+  "provider_plan_id": "literature_provider_plan:9d6d3c9161d16be3f6fd",
+  "rerun_authorized": false,
+  "schema_version": "sers-targeted-retrieval-t1-live-attempt-v1",
+  "source_git_branch": "feat/SERS-targeted-retrieval-live-dev",
+  "source_git_head": "729ff9995909da9c7095752d77e1aa29be6f8ee9",
+  "spec_id": "sers_targeted_retrieval_t1_live_spec:8ea007ccbea7cc1b9dea",
+  "spec_sha256": "8ea007ccbea7cc1b9deafc3855e858da068da7c2219d21708f67429ae02cf468"
+}

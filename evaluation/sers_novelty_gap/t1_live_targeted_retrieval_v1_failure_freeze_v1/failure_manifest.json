@@ -1,0 +1,31 @@
+{
+  "automatic_next_stage_authorized": false,
+  "diagnosis": "AUDIT_LIST_PYDANTIC_SERIALIZATION_TYPEERROR",
+  "exception_type": "TypeError",
+  "failure_boundary": "after_gap_01_retrieval_and_merge_before_gap_audit_write",
+  "failure_freeze_id": "sers_targeted_retrieval_t1_v1_failure_freeze:752e95b3d4719d2b75af",
+  "files": {
+    "FATAL_ERROR.json": "94f10470ae1857e609dbf7c983404cf887fd9b29801ae8c7d482ab64410355c9",
+    "LIVE_ATTEMPT_CONSUMED.json": "4969ca1f8d61aed80954814bf0ce9f33465a719abc2ed16ac59ca742e0d5f746",
+    "gap_01/augmented_plan.json": "0878b49568596e7dbbdebb4e54f9176263e6fe1642c2133bc2a29f7c39333527",
+    "gap_01/delta_packet.json": "b4b7f55907bfae638616ba03fcad371f76f5b687ce5d461a80edb79b11f45f18",
+    "gap_01/delta_plan.json": "d0c541fd6e0e69097db1fd1cbf237003ccfc34c4d0f192862c7b2fddfa3b8ae5",
+    "gap_01/merged_packet.json": "dc521717b2470f02d29764a60baa379c146df172b82eb000f557799c1b823da7"
+  },
+  "fresh_reserve_c_consumed": false,
+  "llm_calls": 0,
+  "manifest_sha256": "752e95b3d4719d2b75af71ea1f1e2b5f5d22172596cd780ed5a874c11f6b953e",
+  "network_calls_during_failure_freeze": 0,
+  "recovered_gap1_audit_sha256": "41b201473486897930ff946d7bed7c3b572b709aa91f470673b695ab17f31fa2",
+  "recovered_gap1_every_query_operational": true,
+  "recovered_gap1_provider_execution_count": 6,
+  "recovered_gap1_structural_pass": true,
+  "schema_version": "sers-targeted-retrieval-t1-v1-failure-freeze-v1",
+  "source_git_head": "729ff9995909da9c7095752d77e1aa29be6f8ee9",
+  "source_run_sha256": "b767d1bdb2008390cddc74099012611fe611b63fa92f2830038b103d40ac5e9a",
+  "source_validation_sha256": "7feb28ac58e3752defe56094a95e42722d096b167c9a09ef041fe6e07d83010f",
+  "spec_id": "sers_targeted_retrieval_t1_live_spec:8ea007ccbea7cc1b9dea",
+  "v1_attempt_consumed": true,
+  "v1_gap1_network_replay_authorized": false,
+  "v1_rerun_authorized": false
+}
