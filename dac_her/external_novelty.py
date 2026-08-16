@@ -166,12 +166,26 @@ class ExternalNoveltyAssessor:
                 "The hypothesis is strongly adjacent to existing prior art: every core claim is directly or partially represented, but the full formulation is not uniformly reconstructed.",
             )
 
+        if "INSUFFICIENT_METADATA" in statuses:
+            reasons.append("core_claim_insufficient_metadata")
+            return (
+                "INSUFFICIENT_SEARCH_EVIDENCE",
+                reasons,
+                "At least one core claim could not be assessed from the retrieved metadata.",
+            )
+
+        if "TITLE_ONLY_NEIGHBORS" in statuses:
+            reasons.append("core_claim_title_only_unresolved")
+            return (
+                "INSUFFICIENT_SEARCH_EVIDENCE",
+                reasons,
+                "At least one core claim is supported only by title-level neighboring evidence, so substantive relationship overlap remains unresolved.",
+            )
+
         absence_dependent = any(
             row in {
                 "NO_DIRECT_MATCH_FOUND",
                 "COMPONENTS_ONLY",
-                "TITLE_ONLY_NEIGHBORS",
-                "INSUFFICIENT_METADATA",
             }
             for row in statuses
         )
@@ -183,28 +197,12 @@ class ExternalNoveltyAssessor:
                 "The available search/abstract coverage is insufficient to interpret missing direct matches as evidence of external distinctness.",
             )
 
-        if "INSUFFICIENT_METADATA" in statuses:
-            reasons.append("core_claim_insufficient_metadata")
-            return (
-                "INSUFFICIENT_SEARCH_EVIDENCE",
-                reasons,
-                "At least one core claim could not be assessed from the retrieved metadata.",
-            )
-
-        known = any(
-            row in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART", "COMPONENTS_ONLY"}
+        relation_backed = any(
+            row in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART"}
             for row in statuses
         )
         no_direct = any(row == "NO_DIRECT_MATCH_FOUND" for row in statuses)
         components_only = any(row == "COMPONENTS_ONLY" for row in statuses)
-
-        if known and (no_direct or components_only):
-            reasons.append("known_components_with_unmatched_composite_relation")
-            return (
-                "NEW_COMBINATION_OF_KNOWN_EFFECTS",
-                reasons,
-                "The reviewed literature contains known components or neighboring effects, while at least one core interaction/conditional claim lacks a direct match in a search with minimum coverage.",
-            )
 
         if all(row == "NO_DIRECT_MATCH_FOUND" for row in statuses):
             reasons.append("no_direct_match_for_any_core_claim_under_minimum_coverage")
@@ -212,6 +210,22 @@ class ExternalNoveltyAssessor:
                 "PLAUSIBLY_NOVEL",
                 reasons,
                 "No direct prior-art match was found for the core claims under the recorded minimum search coverage. This is search-bounded plausibility, not proof of literature-wide novelty.",
+            )
+
+        if relation_backed and (components_only or no_direct):
+            reasons.append("known_relations_with_unmatched_composite_relation")
+            return (
+                "NEW_COMBINATION_OF_KNOWN_EFFECTS",
+                reasons,
+                "The reviewed literature positively represents at least one core scientific relation, while at least one other core relation remains unmatched or only component-supported under minimum search coverage.",
+            )
+
+        if components_only and not relation_backed:
+            reasons.append("known_components_without_relation_backed_core_claim")
+            return (
+                "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP",
+                reasons,
+                "The reviewed literature establishes relevant components, variables, mechanisms, or contexts, but none of the core claimed relations is positively represented as direct or partial prior art under minimum search coverage.",
             )
 
         return (
