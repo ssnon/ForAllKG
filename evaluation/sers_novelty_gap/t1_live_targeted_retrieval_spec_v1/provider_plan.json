@@ -1,0 +1,42 @@
+{
+  "active_providers": [
+    "openalex",
+    "crossref"
+  ],
+  "bindings": [
+    {
+      "active": true,
+      "authentication_mode": "api_key",
+      "provider": "openalex",
+      "reason": "API_KEY_CONFIGURED"
+    },
+    {
+      "active": true,
+      "authentication_mode": "public",
+      "provider": "crossref",
+      "reason": "PUBLIC_API_MAILTO_CONFIGURED"
+    },
+    {
+      "active": false,
+      "authentication_mode": "unavailable",
+      "provider": "semantic_scholar",
+      "reason": "API_KEY_ABSENT_OPTIONAL_PROVIDER"
+    }
+  ],
+  "crossref_mailto_configured": true,
+  "mode": "STANDARD_2_PROVIDER",
+  "novelty_policy_change_authorized": false,
+  "openalex_api_key_configured": true,
+  "plan_id": "literature_provider_plan:9d6d3c9161d16be3f6fd",
+  "plan_sha256": "9d6d3c9161d16be3f6fd997f5b05c1dc892a8f3db165a19fb3f2410067519164",
+  "provider_set_frozen_for_run": true,
+  "query_rewrite_authorized": false,
+  "ranking_policy_change_authorized": false,
+  "requested_mode": "auto",
+  "runtime_failure_changes_provider_set": false,
+  "schema_version": "literature-provider-plan-v1",
+  "scientific_equivalence_to_full_3_provider_established": false,
+  "secret_values_persisted": false,
+  "semantic_scholar_api_key_configured": false,
+  "semantics_id": "literature_provider_plan_v1"
+}

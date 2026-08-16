@@ -1,0 +1,75 @@
+{
+  "automatic_next_stage_authorized": false,
+  "base_prior_art_packet_id": "prior_art_packet:9205ee2c8fd597b25318",
+  "base_query_plan_id": "literature_query_plan:f94e7dc425c0713c99ed",
+  "claim_reviewer_authorized": false,
+  "fresh_reserve_c_authorized": false,
+  "frozen_copy_sha256": {
+    "base_prior_art_packet.json": "23da9a6a0a22122e668586b1d86f3dab2964e5d2ffa046cea65d2ba6ad51740b",
+    "base_query_plan.json": "5ad241a48465e85acb83549bb8cd3c3a0227f4407f2e98aa2d9c8bcc39cd3c89",
+    "input_bundle_manifest.json": "df22bc27fd80cf7d22fd6438baac2818836f94fcc74d00c25b543b49b886887f",
+    "novelty_gap_plan.json": "a485a0d1ca2a0aee99502e006c4af5e0e85527ae0bbeab5eb84184fcd415109f",
+    "provider_plan.json": "95695ebd853f7c38cf76b4c669b5cf1ee21e0dc0fb57bcee2072725e69126116"
+  },
+  "gap_count": 3,
+  "gaps": [
+    {
+      "action": "targeted_search_then_refine",
+      "gap_id": "novelty_gap:86037a42e59d6e71e2d6",
+      "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+      "target_claim_ids": [
+        "external_novelty_claim:99ed0af7161d694818f6",
+        "external_novelty_claim:a735f559d97b4208dca3"
+      ],
+      "targeted_query_count": 3
+    },
+    {
+      "action": "keep",
+      "gap_id": "novelty_gap:df16959df85c94d5e2cc",
+      "hypothesis_id": "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de",
+      "target_claim_ids": [
+        "external_novelty_claim:511fc90fa0412b0309fd",
+        "external_novelty_claim:5bf0cd87ebc7f23bd3a2"
+      ],
+      "targeted_query_count": 0
+    },
+    {
+      "action": "targeted_search_only",
+      "gap_id": "novelty_gap:7c23d5b396a7e66d171f",
+      "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+      "target_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "targeted_query_count": 3
+    }
+  ],
+  "hypothesis_rewrite_authorized": false,
+  "input_bundle_id": "sers_targeted_retrieval_t1_input_bundle_v1:836a5b53c31a668e38be",
+  "input_bundle_verifier": "scripts.verify_sers_targeted_retrieval_t1_input_bundle_v1",
+  "llm_authorized": false,
+  "network_authorized_only_for_t1_run": true,
+  "novelty_gap_plan_id": "novelty_gap_plan:9c484bce48aefd4cd948",
+  "novelty_reassessment_authorized": false,
+  "parent_g0_g2_freeze_id": "sers_novelty_gap_g0_g2_production_freeze_v1:edb8c1d7e219050dfcd1",
+  "parent_g0_g2_verification": "inherited_via_t0_freeze_v2_isolated_parent_verification",
+  "parent_t0_freeze_verifier": "scripts.verify_sers_targeted_retrieval_t0_freeze_v2",
+  "provider_mode": "STANDARD_2_PROVIDER",
+  "provider_plan_id": "literature_provider_plan:9d6d3c9161d16be3f6fd",
+  "provider_set_frozen_for_run": true,
+  "providers": [
+    "openalex",
+    "crossref"
+  ],
+  "query_rewrite_authorized": false,
+  "ranker_authorized": false,
+  "results_per_query": 12,
+  "runtime_provider_fallback_authorized": false,
+  "schema_version": "sers-targeted-retrieval-t1-live-spec-v1",
+  "skipped_keep_gap_count": 1,
+  "spec_id": "sers_targeted_retrieval_t1_live_spec:8ea007ccbea7cc1b9dea",
+  "spec_sha256": "8ea007ccbea7cc1b9deafc3855e858da068da7c2219d21708f67429ae02cf468",
+  "t0_freeze_id": "sers_targeted_retrieval_t0_freeze_v2:e6f582c672e77945060a",
+  "targeted_gap_count": 2,
+  "targeted_query_count": 6
+}
