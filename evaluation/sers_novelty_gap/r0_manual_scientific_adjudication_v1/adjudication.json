@@ -1,0 +1,176 @@
+{
+  "adjudication_id": "sers_r0_manual_scientific_adjudication_v1:3972be46b1e651b103d9",
+  "adjudication_sha256": "3972be46b1e651b103d9fb759fa95b14830b495990eff2a386f7fac60da3cbfd",
+  "claim_assessments": [
+    {
+      "claim_id": "external_novelty_claim:99ed0af7161d694818f6",
+      "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+      "interpretation": "The exact claim-level relation is directly represented: a PSPAA polymer shell separates inner and outer Ag layers, an Ag bridge connects them, and the narrow polymer gap is explicitly linked to electromagnetic coupling/hotspot formation and enhanced SERS.",
+      "source_ids": [
+        "manual_prior_art:jiang2017_ag_nanomushroom"
+      ],
+      "status": "DIRECT_PRIOR_ART"
+    },
+    {
+      "claim_id": "external_novelty_claim:a735f559d97b4208dca3",
+      "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+      "interpretation": "At the target-claim level, prior art directly establishes that gap distance controls electromagnetic hotspot strength while analyte dimensions/access determine whether those hotspots can be leveraged for SERS; independent Au/AgAu work also directly shows gap-width-dependent SERS under embedded-analyte conditions. This does not establish the narrower polymer-bridge architecture-specific controlled sweep, but that narrower statement is not the frozen target claim and must not be silently substituted here.",
+      "source_ids": [
+        "manual_prior_art:rastogi2021_analyte_colocalization",
+        "manual_prior_art:ma2020_gap_dependent"
+      ],
+      "status": "DIRECT_PRIOR_ART"
+    },
+    {
+      "claim_id": "external_novelty_claim:4579feb9177160cd54f2",
+      "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+      "interpretation": "A close Ag-shell-coated core-satellite study directly compares dispersed-in-solution measurement with a drying-accumulated substrate and observes a large SERS intensity/reproducibility difference. It is partial, not direct, because the analyte/preparation history differs between the two measurement methods rather than measuring the same analyte-mixed preparation before and after drying.",
+      "source_ids": [
+        "manual_prior_art:wu2017_core_satellite"
+      ],
+      "status": "PARTIAL_PRIOR_ART"
+    },
+    {
+      "claim_id": "external_novelty_claim:778e935b3b9fb4cf5be2",
+      "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+      "interpretation": "The study establishes measurement-context-dependent SERS intensity and hotspot-number changes after drying/accumulation, but it does not establish the frozen claim's qualitative spectral-intensity-distribution or peak-profile transformation for the same Ag-shell core-satellite preparation.",
+      "source_ids": [
+        "manual_prior_art:wu2017_core_satellite"
+      ],
+      "status": "COMPONENTS_ONLY"
+    }
+  ],
+  "epistemic_guards": {
+    "automatic_next_stage_authorized": false,
+    "external_lookup_not_part_of_frozen_t1": true,
+    "external_prior_art_used_as_positive_hypothesis_premise": false,
+    "fresh_reserve_c_consumed": false,
+    "frozen_t1_modified": false,
+    "hypothesis_rewritten": false,
+    "literature_absence_claimed": false,
+    "reviewer_found_external_prior_art_kept_separate": true
+  },
+  "primary_source_records": [
+    {
+      "doi": "10.1038/s41598-017-10262-9",
+      "origin": "primary_article_present_in_frozen_prior_art_lineage",
+      "source_id": "manual_prior_art:jiang2017_ag_nanomushroom",
+      "title": "Seed-mediated synthesis and SERS performance of graphene oxide-wrapped Ag nanomushroom",
+      "url": "https://www.nature.com/articles/s41598-017-10262-9",
+      "verified_scope": [
+        "Ag bridge connects inner and outer Ag layers through PSPAA polymer shell",
+        "polymer-separated Ag layers create plasmonic hotspots by electromagnetic coupling",
+        "SERS increases with outer Ag cap growth alongside LSPR red-shift/broadening"
+      ],
+      "year": 2017
+    },
+    {
+      "doi": "10.1021/acsami.0c17929",
+      "origin": "parent_primary_article_verified_from_frozen_supplementary_record",
+      "source_id": "manual_prior_art:rastogi2021_analyte_colocalization",
+      "title": "Analyte Co-localization at Electromagnetic Gap Hot-Spots for Highly Sensitive (Bio)molecular Detection by Plasmon Enhanced Spectroscopies",
+      "url": "https://pubs.acs.org/doi/10.1021/acsami.0c17929",
+      "verified_scope": [
+        "systematically varied sub-10-nm plasmonic gap distances",
+        "hotspot access depends on analyte dimensions relative to gap distance",
+        "gap geometry and analyte co-localization jointly control SERS sensitivity"
+      ],
+      "year": 2021
+    },
+    {
+      "doi": "10.1021/acs.jpcc.0c07701",
+      "origin": "parent_primary_article_verified_from_frozen_supplementary_record",
+      "source_id": "manual_prior_art:ma2020_gap_dependent",
+      "title": "Gap-Dependent Plasmon Coupling in Au/AgAu Hybrids for Improved SERS Performance",
+      "url": "https://pubs.acs.org/doi/10.1021/acs.jpcc.0c07701",
+      "verified_scope": [
+        "Au/AgAu gap width was experimentally tuned",
+        "SERS decreased as one-gap width increased from about 0.8 nm to 3.8 nm",
+        "trend attributed to adjustable plasmon coupling/electric-field enhancement"
+      ],
+      "year": 2020
+    },
+    {
+      "doi": "10.1038/s41598-017-13577-9",
+      "origin": "reviewer_found_external_prior_art_not_in_frozen_h3_packet",
+      "source_id": "manual_prior_art:wu2017_core_satellite",
+      "title": "Three-Dimensional SERS Substrates Formed with Plasmonic Core-Satellite Nanostructures",
+      "url": "https://www.nature.com/articles/s41598-017-13577-9",
+      "verified_scope": [
+        "Ag-shell-coated plasmonic core-satellite nanostructures were measured dispersed in solution",
+        "the same nanostructure class was accumulated by drying droplets on hydrophobic PDMS",
+        "dried/accumulated substrates produced much stronger and more reproducible SERS",
+        "preparation histories were not identical because analyte was introduced after drying in the accumulated-substrate method"
+      ],
+      "year": 2017
+    }
+  ],
+  "r0_outcomes": [
+    {
+      "evidence_state": "directly_covered",
+      "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+      "max_refinements_authorized": 0,
+      "r1_authorized": false,
+      "r2_required": true,
+      "reason_codes": [
+        "all_target_claims_direct_prior_art_after_primary_source_adjudication",
+        "no_claim_level_refinement_basis",
+        "narrower_architecture_specific_gap_must_be_tested_in_r2_without_silent_rewrite"
+      ],
+      "route": "pass_original_to_r2",
+      "source_action": "targeted_search_then_refine"
+    },
+    {
+      "evidence_state": null,
+      "hypothesis_id": "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de",
+      "max_refinements_authorized": 0,
+      "r1_authorized": false,
+      "r2_required": true,
+      "reason_codes": [
+        "frozen_keep_preserved"
+      ],
+      "route": "pass_through_frozen",
+      "source_action": "keep"
+    },
+    {
+      "evidence_state": "relational_gap_remains",
+      "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+      "max_refinements_authorized": 0,
+      "r1_authorized": false,
+      "r2_required": true,
+      "reason_codes": [
+        "targeted_search_only_mechanical_r1_barrier",
+        "solution_vs_drying_relation_has_partial_prior_art",
+        "qualitative_peak_profile_relation_not_established"
+      ],
+      "route": "pass_original_to_r2",
+      "source_action": "targeted_search_only"
+    }
+  ],
+  "review_date_utc": "2026-08-17",
+  "reviewer": {
+    "deterministic_r0_router_llm_calls": 0,
+    "human_scientist_reviewer_present": false,
+    "mode": "llm_scientific_adjudication_with_primary_source_verification",
+    "model": "GPT-5.6 Sol",
+    "scientific_reviewer_llm_used": true
+  },
+  "schema_version": "sers-r0-manual-scientific-adjudication-v1",
+  "source_lineage": {
+    "gap_plan_id": "novelty_gap_plan:9c484bce48aefd4cd948",
+    "gap_plan_sha256": "935054ac6c7e4cf72a22ee4bbd0b53ae82eb60ea36eb524d56b3f7bd60029f67",
+    "source_branch": "feat/SERS-targeted-retrieval-live-dev",
+    "source_r0_2_commit": "22867c720073bb69323a6801151415bd22c187ed",
+    "t1_freeze_id": "sers_targeted_retrieval_t1_final_freeze_v2:d7d8919a7c1c819f57c3",
+    "t1_manifest_sha256": "d7d8919a7c1c819f57c38e2b07abb84a9dcc8b93579f160f1f9ebee884361201",
+    "t1_run_id": "sers_targeted_retrieval_t1_live_v2:9a3c03bc59085c0af5fe"
+  },
+  "stage_boundary": {
+    "fresh_reserve_c_authorized": false,
+    "integration_started": false,
+    "r0_scientific_adjudication_complete": true,
+    "r1_authorized_for_any_hypothesis": false,
+    "r2_started": false,
+    "stop_after_freeze": true
+  }
+}
