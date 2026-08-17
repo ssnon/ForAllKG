@@ -1,0 +1,9 @@
+{
+  "c1b2_authorized": false,
+  "freeze_id": "sers_fresh_c_c1b1_reviewer_protocol_freeze_v1:30fc8ea1d36ec3503c21",
+  "fresh_c_scientific_text_semantic_read_performed": false,
+  "manifest_sha256": "31ba6d47570935bcb9809bebe8b727b65bd4aab5831106ad96f5eb8b3cb650be",
+  "reviewer_model": "openai/gpt-5.6-luna",
+  "scientific_adjudication_performed": false,
+  "stop": true
+}
