@@ -1,0 +1,90 @@
+{
+  "automatic_next_stage_authorized": false,
+  "campaign_closed": true,
+  "closeout_execution": {
+    "llm_calls": 0,
+    "network_calls": 0,
+    "scientific_adjudication": false,
+    "scientific_text_read": false
+  },
+  "closeout_id": "sers_fresh_c_final_closeout_v1:034a37784cfbc1921679",
+  "closeout_sha256": "034a37784cfbc19216796e363f7a2b74e3b0f099ed3b0e2fdb7c29ad67972a4d",
+  "closeout_source_head": "65964a68e7714f88255fe1c7e411e11bcfb08a82",
+  "epistemic_guards": {
+    "count_threshold_used": false,
+    "external_literature_used_during_c1b2": false,
+    "h1_preservation_is_fresh_c_scoped_only": true,
+    "h2_resurrected": false,
+    "h3_erosion_is_fresh_c_scoped_only": true,
+    "hypothesis_rewrite_performed": false,
+    "hypothesis_upgrade_performed": false,
+    "literature_wide_novelty_claim_authorized": false
+  },
+  "failed_epoch_lineage": {
+    "completed_parent_reviews": 0,
+    "failure_restored_freshness": false,
+    "parent_protocol_freeze_id": "sers_fresh_c_c1b2_scientific_protocol_freeze_v1:cd9065ffee576865bd09",
+    "parent_protocol_freeze_sha256": "01bde9481335febe4ddec8a18405a31736e400700e10cbdb3e6b240f6e740202",
+    "parent_scientific_call_attempts": 1,
+    "same_parent_epoch_rerun_allowed": false
+  },
+  "final_result_freeze_id": "sers_fresh_c_c1b2_r1_scientific_recovery_result_freeze_v1:76b31a3c265fd75ed891",
+  "final_result_freeze_sha256": "55fff4474e3e4b84479652d7d711a97d6deb2d1f6518375c9a13266c8c84c383",
+  "final_run_id": "sers_fresh_c_c1b2_r1_scientific_recovery_run_v1:f48db30f437c4555ac47",
+  "final_run_sha256": "f48db30f437c4555ac47f47764a587bea4c55b0ba168c6c8fe09d1ffb875f476",
+  "final_scientific_commit": "2d09162a4da0590fe7e91a754bad3e4f49c41646",
+  "final_scientific_state": {
+    "H1": "FRESH_C_PRESERVES_PRE_C_BOUNDED_EXTENSION",
+    "H2": "REJECT_AS_FORMULATED",
+    "H3": "FRESH_C_ERODES_PRE_C_RELATIONAL_GAP"
+  },
+  "protocol_id": "sers_fresh_c_final_closeout_protocol_v1:f78c7a2c9d54a376b23a",
+  "protocol_sha256": "dfea7e89e5743144e22c98d3aa39c560bdfd4344dabf4ce83cce085684115bc0",
+  "recovery_lineage": {
+    "failed_parent_response_reused": false,
+    "new_fresh_reserve_claimed": false,
+    "recovery_protocol_freeze_id": "sers_fresh_c_c1b2_r1_recovery_protocol_freeze_v1:a788b204dd503ab64f5e",
+    "recovery_protocol_freeze_sha256": "698e619a5931f4c251e4aa1feed65cdd29f4b7924301432cf4909f4fd30044b3",
+    "verbatim_quote_evidence_enabled": false
+  },
+  "schema_version": "sers-fresh-c-final-closeout-v1",
+  "scientific_accounting": {
+    "accepted_final_adjudications": 1,
+    "accepted_paper_reviews": 25,
+    "accepted_scientific_outputs": 26,
+    "original_failed_c1b2_scientific_call_attempts": 1,
+    "recovery_scientific_call_attempts": 26,
+    "total_c1b2_scientific_call_attempts": 27
+  },
+  "stop": true,
+  "upstream_lineage": {
+    "c1a_r1_materialization": {
+      "freeze_id": "sers_fresh_c_c1a_r1_recovery_result_freeze_v1:87b7254c15c383ccaa4c",
+      "freeze_sha256": "b7da11545050a4562457e65ec2da80e8015482b9e3757a911a86a305e26187c5"
+    },
+    "c1b0_input_contract": {
+      "freeze_id": "sers_fresh_c_c1b0_contract_result_freeze_v1:accdc6f461b02c13dfc0",
+      "freeze_sha256": "a89f6149177431a1db00d8798657b2504e455937926e7ed7fc75813d9c07fb40"
+    },
+    "c1b1_r1_transport": {
+      "freeze_id": "sers_fresh_c_c1b1_r1_transport_result_freeze_v1:dbbdc7f8c7f08310c9a2",
+      "freeze_sha256": "56678366f7749c94f5d1e6b3fdc6aecb72a3f253905563319028fc39351b3aaa"
+    },
+    "c1b1_reviewer_contract": {
+      "freeze_id": "sers_fresh_c_c1b1_reviewer_protocol_freeze_v1:30fc8ea1d36ec3503c21",
+      "freeze_sha256": "31ba6d47570935bcb9809bebe8b727b65bd4aab5831106ad96f5eb8b3cb650be"
+    },
+    "fresh_c_content_acquisition": {
+      "freeze_id": "sers_fresh_c_content_acquisition_result_freeze_v1:afc55cfdc78819827cde",
+      "freeze_sha256": "c0686755c472dd936f5e58a3bea9599eb32b259b884a2fe51d65b427976fbf84"
+    },
+    "i0_integration": {
+      "freeze_id": "sers_i0_integrated_orchestration_freeze_v1:11a5fc254379f718a679",
+      "freeze_sha256": "11a5fc254379f718a679cc8b61c168a704979d86e94ccb11617e2fa8e9d48a62"
+    },
+    "r2_final_reassessment": {
+      "freeze_id": "sers_r2_final_reassessment_freeze_v1:aa2f75aa46fb82284db0",
+      "freeze_sha256": "aa2f75aa46fb82284db04c5031b40227b4b2bdd12f4044ccdb8acfa84a1d3831"
+    }
+  }
+}
