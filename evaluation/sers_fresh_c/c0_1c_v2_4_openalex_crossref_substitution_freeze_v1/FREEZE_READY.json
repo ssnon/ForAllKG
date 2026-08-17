@@ -1,0 +1,10 @@
+{
+  "freeze_id": "sers_fresh_c_openalex_crossref_substitution_freeze_v1:1ad72017775ef79662dc",
+  "fresh_reserve_c_consumed": false,
+  "manifest_sha256": "7ad250b56946e4954b55e7e0b7de01e22a9675890a581697a4fcd3f7bd9b14be",
+  "provider_universe_changed": true,
+  "recovery_live_discovery_authorized": false,
+  "recovery_live_discovery_ready": true,
+  "stop": true,
+  "v23_frozen_but_unexecuted": true
+}

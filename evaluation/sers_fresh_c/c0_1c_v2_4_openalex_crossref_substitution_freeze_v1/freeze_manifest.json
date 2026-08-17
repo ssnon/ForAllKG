@@ -1,0 +1,63 @@
+{
+  "automatic_c0_1d_transition_authorized": false,
+  "blind_ordering_changed": false,
+  "credential_value_persisted": false,
+  "critical_component_sha256": {
+    "dac_her/fresh_c_acquisition.py": "70dfa8eacbfc7b425015624224e609f5e7779746e4edab918ca82000a74eb257",
+    "dac_her/fresh_c_activation.py": "420c031d057c8b0c523bda4385a6186925068a9a5126e1871b45054a943e40c1",
+    "dac_her/fresh_c_live_discovery.py": "9a112b72ae7d0a31ad7a8653952832ab7984eb56dc53876c0da963a804a900b5",
+    "dac_her/fresh_c_live_discovery_recovery_v2_2.py": "4000f54321fbc93d10f173850537006d79903a238d27135e22a6dc71e9794c3c",
+    "dac_her/fresh_c_live_discovery_recovery_v2_3.py": "728e00d77d2343be7cf7688c21fdafbeabd57d359528e26faaa770a277c928aa",
+    "dac_her/fresh_c_live_discovery_recovery_v2_4.py": "bfde090d316d5f54804c9758c70315f9b03ff83f0dae012f8964581fe4feabc3",
+    "dac_her/literature_catalog.py": "0c842e03b9b061cc25785190a53f7f9d1002c39c4a53c6e2fdd99441e49474a2",
+    "dac_her/literature_catalog_contracts.py": "fb2bdd4714d0fd45e93cdfaec0758b43f3e4e751a1669a4ab2063f4af30b2c85",
+    "dac_her/sers_fresh_c_live_discovery_recovery_v2_4_protocol.json": "4737d41f1dfc83716507eff3fd3c890f01a36220cc74c213234eac7f4ea05b3e",
+    "scripts/freeze_sers_fresh_c_live_discovery_recovery_v2_4_protocol.py": "afe9e21accff2c2c8435c2bdf269d0f2aa04ca38129b155b1c549ede1e88a3af",
+    "scripts/run_sers_fresh_c_live_discovery_recovery_v2_4.py": "5d73cf8c42d1721cb0abd8ece60f6546cea2437abb5a4787b46e5dd257fcbdb8",
+    "scripts/verify_sers_fresh_c_live_discovery_recovery_v2_4_protocol.py": "b2f06d723e570f95332b957b7a4e0b0eb2435e57e6ec897474690a2e17ccddef",
+    "scripts/verify_sers_fresh_c_live_discovery_recovery_v2_4_protocol_freeze.py": "2657376ee723e31c3249ea15d6895e7f499468f58b23b136b0522c4ab6c6a275",
+    "scripts/verify_sers_fresh_c_live_discovery_recovery_v2_4_result.py": "72c3719ed7bd4c9d5c7032ef1f87ff8a5e84379f57cec83045a44b50425ea00d",
+    "tests/test_sers_fresh_c_live_discovery_recovery_v2_4.py": "ce9f51a8bc5e5eca08773556b2ce34d27ad7a22a0135e700d1762081221a1715"
+  },
+  "freeze_id": "sers_fresh_c_openalex_crossref_substitution_freeze_v1:1ad72017775ef79662dc",
+  "fresh_reserve_c_consumed": false,
+  "frozen_queries_changed": false,
+  "historical_ledger_changed": false,
+  "hypothesis_aware_selection_added": false,
+  "llm_calls_during_freeze": 0,
+  "manifest_sha256": "7ad250b56946e4954b55e7e0b7de01e22a9675890a581697a4fcd3f7bd9b14be",
+  "network_calls_during_freeze": 0,
+  "openalex_api_key_required": true,
+  "protocol_id": "sers_fresh_c_openalex_crossref_substitution_protocol_v2_4:5e09cf20c06210a742a5",
+  "protocol_sha256": "99389342726c2bc2deab5fde0b2aacf3b52ea9b4a6f6981578f2b73008220fcb",
+  "provider_substitution": {
+    "from": "semantic_scholar",
+    "reason": "transport_availability_only_after_repeated_http_429",
+    "to": "openalex"
+  },
+  "provider_universe_changed": true,
+  "recovery_live_discovery_authorized": false,
+  "recovery_live_discovery_ready": true,
+  "recovery_live_discovery_started": false,
+  "schema_version": "sers-fresh-c-openalex-crossref-substitution-freeze-v1",
+  "scientific_selection_semantics_changed": false,
+  "semantic_read_performed": false,
+  "source_code_commit": "f39396203f36dbe3080a7b14b8896f1f9c65a881",
+  "stop": true,
+  "target_count_changed": false,
+  "v22_artifact_sha256": {
+    "evaluation/sers_fresh_c/c0_1c_v2_2_recovery_run_v1/DISCOVERY_RECOVERY_FAILED.json": "24ab3f0e69fdc047a315f12fdba459805b2d59d5e875717d54d9747acb772b1e",
+    "evaluation/sers_fresh_c/c0_1c_v2_2_recovery_run_v1/DISCOVERY_RECOVERY_STARTED.json": "7710eb656258f3b18e89ddd15e918d0a3d9e59f4f99db7df887fc2f015ac5e48",
+    "evaluation/sers_fresh_c/c0_1c_v2_2_recovery_run_v1/TRANSPORT_DIAGNOSTICS.json": "b1cad2385b569c3d9936eac6e2d891421bc1ff22a3a6d9b14451770e97dc8747"
+  },
+  "v22_crossref_4_of_4_success": true,
+  "v22_failed_attempt_id": "sers_fresh_c_live_discovery_recovery_attempt_v2_2:ce325ae6c64aac05be94",
+  "v22_semantic_scholar_429_confirmed": true,
+  "v23_artifact_sha256": {
+    "evaluation/sers_fresh_c/c0_1c_v2_3_authenticated_recovery_freeze_v1/FREEZE_READY.json": "0def2694571e98c1f1b071b541f624af4d432e964429d249991f6ae60a128067",
+    "evaluation/sers_fresh_c/c0_1c_v2_3_authenticated_recovery_freeze_v1/freeze_manifest.json": "c307ef35d858ef6526c23fa1a676f5eb46f042d7825951ec6a0859506af60270"
+  },
+  "v23_freeze_id": "sers_fresh_c_authenticated_recovery_v2_3_freeze_v1:f10065583b516a28fbda",
+  "v23_freeze_manifest_sha256": "70e8e650017799e3629b74974653a946a0c12e486d7edb836875052fab4d77bd",
+  "v23_frozen_but_unexecuted": true
+}
