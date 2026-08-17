@@ -1,0 +1,14 @@
+{
+  "automatic_next_stage_authorized": false,
+  "complete": true,
+  "fresh_reserve_c_authorized": false,
+  "fresh_reserve_c_consumed": false,
+  "fresh_reserve_c_readiness_assessed": false,
+  "input_lineage_verified": true,
+  "orchestration_id": "sers_i0_integrated_orchestration_v1:1d7c2bf3729a23178793",
+  "orchestration_sha256": "1d7c2bf3729a23178793c157ce7988d93505ee181e6f270a933a47ca6cfdbb67",
+  "r1_executed": false,
+  "schema_version": "sers-i0-integrated-orchestration-complete-v1",
+  "scientific_reassessment_performed": false,
+  "stop": true
+}
