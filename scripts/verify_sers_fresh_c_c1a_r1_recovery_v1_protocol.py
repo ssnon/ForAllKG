@@ -13,7 +13,7 @@ def main() -> int:
     print("Redownload allowed: False")
     print("Prior failed outputs reused: False")
     print("Fresh Reserve C already consumed: True")
-    print("Primary extractor: pdfminer.six 20250506")
+    print("Primary extractor: pdfminer.six 20260107")
     print("Structural fallback: mutool clean derivative")
     print("mutool binary/version freeze required before execution: True")
     print("Original PDF overwrite allowed: False")

@@ -35,7 +35,7 @@ EXPECTED_FAILED_INDEX = 14
 EXPECTED_FAILED_CANONICAL_ID = "doi:10.1021/acs.jpcc.8b01309"
 EXPECTED_MATERIALIZED_BEFORE_FAILURE = 13
 EXPECTED_SELECTED_COUNT = 25
-EXPECTED_PDFMINER_SIX_VERSION = "20250506"
+EXPECTED_PDFMINER_SIX_VERSION = "20260107"
 
 DEFAULT_PROTOCOL_PATH = Path(
     "dac_her/sers_fresh_c_c1a_r1_recovery_v1_protocol.json"
@@ -105,7 +105,7 @@ class C1AR1RecoveryProtocol(StrictModel):
     recovery_same_epoch_rerun_after_start_allowed: Literal[False]
 
     primary_extractor: Literal["pdfminer_six_full_page_text_v1"]
-    pdfminer_six_version: Literal["20250506"]
+    pdfminer_six_version: Literal["20260107"]
     structural_repair_trigger: Literal[
         "primary_structural_failure_or_zero_page_or_zero_text"
     ]
