@@ -1,0 +1,49 @@
+{
+  "handoff_policy": {
+    "i0_is_orchestration_not_scientific_reassessment": true,
+    "preserve_r2_hypothesis_decisions_exactly": true,
+    "preserve_r2_portfolio_decision_exactly": true,
+    "primary_candidate_is_not_empirically_validated": true,
+    "reserve_c_readiness_is_not_assessed_in_i0": true,
+    "separate_explicit_reserve_c_authorization_required": true,
+    "stop_after_i0_freeze": true
+  },
+  "orchestration_rules": {
+    "automatic_next_stage_authorized": false,
+    "claim_reviewer_allowed": false,
+    "consume_frozen_r2_decisions_without_reassessment": true,
+    "external_prior_art_can_be_positive_premise": false,
+    "fresh_reserve_c_authorization_allowed": false,
+    "fresh_reserve_c_consumption_allowed": false,
+    "hypothesis_rewrite_allowed": false,
+    "literature_absence_claimed": false,
+    "llm_allowed": false,
+    "network_allowed": false,
+    "new_retrieval_allowed": false,
+    "new_scientific_judgment_allowed": false,
+    "r1_execution_allowed": false,
+    "ranker_allowed": false
+  },
+  "schema_version": "sers-i0-integrated-orchestration-spec-v1",
+  "source_contract": {
+    "required_branch": "feat/SERS-targeted-retrieval-live-dev",
+    "required_gap_plan_id": "novelty_gap_plan:9c484bce48aefd4cd948",
+    "required_gap_plan_sha256": "935054ac6c7e4cf72a22ee4bbd0b53ae82eb60ea36eb524d56b3f7bd60029f67",
+    "required_r0_freeze_id": "sers_r0_manual_scientific_adjudication_freeze_v1:5847edc6c5e070befcc1",
+    "required_r0_manifest_sha256": "5847edc6c5e070befcc1729f8664c41e790663f4aa38d34ce1125b845c362124",
+    "required_r0_source_adjudication_commit": "5cbfc26f50a41146ab9c1f24b69d70e72d17ee37",
+    "required_r2_freeze_commit": "5aef1b4373b2ac37e5c62fb3e2c41def326a3a34",
+    "required_r2_freeze_id": "sers_r2_final_reassessment_freeze_v1:aa2f75aa46fb82284db0",
+    "required_r2_manifest_sha256": "aa2f75aa46fb82284db04c5031b40227b4b2bdd12f4044ccdb8acfa84a1d3831",
+    "required_r2_report_commit": "a9a24708e262a9bb949c69a82fe8c11ace31e741",
+    "required_r2_report_id": "sers_r2_final_reassessment_report_v1:e9a9502cbfaa7566d457",
+    "required_r2_report_sha256": "e9a9502cbfaa7566d45753f636b23b71bc25d492877c49fc60d37d45609447d7",
+    "required_t0_freeze_id": "sers_targeted_retrieval_t0_freeze_v2:e6f582c672e77945060a",
+    "required_t0_manifest_file_sha256": "500bb38e3e4eca10661861b2128a95438eef1f3039625e5f8abda097aa705938",
+    "required_t1_freeze_id": "sers_targeted_retrieval_t1_final_freeze_v2:d7d8919a7c1c819f57c3",
+    "required_t1_manifest_sha256": "d7d8919a7c1c819f57c38e2b07abb84a9dcc8b93579f160f1f9ebee884361201",
+    "required_t1_run_id": "sers_targeted_retrieval_t1_live_v2:9a3c03bc59085c0af5fe"
+  },
+  "spec_id": "sers_i0_integrated_orchestration_spec_v1:000b2014a21e87f872b3",
+  "spec_sha256": "000b2014a21e87f872b31a6a6c778b5aa2eb09d4c545b0595b78a4b04d227c70"
+}
