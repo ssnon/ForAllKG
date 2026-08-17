@@ -1,0 +1,12 @@
+{
+  "blind_queue_count": 599,
+  "fresh_reserve_c_consumed": false,
+  "network_boundary_opened": true,
+  "pdf_text_extraction_performed": false,
+  "same_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-content-acquisition-started-v1",
+  "semantic_read_performed": false,
+  "started_at_utc": "2026-08-17T05:35:53.912761+00:00",
+  "target_verified_pdf_count": 25,
+  "upstream_v24_run_id": "sers_fresh_c_openalex_crossref_run_v2_4:220ee42f03afe8aaa1e1"
+}
