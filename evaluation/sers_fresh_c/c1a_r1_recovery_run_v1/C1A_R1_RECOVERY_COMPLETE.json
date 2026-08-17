@@ -1,0 +1,14 @@
+{
+  "automatic_c1b_transition_authorized": false,
+  "direct_original_count": 24,
+  "fresh_reserve_c_already_consumed": true,
+  "materialized_source_count": 25,
+  "recovered_corpus_sha256": "cffb7eab1465258b61ea28d64b1a703cb5a2b0cb940da0342bc7c1929db89e19",
+  "run_id": "sers_fresh_c_c1a_r1_recovery_run_v1:f5ad9b566df23038b543",
+  "run_sha256": "f375c190e0ee3a96751ad6cf1bd874b9a66a7be9c344aec0afa36c8ec490aa6f",
+  "schema_version": "sers-fresh-c-c1a-r1-recovery-complete-v1",
+  "scientific_adjudication_performed": false,
+  "scientific_reviewer_read_performed": false,
+  "stop": true,
+  "structurally_repaired_derivative_count": 1
+}

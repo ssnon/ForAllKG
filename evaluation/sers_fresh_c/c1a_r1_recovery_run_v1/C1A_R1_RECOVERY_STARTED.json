@@ -1,0 +1,21 @@
+{
+  "automatic_c1b_transition_authorized": false,
+  "consumption_irreversible": true,
+  "fresh_reserve_c_already_consumed": true,
+  "identity_replacement_allowed": false,
+  "llm_calls": 0,
+  "network_calls": 0,
+  "prior_failed_outputs_reused": false,
+  "protocol_freeze_id": "sers_fresh_c_c1a_r1_recovery_protocol_freeze_v1:7a69320d5712b3da8280",
+  "protocol_id": "sers_fresh_c_c1a_r1_recovery_protocol_v1:b5b82a294c018a888e24",
+  "protocol_sha256": "99fa9b94d4dfd105f580f94c94d26d24ae3d45eb4ba31796e13077d0752059a3",
+  "redownload_allowed": false,
+  "same_recovery_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-c1a-r1-recovery-started-v1",
+  "scientific_adjudication_performed": false,
+  "scientific_reviewer_read_performed": false,
+  "source_identity_count": 25,
+  "started_at_utc": "2026-08-17T06:47:50.894730+00:00",
+  "stop": true,
+  "this_is_new_fresh_c_consumption": false
+}
