@@ -1,0 +1,9 @@
+{
+  "freeze_id": "sers_fresh_c_c1b2_scientific_protocol_freeze_v1:cd9065ffee576865bd09",
+  "fresh_c_scientific_text_semantic_read_performed": false,
+  "live_execution_authorized": false,
+  "live_execution_ready": true,
+  "manifest_sha256": "01bde9481335febe4ddec8a18405a31736e400700e10cbdb3e6b240f6e740202",
+  "scientific_adjudication_performed": false,
+  "stop": true
+}
