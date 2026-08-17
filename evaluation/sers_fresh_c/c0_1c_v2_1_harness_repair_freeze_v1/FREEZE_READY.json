@@ -1,0 +1,11 @@
+{
+  "freeze_id": "sers_fresh_c_live_discovery_recovery_v2_1_freeze_v1:086de32c435669ff582a",
+  "fresh_reserve_c_consumed": false,
+  "harness_change_only": true,
+  "manifest_sha256": "0c9a259d16385c05ab04fb5bb4f5d24c1fe98cb7adc6fbc3fcee348b9686a6f1",
+  "parent_v2_network_epoch_started": false,
+  "recovery_live_discovery_authorized": false,
+  "recovery_live_discovery_ready": true,
+  "schema_version": "sers-fresh-c-live-discovery-recovery-v2-1-ready-v1",
+  "stop": true
+}
