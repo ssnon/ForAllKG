@@ -1,0 +1,154 @@
+{
+  "consumption_irreversible": true,
+  "failed_canonical_id": "doi:10.1021/acs.jpcc.8b01309",
+  "failed_reserve_index": 14,
+  "fresh_reserve_c_consumed": true,
+  "identity_replacement_allowed": false,
+  "materialized_pdf_count_before_failure": 13,
+  "records": [
+    {
+      "byte_count": 537,
+      "path": "C1A_MATERIALIZATION_FAILED.json",
+      "sha256": "aa9cd80bd928df9cb4e6a1f16f5e52d044c196cdb951dc4601bb144f551cfecd"
+    },
+    {
+      "byte_count": 981,
+      "path": "RESERVE_C_CONSUMPTION_STARTED.json",
+      "sha256": "28d86c584ec7489f3670d087c64118bcb7a1e3dd56a1395620f47b297e99795f"
+    },
+    {
+      "byte_count": 30833,
+      "path": "materialized/reserve_c_001/full_text.txt",
+      "sha256": "f2f2db38273e6875b050c40ec467366f4c4c1909e9bb095864fdece5522a5c51"
+    },
+    {
+      "byte_count": 34412,
+      "path": "materialized/reserve_c_001/pages.json",
+      "sha256": "66773314e519f37e5d2e43906433837014b5826ab0f960f2b15a0168155f262d"
+    },
+    {
+      "byte_count": 51239,
+      "path": "materialized/reserve_c_002/full_text.txt",
+      "sha256": "3a5cb79adc78f0f63879b319ff5ffff9a39212c2f790c8906c699d5e55807004"
+    },
+    {
+      "byte_count": 54029,
+      "path": "materialized/reserve_c_002/pages.json",
+      "sha256": "3d02530ffb2f505aa315f846b822d2972a753f3832907268ea202568f0972ae3"
+    },
+    {
+      "byte_count": 46017,
+      "path": "materialized/reserve_c_003/full_text.txt",
+      "sha256": "05661af7db0d5fddbc9392e67e05459ff53aa88807418f2ef7107b5fbb658bce"
+    },
+    {
+      "byte_count": 49198,
+      "path": "materialized/reserve_c_003/pages.json",
+      "sha256": "fc56781a0996e0f60d8c0107bd64b6670aa4339110bb6c239b7030df8f7bcf98"
+    },
+    {
+      "byte_count": 26750,
+      "path": "materialized/reserve_c_004/full_text.txt",
+      "sha256": "1240aa2e566ad52687798a6887568937afe5ff90fce64f1568523f5ccef8e717"
+    },
+    {
+      "byte_count": 29196,
+      "path": "materialized/reserve_c_004/pages.json",
+      "sha256": "5cd9ec560cf6f56f564535e5ec32bc254a77af1a335fe17fc98c17f00da6edcc"
+    },
+    {
+      "byte_count": 18840,
+      "path": "materialized/reserve_c_005/full_text.txt",
+      "sha256": "5be5fc9e6feb7aa68684e15ac03bc43708c11cf51d5ea0f7b22c1b3dd7df423e"
+    },
+    {
+      "byte_count": 20867,
+      "path": "materialized/reserve_c_005/pages.json",
+      "sha256": "d67889e4802ba3662e158dc9fd2864cb5e37edb04a71bcd9f313a88e210d6eab"
+    },
+    {
+      "byte_count": 42603,
+      "path": "materialized/reserve_c_006/full_text.txt",
+      "sha256": "1d5c36b333ed4339bfae0cb7049f75d37b77413aa8bfa9e147004af87e638ea1"
+    },
+    {
+      "byte_count": 45018,
+      "path": "materialized/reserve_c_006/pages.json",
+      "sha256": "79a3d85e4b98a1993cdff8955d8b0dc3f9d42d8ddcc9e440292cf539a7c9fcd2"
+    },
+    {
+      "byte_count": 77168,
+      "path": "materialized/reserve_c_007/full_text.txt",
+      "sha256": "f01be80ed53b34b122db013d11f386ec601a2b58088a91163c35903cf4dd0424"
+    },
+    {
+      "byte_count": 81221,
+      "path": "materialized/reserve_c_007/pages.json",
+      "sha256": "013f9e16c3b5fcbad87b8adab5d222e3f285dfe487d6aab89a7e41a566c95f3c"
+    },
+    {
+      "byte_count": 42247,
+      "path": "materialized/reserve_c_008/full_text.txt",
+      "sha256": "7675ffd241ac79e96516ee6f43b21deb765c9945f6bbdc696997dcdc46c38d96"
+    },
+    {
+      "byte_count": 45847,
+      "path": "materialized/reserve_c_008/pages.json",
+      "sha256": "037a8918b9c142978c5a4f57aa46f16a35769c9bfc7edebc74ee28ea7b697c8b"
+    },
+    {
+      "byte_count": 37783,
+      "path": "materialized/reserve_c_009/full_text.txt",
+      "sha256": "dda8498e662b06029ffa54b7d3886c93cbfc9415aa23a41a4b5b29262e01282e"
+    },
+    {
+      "byte_count": 41102,
+      "path": "materialized/reserve_c_009/pages.json",
+      "sha256": "acc0fa1500c8cf50dedba155935a5e5e0d8983868bafbd1320de1eda11e21c4c"
+    },
+    {
+      "byte_count": 125375,
+      "path": "materialized/reserve_c_010/full_text.txt",
+      "sha256": "d9739b5a5e68d25711f5e1a942ad3d8292ecdbf501054068758475779bb97179"
+    },
+    {
+      "byte_count": 140564,
+      "path": "materialized/reserve_c_010/pages.json",
+      "sha256": "0161aa67a82018e4f8f8b7f88a88c79b4832179a4d610b326100c90c33beffb9"
+    },
+    {
+      "byte_count": 22463,
+      "path": "materialized/reserve_c_011/full_text.txt",
+      "sha256": "57212d3e60fcc4e5cbb05b3d4e76db8d8d065ad8243b4ac7488d30a58ba00b02"
+    },
+    {
+      "byte_count": 25308,
+      "path": "materialized/reserve_c_011/pages.json",
+      "sha256": "60ef9c40c716303f75254007b5689de0a99067574b0fc7efd6d3fb410bcc2a82"
+    },
+    {
+      "byte_count": 32568,
+      "path": "materialized/reserve_c_012/full_text.txt",
+      "sha256": "b599cf1934466d3e26b8636783a5d75aa46ca2b4e503f14960ef1b5dda6577b5"
+    },
+    {
+      "byte_count": 34662,
+      "path": "materialized/reserve_c_012/pages.json",
+      "sha256": "35875d495ccd8f42c215680715022ffb42108bc174fd8188d589e577a599be20"
+    },
+    {
+      "byte_count": 35157,
+      "path": "materialized/reserve_c_013/full_text.txt",
+      "sha256": "e9997fdc8f11a65d657f2a0871a88ee14ec1c6c84cef3ece36cfc6e46626c9e9"
+    },
+    {
+      "byte_count": 39044,
+      "path": "materialized/reserve_c_013/pages.json",
+      "sha256": "6e7782a2e8390b5aae47acd488180fd5884797b703ec9c95d20f7da2f23e63e4"
+    }
+  ],
+  "same_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-c1a-failed-epoch-audit-v1",
+  "scientific_adjudication_performed": false,
+  "scientific_reviewer_read_performed": false
+}
