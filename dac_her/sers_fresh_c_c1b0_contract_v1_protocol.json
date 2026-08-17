@@ -1,0 +1,31 @@
+{
+  "automatic_c1b1_transition_allowed": false,
+  "c1ar1_corpus_sha256": "cffb7eab1465258b61ea28d64b1a703cb5a2b0cb940da0342bc7c1929db89e19",
+  "c1ar1_result_freeze_id": "sers_fresh_c_c1a_r1_recovery_result_freeze_v1:87b7254c15c383ccaa4c",
+  "c1ar1_result_freeze_manifest_sha256": "b7da11545050a4562457e65ec2da80e8015482b9e3757a911a86a305e26187c5",
+  "c1ar1_run_id": "sers_fresh_c_c1a_r1_recovery_run_v1:f5ad9b566df23038b543",
+  "c1ar1_run_sha256": "f375c190e0ee3a96751ad6cf1bd874b9a66a7be9c344aec0afa36c8ec490aa6f",
+  "fresh_c_text_hash_verification_allowed": true,
+  "fresh_c_text_semantic_read_allowed": false,
+  "llm_calls": 0,
+  "network_calls_allowed": false,
+  "primary_remaining_candidate_hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+  "protocol_id": "sers_fresh_c_c1b0_contract_protocol_v1:6e175c021269feb21756",
+  "protocol_sha256": "fe49514ba34847827dfd865c3b11c70289f0a58f3543a7b140b63ce015a30590",
+  "r2_freeze_id": "sers_r2_final_reassessment_freeze_v1:aa2f75aa46fb82284db0",
+  "r2_freeze_manifest_sha256": "aa2f75aa46fb82284db04c5031b40227b4b2bdd12f4044ccdb8acfa84a1d3831",
+  "r2_report_id": "sers_r2_final_reassessment_report_v1:e9a9502cbfaa7566d457",
+  "r2_report_sha256": "e9a9502cbfaa7566d45753f636b23b71bc25d492877c49fc60d37d45609447d7",
+  "schema_version": "sers-fresh-c-c1b0-contract-protocol-v1",
+  "scientific_target_hypothesis_ids": [
+    "direction_aware_trend_hypothesis:ad13dac8334238124899",
+    "direction_aware_trend_hypothesis:1cf889e57332402d88c9"
+  ],
+  "semantics_id": "sers_fresh_c_c1b0_input_contract_v1",
+  "source_identity_count": 25,
+  "stage": "C1B.0",
+  "stop_after_audit": true,
+  "terminal_rejected_hypothesis_ids": [
+    "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de"
+  ]
+}
