@@ -1,0 +1,9 @@
+{
+  "c1b0_audit_authorized": false,
+  "c1b0_audit_ready": true,
+  "c1b1_authorized": false,
+  "freeze_id": "sers_fresh_c_c1b0_contract_protocol_freeze_v1:ee5fe7331c2be9d3bd79",
+  "fresh_c_scientific_text_semantic_read_performed": false,
+  "manifest_sha256": "4cf22e04610866178798494c2213e48761f10a5e1a6201539dbb3b008ab26f3d",
+  "stop": true
+}
