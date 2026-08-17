@@ -1,0 +1,11 @@
+{
+  "automatic_c0_1d_transition_authorized": false,
+  "freeze_id": "sers_fresh_c_live_discovery_protocol_freeze_v1:da61ad7bd0e49e140713",
+  "fresh_reserve_c_consumed": false,
+  "live_discovery_authorized": false,
+  "live_discovery_ready": true,
+  "live_discovery_started": false,
+  "manifest_sha256": "e851d06725fd144ce7dc644638d766cc0b5ced2d1bc819715f274f35b5b6ab3c",
+  "schema_version": "sers-fresh-c-live-discovery-ready-v1",
+  "stop": true
+}
