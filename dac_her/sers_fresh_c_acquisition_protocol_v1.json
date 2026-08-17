@@ -1,0 +1,136 @@
+{
+  "access_failure_policy": {
+    "access_availability_used_for_blind_score": false,
+    "failed_candidate_rank_is_reassigned": false,
+    "manual_replacement_allowed": false,
+    "oa_only_automatic_acquisition": true,
+    "paywall_bypass_allowed": false,
+    "replacement_basis": "next_identity_in_frozen_blind_order",
+    "retry_policy_source": "configs/acquisition/source_access_default_v1.yaml",
+    "scientific_content_based_replacement_allowed": false,
+    "unresolved_or_download_failed_behavior": "record_inaccessible_then_continue_frozen_blind_order"
+  },
+  "activation_preconditions_required": [
+    "I0_FROZEN",
+    "C0_0_EXISTING_RESERVE_PROVENANCE_AUDIT_PASS"
+  ],
+  "blind_ordering_policy": {
+    "algorithm": "sort_ascending_sha256_namespace_nul_canonical_id",
+    "caller_supplied_scoring_basis_allowed": false,
+    "llm_calls": 0,
+    "namespace": "sers_fresh_c_blind_identity_order_v1",
+    "ordering_input_fields": [
+      "canonical_id"
+    ],
+    "scientific_fields_used": false,
+    "target_count_defined_in_preregistration": false,
+    "target_count_must_be_frozen_before_live_discovery": true,
+    "tie_breaker": "canonical_id"
+  },
+  "discovery_scope_policy": {
+    "axis_queries_allowed": false,
+    "broad_queries": [
+      "surface enhanced Raman spectroscopy gold silver",
+      "SERS gold silver",
+      "surface enhanced Raman spectroscopy Au Ag",
+      "SERS Au Ag"
+    ],
+    "citation_scoring_allowed": false,
+    "domain_profile_id": "sers_au_ag",
+    "hypothesis_terms_allowed": false,
+    "novelty_gap_terms_allowed": false,
+    "providers": [
+      "semantic_scholar",
+      "crossref"
+    ],
+    "results_per_query_defined_in_preregistration": false,
+    "scope_semantics": "broad_domain_only_no_hypothesis_or_gap_terms",
+    "search_depth_must_be_frozen_before_live_discovery": true,
+    "title_or_abstract_scoring_allowed": false
+  },
+  "historical_exclusion_policy": {
+    "ambiguous_identity_behavior": "fail_closed",
+    "completeness_scope": "all_pre_fresh_c_scientific_exposure",
+    "exclusion_key": "canonical_id",
+    "historical_overlap_behavior": "exclude",
+    "ledger_required_before_live_discovery": true,
+    "missing_or_incomplete_ledger_behavior": "fail_closed"
+  },
+  "identity_policy": {
+    "abstract_retained_in_selector_input": false,
+    "acquisition_axes_retained_in_selector_input": false,
+    "canonical_identity_priority": "doi_family_then_normalized_title_sha256",
+    "citation_count_retained_in_selector_input": false,
+    "doi_prefix": "doi:",
+    "hypothesis_fields_retained_in_selector_input": false,
+    "title_cleartext_retained_in_selector_input": false,
+    "title_fallback_min_normalized_length": 20,
+    "title_fallback_prefix": "title_sha256:"
+  },
+  "preconsumption_policy": {
+    "allowed_operations": [
+      "blind_identity_ordering",
+      "canonical_identity_projection",
+      "content_seal",
+      "historical_identity_exclusion",
+      "metadata_transport_without_scientific_inspection",
+      "oa_resolution",
+      "pdf_byte_download",
+      "pdf_magic_validation",
+      "provenance_write",
+      "sha256_hashing"
+    ],
+    "consumption_must_precede_first_scientific_transformation": true,
+    "forbidden_operations": [
+      "abstract_semantic_scoring",
+      "axis_semantic_scoring",
+      "citation_scoring",
+      "entity_relation_extraction",
+      "graph_projection",
+      "hypothesis_evaluation",
+      "hypothesis_specific_selection",
+      "llm_extraction",
+      "pdf_text_extraction",
+      "scientific_text_read",
+      "title_semantic_scoring",
+      "trend_extraction"
+    ],
+    "hypothesis_specific_selection_allowed": false,
+    "scientific_content_interpretation_allowed": false,
+    "semantic_pdf_read_allowed": false
+  },
+  "protocol_id": "sers_fresh_c_acquisition_protocol_preregistration_v1:c44b473a98541ac8beeb",
+  "protocol_sha256": "248575dfe8b6c5510933bd5b68154561388ba1a158acd92a2faa096343210cb8",
+  "reuse_policy": {
+    "forbidden_selector_path": "dac_her/corpus_acquisition/candidate_selection.py",
+    "paywall_bypass_allowed": false,
+    "positive_scientific_evidence_promotion_allowed": false,
+    "reused_components": [
+      "dac_her/corpus_acquisition/catalog_expansion.py",
+      "dac_her/corpus_acquisition/oa_resolution.py",
+      "dac_her/corpus_acquisition/artifact_acquisition.py",
+      "scripts/acquire_corpus_sources.py",
+      "configs/acquisition/source_access_default_v1.yaml"
+    ],
+    "scientific_candidate_selector_reused": false
+  },
+  "safety": {
+    "activation_preconditions_satisfied_at_preregistration": false,
+    "automatic_next_stage_authorized": false,
+    "content_sealed": false,
+    "fresh_c_stage_activated": false,
+    "fresh_reserve_c_consumed": false,
+    "live_acquisition_started": false,
+    "live_discovery_started": false,
+    "live_selection_started": false,
+    "llm_calls": 0,
+    "network_calls": 0,
+    "protocol_preregistration_only": true,
+    "semantic_read_performed": false,
+    "stop_after_preregistration_freeze": true
+  },
+  "schema_version": "sers-fresh-c-acquisition-protocol-preregistration-v1",
+  "semantics_id": "sers_fresh_c_identity_only_acquisition_v1",
+  "stage": "C0.1A",
+  "status": "PREREGISTRATION_ONLY"
+}
