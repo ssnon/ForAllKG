@@ -18,6 +18,7 @@
   "final_adjudication_calls": 1,
   "final_adjudication_max_tokens": 5000,
   "final_adjudication_schema_sha256": "b5ce3c3b962e63407828b5daf85c21441dfd1d899edea377308e23e98015a451",
+  "final_adjudication_transport_schema_sha256": "7e475579c8f3ecbca7ff36a6d5ef0d1b545d990a3c9d0398b95df0e991da0856",
   "final_adjudicator_system_prompt_sha256": "fd2d5e896b12f023a30283d6281c0e7ac3d29e5266df674ce156f2e2fe43e420",
   "full_paper_text_truncation_allowed": false,
   "h2_resurrection_allowed": false,
@@ -57,8 +58,9 @@
   ],
   "paper_review_schema_sha256": "0e15619d5bf2122b586cac329c5118e1e015c0a8d0404b4c2f1a0882c2e4253b",
   "paper_review_system_prompt_sha256": "800f582d9c1e97a2622439d13ee70130333244dd894b52efc4edec782d69a0e8",
-  "protocol_id": "sers_fresh_c_c1b2_scientific_protocol_v1:d24bc2068c28cb2ca0b8",
-  "protocol_sha256": "b53fc877f1a149565c57cc44df50d12aca4090c1d3e018757d7a3815de90c4f5",
+  "paper_review_transport_schema_sha256": "4d3ffa1943a91698eafbe9b03b7523dbdcf813f39a342d923b4ff13c4fdee499",
+  "protocol_id": "sers_fresh_c_c1b2_scientific_protocol_v1:231b259d4eedb766c4a2",
+  "protocol_sha256": "e4557ad77ffa11f2d954e95e0c140dbfc56d9ea0aa7b89d6c64ac31402fb2e70",
   "provider_allow_fallbacks": false,
   "provider_data_collection": "deny",
   "provider_only": [
@@ -85,5 +87,6 @@
   "stop_after_result_freeze": true,
   "temperature_parameter_sent": false,
   "transport_result_freeze_id": "sers_fresh_c_c1b1_r1_transport_result_freeze_v1:dbbdc7f8c7f08310c9a2",
-  "transport_result_freeze_sha256": "56678366f7749c94f5d1e6b3fdc6aecb72a3f253905563319028fc39351b3aaa"
+  "transport_result_freeze_sha256": "56678366f7749c94f5d1e6b3fdc6aecb72a3f253905563319028fc39351b3aaa",
+  "transport_schema_adapter_id": "openai_strict_required_all_properties_strip_defaults_v1"
 }

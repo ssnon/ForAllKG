@@ -50,6 +50,12 @@ def main():
         raise ValueError("C1B.2 qualification file hash drifted")
     if m["target_boundaries_sha256"] != canonical_json_sha256(targets):
         raise ValueError("C1B.2 target-boundary hash drifted")
+    if m["transport_schema_adapter_id"] != p["transport_schema_adapter_id"]:
+        raise ValueError("C1B.2 transport schema adapter drifted")
+    if m["paper_review_transport_schema_sha256"] != p["paper_review_transport_schema_sha256"]:
+        raise ValueError("C1B.2 paper transport schema SHA drifted")
+    if m["final_adjudication_transport_schema_sha256"] != p["final_adjudication_transport_schema_sha256"]:
+        raise ValueError("C1B.2 final transport schema SHA drifted")
     if m["source_identity_count"] != len(records) or len(records) != 25:
         raise ValueError("C1B.2 source identity count drifted")
     if importlib.metadata.version("openai") != m["openai_package_version"]:
@@ -89,7 +95,8 @@ def main():
     print(f"Freeze ID: {m['freeze_id']}")
     print(f"Manifest SHA256: {stored}")
     print(f"Source code commit: {source_commit}")
-    print("Exact paper/final schemas qualified: CURRENT")
+    print("Raw C1B.1 reviewer schemas unchanged: CURRENT")
+    print("OpenAI-strict paper/final transport schemas: CURRENT")
     print("Target-boundary hash: CURRENT")
     print("Exact 25 source hashes: CURRENT")
     print(f"Reviewer model: {m['reviewer_model']}")

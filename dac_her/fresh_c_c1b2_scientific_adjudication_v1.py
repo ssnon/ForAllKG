@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -132,12 +133,121 @@ EXPECTED_PAPER_SCHEMA_SHA256 = (
 EXPECTED_FINAL_SCHEMA_SHA256 = (
     "b5ce3c3b962e63407828b5daf85c21441dfd1d899edea377308e23e98015a451"
 )
+EXPECTED_PAPER_TRANSPORT_SCHEMA_SHA256 = "4d3ffa1943a91698eafbe9b03b7523dbdcf813f39a342d923b4ff13c4fdee499"
+EXPECTED_FINAL_TRANSPORT_SCHEMA_SHA256 = "7e475579c8f3ecbca7ff36a6d5ef0d1b545d990a3c9d0398b95df0e991da0856"
 
 EROSION_LABELS = {
     "DIRECT_PRIOR_ART",
     "PARTIAL_PRIOR_ART",
     "CONTRADICTORY_OR_DISCONFIRMING",
 }
+
+TRANSPORT_SCHEMA_ADAPTER_ID = (
+    "openai_strict_required_all_properties_strip_defaults_v1"
+)
+
+
+def _strictify_openai_schema(node: Any) -> Any:
+    """Return an OpenAI Structured-Outputs strict-compatible schema.
+
+    This is a transport-only transformation.  It does not mutate the frozen
+    C1B.1 Pydantic reviewer models or their raw schema hashes.
+
+    OpenAI strict Structured Outputs requires every object property to appear
+    in that object's ``required`` array.  Pydantic defaults therefore cannot
+    be represented as omitted keys at the transport boundary; the model must
+    emit every key explicitly.  Nullable optionals (for example
+    ``verbatim_quote: str | None``) remain nullable because their original
+    ``anyOf``/``null`` type is preserved.
+
+    JSON-Schema ``default`` annotations are removed because defaults are a
+    local Pydantic construction concern, not part of the constrained output
+    semantics used here.
+    """
+    if isinstance(node, list):
+        return [_strictify_openai_schema(item) for item in node]
+    if not isinstance(node, dict):
+        return node
+
+    out = {
+        key: _strictify_openai_schema(value)
+        for key, value in node.items()
+        if key != "default"
+    }
+
+    properties = out.get("properties")
+    if isinstance(properties, dict):
+        out["properties"] = {
+            key: _strictify_openai_schema(value)
+            for key, value in properties.items()
+        }
+        out["required"] = list(properties.keys())
+        out["additionalProperties"] = False
+
+    if "items" in out:
+        out["items"] = _strictify_openai_schema(out["items"])
+    if "$defs" in out and isinstance(out["$defs"], dict):
+        out["$defs"] = {
+            key: _strictify_openai_schema(value)
+            for key, value in out["$defs"].items()
+        }
+    if "anyOf" in out:
+        out["anyOf"] = _strictify_openai_schema(out["anyOf"])
+    if "oneOf" in out:
+        out["oneOf"] = _strictify_openai_schema(out["oneOf"])
+    if "allOf" in out:
+        out["allOf"] = _strictify_openai_schema(out["allOf"])
+
+    return out
+
+
+def openai_strict_transport_schema(model_cls: Any) -> dict[str, Any]:
+    raw = copy.deepcopy(model_cls.model_json_schema())
+    strict = _strictify_openai_schema(raw)
+    if not isinstance(strict, dict):
+        raise TypeError("Strict transport schema must be a JSON object")
+    return strict
+
+
+def _validate_strict_object_requirements(node: Any, *, path: str = "$") -> None:
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            _validate_strict_object_requirements(item, path=f"{path}[{index}]")
+        return
+    if not isinstance(node, dict):
+        return
+
+    properties = node.get("properties")
+    if isinstance(properties, dict):
+        required = node.get("required")
+        if required != list(properties.keys()):
+            raise ValueError(
+                f"Strict transport schema required-list drift at {path}"
+            )
+        if node.get("additionalProperties") is not False:
+            raise ValueError(
+                f"Strict transport schema additionalProperties drift at {path}"
+            )
+        for key, value in properties.items():
+            _validate_strict_object_requirements(
+                value, path=f"{path}.properties.{key}"
+            )
+
+    if "default" in node:
+        raise ValueError(f"Strict transport schema retained default at {path}")
+
+    for key in ("items", "anyOf", "oneOf", "allOf", "$defs"):
+        value = node.get(key)
+        if isinstance(value, dict):
+            for child_key, child in value.items():
+                _validate_strict_object_requirements(
+                    child, path=f"{path}.{key}.{child_key}"
+                )
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                _validate_strict_object_requirements(
+                    child, path=f"{path}.{key}[{index}]"
+                )
 
 
 def sha256_file(path: Path) -> str:
@@ -205,6 +315,9 @@ def validate_protocol(path: Path) -> dict[str, Any]:
         "final_adjudicator_system_prompt_sha256": EXPECTED_FINAL_PROMPT_SHA256,
         "paper_review_schema_sha256": EXPECTED_PAPER_SCHEMA_SHA256,
         "final_adjudication_schema_sha256": EXPECTED_FINAL_SCHEMA_SHA256,
+        "transport_schema_adapter_id": TRANSPORT_SCHEMA_ADAPTER_ID,
+        "paper_review_transport_schema_sha256": EXPECTED_PAPER_TRANSPORT_SCHEMA_SHA256,
+        "final_adjudication_transport_schema_sha256": EXPECTED_FINAL_TRANSPORT_SCHEMA_SHA256,
         "paper_review_order": list(range(1, 26)),
         "paper_review_calls": 25,
         "final_adjudication_calls": 1,
@@ -330,6 +443,15 @@ def validate_frozen_lineage(root: Path) -> dict[str, Any]:
         raise ValueError("Paper-review schema drifted")
     if canonical_json_sha256(FreshCFinalAdjudication.model_json_schema()) != EXPECTED_FINAL_SCHEMA_SHA256:
         raise ValueError("Final-adjudication schema drifted")
+
+    paper_transport = openai_strict_transport_schema(FreshCPaperReview)
+    final_transport = openai_strict_transport_schema(FreshCFinalAdjudication)
+    _validate_strict_object_requirements(paper_transport)
+    _validate_strict_object_requirements(final_transport)
+    if canonical_json_sha256(paper_transport) != EXPECTED_PAPER_TRANSPORT_SCHEMA_SHA256:
+        raise ValueError("Paper-review transport schema drifted")
+    if canonical_json_sha256(final_transport) != EXPECTED_FINAL_TRANSPORT_SCHEMA_SHA256:
+        raise ValueError("Final-adjudication transport schema drifted")
 
     return {
         "r2_report": r2,
@@ -664,6 +786,12 @@ def schema_qualification_valid(payload: dict[str, Any]) -> None:
         raise ValueError("Paper-review exact schema not qualified")
     if payload.get("final_schema_passed") is not True:
         raise ValueError("Final-adjudication exact schema not qualified")
+    if payload.get("transport_schema_adapter_id") != TRANSPORT_SCHEMA_ADAPTER_ID:
+        raise ValueError("Exact-schema qualification transport adapter drifted")
+    if payload.get("paper_review_transport_schema_sha256") != EXPECTED_PAPER_TRANSPORT_SCHEMA_SHA256:
+        raise ValueError("Exact-schema qualification paper transport SHA drifted")
+    if payload.get("final_adjudication_transport_schema_sha256") != EXPECTED_FINAL_TRANSPORT_SCHEMA_SHA256:
+        raise ValueError("Exact-schema qualification final transport SHA drifted")
     if payload.get("network_calls") != 2 or payload.get("llm_calls") != 2:
         raise ValueError("Exact-schema qualification call counts drifted")
     for key in (

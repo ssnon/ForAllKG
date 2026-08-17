@@ -29,6 +29,7 @@ from dac_her.fresh_c_c1b2_scientific_adjudication_v1 import (
     canonical_json_sha256,
     format_paper_prompt,
     load_object,
+    openai_strict_transport_schema,
     review_payload_sha,
     schema_qualification_valid,
     validate_corpus_metadata,
@@ -73,7 +74,7 @@ def _call_structured(
             "json_schema": {
                 "name": model_cls.__name__,
                 "strict": True,
-                "schema": model_cls.model_json_schema(),
+                "schema": openai_strict_transport_schema(model_cls),
             },
         },
         extra_body={
@@ -179,6 +180,9 @@ def synthetic_schema_qualification() -> int:
         "final_schema_passed": True,
         "paper_review_schema_sha256": p["paper_review_schema_sha256"],
         "final_adjudication_schema_sha256": p["final_adjudication_schema_sha256"],
+        "transport_schema_adapter_id": p["transport_schema_adapter_id"],
+        "paper_review_transport_schema_sha256": p["paper_review_transport_schema_sha256"],
+        "final_adjudication_transport_schema_sha256": p["final_adjudication_transport_schema_sha256"],
         "paper_review_prompt_sha256": p["paper_review_system_prompt_sha256"],
         "final_adjudicator_prompt_sha256": p["final_adjudicator_system_prompt_sha256"],
         "paper_usage": paper_usage,

@@ -15,6 +15,7 @@ from dac_her.fresh_c_c1b2_scientific_adjudication_v1 import (
     DEFAULT_PROTOCOL_PATH,
     build_target_boundaries,
     canonical_json_sha256,
+    openai_strict_transport_schema,
     validate_final_against_reviews,
     validate_protocol,
     validate_review_grounding,
@@ -201,3 +202,44 @@ def test_repaired_reserve_14_policy_remains_fail_closed():
             materialization_mode="DIRECT_ORIGINAL",
             assessments=[irrelevant(H1), irrelevant(H3)],
         )
+
+
+def _walk_objects(node):
+    if isinstance(node, list):
+        for item in node:
+            yield from _walk_objects(item)
+        return
+    if not isinstance(node, dict):
+        return
+    if isinstance(node.get("properties"), dict):
+        yield node
+    for value in node.values():
+        yield from _walk_objects(value)
+
+
+def test_openai_strict_transport_schema_requires_every_object_property():
+    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    schema = openai_strict_transport_schema(FreshCPaperReview)
+    for obj in _walk_objects(schema):
+        assert obj["required"] == list(obj["properties"].keys())
+        assert obj["additionalProperties"] is False
+    assert '"default"' not in __import__("json").dumps(schema, sort_keys=True)
+
+
+def test_optional_verbatim_quote_is_required_key_but_nullable():
+    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    schema = openai_strict_transport_schema(FreshCPaperReview)
+    locator = schema["$defs"]["EvidenceLocator"]
+    assert "verbatim_quote" in locator["required"]
+    quote_schema = locator["properties"]["verbatim_quote"]
+    assert any(branch.get("type") == "null" for branch in quote_schema["anyOf"])
+
+
+def test_raw_c1b1_schema_hash_is_not_changed_by_transport_adapter():
+    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    from dac_her.fresh_c_c1b2_scientific_adjudication_v1 import (
+        EXPECTED_PAPER_SCHEMA_SHA256,
+    )
+    assert canonical_json_sha256(FreshCPaperReview.model_json_schema()) == (
+        EXPECTED_PAPER_SCHEMA_SHA256
+    )

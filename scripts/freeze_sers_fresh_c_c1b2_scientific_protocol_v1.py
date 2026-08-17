@@ -84,6 +84,9 @@ def main():
         "source_identity_count": len(records),
         "reviewer_model": p["reviewer_model"],
         "base_url": p["base_url"],
+        "transport_schema_adapter_id": p["transport_schema_adapter_id"],
+        "paper_review_transport_schema_sha256": p["paper_review_transport_schema_sha256"],
+        "final_adjudication_transport_schema_sha256": p["final_adjudication_transport_schema_sha256"],
         "openai_package_version": importlib.metadata.version("openai"),
         "pydantic_package_version": importlib.metadata.version("pydantic"),
         "fresh_c_scientific_text_semantic_read_performed": False,
@@ -121,7 +124,9 @@ def main():
     print(f"Manifest SHA256: {body['manifest_sha256']}")
     print(f"Source code commit: {source_commit}")
     print(f"Exact-schema qualification ID: {qualification['qualification_id']}")
-    print("Exact paper/final schemas qualified: True/True")
+    print("Raw C1B.1 reviewer schemas unchanged: True")
+    print(f"Transport schema adapter: {p['transport_schema_adapter_id']}")
+    print("Exact OpenAI-strict paper/final schemas qualified: True/True")
     print("Exact frozen scientific targets: 2")
     print("Exact frozen Fresh-C papers: 25")
     print(f"Reviewer model: {p['reviewer_model']}")
