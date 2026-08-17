@@ -1,0 +1,11 @@
+{
+  "attempt_id": "sers_fresh_c_live_discovery_recovery_attempt_v2_1:12b9dbc6d57618c9ed15",
+  "failure_authorizes_query_or_selection_tuning": false,
+  "fresh_reserve_c_consumed": false,
+  "network_boundary_opened": true,
+  "recovery_parent_attempt_id": "sers_fresh_c_live_discovery_attempt_v1:0912aca95ffe39b9f8a3",
+  "same_recovery_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-live-discovery-recovery-started-v2",
+  "semantic_read_performed": false,
+  "started_at_utc": "2026-08-17T04:50:12.739977+00:00"
+}

@@ -1,0 +1,15 @@
+{
+  "attempt_id": "sers_fresh_c_live_discovery_recovery_attempt_v2_1:12b9dbc6d57618c9ed15",
+  "automatic_c0_1d_transition_authorized": false,
+  "exception_type": "AttributeError",
+  "failure_authorizes_query_or_selection_tuning": false,
+  "fresh_reserve_c_consumed": false,
+  "network_boundary_opened": true,
+  "new_protocol_epoch_required": true,
+  "recovery_parent_attempt_id": "sers_fresh_c_live_discovery_attempt_v1:0912aca95ffe39b9f8a3",
+  "same_recovery_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-live-discovery-recovery-failed-v2",
+  "semantic_read_performed": false,
+  "stop": true,
+  "transport_diagnostics_file_sha256": null
+}
