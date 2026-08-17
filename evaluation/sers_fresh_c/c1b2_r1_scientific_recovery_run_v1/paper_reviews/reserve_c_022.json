@@ -1,0 +1,75 @@
+{
+  "canonical_id": "doi:10.1038/s41378-021-00250-5",
+  "failed_parent_response_reused": false,
+  "record_sha256": "8a2775496c086de7333ed1ba5ee1aa34748c6eb5a10f061a0aa4e47d9b97cf0e",
+  "reserve_index": 22,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Au@Cu2O–Ag core–shell–satellite nanocomposites were tested with different Ag contents; SERS intensity increased through AC–Ag3 and decreased for AC–Ag4.",
+            "page_number": 5,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The paper attributes enhancement to localized electromagnetic fields in gaps between Ag nanocrystals and to the number of hotspot sites.",
+            "page_number": 5,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "FDTD modeling and charge-transfer discussion link the ternary Au/Cu2O/Ag structure to enhanced SERS, but not to a controlled polymer-defined gap dimension.",
+            "page_number": 6,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper contains relevant Au/Ag nanostructures, Ag-mediated interparticle hotspots, and SERS intensity variation with Ag loading, but it does not study the polymer-separated Ag-bridge architecture or controlled variation of a polymer-defined inner/outer Ag gap. The reported response is therefore component- and mechanism-level overlap rather than support for the architecture-specific directional relation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Malachite green solutions at multiple concentrations were adsorbed on AC–Ag3 substrates and measured by SERS; solid malachite green powder spectra were used for comparison in the enhancement-factor analysis.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The recycling experiment concerns visible-light self-cleaning and repeated SERS measurements, not a paired dispersed-to-dried preparation comparison or drying-induced spectral transformation.",
+            "page_number": 8,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "CONTEXT_ONLY",
+        "scientific_rationale": "The paper measures analyte SERS from solution and separately reports Raman spectra of solid malachite green for enhancement-factor estimation, providing limited solution-versus-solid measurement context. It does not perform a paired solution-to-dried transition on the same analyte-mixed Ag-shell core-satellite preparation, nor does it establish a reproducible normalized peak-distribution or qualitative peak-profile transformation."
+      }
+    ],
+    "canonical_id": "doi:10.1038/s41378-021-00250-5",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 22
+  },
+  "review_sha256": "49f1f18a6da2c49dca37f4b24ff81063daedc383201cfbbf5e9dd8f7bb575442",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 14162,
+    "output_tokens": 1029,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 15191
+  },
+  "verbatim_quote_evidence_enabled": false
+}

@@ -1,0 +1,80 @@
+{
+  "canonical_id": "doi:10.1021/acsanm.3c01249",
+  "failed_parent_response_reused": false,
+  "record_sha256": "5bd83779708a7a5c5ad1bc2eddd481d9481e8b6d150a351c1c2269549d003703",
+  "reserve_index": 7,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The paper states that metallic nanoparticles separated by approximately 2–10 nm can exhibit strong near-field interaction, while larger gaps can produce far-field coupling in periodic structures.",
+            "page_number": 8,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The study reports spatially homogeneous SERS enhancement for Au nanoparticles on silicon nanocones and attributes spectral enhancement to the substrate geometry and optical modes, not to controlled variation of an Ag-bridge gap.",
+            "page_number": 10,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The conclusions describe Au deposition on shell-insulated silicon nanocones and formation of Au nanoparticles at cone apices; no polymer-defined Ag bridge or directional gap experiment is reported.",
+            "page_number": 11,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper supports the general mechanism that interparticle spacing and electromagnetic coupling influence SERS-related fields, but it studies Au nanoparticles on silicon nanocones rather than a polymer-separated Ag-bridge architecture. It does not vary an inner/outer Ag gap under matched conditions or establish a reproducible directional SERS trend."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Au-nanoparticle substrates are immersed in benzenethiol solution, rinsed, and dried under nitrogen before Raman measurement; a separate pure benzenethiol solution is measured as a reference.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The Raman results compare QD, QD800, and QD1000 substrate treatments and report differences in homogeneity and detectable peaks, rather than comparing one preparation in dispersed and dried states.",
+            "page_number": 9,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The reported enhancement-factor comparison is between dried substrate SERS and bulk-liquid Raman measurements, which does not establish a paired context-dependent change in normalized peak distribution or peak profile.",
+            "page_number": 10,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper includes SERS measurements of dried, benzenethiol-functionalized Au substrates and a separate bulk benzenethiol solution reference, but it does not measure the same analyte-mixed Ag-shell core-satellite preparation before and after drying. Its comparisons are between differently fabricated or annealed substrates, not a paired solution-to-dried transition, and no qualitative peak-profile transformation is established."
+      }
+    ],
+    "canonical_id": "doi:10.1021/acsanm.3c01249",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 7
+  },
+  "review_sha256": "b6ab0a607a2819edaecd979ba1ee3c685e808c2891cc70d5013e6ec7bbc74515",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 22338,
+    "output_tokens": 1226,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 23564
+  },
+  "verbatim_quote_evidence_enabled": false
+}

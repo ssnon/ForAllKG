@@ -1,0 +1,85 @@
+{
+  "canonical_id": "doi:10.1088/2053-1591/3/10/105012",
+  "failed_parent_response_reused": false,
+  "record_sha256": "063faff5e2f7a6dcf35c4e8dd5df892be1621d951e99a5b01a4795106e4b40cf",
+  "reserve_index": 9,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Crystal violet is added to Au–Ag substrate samples for SERS testing, with specified analyte concentrations.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "SERS spectra are acquired from samples placed in a cuvette under specified laser and acquisition conditions.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The reported comparisons concern Raman enhancement for substrates prepared with different HAuCl4 volumes and with or without ascorbic-acid co-reduction.",
+            "page_number": 11,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper studies Au–Ag hollow nanostructures and crystal-violet SERS measurements, but the reported comparisons vary synthesis conditions and substrate structure rather than measuring the same analyte-mixed preparation through a paired solution-to-dried transition. The paper therefore does not establish the frozen paired-context relation or a drying-associated peak-profile transformation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The introduction states that hollow structures with small cavities generally produce stronger Raman signals and that increasing cavity size decreases Raman intensity.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Increasing HAuCl4 volume changes cavity size, while ascorbic acid alters the restructuring and preserves particle integrity during galvanic replacement.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "SERS enhancement factors differ with HAuCl4 volume and co-reduction; samples prepared with ascorbic acid show larger enhancement than corresponding samples without it.",
+            "page_number": 11,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The authors report that co-reduced hollow structures show increased Raman enhancement as HAuCl4 volume increases, compared with structures made without co-reductant.",
+            "page_number": 12,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper supports part of the structural–SERS relation: changing hollow-cavity dimensions through galvanic replacement is associated with changes in SERS intensity, and the authors report stronger Raman enhancement for smaller cavities. However, the study does not test the exact polymer-defined inner/outer Ag-gap variation in an Ag-bridge architecture, so it is not a direct match to the frozen architecture-specific directional hypothesis."
+      }
+    ],
+    "canonical_id": "doi:10.1088/2053-1591/3/10/105012",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 9
+  },
+  "review_sha256": "0b7a153dfc40c49ebe087c528eaf7840ed005d9c3566a181efdefbe3bf979bee",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 11532,
+    "output_tokens": 1055,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 12587
+  },
+  "verbatim_quote_evidence_enabled": false
+}

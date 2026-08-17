@@ -1,0 +1,85 @@
+{
+  "canonical_id": "doi:10.21203/rs.3.rs-7436815/v1",
+  "failed_parent_response_reused": false,
+  "record_sha256": "0c9892c9ad8e17362c7b8161d32f795e7452a3dcda7d7184b8a73d240bc26e22",
+  "reserve_index": 18,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Analytes were drop-cast onto nanoparticle-integrated PMMA fibers, and Raman spectra were acquired from the resulting substrate using fixed optical conditions.",
+            "page_number": 5,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Nanoparticle colloids were drop-cast onto hydrophobic fibers and dried; SERS measurements then examined loading volume and analyte response on the dried substrates.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The study reports SERS intensity reproducibility across multiple sites on PMMA-Au and PMMA-Au-Ag substrates, attributing localization to nanoparticle accumulation in the hydrophobic fiber region.",
+            "page_number": 8,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "CONTEXT_ONLY",
+        "scientific_rationale": "The paper uses dried PMMA fibers decorated with Au or Au-Ag nanoparticles and evaluates SERS intensity and reproducibility, providing contextual overlap with measurement substrates and drying-related analyte localization. However, the reported experiments are not a paired solution-to-dried comparison of the same analyte-mixed preparation and do not establish a context-driven normalized peak-distribution or qualitative peak-profile transformation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The work fabricates and uses Au and 70:30 Au-Ag alloy nanoparticles as plasmonic materials for flexible SERS substrates.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Increasing nanoparticle loading volume increases SERS intensity until saturation, which the authors attribute to nanoparticle aggregation.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "PMMA-Au-Ag substrates show stronger enhancement than PMMA-Au substrates, attributed to combined Au and Ag plasmonic effects producing more intense electromagnetic hotspots.",
+            "page_number": 8,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The conclusion reports that changing nanoparticle size and fiber diameter could produce different hotspot-loading scenarios, without testing a controlled bridge gap response.",
+            "page_number": 9,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper contains relevant Au-Ag plasmonic components and discusses hotspot enhancement, but it studies alloy nanoparticles deposited on PMMA nanofibers rather than a polymer-separated Ag-bridge architecture with a controlled inner/outer gap. Its loading-volume study varies deposited colloid volume and observes intensity saturation attributed to aggregation, not a reproducible directional response to a defined gap-size variation."
+      }
+    ],
+    "canonical_id": "doi:10.21203/rs.3.rs-7436815/v1",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 18
+  },
+  "review_sha256": "e4b2c5ac389a797f33ce47718e29a3f6553cf5d4b218e67dcf3b30108312f792",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 12426,
+    "output_tokens": 1232,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 13658
+  },
+  "verbatim_quote_evidence_enabled": false
+}

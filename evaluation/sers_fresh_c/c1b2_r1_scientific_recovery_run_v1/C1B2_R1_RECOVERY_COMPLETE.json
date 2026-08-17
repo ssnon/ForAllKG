@@ -1,0 +1,10 @@
+{
+  "all_25_papers_processed": true,
+  "automatic_post_recovery_transition_allowed": false,
+  "new_fresh_reserve_claimed": false,
+  "run_id": "sers_fresh_c_c1b2_r1_scientific_recovery_run_v1:f48db30f437c4555ac47",
+  "run_sha256": "f48db30f437c4555ac47f47764a587bea4c55b0ba168c6c8fe09d1ffb875f476",
+  "same_recovery_epoch_rerun_allowed": false,
+  "scientific_adjudication_performed": true,
+  "stop": true
+}

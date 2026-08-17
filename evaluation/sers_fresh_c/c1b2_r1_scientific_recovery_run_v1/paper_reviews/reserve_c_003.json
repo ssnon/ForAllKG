@@ -1,0 +1,75 @@
+{
+  "canonical_id": "doi:10.1038/s41598-021-84093-0",
+  "failed_parent_response_reused": false,
+  "record_sha256": "cda996c8fa23b8f647665cb566675f2dfc2132fbb59b1d1103b23d744acfae18",
+  "reserve_index": 3,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Methylene blue was deposited on the surfaces and Raman measurements were performed after one hour of drying.",
+            "page_number": 2,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The study compares Raman intensity between porous gold and Au/Ag samples and among treated and untreated regions, rather than comparing the same sample before and after drying.",
+            "page_number": 3,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper uses an Au/Ag SERS system and measures methylene blue after a drying step, but it does not measure the same analyte-mixed preparation in paired solution and dried states. Its intensity comparison is between different nanostructures and laser-treatment regions, so it does not establish a solution-to-dried change in normalized peak distribution, reproducibility, or peak profile."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The authors describe local-field enhancement and induced dipole coupling in nanogaps as contributing to enhanced Raman scattering.",
+            "page_number": 5,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Simulations vary porous-gold pore radius and report changes in LSPR resonance, while Au/Ag and porous-Au enhancement spectra are compared under modeled configurations.",
+            "page_number": 6,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The paper reports experimentally and computationally different enhancement factors for porous Au and Au/Ag alloy structures, attributing strong enhancement to confined fields and pores.",
+            "page_number": 8,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper supports part of the nanogap-hotspot mechanism in Au/Ag-related architectures: simulations describe field enhancement and mutual excitation associated with nanogaps, and the study reports enhancement differences between porous Au and Au/Ag structures. However, it does not test the polymer-separated Ag-bridge architecture or establish a controlled, reproducible directional SERS response to varying the defined inner/outer gap."
+      }
+    ],
+    "canonical_id": "doi:10.1038/s41598-021-84093-0",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 3
+  },
+  "review_sha256": "93dfd17597444e6e3a1f8efedec57dd676f808df9cebdfba159816c169a62e41",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 13632,
+    "output_tokens": 1247,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 14879
+  },
+  "verbatim_quote_evidence_enabled": false
+}

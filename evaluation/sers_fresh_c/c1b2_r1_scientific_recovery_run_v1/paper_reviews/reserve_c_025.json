@@ -1,0 +1,85 @@
+{
+  "canonical_id": "doi:10.3762/bjnano.15.86",
+  "failed_parent_response_reused": false,
+  "record_sha256": "2448ec48256e85d21c24aa2a1de7dbae8608cc20d2b55893d2b00420deb4db12",
+  "reserve_index": 25,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The study varies laser wavelength and liquid medium to synthesize Ag, Au, and Ag/Au nanoparticles, then drop-casts them onto filter paper for SERS substrates.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Ag/Au alloy nanoparticle sizes are compared across laser wavelengths and water versus aqueous NaCl, without a polymer-defined bridge or controlled gap series.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "SERS intensity is compared among nanoparticle-loaded filter-paper substrates made under different synthesis conditions; the comparison is not a directional gap-size experiment.",
+            "page_number": 10,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper contains Ag-containing nanoparticles, nanoscale morphology variation, and SERS measurements, but it studies laser-ablation wavelength and liquid-medium effects rather than a polymer-separated Ag-bridge architecture with controlled inner/outer gap variation and a directional SERS response."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Nanoparticles are drop-cast onto filter paper and dried at room temperature; the analyte is subsequently drop-cast onto the dried substrate.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Colloidal solutions are characterized by UV–visible absorption, while Raman/SERS measurements are separately collected from prepared substrates.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The paper reports SERS intensity variation and signal decay over 60 days for dried filter-paper substrates under different nanoparticle synthesis conditions.",
+            "page_number": 10,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "Reproducibility is assessed across locations on the paper substrate, and excitation-wavelength effects are measured for analytes on the optimized dried substrate.",
+            "page_number": 13,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper uses colloidal Ag/Au nanoparticles and dried filter-paper SERS substrates, and reports signal variation and decay, but its protocol applies nanoparticles to filter paper, dries them, and only afterward applies the analyte. This is not a paired solution-to-dried measurement of the same analyte-mixed preparation and does not establish the frozen peak-distribution or peak-profile transformation relation."
+      }
+    ],
+    "canonical_id": "doi:10.3762/bjnano.15.86",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 25
+  },
+  "review_sha256": "465e3d1f94d93de86eb1c7aff63d7d705a1f461228261ba7642b5e7cb8412812",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 19088,
+    "output_tokens": 1063,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 20151
+  },
+  "verbatim_quote_evidence_enabled": false
+}

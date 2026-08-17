@@ -1,0 +1,90 @@
+{
+  "canonical_id": "doi:10.1021/acs.jpcc.8b01309",
+  "failed_parent_response_reused": false,
+  "record_sha256": "32bf447e8a78592fabe7cfba5606c1abe26c0df3d898394cbc38e1b88fa0ef94",
+  "reserve_index": 14,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Nanoparticles are deposited from suspension by solvent evaporation into a dense monolayer array, establishing a drying-accumulated measurement configuration.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The shell-isolated nanoparticle array shows high surface enhancement and reduced spot-to-spot sampling variability, while the citrate-stabilized nanoparticle surface is used as a comparison.",
+            "page_number": 13,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The paper reports substantially different SERS relative standard deviations for the SHIN-covered electrode and citrate-capped Au nanoparticle electrode, indicating configuration-dependent reproducibility.",
+            "page_number": 14,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "SERS spectra from a calcium gluconate solution are collected on a deposited Au nanoparticle array and differ visibly from the corresponding Raman spectrum in solution, including narrower bands and improved signal-to-noise.",
+            "page_number": 19,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper directly studies dried, deposited nanoparticle arrays and reports context-dependent SERS intensity uniformity and reproducibility. However, its comparisons involve different nanoparticle preparations and substrates rather than the same analyte-mixed Ag-shell core-satellite preparation measured before and after drying; it therefore supports only part of the paired-context relation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The paper describes shell-isolated nanoparticles with controllable core diameter and shell thickness, including shell-thickness control of nanoparticle spacing.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "A thin-cell evaporation procedure produces a dense two-dimensional array of shell-isolated Au nanoparticles on a substrate.",
+            "page_number": 7,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The authors identify tunable spacing through shell-thickness control as an opportunity for plasmonic investigation and report hotspot-related differences between nanoparticle configurations.",
+            "page_number": 14,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "SERS mapping compares hotspot distributions and spatial signal uniformity for deposited bare Au nanoparticle arrays and shell-isolated nanoparticle films.",
+            "page_number": 18,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper contains related structural and SERS components, including shell-isolated nanoparticles, shell-thickness-dependent interparticle spacing, deposited nanoparticle arrays, and hotspot/reproducibility analysis. Its demonstrated system is Au nanoparticles with SiO2 shells on a gold electrode, not the specified polymer-separated Ag-bridge architecture, and it does not establish the architecture-specific directional response defining the hypothesis."
+      }
+    ],
+    "canonical_id": "doi:10.1021/acs.jpcc.8b01309",
+    "materialization_mode": "STRUCTURALLY_REPAIRED_DERIVATIVE",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 14
+  },
+  "review_sha256": "077a75deb70e82b5f78036a87533a8f453758d6e0e0d8d6eb07aeffae3518eca",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 51056,
+    "output_tokens": 1293,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 52349
+  },
+  "verbatim_quote_evidence_enabled": false
+}

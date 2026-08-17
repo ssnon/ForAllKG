@@ -1,0 +1,79 @@
+{
+  "adjudication": {
+    "all_25_papers_processed": true,
+    "count_threshold_used": false,
+    "external_literature_used": false,
+    "h1_fresh_c_verdict": "FRESH_C_PRESERVES_PRE_C_BOUNDED_EXTENSION",
+    "h1_hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+    "h1_pre_c_state": "KEEP_BOUNDED_EXTENSION",
+    "h1_rationale": "Fresh-C adds substantive partial prior art for generic gap-dependent plasmonic coupling and morphology–SERS relationships, but none directly demonstrates a reproducible directional response to controlled polymer-defined inner/outer gaps in the specified Ag-bridge architecture. The corpus therefore preserves the frozen bounded-extension status without upgrading or rewriting it.",
+    "h2_hypothesis_id": "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de",
+    "h2_resurrected": false,
+    "h2_terminal_state": "REJECT_AS_FORMULATED",
+    "h3_fresh_c_verdict": "FRESH_C_ERODES_PRE_C_RELATIONAL_GAP",
+    "h3_hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+    "h3_pre_c_state": "KEEP_RELATIONAL_GAP_CANDIDATE",
+    "h3_rationale": "Fresh-C provides substantive positive evidence that measurement configuration, drying-related deposition, analyte localization, hotspot organization, and substrate context can alter SERS intensity, reproducibility, and spectral appearance. In particular, reserve #14 reports configuration-dependent reproducibility and visible solution-versus-deposited spectral differences, while reserves #2 and #10 report related context-dependent spectral or intensity effects. These studies do not establish the exact paired solution-to-dried transition for the same analyte-mixed Ag-shell core-satellite preparation, so the relational-gap candidate is weakened but not eliminated. For repaired reserve #14, the positive reported evidence supports erosion; its remaining limitations are not used to support preservation or completeness.",
+    "hypothesis_rewrite_performed": false,
+    "hypothesis_upgrade_performed": false,
+    "literature_wide_novelty_claim_made": false,
+    "supporting_evidence": [
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 4,
+        "scientific_role": "Supports the generic directional dependence of Ag plasmonic coupling and near-field enhancement on interparticle spacing, while not testing the polymer-separated Ag-bridge architecture."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 9,
+        "scientific_role": "Supports a structural-dimension–SERS intensity relationship through cavity-size variation, but not the frozen polymer-defined inner/outer gap."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 15,
+        "scientific_role": "Supports controlled Ag-shell growth associated with directional SERS enhancement, while using a different architecture and parameter."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 20,
+        "scientific_role": "Supports the general nanogap-coupling mechanism and gap-related SERS response in Au monolayers, not the specified Ag-bridge architecture."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 14,
+        "scientific_role": "Provides positive evidence for configuration-dependent SERS reproducibility and spectral differences between solution Raman and deposited nanoparticle-array measurements; because the reserve is repaired, this positive evidence supports erosion, while its missing exact paired comparison is not used to support preservation."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 2,
+        "scientific_role": "Supports context-dependent differences between solution fluorescence/Raman and analyte adsorbed on Ag colloids, including altered spectral appearance and signal variability."
+      },
+      {
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "reserve_index": 10,
+        "scientific_role": "Reports drying-related pre-concentration, coffee-ring deposition, and intensity/distribution effects in SERS biofluid workflows, providing substantive related context evidence."
+      }
+    ]
+  },
+  "failed_parent_response_reused": false,
+  "new_fresh_reserve_claimed": false,
+  "record_sha256": "ed57cae223b2f075f53995bbe96f89a1a3639ac07153935552885695446a7701",
+  "recovery_after_parent_validation_failure": true,
+  "schema_version": "sers-fresh-c-c1b2-r1-final-adjudication-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 21302,
+    "output_tokens": 1640,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 22942
+  },
+  "verbatim_quote_evidence_enabled": false
+}

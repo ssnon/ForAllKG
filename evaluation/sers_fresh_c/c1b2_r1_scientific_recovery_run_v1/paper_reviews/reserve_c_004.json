@@ -1,0 +1,75 @@
+{
+  "canonical_id": "doi:10.7716/aem.v7i2.563",
+  "failed_parent_response_reused": false,
+  "record_sha256": "06789230549bbed3b6feefe5a2da9a040b8f5f833c083037f034928a7d4a0e44",
+  "reserve_index": 4,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The study models Au, Ag, and Al homo-dimers and states that enhanced junction fields could enhance Raman scattering from molecules located there.",
+            "page_number": 2,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "For Ag homo-dimers, the calculated field-enhancement factor depends on particle size and interparticle spacing, with stronger enhancement as particles approach.",
+            "page_number": 4,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper studies Ag nanoparticle dimers, interparticle spacing, near-field enhancement, and potential SERS use, but the reported relation is a theoretical spacing-dependent dimer response rather than a paired solution-to-dried transition of the same analyte-mixed preparation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "For nanosphere dimers, decreasing interparticle spacing produces stronger near-field coupling and a red-shifted plasmon response.",
+            "page_number": 2,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The calculated Ag homo-dimer enhancement increases as the particles approach, reaching its maximum at a 1 nm interparticle spacing.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The conclusion states that plasmon coupling and near-field enhancement depend on interparticle spacing, particle size, and material.",
+            "page_number": 7,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper directly supports a directional gap-dependent plasmonic response in Ag dimers: reducing interparticle spacing increases coupling and calculated near-field enhancement. This is partial prior art because the study uses theoretical Ag homo-dimers rather than the specified polymer-separated Ag-bridge architecture and does not establish the architecture-specific reproducible SERS trend."
+      }
+    ],
+    "canonical_id": "doi:10.7716/aem.v7i2.563",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 4
+  },
+  "review_sha256": "4a29ad419fb241bca3cac19c2cd9cc762f0d6c98cd83cc770aee1d9a6e7ffcd4",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 10584,
+    "output_tokens": 1466,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 12050
+  },
+  "verbatim_quote_evidence_enabled": false
+}

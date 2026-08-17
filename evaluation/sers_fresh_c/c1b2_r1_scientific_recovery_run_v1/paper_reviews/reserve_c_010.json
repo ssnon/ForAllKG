@@ -1,0 +1,80 @@
+{
+  "canonical_id": "doi:10.1038/nprot.2016.036",
+  "failed_parent_response_reused": false,
+  "record_sha256": "1887be8570ab7d64f5450a1e33447ffce12306671e85599a9c9dba9e24d86f6c",
+  "reserve_index": 10,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Liquid samples can be examined in aqueous formats, while drop-coating deposition dries biofluids and produces pre-concentration, coffee-ring deposits, and intensity/distribution effects related to ring thickness.",
+            "page_number": 9,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The SERS biofluid protocol mixes biofluid with colloidal nanoparticles on a Raman substrate and allows the preparation to dry overnight before analysis.",
+            "page_number": 17,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The protocol allows some cell samples to be measured either dry or in saline, but this is not presented as a controlled paired comparison of the same preparation.",
+            "page_number": 18,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The protocol describes both liquid-sample Raman/SERS measurements and dried biofluid-drop measurements. It specifically states that drying produces pre-concentration and a coffee-ring deposit whose variable thickness affects spectral intensities and macromolecule distribution. It also provides a dried SERS biofluid procedure. These observations support part of the measurement-context relation, but the supplied text does not establish a paired solution-to-dried comparison of the same analyte-mixed Ag-shell core-satellite preparation or a qualitative peak-profile transformation."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "SERS and TERS can provide sub-diffraction spatial resolution because biomolecules interact with roughened metallic nanoparticle surfaces that enhance the electric field, partly through localized surface plasmons.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "For SERS point mapping, the protocol recommends sampling regions near nanoparticle aggregations because enhanced spectra arise from molecules close to nanoparticles.",
+            "page_number": 19,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The SERS method is described as using nanoscale metal roughness and surface plasmon resonance to increase the electric field and enhance Raman scattering from adsorbed biomolecules.",
+            "page_number": 36,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper supports the general SERS mechanism relevant to hotspot enhancement: roughened metallic surfaces and nanoparticles can increase the local electric field through localized surface plasmons, and close proximity to nanoparticle aggregates is associated with enhanced spectra. However, the supplied text does not describe an Au/Ag bridge, polymer-defined inner and outer gaps, controlled gap variation, or a reproducible directional SERS response across gap sizes. Thus it supports the generic mechanistic portion only."
+      }
+    ],
+    "canonical_id": "doi:10.1038/nprot.2016.036",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 10
+  },
+  "review_sha256": "d11dfb606fa62c3c1b75acc81946df0969c6923ce8f62a4e0ace807e343f8387",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 54846,
+    "output_tokens": 1473,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 56319
+  },
+  "verbatim_quote_evidence_enabled": false
+}

@@ -1,0 +1,80 @@
+{
+  "canonical_id": "doi:10.1038/srep04752",
+  "failed_parent_response_reused": false,
+  "record_sha256": "bf570fa50456222b0b35da9f4b9e979185dbca1b5a3e2d457027d52ba41ced1b",
+  "reserve_index": 6,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "AuNR/Ag nanostructures produced a 129-fold SERS enhancement relative to pure AuNRs when decorated with 4MBA, supporting Ag-associated plasmonic enhancement.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The authors observed AuNR/Ag agglomeration on cell membranes, associated with increased SERS intensity, and reported preliminary nonlinear correlations between signal intensity and cluster size.",
+            "page_number": 6,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The reported nanorods were silver-coated AuNRs functionalized with Raman molecules and antibodies; the methods do not describe polymer-defined, varied Ag bridge gaps.",
+            "page_number": 7,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper supports Ag-mediated SERS enhancement and reports that AuNR/Ag agglomeration increases SERS intensity with a nonlinear dependence on cluster size. However, it does not test controlled variation of a polymer-defined inner/outer Ag gap in an Ag-bridge architecture or establish a reproducible directional gap-size trend under matched conditions."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "SERS was compared for 4MBA in solution and after deposition on AuNRs or AuNR/Ag, but this is not a paired dispersed-versus-dried measurement of the same analyte-mixed preparation.",
+            "page_number": 3,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "AuNR/Ag agglomeration on cell membranes was reported to increase SERS intensity, with a preliminary nonlinear signal relationship to cluster size.",
+            "page_number": 6,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "For the targeting assay, samples were fixed, washed, left to dry, and then subjected to Raman measurement; no corresponding pre-drying measurement is described.",
+            "page_number": 7,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "PARTIAL_PRIOR_ART",
+        "scientific_rationale": "The paper provides related context-dependent SERS evidence: Ag-coated nanorods show enhanced signal, and cellular agglomeration is associated with increased intensity. It does not perform a paired solution-to-dried comparison of the same analyte-mixed preparation, nor does it establish a normalized peak-intensity distribution or qualitative peak-profile transformation across that transition."
+      }
+    ],
+    "canonical_id": "doi:10.1038/srep04752",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 6
+  },
+  "review_sha256": "744c88ef38ef1f30f36d55dfeda721657b2dc66cae43a25d63a77a43f406ab66",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 13016,
+    "output_tokens": 1207,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 14223
+  },
+  "verbatim_quote_evidence_enabled": false
+}

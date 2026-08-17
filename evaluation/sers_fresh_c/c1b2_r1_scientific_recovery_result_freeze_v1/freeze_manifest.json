@@ -1,0 +1,23 @@
+{
+  "automatic_next_stage_authorized": false,
+  "external_literature_used": false,
+  "failed_parent_response_reused": false,
+  "freeze_id": "sers_fresh_c_c1b2_r1_scientific_recovery_result_freeze_v1:76b31a3c265fd75ed891",
+  "h1_fresh_c_verdict": "FRESH_C_PRESERVES_PRE_C_BOUNDED_EXTENSION",
+  "h2_resurrected": false,
+  "h2_terminal_state": "REJECT_AS_FORMULATED",
+  "h3_fresh_c_verdict": "FRESH_C_ERODES_PRE_C_RELATIONAL_GAP",
+  "hypothesis_rewrite_performed": false,
+  "hypothesis_upgrade_performed": false,
+  "manifest_sha256": "55fff4474e3e4b84479652d7d711a97d6deb2d1f6518375c9a13266c8c84c383",
+  "new_fresh_reserve_claimed": false,
+  "recovery_after_parent_validation_failure": true,
+  "recovery_llm_calls": 26,
+  "recovery_network_calls": 26,
+  "same_recovery_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-c1b2-r1-scientific-recovery-result-freeze-v1",
+  "source_run_id": "sers_fresh_c_c1b2_r1_scientific_recovery_run_v1:f48db30f437c4555ac47",
+  "source_run_sha256": "f48db30f437c4555ac47f47764a587bea4c55b0ba168c6c8fe09d1ffb875f476",
+  "stop": true,
+  "verbatim_quote_evidence_enabled": false
+}

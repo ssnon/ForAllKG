@@ -1,0 +1,75 @@
+{
+  "canonical_id": "doi:10.21203/rs.3.rs-6518100/v1",
+  "failed_parent_response_reused": false,
+  "record_sha256": "e82c9ad57680158fc484c47f72eeb60214e464016d9a60b3ab967dec339e4eb0",
+  "reserve_index": 11,
+  "review": {
+    "assessments": [
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "Au@Ag core-shell nanoparticles are prepared and combined with MMT; the substrate is characterized and optimized, but no paired solution-versus-dried comparison is described.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "R6G solutions are uniformly mixed with the substrate, drop-cast onto glass slides, air-dried, and then analyzed by SERS; the study reports concentration response and spatial RSD for this dried configuration.",
+            "page_number": 5,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "For thiram, equal volumes of analyte solution and MMT/Au@Ag nanoparticles are mixed and applied to apple skin for SERS analysis, with concentration calibration and reproducibility reported rather than a solution-to-dried comparison.",
+            "page_number": 5,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper uses Au@Ag core-shell nanoparticles with analytes mixed into the substrate and then drop-cast and air-dried before SERS measurement. However, it does not establish the frozen paired solution-to-dried relation because the same preparation is not measured in both contexts and no context-dependent change in normalized peak intensities or peak profile is reported."
+      },
+      {
+        "count_threshold_used": false,
+        "evidence": [
+          {
+            "evidence_paraphrase": "The reported material is an MMT-supported Au@Ag core-shell nanoparticle substrate, with UV irradiation time and MMT-to-particle mixing ratio optimized; no polymer-defined Ag bridge or controlled gap variation is examined.",
+            "page_number": 4,
+            "verbatim_quote": null
+          },
+          {
+            "evidence_paraphrase": "The study reports SERS intensity, concentration calibration, and spatial uniformity for R6G and thiram, without testing a directional response to controlled nanogap dimensions.",
+            "page_number": 5,
+            "verbatim_quote": null
+          }
+        ],
+        "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+        "hypothesis_rewrite_proposed": false,
+        "hypothesis_upgrade_proposed": false,
+        "literature_wide_novelty_claim_made": false,
+        "negative_absence_inference_used": false,
+        "relation_label": "COMPONENTS_ONLY",
+        "scientific_rationale": "The paper contains Au@Ag core-shell nanoparticles and reports SERS enhancement, but it does not study the polymer-separated Ag-bridge architecture or controlled variation of an inner/outer Ag gap. It therefore does not support the architecture-specific directional gap-size relation."
+      }
+    ],
+    "canonical_id": "doi:10.21203/rs.3.rs-6518100/v1",
+    "materialization_mode": "DIRECT_ORIGINAL",
+    "paper_level_completeness_claim_made": false,
+    "paper_level_negative_absence_inference_used": false,
+    "reserve_index": 11
+  },
+  "review_sha256": "ec05e71e1c8b2b439bc5c800b616f6e88ffd5a6eb6bf7d17d74d5b390f175f5a",
+  "schema_version": "sers-fresh-c-c1b2-r1-paper-review-record-v1",
+  "usage": {
+    "finish_reason": "stop",
+    "input_tokens": 7689,
+    "output_tokens": 1172,
+    "requested_model": "openai/gpt-5.6-luna",
+    "served_model": "openai/gpt-5.6-luna",
+    "total_tokens": 8861
+  },
+  "verbatim_quote_evidence_enabled": false
+}
