@@ -1,0 +1,15 @@
+{
+  "attempt_started_at_utc": "2026-08-16T23:57:49+00:00",
+  "fresh_reserve_c_consumed": false,
+  "one_shot": true,
+  "provider_plan_id": "literature_provider_plan:9d6d3c9161d16be3f6fd",
+  "remaining_live_gap_id": "novelty_gap:7c23d5b396a7e66d171f",
+  "rerun_authorized": false,
+  "schema_version": "sers-targeted-retrieval-t1-live-attempt-v2",
+  "source_git_branch": "feat/SERS-targeted-retrieval-live-dev",
+  "source_git_head": "08059313a827c939ca935fa01449de1381d0ad11",
+  "spec_id": "sers_targeted_retrieval_t1_live_spec:8ea007ccbea7cc1b9dea",
+  "v1_failure_freeze_id": "sers_targeted_retrieval_t1_v1_failure_freeze:752e95b3d4719d2b75af",
+  "v1_gap1_retrieval_replayed": false,
+  "v1_recovered_gap_id": "novelty_gap:86037a42e59d6e71e2d6"
+}

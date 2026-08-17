@@ -1,0 +1,502 @@
+{
+  "action": "targeted_search_only",
+  "all_provider_executions_successful": true,
+  "audit_sha256": "09b0453be5a29c6f6792a74af33b5a5d1609da62a3085eade4b43f7de0500170",
+  "automatic_next_stage_authorized": false,
+  "checks": {
+    "augmented_plan_exact": true,
+    "base_claim_provenance_retained": true,
+    "base_query_provenance_retained": true,
+    "delta_claim_provenance_retained": true,
+    "delta_count_accounting": true,
+    "delta_packet_source_plan": true,
+    "delta_packet_source_portfolio": true,
+    "delta_plan_exact": true,
+    "delta_queries_nonempty": true,
+    "delta_query_claims_exact": true,
+    "delta_query_ids_unique": true,
+    "delta_query_provenance_retained": true,
+    "delta_work_query_claim_provenance_exact": true,
+    "epistemic_usage_unchanged": true,
+    "execution_pairs_exact": true,
+    "execution_query_ids_known": true,
+    "merged_count_accounting": true,
+    "merged_packet_source_plan": true,
+    "merged_packet_source_portfolio": true,
+    "provider_set_exact": true,
+    "shared_canonicalization_idempotent": true
+  },
+  "claim_reviewer_called": false,
+  "delta_abstract_work_count": 16,
+  "delta_canonical_work_count": 32,
+  "delta_query_count": 3,
+  "delta_raw_work_count": 52,
+  "delta_work_claim_bindings": [
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:4b1ae98e884b706904ce"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:cad3942a5842bfba9978"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:e7716c72d4469f6cb4c4"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:0eae75db47b7594b7b09"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:fbe7a5c41339fc684c56"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:953eb273fdb838cbcc77"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:878efa699d106469adf3"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:e12a9d6c2755861d9aec"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:d335cb70e2c314dccd8b"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:a5052a6daab8bf0daa5d"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:9c2da82ee058a7525c81"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:ef212c15cb7aac0f73a8"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:fcce8bf32606b3b2a309"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:21b869f8095c65d01784"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:82666747013ad4ea1dcf"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:a3fe6713c9ad669107ef"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:45a7e86609c756c99159"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:01e35bc24774ff9e0e91"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:36ccf1169b7fed2b6a61"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:f4dc2aa6d7f338899b5b"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:946dc165ca35f5292cba"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:edc1cbf308bf168680c0"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:6aff5598e1b1273aa6fd"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:031ddd68d1a19dd62f0e"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:0ab56c45493409db8f03"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:609e4f70b11730f95ed4"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:88c15d72c6bd7e499724"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:d8704698f70f7f91ee88"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:3e18b0ee4c45ac103796"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:05e03de50ed469f5b52b"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:c2cf5caefa2121e5575e"
+    },
+    {
+      "expected_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "observed_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "valid": true,
+      "work_id": "prior_art_work:aadc23cc5c7604e0ac91"
+    }
+  ],
+  "every_query_operational": true,
+  "expected_execution_count": 6,
+  "failed_execution_count": 0,
+  "fresh_reserve_c_consumed": false,
+  "gap_id": "novelty_gap:7c23d5b396a7e66d171f",
+  "hypothesis_id": "direction_aware_trend_hypothesis:1cf889e57332402d88c9",
+  "hypothesis_rewrite_called": false,
+  "llm_calls": 0,
+  "merged_abstract_work_count": 209,
+  "merged_canonical_work_count": 453,
+  "observed_execution_count": 6,
+  "outcome": "T1_GAP_STRUCTURAL_PASS",
+  "provider_failures": [],
+  "providers": [
+    "openalex",
+    "crossref"
+  ],
+  "query_success_provider_counts": {
+    "literature_query:9fc97d5d50116858a626": 2,
+    "literature_query:a293d000df997bdcc78a": 2,
+    "literature_query:d3efb622a71b60beee40": 2
+  },
+  "query_success_result_counts": {
+    "literature_query:9fc97d5d50116858a626": 24,
+    "literature_query:a293d000df997bdcc78a": 14,
+    "literature_query:d3efb622a71b60beee40": 14
+  },
+  "ranker_called": false,
+  "schema_version": "sers-targeted-retrieval-t1-gap-audit-v2",
+  "scientific_novelty_reassessed": false,
+  "structural_pass": true,
+  "successful_execution_count": 6
+}

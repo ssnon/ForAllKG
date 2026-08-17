@@ -1,0 +1,9 @@
+{
+  "action": "keep",
+  "gap_id": "novelty_gap:df16959df85c94d5e2cc",
+  "hypothesis_id": "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de",
+  "network_retrieval_authorized": false,
+  "provider_calls": 0,
+  "reason": "KEEP_ACTION_ZERO_TARGETED_QUERIES",
+  "targeted_query_count": 0
+}

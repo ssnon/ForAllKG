@@ -1,0 +1,10 @@
+{
+  "audit_sha256": "41b201473486897930ff946d7bed7c3b572b709aa91f470673b695ab17f31fa2",
+  "gap_id": "novelty_gap:86037a42e59d6e71e2d6",
+  "hypothesis_id": "direction_aware_trend_hypothesis:ad13dac8334238124899",
+  "network_replayed": false,
+  "provider_executions_reused": 6,
+  "source_failure_freeze_id": "sers_targeted_retrieval_t1_v1_failure_freeze:752e95b3d4719d2b75af",
+  "source_v1_gap_root": "evaluation/sers_novelty_gap/t1_live_targeted_retrieval_run_v1/gap_01",
+  "source_v1_run_root": "evaluation/sers_novelty_gap/t1_live_targeted_retrieval_run_v1"
+}

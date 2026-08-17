@@ -1,0 +1,1068 @@
+{
+  "canonical_work_count": 32,
+  "deduplicated_work_count": 20,
+  "epistemic_usage": "prior_art_only_not_positive_premise",
+  "executions": [
+    {
+      "elapsed_seconds": 1.4832637560321018,
+      "error": null,
+      "provider": "openalex",
+      "query_id": "literature_query:d3efb622a71b60beee40",
+      "result_count": 2,
+      "success": true
+    },
+    {
+      "elapsed_seconds": 0.9207981079816818,
+      "error": null,
+      "provider": "crossref",
+      "query_id": "literature_query:d3efb622a71b60beee40",
+      "result_count": 12,
+      "success": true
+    },
+    {
+      "elapsed_seconds": 1.2648192549822852,
+      "error": null,
+      "provider": "openalex",
+      "query_id": "literature_query:9fc97d5d50116858a626",
+      "result_count": 12,
+      "success": true
+    },
+    {
+      "elapsed_seconds": 1.2018618680303916,
+      "error": null,
+      "provider": "crossref",
+      "query_id": "literature_query:9fc97d5d50116858a626",
+      "result_count": 12,
+      "success": true
+    },
+    {
+      "elapsed_seconds": 1.7042382760555483,
+      "error": null,
+      "provider": "openalex",
+      "query_id": "literature_query:a293d000df997bdcc78a",
+      "result_count": 2,
+      "success": true
+    },
+    {
+      "elapsed_seconds": 0.8264752639806829,
+      "error": null,
+      "provider": "crossref",
+      "query_id": "literature_query:a293d000df997bdcc78a",
+      "result_count": 12,
+      "success": true
+    }
+  ],
+  "packet_id": "prior_art_packet:40603dfcf36ba1e2b999",
+  "packet_sha256": "2ca384d2aef1619dd4bc0580502073d6ab8e6188557964a571a2a61039814acf",
+  "providers_requested": [
+    "openalex",
+    "crossref"
+  ],
+  "raw_work_count": 52,
+  "schema_version": "prior-art-packet-v1",
+  "searched_at_utc": "2026-08-16T23:57:57+00:00",
+  "source_portfolio_id": "sers_alpha4c5k_downstream_projection:14bf66ed57dfdb08949e",
+  "source_query_plan_id": "literature_query_plan:d284245a08cce4672c87",
+  "supplementary_records_collapsed": 14,
+  "works": [
+    {
+      "abstract": "The discovery of the enhancement of Raman scattering by molecules adsorbed on nanostructured metal surfaces is a landmark in the history of spectroscopic and analytical techniques. Significant experimental and theoretical effort has been directed toward understanding the surface-enhanced Raman scattering (SERS) effect and demonstrating its potential in various types of ultrasensitive sensing applications in a wide variety of fields. In the 45 years since its discovery, SERS has blossomed into a rich area of research and technology, but additional efforts are still needed before it can be routinely used analytically and in commercial products. In this Review, prominent authors from around the world joined together to summarize the state of the art in understanding and using SERS and to predict what can be expected in the near future in terms of research, applications, and technological development. This Review is dedicated to SERS pioneer and our coauthor, the late Prof. Richard Van Duyne, whom we lost during the preparation of this article.",
+      "authors": [
+        "Alexandre G. Brolo",
+        "Amanda J. Haes",
+        "Anja Boisen",
+        "Annemarie Pucci",
+        "Baptiste Auguié",
+        "Bin Ren",
+        "Bing Zhao",
+        "Christian Huck",
+        "Christy L. Haynes",
+        "Chuanlai Xu",
+        "Dana Cialla‐May",
+        "Dorleta Jiménez de Aberasturi",
+        "Duncan Graham",
+        "Eric C. Le Ru",
+        "F. Javier Garcı́a de Abajo",
+        "George C. Schatz",
+        "Guillermo C. Bazan",
+        "Hiang Kwee Lee",
+        "Hongxing Xu",
+        "Hua Kuang",
+        "Isabel Pastoriza‐Santos",
+        "Jaebum Choo",
+        "Janina Kneipp",
+        "Javier Aizpurua",
+        "Jeremy J. Baumberg",
+        "Jian‐Feng Li",
+        "Jorge Pérez‐Juste",
+        "Judith Langer",
+        "Jwa‐Min Nam",
+        "Jürgen Popp",
+        "K. George Thomas",
+        "Karen Faulds",
+        "Katherine A. Willets",
+        "Kei Murakoshi",
+        "Laura Fabris",
+        "Li‐Lin Tay",
+        "Luis M. Liz‐Marzán",
+        "Martin Moskovits",
+        "Mikael Käll",
+        "Nicholas A. Kotov",
+        "Ramón A. Álvarez‐Puebla",
+        "Richard P. Van Duyne",
+        "Royston Goodacre",
+        "Sebastian Schlücker",
+        "Shuming Nie",
+        "Stefan A. Maier",
+        "Stephanie Reich",
+        "Steven E. J. Bell",
+        "Tamitake Itoh",
+        "Thomas G. Mayerhöfer",
+        "Timur Shegai",
+        "Tuan Vo‐Dinh",
+        "Volker Deckert",
+        "Xing Yi Ling",
+        "Yikai Xu",
+        "Yue Wang",
+        "Yukihiro Ozaki",
+        "Yuko S. Yamamoto",
+        "Zhong‐Qun Tian"
+      ],
+      "citation_count": 3839,
+      "doi": "10.1021/acsnano.9b04224",
+      "open_access_url": "https://doi.org/10.1021/acsnano.9b04224",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W2971763914"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2019-09-03",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Present and Future of Surface-Enhanced Raman Scattering",
+      "url": "https://doi.org/10.1021/acsnano.9b04224",
+      "venue": "ACS Nano",
+      "work_id": "prior_art_work:4b1ae98e884b706904ce",
+      "year": 2019
+    },
+    {
+      "abstract": "Here, we review the state-of-the-art progress in the construction of smart multifunctional enhancing substrates. These substrates hold the key to achieving sustainability and widespread applications of SERS.",
+      "authors": [
+        "Chunchun Li",
+        "Yiming Huang",
+        "Xinyuan Li",
+        "Yingrui Zhang",
+        "Qinglu Chen",
+        "Ziwei Ye",
+        "Zarah Alqarni",
+        "Steven E. J. Bell",
+        "Yikai Xu"
+      ],
+      "citation_count": 235,
+      "doi": "10.1039/d1tc02134f",
+      "open_access_url": "https://pubs.rsc.org/en/content/articlepdf/2021/tc/d1tc02134f",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W3186402549"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2021-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Towards practical and sustainable SERS: a review of recent developments in the construction of multifunctional enhancing substrates",
+      "url": "https://doi.org/10.1039/d1tc02134f",
+      "venue": "Journal of Materials Chemistry C",
+      "work_id": "prior_art_work:cad3942a5842bfba9978",
+      "year": 2021
+    },
+    {
+      "abstract": "Surface-enhanced Raman scattering (SERS) remains a significant area of research since it's discovery 50 years ago. The surface-based technique has been used in a wide variety of fields, most prominently in chemical detection, cellular imaging and medical diagnostics, offering high sensitivity and specificity when probing and quantifying a chosen analyte or monitoring nanoparticle uptake and accumulation. However, despite its promise, SERS is mostly confined to academic laboratories and is not recognised as a gold standard analytical technique. This is due to the variations that are observed in SERS measurements, mainly caused by poorly characterised SERS substrates, lack of universal calibration methods and uncorrelated results. To convince the wider scientific community that SERS should be a routinely used analytical technique, the field is now focusing on methods that will increase the reproducibility of the SERS signals and how to validate the results with more well-established techniques. This review explores the difficulties experienced by SERS users, the methods adopted to reduce variation and suggestions of best practices and strategies that should be adopted if one is to achieve absolute quantification.",
+      "authors": [
+        "Duncan Graham",
+        "Gregory Q. Wallace",
+        "Karen Faulds",
+        "Sian Sloan‐Dennison",
+        "Stacey Laing",
+        "Waleed A. Hassanain"
+      ],
+      "citation_count": 112,
+      "doi": "10.1186/s40580-024-00443-4",
+      "open_access_url": "https://nanoconvergencejournal.springeropen.com/counter/pdf/10.1186/s40580-024-00443-4",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W4401660915"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2024-08-17",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Advancing SERS as a quantitative technique: challenges, considerations, and correlative approaches to aid validation",
+      "url": "https://doi.org/10.1186/s40580-024-00443-4",
+      "venue": "Nano Convergence",
+      "work_id": "prior_art_work:e7716c72d4469f6cb4c4",
+      "year": 2024
+    },
+    {
+      "abstract": "This is a review of relevant Raman spectroscopy (RS) techniques and their use in structural biology, biophysics, cells, and tissues imaging towards development of various medical diagnostic tools, drug design, and other medical applications. Classical and contemporary structural studies of different water-soluble and membrane proteins, DNA, RNA, and their interactions and behavior in different systems were analyzed in terms of applicability of RS techniques and their complementarity to other corresponding methods. We show that RS is a powerful method that links the fundamental structural biology and its medical applications in cancer, cardiovascular, neurodegenerative, atherosclerotic, and other diseases. In particular, the key roles of RS in modern technologies of structure-based drug design are the detection and imaging of membrane protein microcrystals with the help of coherent anti-Stokes Raman scattering (CARS), which would help to further the development of protein structural crystallography and would result in a number of novel high-resolution structures of membrane proteins—drug targets; and, structural studies of photoactive membrane proteins (rhodopsins, photoreceptors, etc.) for the development of new optogenetic tools. Physical background and biomedical applications of spontaneous, stimulated, resonant, and surface- and tip-enhanced RS are also discussed. All of these techniques have been extensively developed during recent several decades. A number of interesting applications of CARS, resonant, and surface-enhanced Raman spectroscopy methods are also discussed.",
+      "authors": [
+        "A.V. Vlasov",
+        "Nina Maliar",
+        "Sergey V. Bazhenov",
+        "Evelina I. Nikelshparg",
+        "Nadezda A. Brazhe",
+        "Anastasiia D. Vlasova",
+        "Stepan D. Osipov",
+        "Vsevolod V. Sudarev",
+        "Yury L. Ryzhykau",
+        "Andrey Bogorodskiy",
+        "Egor V. Zinovev",
+        "Andrey Rogachev",
+        "И. В. Манухов",
+        "Valentin Borshchevskiy",
+        "A. I. Kuklin",
+        "J. Pokorný",
+        "Olga Sosnovtseva",
+        "Г. В. Максимов",
+        "Valentin Gordeliy"
+      ],
+      "citation_count": 56,
+      "doi": "10.3390/cryst10010038",
+      "open_access_url": "https://www.mdpi.com/2073-4352/10/1/38/pdf?version=1579683677",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W3000509337"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2020-01-15",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Raman Scattering: From Structural Biology to Medical Applications",
+      "url": "https://doi.org/10.3390/cryst10010038",
+      "venue": "Crystals",
+      "work_id": "prior_art_work:0eae75db47b7594b7b09",
+      "year": 2020
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Mingchun Lv",
+        "Hongbin Pu",
+        "Da-Wen Sun"
+      ],
+      "citation_count": 53,
+      "doi": "10.1016/j.saa.2023.122548",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1016/j.saa.2023.122548"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2023-06-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Preparation of Fe3O4@UiO-66(Zr)@Ag NPs core-shell-satellite structured SERS substrate for trace detection of organophosphorus pesticides residues",
+      "url": "https://doi.org/10.1016/j.saa.2023.122548",
+      "venue": "Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy",
+      "work_id": "prior_art_work:fbe7a5c41339fc684c56",
+      "year": 2023
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Shupeng Liu",
+        "Na Chen",
+        "Lianxin Li",
+        "Fufei Pang",
+        "Zhenyi Chen",
+        "Tingyun Wang"
+      ],
+      "citation_count": 27,
+      "doi": "10.1016/j.optmat.2012.10.033",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1016/j.optmat.2012.10.033"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2013-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Fabrication of Ag/Au core-shell nanowire as a SERS substrate",
+      "url": "https://doi.org/10.1016/j.optmat.2012.10.033",
+      "venue": "Optical Materials",
+      "work_id": "prior_art_work:953eb273fdb838cbcc77",
+      "year": 2013
+    },
+    {
+      "abstract": "Abstract The strength of SERS signal depends on the amount of analyte adsorbed onto the hotspots of a SERS substrate immersed in solution. This adsorption is a dynamic process and can be described by the Langmuir adsorption model, in which the adsorption is influenced by several factors such as the temperature and the immersion time. By varying the immersion time and immersion volume of a gold nanostructure array SERS substrate in malachite green solution, we find that the required immersion time to reach the equilibrium adsorption coverage increases with decreasing analyte concentration and volume. For a 6.5 mm × 6.5 mm SERS substrate immersed in 15 ml of 1.5 ppb malachite solution, it takes more than 7 days of immersion time for it to reach 63% of the equilibrium coverage in ambient environment. Furthermore, at low concentration and immersion volume, the solution concentration decreases during the adsorption process and causes deviation from the prediction of Langmuir isotherm. In this work, we demonstrate that for quantitative SERS measurement in low analyte concentration, it is critical to take the immersion volume and time into consideration and ensure the equilibrium adsorption coverage or SERS intensity is reached for accurate concentration determination.",
+      "authors": [
+        "Chao‐Yuan Lo",
+        "Kuan‐Jiuh Lin",
+        "Wei‐Hung Chen",
+        "Wei‐Liang Chen",
+        "Yu‐Chi Wang",
+        "Yu‐Chun Huang",
+        "Yu‐Ming Chang"
+      ],
+      "citation_count": 26,
+      "doi": "10.1002/jrs.6250",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1002/jrs.6250"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2021-09-07",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Toward quantitative SERS detection in low analyte concentration by investigating the immersion volume and time of SERS substrate in analyte solution",
+      "url": "https://doi.org/10.1002/jrs.6250",
+      "venue": "Journal of Raman Spectroscopy",
+      "work_id": "prior_art_work:878efa699d106469adf3",
+      "year": 2021
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Yuan Zhang",
+        "Chaosheng Xing",
+        "Deli Jiang",
+        "Min Chen"
+      ],
+      "citation_count": 25,
+      "doi": "10.1039/c3ce40664d",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1039/c3ce40664d"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2013-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Facile synthesis of core–shell–satellite Ag/C/Ag nanocomposites using carbon nanodots as reductant and their SERS properties",
+      "url": "https://doi.org/10.1039/c3ce40664d",
+      "venue": "CrystEngComm",
+      "work_id": "prior_art_work:e12a9d6c2755861d9aec",
+      "year": 2013
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Zhong Zhang",
+        "Sha Zhang",
+        "Mengshi Lin"
+      ],
+      "citation_count": 15,
+      "doi": "10.1039/c3an02116e",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1039/c3an02116e"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2014-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "DNA-embedded Au–Ag core–shell nanoparticles assembled on silicon slides as a reliable SERS substrate",
+      "url": "https://doi.org/10.1039/c3an02116e",
+      "venue": "The Analyst",
+      "work_id": "prior_art_work:d335cb70e2c314dccd8b",
+      "year": 2014
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Mingchun Lv",
+        "Da-Wen Sun",
+        "Hongbin Pu",
+        "Haofan Zhu"
+      ],
+      "citation_count": 10,
+      "doi": "10.1016/j.microc.2022.108137",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1016/j.microc.2022.108137"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": "2022-12-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "A core-shell-satellite structured Fe3O4@MIL-100(Fe)@Ag SERS substrate with adsorption, detection, degradation and recovery functionalities for selective detection of cationic dyes",
+      "url": "https://doi.org/10.1016/j.microc.2022.108137",
+      "venue": "Microchemical Journal",
+      "work_id": "prior_art_work:a5052a6daab8bf0daa5d",
+      "year": 2022
+    },
+    {
+      "abstract": "ABSTRACT Histamine, produced through the decarboxylation of histidine by microbial histidine decarboxylase during the transportation and processing of aquatic products, serves as a critical biomarker for evaluating spoilage and freshness. However, conventional detection methods for histamine, such as HPLC and ELISA, are often hampered by lengthy procedures, complex protocols, and specialized equipment requirements. These limitations underscore the urgent need for rapid, sensitive, and field‐deployable alternatives. Surface‐enhanced Raman spectroscopy (SERS) has emerged as a transformative solution, offering unparalleled advantages including single‐molecule sensitivity, minimal sample preparation, and rapid analysis, thereby positioning it as a leading nondestructive tool for real‐time food safety monitoring. This review systematically examines recent progress in SERS‐based histamine detection for aquatic products, detailing the fundamental principles, substrate design innovations, and synergistic integration with complementary technologies (e.g., microfluidics, machine learning) to enhance reproducibility and reduce detection limits. By critically analyzing current challenges—such as substrate uniformity and matrix interference—we propose future directions for SERS technology, including scalable substrate fabrication, portable device development, and standardized protocols. These advancements hold significant potential to revolutionize quality control across the aquatic product supply chain, bridging the gap between laboratory research and industrial implementation.",
+      "authors": [
+        "Xin Jiang",
+        "Ruizhi Yang",
+        "Jia Liang",
+        "Bin Zheng",
+        "Meiling Chen",
+        "Bin Zhang",
+        "Tao Han",
+        "Ya-Dong Zhao",
+        "Soottawat Benjakul"
+      ],
+      "citation_count": 3,
+      "doi": "10.1002/fft2.70129",
+      "open_access_url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/fft2.70129",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W4414254218"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2025-09-15",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Application of Surface‐Enhanced Raman Spectroscopy (SERS) in Histamine Analysis of Aquatic Products: Principles, Applications, Challenges, and Prospects",
+      "url": "https://doi.org/10.1002/fft2.70129",
+      "venue": "Food Frontiers",
+      "work_id": "prior_art_work:9c2da82ee058a7525c81",
+      "year": 2025
+    },
+    {
+      "abstract": "Nanomaterials are currently one of the most popular emerging materials used in different applications such as drug delivery, water treatment, cancer treatment, electronic, food preservations, and production of pesticide. This is due to their interesting features including size-dependent properties, lightweight, biocompatibility, amphiphilicity and biodegradability. They offer wide possibilities for modification and are used in multiple functions with enormous possibilities. Some of them are medically suitable which has opened new opportunities for medical improvement especially for human health. These characteristics also make nanomaterials one of the pioneers in green materials for various needs, especially in environmental engineering and energy sectors. In this review, several synthesis approaches for nanoparticles mainly physical, chemical, and biological have been discussed extensively. Furthermore, bibliometric analysis on the synthesis of nanoparticles was evaluated. About 117,162 publications were considered, of which 92% are journal publications. RSC Advances is the most published outlet on the synthesis of nanoparticles and China has the highest number of researchers engaged in the synthesis of nanoparticles. It was noted in the evaluation of synthesis approach that biological approach is the savest method but with a low yield, while the chemical approach offers a high yield with some level of hazardous effect. Also, the bibliometric analysis revealed that the field of nanotechnology is a trending and hot ground for research.",
+      "authors": [
+        "Oluwaseun J. Ajala",
+        "Damian C. Onwudiwe",
+        "Samuel Ogunniyi",
+        "Setyo Burdi Kurniawan",
+        "Olumide Esan",
+        "Oluwole Samuel Aremu"
+      ],
+      "citation_count": 3,
+      "doi": "10.18596/jotcsa.1389331",
+      "open_access_url": "https://dergipark.org.tr/en/download/article-file/3531040",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W4402924322"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2024-09-27",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "A Review of Different Synthesis Approaches to Nanoparticles: Bibliometric Profile",
+      "url": "https://doi.org/10.18596/jotcsa.1389331",
+      "venue": "Journal of the Turkish Chemical Society Section A Chemistry",
+      "work_id": "prior_art_work:ef212c15cb7aac0f73a8",
+      "year": 2024
+    },
+    {
+      "abstract": "Background and Objective: The diagnosis of respiratory viral infections has traditionally relied on nucleic acid testing, antigen assays, and viral culture; however, these approaches may be limited by turnaround time, sensitivity, operational complexity, or multiplexing capacity in certain clinical settings. Research interest in surface-enhanced Raman spectroscopy (SERS) as a rapid diagnostic strategy has intensified owing to its high sensitivity, molecular specificity, label-free detection capability, and multiplex analytical potential. This review provides a synthesis of the recently generated evidence related to SERS-based respiratory virus detection and discusses the translation-related challenges and clinical prospects. Methods: A systematic literature search for relevant studies published from January 1, 2005, to April 1, 2026, was conducted in the PubMed, Web of Science, and ScienceDirect databases. The search focused on the application of SERS for respiratory virus detection, specifically label-based and label-free strategies, microfluidics, and integration with machine learning and polymerase chain reaction. Key Content and Findings: Initial studies in the field established the feasibility of SERS in identifying respiratory viruses and distinguishing pathogen-specific molecular signatures. More recent work has expanded applications to encompass label-free detection, immunoassay-based platforms, nucleic acid amplification-coupled SERS, and integrated microfluidic or portable systems. These advances have improved analytical sensitivity, enabled multiplex pathogen discrimination, and broadened potential use across scenarios such as community screening, emergency triage, surveillance, and confirmatory testing. Combinations with deep learning and automated platforms, which may further enhance diagnostic performance and clinical adaptability, have also emerged. However, major barriers remain, including insufficient signal reproducibility, poor substrate uniformity, lack of standardized methodologies, and limited large-scale clinical validation. Conclusions: SERS has demonstrated considerable promise as a complementary diagnostic modality for respiratory virus detection and is progressing from proof-of-concept validation to the assessment of clinical feasibility. The future translation of this technology will depend on reproducible substrates, standardized workflows, robust algorithms, and rigorous clinical validation.",
+      "authors": [
+        "Yi-Xiang Wang",
+        "Lingyi Kong",
+        "Boyu Zhao",
+        "Shaoshuai Han",
+        "Zhenlin Wu"
+      ],
+      "citation_count": 0,
+      "doi": "10.21037/jtd-2026-1297",
+      "open_access_url": "https://doi.org/10.21037/jtd-2026-1297",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W7166587992"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2026-06-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Research progress, translation-related challenges, and clinical prospects of surface-enhanced Raman spectroscopy in respiratory virus detection: a narrative review",
+      "url": "https://doi.org/10.21037/jtd-2026-1297",
+      "venue": "Journal of Thoracic Disease",
+      "work_id": "prior_art_work:fcce8bf32606b3b2a309",
+      "year": 2026
+    },
+    {
+      "abstract": "Optical sensors based on Surface-enhanced Raman scattering (SERS) effect are among the most versatile sensors due to their ability to characterize samples in various states of matter. The appeal of the SERS sensors lies in the molecular “fingerprint” specificity, sensitivity, and the non-invasive nature of the analysis. Although the current state of art SERS sensors have advanced toward ultrasensitivity with single-molecule detection limit, ultrafast analysis at femtosecond and sub-nanometer resolution, the application of these innovations in the industrial settings is still limited by the complexity of the substrate fabrication and the reproducibility of the SERS measurements. In this context, a study on the SERS sensors fabrication strategies and reliability of the SERS analysis is essential. This dissertation investigates various hybrids of noble metal and semiconductor materials and surface modifications to improve the stability and reliability of SERS measurement. Different industrial applications, including detection of petrochemical organic compounds and sensitive biochemical samples, were conducted to evaluate the performance of different SERS sensor designs. Evaluation of the morphology and surface functionalization of the substrate was accomplished to optimize the performance and stability of the collected signal. Together with the separately performed studies on Raman signal processing and interpretation, the proposed SERS sensor fabrication and signal analysis approach was successfully applied to detect and quantify organic isomers compounds and mutation point in peptides. The findings presented in this thesis offer rational SERS substrate designs and detection approaches that can advance the future commercialization of SERS sensors.",
+      "authors": [
+        "Hoang, Phuong"
+      ],
+      "citation_count": 0,
+      "doi": "10.25781/kaust-agvo5",
+      "open_access_url": "http://hdl.handle.net/10754/660103",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W2991114523"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2019-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Design and evaluation of hybrid plasmonic nanostructures towards materialization of SERS sensors",
+      "url": "http://hdl.handle.net/10754/660103",
+      "venue": "King Abdullah University of Science and Technology Repository (King Abdullah University of Science and Technology)",
+      "work_id": "prior_art_work:21b869f8095c65d01784",
+      "year": 2019
+    },
+    {
+      "abstract": "Nanoscale materials often exhibit fascinating physical, chemical, and biological properties which are considerably different from those of their macro-and/or microscale counterparts. These unique characteristics have led to considerable growth over the last decade in nanomaterial-enabled applications in areas such as biomedicine, environmental sensing and remediation, and energy production and storage. In this dissertation, techniques are presented to create new nanomaterials relevant to these areas. Gold nanostructures are an example of a nanomaterial with great interest in biomedical therapy and sensing applications due to their high chemical and physical stability, ease of synthesis and surface functionalization and their unique optical properties. High photothermal heat generation efficiency and their biocompatibility have made them an effective tool for thermal destruction of cancer cells. Magnified electromagnetic field on their surfaces allows gold nanostructures to be used as ultrasensitive nano-sensors for analyte detection using surface-enhanced Raman scattering (SERS). There remains significant interest in further improving the synthesis and design of gold nanostructures to maximize their potential applications. In biomedicine, for instance, the absorbance spectra of gold nanostructures need to be stable and tuned to the near-infrared (NIR) window (650–1350 nm) where biological tissues have minimal light absorption, while yet it is also desirable for the nanostructures to degrade to avoid accumulation in the body after treatment. Likewise in SERS applications, it is important that the nanostructures are stable and resist surface fouling, while yet analytes with low affinity for the metal surface must be enriched at the surface to overcome poor detection limits. A versatile templating strategy was developed to create gold nanoshells on different dielectric cores for photothermal heating and sensing applications. The strategy allows for tunable NIR absorbance and high degradation capabilities upon laser irradiation using soft templates. When carbon nanomaterials are used as the template, the carbon improves the affinity of different analytes to the surface of the hybrid nanostructures, yielding sensitive SERS-active materials for monitoring aqueous pollutants. In the area of environmental remediation, nanoparticles with mixed wettability properties have been recently explored as alternative oil spill dispersants to help avoid the negative effects of surfactants on marine species. Adequate dispersing qualities and low toxicity are generally considered as the criteria for a good oil dispersant. However, their impact on the oil biodegradation process is still poorly understood. The attachment of bacteria to the oil/water interface, as the first step in oil biodegradation, was investigated to study the potential inhibitory effect of",
+      "authors": [
+        "Akram Abbasi"
+      ],
+      "citation_count": 0,
+      "doi": "10.23860/diss-abbasi-akram-2019",
+      "open_access_url": "https://digitalcommons.uri.edu/cgi/viewcontent.cgi?article=1877&context=oa_diss",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W2953663083"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2019-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "NANOMATERIALS FOR SENSING, HEATING AND APPLICATIONS IN COMPOSITES AND EMULSION BIOFOULING",
+      "url": "https://doi.org/10.23860/diss-abbasi-akram-2019",
+      "venue": "None",
+      "work_id": "prior_art_work:82666747013ad4ea1dcf",
+      "year": 2019
+    },
+    {
+      "abstract": "Plasmonic metal nanostructures can be tuned to efficiently interact with light, converting the photons into energetic charge carriers and heat. Therefore, the plasmonic nanoparticles such as gold and silver nanoparticles act as nano-reactors, where the molecules attached to their surfaces benefit from the enhanced electromagnetic field along with the generated energetic charge carriers and heat for possible chemical transformations. Hence, plasmonic chemistry presents metal nanoparticles as a unique playground for chemical reactions on the nanoscale remotely controlled by light. However, defining the elementary concepts behind these reactions represents the main challenge for understanding their mechanism in the context of the plasmonically assisted chemistry. Surface-enhanced Raman scattering (SERS) is a powerful technique employing the plasmon-enhanced electromagnetic field, which can be used for probing the vibrational modes of molecules adsorbed on plasmonic nanoparticles. In this cumulative dissertation, I use SERS to probe the dimerization reaction of 4-nitrothiophenol (4-NTP) as a model example of plasmonic chemistry. I first demonstrate that plasmonic nanostructures such as gold nanotriangles and nanoflowers have a high SERS efficiency, as evidenced by probing the vibrations of the rhodamine dye R6G and the 4-nitrothiophenol 4-NTP. The high signal enhancement enabled the measurements of SERS spectra with a short acquisition time, which allows monitoring the kinetics of chemical reactions in real time. To get insight into the reaction mechanism, several time-dependent SERS measurements of the 4-NTP have been performed under different laser and temperature conditions. Analysis of the results within a mechanistic framework has shown that the plasmonic heating significantly enhances the reaction rate, while the reaction is probably initiated by the energetic electrons. The reaction was shown to be intensity-dependent, where a certain light intensity is required to drive the reaction. Finally, first attempts to scale up the plasmonic catalysis have been performed showing the necessity to achieve the reaction threshold intensity. Meanwhile, the induced heat needs to quickly dissipate from the reaction substrate, since otherwise the reactants and the reaction platform melt. This study might open the way for further work seeking the possibilities to quickly dissipate the plasmonic heat generated during the reaction and therefore, scaling up the plasmonic catalysis.",
+      "authors": [
+        "Radwan M. Sarhan"
+      ],
+      "citation_count": 0,
+      "doi": "10.25932/publishup-43330",
+      "open_access_url": "https://nbn-resolving.org/urn:nbn:de:kobv:517-opus4-433304",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W3134156833"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2019-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Plasmon-driven photocatalytic reactions monitored by surface-enhanced Raman spectroscopy",
+      "url": "https://nbn-resolving.org/urn:nbn:de:kobv:517-opus4-433304",
+      "venue": "publish.UP (University of Potsdam)",
+      "work_id": "prior_art_work:a3fe6713c9ad669107ef",
+      "year": 2019
+    },
+    {
+      "abstract": "Endocrine disrupting compound (EDC) pollutants raise a concern among researchers as these pollutants are implicated in the increasing incidence of testicular, breast and thyroid cancers. Some of these chemicals are widely used for plastics production and discharged into the water system as industrial effluents that could harm the ecosystem as well as plant, animal and human life. Thus, rapid detection and quantification of EDCs in water is desired for screening and investigative purposes. For this purpose, nanoparticle-based methods appear to be potentially efficient, quick and cost-effective techniques to rapidly assess this toxic pollutant. &#13;\\nThe main focus of this study was to synthesize heterogeneous nanoparticles, iron oxide/gold nanoparticles (IONPs/AuNPs) and to manipulate their synergistic effects for the development of a nanoparticles-based assay, specifically for the EDC compound, 17β-estradiol. As the first step, IONPs and AuNPs were synthesized separately and heterogeneous nanoparticles were formed by a simple electrostatic- self- assembly technique. The unique physiochemical properties of this hybrid nanoparticle were investigated as a supporting material for biomolecules, as well for its intrinsic peroxidase-like activity using a hydrogen peroxidase dependent system. &#13;\\nThe formation of the IONPs/AuNPs was verified using several characterization tools such as UV-Vis spectrophotometry, Dynamic Light Scattering (DLS), Transmission Electron Microscope (TEM), Energy Dispersive X-ray (EDX) and X-ray Photoelectron Spectroscopy (XPS). The diameter calculated from TEM was 16.1 ± 11.1 nm and EDX confirmed the presence of the Fe and Au elements. From a heterostructural analysis using HRTEM and XPS data, an alloy-like morphology (Fe/Au) was suggested for the heterogeneous nanoparticles, rather than a core-shell structure. The Fe/Au nanoparticles showed good potential for the basis of a colorimetric assay for glucose detection using glucose oxidase immobilized on the Fe/Au surface. In addition, the Fe/Au nanoparticles also showed a significant peroxidase-like activity. A nanocatalytic-based assay was developed by modifying the nanoparticles surface with an aptamer in order to specifically “capture” the target molecule, 17β-estradiol. The formation of a Fe/Au-17β-estradiol complex significantly hampered the peroxidase-like catalytic activity resulting in the development of a unique nanosensor system based on the extent of loss of peroxidase activity. &#13;\\nDevelopment of the nanocatalytic-based assay suggests the potential application of Fe/Au nanoparticles to capture, separate and detect a selective target as well as a basis for the development of a rapid, simple and reliable detection tool. The heterogeneous Fe/Au nanoparticles show a remarkable synergistic property for application in nanosensor system. Therefore, some of the work presented here can be extended in certain major directions such as heterostructure formation and optimization of nanocatalytic-based assay.",
+      "authors": [
+        "Yazmin Bustami"
+      ],
+      "citation_count": 0,
+      "doi": null,
+      "open_access_url": "http://hdl.handle.net/10012/10311",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W2294270873"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2016-03-09",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Development of nanocatalytic-based assay for the detection of an endocrine disrupting compound in aqueous solution",
+      "url": "http://hdl.handle.net/10012/10311",
+      "venue": "UWSpace (University of Waterloo)",
+      "work_id": "prior_art_work:45a7e86609c756c99159",
+      "year": 2016
+    },
+    {
+      "abstract": "Surface Enhanced Raman Scattering (SERS) technique merges an excellent sensitivity and a highly specific label free detection which can be exploited in miniaturized devices with a multiplexed approach. The development of plasmonic nanostructures, aimed to SERS analysis, satisfies therefore the need for point-of-care multianalyte sensing and biosensing platforms, both in the framework of diagnostics and therapy monitoring. In this thesis, SERS active metal-dielectric nanostructures based on silver-coated porous silicon (Ag-pSi) are carefully optimized for biodetection purposes. The thesis is organized in two parts. Basic concepts, necessary to the understanding of the experimental work are provided in the \"Background\" section, dealing with fundamentals of SERS spectroscopy (Chapter 1), SERS substrates fabrication aimed to biosensing applications (Chapter 2) and the main techniques devoted to the substrates characterization (Chapter 3). On the other side, the \"Experimental\" part includes the applied materials and methods (Chapter 4) and the presentation and discussion of the experimental results. (Chapters 5-8). In detail, a reliable SERS sensing requires a deep characterization of the optical and SERS response of the substrate providing the Raman enhancement. Theoretical and experimental techniques (FEM simulations and multi-wavelength Raman mapping) are systematically applied to get new insight into the fundamental and applicative SERS properties of Ag-pSi (Chapter 5). Two different approaches for the fabrication of Ag-pSi multianalyte platforms are then presented and discussed. Chapter 6 deals with the in situ synthesis of silver nanoparticles (NPs) patterns synthesized by ink-jet printing. The correlation between the growth parameters, morphology and SERS response is studied in order to optimize the SERS signal efficiency and uniformity of the Ag-pSi printed nanostructures. On the other hand, Chapter 7 concerns with the fabrication of multichamber Ag-pSi-PDMS microfluidic chips, which can be applied as portable SERS multiplexing devices. An all-microfluidic in-flow synthesis of silver NPs is performed, integrating the preparation of the SERS active substrate and the detection step on the same chip. Finally, a biofunctionalization protocol developed for the detection of miRNA222 (a recognized tumor marker) is optimized for the application to the Ag-pSi SERS substrates, assessing their compatibility to bioassays and suggesting the Ag-pSi nanostructures integrated in elastomeric chips as advantageous platforms for miRNA profiling, as well as for several other bioanalytical applications (Chapter 8)",
+      "authors": [
+        "Chiara Novara"
+      ],
+      "citation_count": 0,
+      "doi": "10.6092/polito/porto/2653123",
+      "open_access_url": "http://porto.polito.it/2653123/",
+      "provider_ids": {
+        "openalex": "https://openalex.org/W2551943577"
+      },
+      "providers": [
+        "openalex"
+      ],
+      "publication_date": "2016-01-01",
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Silver nanostructures on porous silicon for multiplexed Surface Enhanced Raman Scattering biosensing platforms",
+      "url": "http://porto.polito.it/2653123/",
+      "venue": "PORTO Publications Open Repository TOrino (Politecnico di Torino)",
+      "work_id": "prior_art_work:01e35bc24774ff9e0e91",
+      "year": 2016
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.analchem.4c00831.s003",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.analchem.4c00831.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "A Wettability Contrast SERS Droplet Assay for Multiplexed Analyte Detection",
+      "url": "https://doi.org/10.1021/acs.analchem.4c00831.s003",
+      "venue": null,
+      "work_id": "prior_art_work:36ccf1169b7fed2b6a61",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [
+        "Ziwen Zhang",
+        "Weiye Yang",
+        "Dongan Wu",
+        "Ping Liang",
+        "Hongyan Peng",
+        "Lijian Meng",
+        "Shihua Zhao"
+      ],
+      "citation_count": 0,
+      "doi": "10.2139/ssrn.6143833",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.2139/ssrn.6143833"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Core-Shell Au@Ag Nanoparticles as a High-Performance SERS Substrate for Simultaneous Detection of Multiple Fungicides on Mango Surfaces",
+      "url": "https://doi.org/10.2139/ssrn.6143833",
+      "venue": null,
+      "work_id": "prior_art_work:f4dc2aa6d7f338899b5b",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acsanm.3c01382.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acsanm.3c01382.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a"
+      ],
+      "title": "Directed Assembly of Au Nanostar@Ag Satellite Nanostructures for SERS-Based Sensing of Hg2+ Ions",
+      "url": "https://doi.org/10.1021/acsanm.3c01382.s001",
+      "venue": null,
+      "work_id": "prior_art_work:946dc165ca35f5292cba",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.analchem.5c04919.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.analchem.5c04919.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "In Situ SERS Detection of Hydrogen Peroxide Released from Cells using Ag@Au Core/Shell Nanoparticle Nanomembrane as Substrate",
+      "url": "https://doi.org/10.1021/acs.analchem.5c04919.s001",
+      "venue": null,
+      "work_id": "prior_art_work:edc1cbf308bf168680c0",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.analchem.5c07999.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.analchem.5c07999.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Internal Standard-Embedded Shell-Isolated Satellite Nanostructures for Enhanced SERS Sensing",
+      "url": "https://doi.org/10.1021/acs.analchem.5c07999.s001",
+      "venue": null,
+      "work_id": "prior_art_work:6aff5598e1b1273aa6fd",
+      "year": null
+    },
+    {
+      "abstract": "Reliable detection of trace-level analytes in complex matrices is achieved using surface-enhanced Raman spectroscopy (SERS) using plasmonic substrates that are extremely sensitive, selective, and repeatable. Improving molecular detection performance through size-selective molecular access and regulated plasmonic activity is the goal of this work, which focuses on the design and fabrication of a bimetallic core-shell nanostructured substrate (Au@Ag@mSiO₂NP). To create consistent nanochannels, the substrate was created by first coating a gold core with silver. Then, a layer of mesoporous silica was generated via surfactant-templated self-assembly and subsequently removed. This design was used to control analyte spread, improve system stability, and enhance Raman signal amplification. Because the Au and Ag layers were synergistically coupled, the produced substrate exhibited robust plasmonic enhancement. The mesoporous silica coating enabled selective size-based filtration of analyte molecules, thereby enhancing the performance of smaller target species while blocking the passage of larger, potentially interfering macromolecules. The structured coating also made the nanoparticles far more resistant to chemical reactions and structural degradation, allowing them to withstand many recycling cycles without suffering a major drop in performance. The detection limit of chloramphenicol in milk samples was 6.68 × 10⁻⁸ M, according to the experimental assessment. Additionally, the technology demonstrated remarkable selectivity and repeatability in intricate biological matrices. The overall result of this study is a robust, reusable, and very selective plasmonic platform that improves SERS-based sensing and has promising applications in environmental monitoring and food safety.",
+      "authors": [
+        "Liu Fang Fang"
+      ],
+      "citation_count": 0,
+      "doi": "10.2139/ssrn.6886889",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.2139/ssrn.6886889"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Mesoporous Au@Ag@mSiO₂ Core–Shell Nanoparticles as a Highly Sensitive and Reusable SERS Substrate for Chloramphenicol Selective Detection",
+      "url": "https://doi.org/10.2139/ssrn.6886889",
+      "venue": null,
+      "work_id": "prior_art_work:031ddd68d1a19dd62f0e",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.jpcc.6b06644.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.jpcc.6b06644.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Preparation of Biocompatible, Luminescent-Plasmonic Core/Shell Nanomaterials Based on Lanthanide and Gold Nanoparticles Exhibiting SERS Effects",
+      "url": "https://doi.org/10.1021/acs.jpcc.6b06644.s001",
+      "venue": null,
+      "work_id": "prior_art_work:0ab56c45493409db8f03",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acsanm.2c02641.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acsanm.2c02641.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Protein-Templated Core/Shell Au Nanostructures for Intracellular Reactive Oxygen Species Detection by SERS",
+      "url": "https://doi.org/10.1021/acsanm.2c02641.s001",
+      "venue": null,
+      "work_id": "prior_art_work:609e4f70b11730f95ed4",
+      "year": null
+    },
+    {
+      "abstract": "Aggregation agents have been widely used in the in-solution surface-enhanced Raman spectroscopy (SERS) due to the formation of aggregated metallic clusters, more specifically hot spots. However, the size of aggregated nanoparticles can be different using different types, concentrations, and amounts of aggregation agents. This variation is directly related to the enhancement strength of hot spots and the reproducibility of the SERS analysis. Therefore, seeking a controllable aggregation method is a popular subject. Herein, polyvinylpyrrolidone (PVP)-controlled gold aggregates were prepared as in-solution SERS substrates. PVP was used to control the aggregation of gold nanoparticles introduced by NaCl and to maintain the dispersibility of the aggregated gold in the solution. Several conditions, such as laser wavelength, size of the gold nanoparticles, NaCl concentration (as aggregation agents), and PVP concentration (wt.%), were optimized using two analytes: 4-mercaptobenzonitrile (MBN) and pyrene (PYR). The aggregation-control ability of PVP was examined by varying detection times within 14 days. The results indicated that the aggregation control by PVP is successful. MBN and PYR have different affinity to gold. The optimal SERS conditions of MBN and PYR were compared, indicating the reaction differences of different affinity analytes in SERS measurement. This variation indicates the necessity of using similar affinity molecules or target analytes in the condition optimization of SERS analysis.",
+      "authors": [
+        "Huijun Mao",
+        "Mark  T. McDermott"
+      ],
+      "citation_count": 0,
+      "doi": "10.2139/ssrn.7161604",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.2139/ssrn.7161604"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2",
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "PVP-Controlled Gold Aggregation for In-Solution SERS: Substrate Stability, Reproducibility, and Analyte-Affinity-Dependent Optimization",
+      "url": "https://doi.org/10.2139/ssrn.7161604",
+      "venue": null,
+      "work_id": "prior_art_work:88c15d72c6bd7e499724",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.nanolett.0c02683.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.nanolett.0c02683.s002"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Quantitative and Sensitive SERS Platform with Analyte Enrichment and Filtration Function",
+      "url": "https://doi.org/10.1021/acs.nanolett.0c02683.s001",
+      "venue": null,
+      "work_id": "prior_art_work:d8704698f70f7f91ee88",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acsanm.8b00220.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acsanm.8b00220.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Scalable Preparation of Fully Coated Ag@BaTiO3 Core@Shell Particles via Poly(vinylpyrrolidone) Assistance for Highk Applications",
+      "url": "https://doi.org/10.1021/acsanm.8b00220.s001",
+      "venue": null,
+      "work_id": "prior_art_work:3e18b0ee4c45ac103796",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acsomega.3c08393.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acsomega.3c08393.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Self-Organized SERS Substrates with Efficient Analyte Enrichment in the Hot Spots",
+      "url": "https://doi.org/10.1021/acsomega.3c08393.s001",
+      "venue": null,
+      "work_id": "prior_art_work:05e03de50ed469f5b52b",
+      "year": null
+    },
+    {
+      "abstract": "Sulfide organics and phenols are ubiquitous in freshwater lakes all over the world. As two kinds of taste and odor (T&O) compounds, they cause large amounts of harm to the environment and the human body. The existing detection methods for T&O compounds mainly include sensory analysis and gas-phase mass spectrometry, which are cumbersome and time-consuming, and no method for the rapid detection of T&O compounds has yet been proposed. Herein, a method for the simultaneous and rapid detection of two T&O compounds (methyl sulfide and 2, 4-di-tert-butylphenol) based on surface-enhanced Raman spectroscopy (SERS) is for the first time presented. The SERS substrate was prepared through coating Ag nanoparticles (Ag NPs), layered double hydroxide (LDH), and graphene oxide (GO) on the surface of an Ag-coated Au nanoparticles (Au@Ag NPs) substrate. Under optimal conditions, this SERS substrate possessed low detection limits of 1.53 ppm for methyl sulfide and 0.39 ppm for 2, 4-di-tert-butylphenol. In addition, it took only 20 min to complete the detection using this method, without the need for complex sample pretreatment. Furthermore, it was successfully applied to the simultaneous detection of methyl sulfide and 2, 4-di-tert-butylphenol in actual water samples and had good application prospects for the rapid detection of T&O compounds in water.",
+      "authors": [
+        "Mingmin Zhong",
+        "Zhixiong Lao",
+        "Aoyan Han",
+        "Jingyan Chen",
+        "Jianrong Tan",
+        "Guangzhou Yu",
+        "Yong Liang"
+      ],
+      "citation_count": 0,
+      "doi": "10.2139/ssrn.4230084",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.2139/ssrn.4230084"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:778e935b3b9fb4cf5be2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:9fc97d5d50116858a626"
+      ],
+      "title": "Sers Substrate Based on Ag Nanoparticles @ Layered Double Hydroxide@Graphene Oxide and Au@Ag Core-Shell Nanoparticles for Detection of Two Taste and Odor Compounds",
+      "url": "https://doi.org/10.2139/ssrn.4230084",
+      "venue": null,
+      "work_id": "prior_art_work:c2cf5caefa2121e5575e",
+      "year": null
+    },
+    {
+      "abstract": null,
+      "authors": [],
+      "citation_count": 0,
+      "doi": "10.1021/acs.nanolett.3c02238.s001",
+      "open_access_url": null,
+      "provider_ids": {
+        "crossref": "10.1021/acs.nanolett.3c02238.s001"
+      },
+      "providers": [
+        "crossref"
+      ],
+      "publication_date": null,
+      "retrieval_claim_ids": [
+        "external_novelty_claim:4579feb9177160cd54f2"
+      ],
+      "retrieval_query_ids": [
+        "literature_query:a293d000df997bdcc78a",
+        "literature_query:d3efb622a71b60beee40"
+      ],
+      "title": "Slippery Au Nanosphere Monolayers with Analyte Enrichment and SERS Enhancement Functions",
+      "url": "https://doi.org/10.1021/acs.nanolett.3c02238.s001",
+      "venue": null,
+      "work_id": "prior_art_work:aadc23cc5c7604e0ac91",
+      "year": null
+    }
+  ]
+}
