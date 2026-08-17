@@ -1,0 +1,20 @@
+{
+  "automatic_post_c1b2_transition_allowed": false,
+  "completed_paper_reviews": 0,
+  "completed_reserve_indexes": [],
+  "error_summary": "Verbatim quote is not an exact whitespace-normalized substring of the cited frozen page",
+  "error_type": "ValueError",
+  "failed_at_utc": "2026-08-17T08:09:12.131092+00:00",
+  "failure_authorizes_tuning_on_fresh_c": false,
+  "failure_restores_freshness": false,
+  "fresh_c_scientific_text_read_performed": true,
+  "fresh_reserve_c_already_consumed": true,
+  "protocol_id": "sers_fresh_c_c1b2_scientific_protocol_v1:231b259d4eedb766c4a2",
+  "protocol_sha256": "e4557ad77ffa11f2d954e95e0c140dbfc56d9ea0aa7b89d6c64ac31402fb2e70",
+  "same_epoch_rerun_allowed": false,
+  "schema_version": "sers-fresh-c-c1b2-scientific-adjudication-failed-v1",
+  "scientific_adjudication_complete": false,
+  "scientific_llm_call_attempts": 1,
+  "scientific_network_call_attempts": 1,
+  "stop": true
+}
