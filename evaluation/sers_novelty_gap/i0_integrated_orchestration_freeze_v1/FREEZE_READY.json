@@ -1,0 +1,13 @@
+{
+  "automatic_next_stage_authorized": false,
+  "freeze_id": "sers_i0_integrated_orchestration_freeze_v1:11a5fc254379f718a679",
+  "fresh_reserve_c_authorized": false,
+  "fresh_reserve_c_consumed": false,
+  "fresh_reserve_c_readiness_assessed": false,
+  "i0_complete": true,
+  "manifest_sha256": "11a5fc254379f718a679cc8b61c168a704979d86e94ccb11617e2fa8e9d48a62",
+  "ready": true,
+  "schema_version": "sers-i0-integrated-orchestration-freeze-ready-v1",
+  "source_i0_handoff_commit": "667e82912de722bf148a0eb8dfe370373c61df61",
+  "stop": true
+}
