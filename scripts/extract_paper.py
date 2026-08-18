@@ -13,7 +13,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-import dac_her.chunking as chunking_module
+import pipeline_core.chunking as chunking_module
 import dac_her.schemas as schemas_module
 import dac_her.extraction as extraction_module
 import dac_her.graph_normalization as graph_normalization_module

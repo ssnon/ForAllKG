@@ -214,7 +214,7 @@ def test_run_metadata_hashes_exact_chunking_file(
     )
 
 
-def test_current_extraction_provenance_points_at_legacy_chunking_module():
+def test_extraction_provenance_points_at_shared_chunking_owner():
     source = Path(
         "scripts/extract_paper.py"
     ).read_text(
@@ -222,9 +222,15 @@ def test_current_extraction_provenance_points_at_legacy_chunking_module():
     )
 
     assert (
-        "import dac_her.chunking "
+        "import pipeline_core.chunking "
         "as chunking_module"
         in source
+    )
+
+    assert (
+        "import dac_her.chunking "
+        "as chunking_module"
+        not in source
     )
 
     assert (
@@ -234,7 +240,7 @@ def test_current_extraction_provenance_points_at_legacy_chunking_module():
     )
 
 
-def test_current_incremental_full_freshness_points_at_legacy_chunking_module():
+def test_incremental_full_freshness_points_at_shared_chunking_owner():
     source = Path(
         "dac_her/incremental_reconcile.py"
     ).read_text(
@@ -242,9 +248,15 @@ def test_current_incremental_full_freshness_points_at_legacy_chunking_module():
     )
 
     assert (
-        "import dac_her.chunking "
+        "import pipeline_core.chunking "
         "as chunking_module"
         in source
+    )
+
+    assert (
+        "import dac_her.chunking "
+        "as chunking_module"
+        not in source
     )
 
     assert (
@@ -255,9 +267,9 @@ def test_current_incremental_full_freshness_points_at_legacy_chunking_module():
     )
 
 
-def test_current_chunking_dependency_boundary():
+def test_shared_chunking_dependency_boundary():
     path = Path(
-        "dac_her/chunking.py"
+        "pipeline_core/chunking.py"
     )
 
     tree = ast.parse(
@@ -266,7 +278,7 @@ def test_current_chunking_dependency_boundary():
         )
     )
 
-    dac_modules = {
+    imported_modules = {
         node.module
         for node in ast.walk(tree)
         if (
@@ -275,17 +287,67 @@ def test_current_chunking_dependency_boundary():
                 ast.ImportFrom,
             )
             and node.module is not None
-            and node.module.startswith(
-                "dac_her."
-            )
         )
     }
 
-    assert dac_modules == {
-        "dac_her.asset_index",
-        "dac_her.extraction_policy",
+    dac_modules = {
+        module
+        for module in imported_modules
+        if module.startswith(
+            "dac_her."
+        )
     }
 
-    assert not Path(
-        "pipeline_core/chunking.py"
-    ).exists()
+    assert dac_modules == set()
+
+    assert {
+        "pipeline_core.asset_index",
+        "pipeline_core.extraction_policy",
+    }.issubset(
+        imported_modules
+    )
+
+def test_chunking_facade_reexports_shared_core_identity():
+    import dac_her.chunking as legacy
+    import pipeline_core.chunking as core
+
+    names = (
+        "ChunkSpec",
+        "count_tokens",
+        "first_tokens",
+        "last_tokens",
+        "make_chunk_id",
+        "split_long_unit",
+        "paragraph_units",
+        "build_core_chunks",
+        "create_chunks",
+        "split_chunk_in_half",
+    )
+
+    for name in names:
+        assert (
+            getattr(
+                legacy,
+                name,
+            )
+            is getattr(
+                core,
+                name,
+            )
+        )
+
+
+def test_shared_chunking_owner_is_real_provenance_file():
+    import pipeline_core.chunking as core
+
+    expected = (
+        Path(
+            "pipeline_core/chunking.py"
+        )
+        .resolve()
+    )
+
+    assert (
+        Path(core.__file__).resolve()
+        == expected
+    )

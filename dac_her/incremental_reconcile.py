@@ -21,7 +21,7 @@ from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.extraction_policy import ExtractionPolicy
 from dac_her.run_state import document_source_fingerprints
-import dac_her.chunking as chunking_module
+import pipeline_core.chunking as chunking_module
 import dac_her.schemas as schemas_module
 
 
