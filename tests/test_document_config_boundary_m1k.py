@@ -412,7 +412,7 @@ def test_paper_config_compatibility_module_preserves_identity():
         )
 
 
-def test_current_shared_core_still_depends_on_dac_config():
+def test_shared_core_no_longer_depends_on_dac_config():
     path = Path(
         "pipeline_core/"
         "strict_bridge_corpus_pipeline.py"
@@ -433,9 +433,33 @@ def test_current_shared_core_still_depends_on_dac_config():
         )
     }
 
-    # M1k.0 characterization:
-    # this is the architecture dependency
-    # that M1k config extraction will remove.
-    assert "dac_her.config" in (
-        imported_modules
+    assert (
+        "dac_her.config"
+        not in imported_modules
     )
+
+    assert (
+        "pipeline_core.document_config"
+        in imported_modules
+    )
+
+def test_document_config_facade_reexports_shared_core_identity():
+    import dac_her.config as legacy
+    import pipeline_core.document_config as core
+
+    names = (
+        "DocumentSelection",
+        "FigureProcessingConfig",
+        "DocumentConfig",
+        "PaperConfig",
+        "load_paper_configs",
+        "get_paper_config",
+        "paper_config_fingerprint_payload",
+    )
+
+    for name in names:
+        assert (
+            getattr(legacy, name)
+            is getattr(core, name)
+        )
+
