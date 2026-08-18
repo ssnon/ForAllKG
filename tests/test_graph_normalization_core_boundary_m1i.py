@@ -21,7 +21,7 @@ _RUNTIME_FUNCTIONS = {
 
 def _runtime_ast():
     source = Path(
-        "dac_her/graph_normalization.py"
+        "pipeline_core/graph_normalization_runtime.py"
     ).read_text(
         encoding="utf-8"
     )
@@ -104,7 +104,7 @@ def test_normalization_runtime_keeps_metric_refinement_as_external_seam():
         }
 
         assert (
-            "refine_semantic_metric_id"
+            "metric_refiner"
             in calls
         )
 
