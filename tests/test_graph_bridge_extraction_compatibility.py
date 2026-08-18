@@ -8,6 +8,7 @@ import dac_her.graph_io as legacy_graph_io
 import dac_her.graph_validation as legacy_graph_validation
 import dac_her.node_references as legacy_node_references
 import dac_her.discovery_semantics as legacy_discovery
+import dac_her.asset_index as legacy_assets
 import dac_her.extraction_policy as legacy_extraction_policy
 import dac_her.explorer_text_safety as legacy_text_safety
 import dac_her.markdown as legacy_markdown
@@ -20,6 +21,7 @@ import pipeline_core.graph_io as core_graph_io
 import pipeline_core.graph_validation as core_graph_validation
 import pipeline_core.node_references as core_node_references
 import pipeline_core.discovery_semantics as core_discovery
+import pipeline_core.asset_index as core_assets
 import pipeline_core.extraction_policy as core_extraction_policy
 import pipeline_core.explorer_text_safety as core_text_safety
 import pipeline_core.markdown as core_markdown
@@ -44,6 +46,9 @@ def test_legacy_graph_bridge_modules_reexport_core_implementations():
         (legacy_discovery.normalized_node_type, core_discovery.normalized_node_type),
         (legacy_discovery.is_mechanism_node, core_discovery.is_mechanism_node),
         (legacy_discovery.is_generic_entity_node, core_discovery.is_generic_entity_node),
+        (legacy_assets.AssetRecord, core_assets.AssetRecord),
+        (legacy_assets.build_asset_index, core_assets.build_asset_index),
+        (legacy_assets.write_assets_jsonl, core_assets.write_assets_jsonl),
         (legacy_extraction_policy.ExtractionPolicy, core_extraction_policy.ExtractionPolicy),
         (legacy_text_safety.contains_absence_language, core_text_safety.contains_absence_language),
         (legacy_markdown.extract_markdown_section, core_markdown.extract_markdown_section),
@@ -81,6 +86,41 @@ def test_node_reference_remapping_preserves_graphml_foreign_keys():
         "group_id": "paper:group-1",
         "unrelated": "keep",
     }
+
+
+def test_asset_index_preserves_asset_identity_and_package_scan(tmp_path):
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "figure.png").write_bytes(b"figure-bytes")
+    (package / "loose.jpg").write_bytes(b"loose-bytes")
+    markdown = (
+        "# Methods\n"
+        "<span id=\"page-3-marker\"></span>\n"
+        "![Au/Ag](figure.png)\n"
+        "Figure 1. Au/Ag morphology.\n"
+    )
+
+    assets = core_assets.build_asset_index(
+        paper_id="paper",
+        document_id="main",
+        document_role="main",
+        package_dir=package,
+        markdown=markdown,
+    )
+    assert [item.relative_path for item in assets] == ["figure.png", "loose.jpg"]
+    linked, loose = assets
+    assert linked.page_id == 3
+    assert linked.caption == "Figure 1. Au/Ag morphology."
+    assert linked.referenced_in_markdown is True
+    assert linked.discovery_method == "markdown_image+package_scan"
+    assert loose.referenced_in_markdown is False
+    assert loose.discovery_method == "package_scan"
+    assert linked.sha256 is not None
+    assert core_assets.assets_by_id(assets)[linked.asset_id] is linked
+    assert core_assets.asset_path_to_id(assets)["figure.png"] == linked.asset_id
+
+    output = core_assets.write_assets_jsonl(tmp_path / "assets.jsonl", assets)
+    assert output.read_text(encoding="utf-8").count("\n") == 2
 
 
 def test_traversal_policy_preserves_legacy_depth_and_budget_boundaries():
