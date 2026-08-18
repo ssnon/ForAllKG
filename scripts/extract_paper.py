@@ -17,6 +17,7 @@ import dac_her.chunking as chunking_module
 import dac_her.schemas as schemas_module
 import dac_her.extraction as extraction_module
 import dac_her.graph_normalization as graph_normalization_module
+import dac_her.metric_normalization_policy as metric_normalization_policy_module
 import dac_her.llm_openrouter as llm_openrouter_module
 import dac_her.measurement_scalarization as measurement_scalarization_module
 import dac_her.structural_repair as structural_repair_module
@@ -417,6 +418,7 @@ def main() -> None:
         implementation_paths=(
             extraction_module.__file__,
             graph_normalization_module.__file__,
+            metric_normalization_policy_module.__file__,
             llm_openrouter_module.__file__,
             measurement_scalarization_module.__file__,
             structural_repair_module.__file__,
