@@ -462,4 +462,3 @@ def test_document_config_facade_reexports_shared_core_identity():
             getattr(legacy, name)
             is getattr(core, name)
         )
-
