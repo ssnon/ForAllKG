@@ -9,62 +9,15 @@ from typing import Any, Iterable, Literal
 import networkx as nx
 
 from pipeline_core.domain_profile import (
-    ProjectionBacktraceRule,
     ProjectionSemantics,
+)
+
+from pipeline_core.legacy_dac_projection_policy import (
+    LEGACY_DAC_HER_PROJECTION_SEMANTICS as _LEGACY_DAC_HER_PROJECTION_SEMANTICS,
 )
 
 
 ProjectionMode = Literal["evidence", "mechanism", "exploratory"]
-
-_MECHANISM_NODE_TYPES = {
-    "Catalyst",
-    "CatalystModel",
-    "Metal",
-    "Support",
-    "CoordinationMotif",
-    "SynthesisMethod",
-    "Precursor",
-    "Reaction",
-    "ReactionStep",
-    "Intermediate",
-    "Material",
-    "ObservationClaim",
-    "MechanismClaim",
-    "BridgeConcept",
-}
-
-_ORIGIN_NODE_TYPES = {
-    "Catalyst",
-    "CatalystModel",
-    "Support",
-    "CoordinationMotif",
-    "Material",
-    "Reaction",
-    "ReactionStep",
-    "Intermediate",
-}
-
-_BACKTRACE_RELATIONS = {
-    "HAS_MEASUREMENT",
-    "EVALUATED_IN",
-    "CHARACTERIZED_BY",
-    "MODELED_BY",
-    "APPLIES_TO",
-    "SUPPORTS_CLAIM",
-}
-
-
-_LEGACY_DAC_HER_PROJECTION_SEMANTICS = ProjectionSemantics(
-    semantics_id="dac_her_legacy_projection_v1",
-    mechanism_node_types=frozenset(_MECHANISM_NODE_TYPES),
-    origin_node_types=frozenset(_ORIGIN_NODE_TYPES),
-    backtrace_rules=tuple(
-        ProjectionBacktraceRule(relation, "incoming")
-        for relation in sorted(_BACKTRACE_RELATIONS)
-    ),
-    max_backtrace_depth=3,
-)
-
 
 def _resolve_projection_semantics(
     value: ProjectionSemantics | None,
