@@ -11,6 +11,7 @@ import dac_her.discovery_semantics as legacy_discovery
 import dac_her.extraction_policy as legacy_extraction_policy
 import dac_her.explorer_text_safety as legacy_text_safety
 import dac_her.markdown as legacy_markdown
+import dac_her.traversal_runtime_policy as legacy_traversal_policy
 import dac_her.validation as legacy_validation
 import dac_her.validation_issues as legacy_issues
 import pipeline_core.bridge_draft_schema as core_bridge_draft
@@ -22,6 +23,7 @@ import pipeline_core.discovery_semantics as core_discovery
 import pipeline_core.extraction_policy as core_extraction_policy
 import pipeline_core.explorer_text_safety as core_text_safety
 import pipeline_core.markdown as core_markdown
+import pipeline_core.traversal_runtime_policy as core_traversal_policy
 import pipeline_core.validation as core_validation
 import pipeline_core.validation_issues as core_issues
 
@@ -45,6 +47,14 @@ def test_legacy_graph_bridge_modules_reexport_core_implementations():
         (legacy_extraction_policy.ExtractionPolicy, core_extraction_policy.ExtractionPolicy),
         (legacy_text_safety.contains_absence_language, core_text_safety.contains_absence_language),
         (legacy_markdown.extract_markdown_section, core_markdown.extract_markdown_section),
+        (
+            legacy_traversal_policy.SemanticStopAblationGuard,
+            core_traversal_policy.SemanticStopAblationGuard,
+        ),
+        (
+            legacy_traversal_policy.resolve_semantic_stop_max_depth,
+            core_traversal_policy.resolve_semantic_stop_max_depth,
+        ),
         (legacy_validation.validate_graph_provenance, core_validation.validate_graph_provenance),
         (legacy_issues.ValidationIssue, core_issues.ValidationIssue),
         (legacy_issues.ValidationReport, core_issues.ValidationReport),
@@ -71,3 +81,33 @@ def test_node_reference_remapping_preserves_graphml_foreign_keys():
         "group_id": "paper:group-1",
         "unrelated": "keep",
     }
+
+
+def test_traversal_policy_preserves_legacy_depth_and_budget_boundaries():
+    assert core_traversal_policy.resolve_semantic_stop_max_depth(
+        base_max_depth=4,
+        semantic_stop_max_depth=None,
+        base_max_depth_explicit=False,
+    ) == 12
+    assert core_traversal_policy.resolve_semantic_stop_max_depth(
+        base_max_depth=4,
+        semantic_stop_max_depth=None,
+        base_max_depth_explicit=True,
+    ) == 4
+    assert core_traversal_policy.resolve_semantic_stop_max_depth(
+        base_max_depth=4,
+        semantic_stop_max_depth=0,
+        base_max_depth_explicit=False,
+    ) == 1
+
+    sources, targets, diagnostic = (
+        core_traversal_policy.guard_semantic_stop_ablation(
+            [{"id": index} for index in range(5)],
+            [{"id": index} for index in range(5)],
+            waypoint_count=2,
+            max_triples=8,
+        )
+    )
+    assert len(sources) == len(targets) == 2
+    assert diagnostic.applied is True
+    assert diagnostic.traversal_triple_upper_bound == 8
