@@ -477,20 +477,112 @@ def test_default_loader_policy_is_legacy_owned(
     ]
 
 
-def test_current_engine_and_default_policy_share_one_legacy_module():
-    path = Path(
+def test_generic_engine_is_shared_and_default_policy_remains_legacy():
+    import dac_her.vocab_registry as legacy
+    import pipeline_core.vocabulary_registry as core
+
+    assert (
+        legacy.normalize_vocab_text
+        is core.normalize_vocab_text
+    )
+
+    assert (
+        legacy.slugify
+        is core.slugify
+    )
+
+    assert (
+        legacy.VocabularyEntry
+        is core.VocabularyEntry
+    )
+
+    assert (
+        legacy.ParameterizedVocabularyMatch
+        is core.ParameterizedVocabularyMatch
+    )
+
+    assert (
+        legacy.VocabularyRegistry
+        is core.VocabularyRegistry
+    )
+
+    assert (
+        core.normalize_vocab_text.__module__
+        == "pipeline_core.vocabulary_registry"
+    )
+
+    assert (
+        core.slugify.__module__
+        == "pipeline_core.vocabulary_registry"
+    )
+
+    assert (
+        core.VocabularyEntry.__module__
+        == "pipeline_core.vocabulary_registry"
+    )
+
+    assert (
+        core.ParameterizedVocabularyMatch.__module__
+        == "pipeline_core.vocabulary_registry"
+    )
+
+    assert (
+        core.VocabularyRegistry.__module__
+        == "pipeline_core.vocabulary_registry"
+    )
+
+    assert not hasattr(
+        core,
+        "load_default_registries",
+    )
+
+    assert (
+        legacy.load_default_registries.__module__
+        == "dac_her.vocab_registry"
+    )
+
+    legacy_path = Path(
         "dac_her/vocab_registry.py"
     )
 
-    tree = ast.parse(
-        path.read_text(
+    legacy_tree = ast.parse(
+        legacy_path.read_text(
             encoding="utf-8"
         )
     )
 
-    top_level = {
+    legacy_owned = {
         node.name
-        for node in tree.body
+        for node in legacy_tree.body
+        if isinstance(
+            node,
+            (
+                ast.FunctionDef,
+                ast.ClassDef,
+            ),
+        )
+    }
+
+    assert legacy_owned == {
+        "load_default_registries"
+    }
+
+    core_path = Path(
+        "pipeline_core/"
+        "vocabulary_registry.py"
+    )
+
+    assert core_path.is_file()
+
+    core_tree = ast.parse(
+        core_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    core_owned = {
+        node.name
+        for node in core_tree.body
         if isinstance(
             node,
             (
@@ -506,12 +598,11 @@ def test_current_engine_and_default_policy_share_one_legacy_module():
         "VocabularyEntry",
         "ParameterizedVocabularyMatch",
         "VocabularyRegistry",
-        "load_default_registries",
     }.issubset(
-        top_level
+        core_owned
     )
 
-    assert not Path(
-        "pipeline_core/"
-        "vocabulary_registry.py"
-    ).exists()
+    assert (
+        "load_default_registries"
+        not in core_owned
+    )
