@@ -268,6 +268,8 @@ initial F1.2 planning document was written. They preserve the historical
 da256be  shared domain-configured discovery semantics
 7812217  shared extraction policy defaults
 d6c54c9  shared Markdown and explorer text utilities
+a209599  shared traversal runtime policy helpers
+de953d4  shared document asset indexing and hashing helpers
 ```
 
 Each slice included:
