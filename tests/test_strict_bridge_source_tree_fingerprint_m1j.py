@@ -90,7 +90,7 @@ def test_current_source_tree_hash_tracks_selected_script_changes(
     assert changed != baseline
 
 
-def test_current_source_tree_hash_ignores_pipeline_core_python_changes(
+def test_source_tree_hash_tracks_pipeline_core_python_changes(
     tmp_path: Path,
 ):
     _minimal_source_tree(tmp_path)
@@ -109,8 +109,77 @@ def test_current_source_tree_hash_ignores_pipeline_core_python_changes(
         tmp_path
     )
 
-    # Characterization of the current blind spot:
-    # shared implementation moved under pipeline_core
-    # does not currently participate in orchestration
-    # resume fingerprinting.
+    assert changed != baseline
+
+def test_source_tree_hash_ignores_non_python_tree_files(
+    tmp_path: Path,
+):
+    _minimal_source_tree(tmp_path)
+
+    baseline = _sha256_source_tree(
+        tmp_path
+    )
+
+    _write(
+        tmp_path,
+        "pipeline_core/notes.txt",
+        "not implementation python\n",
+    )
+
+    _write(
+        tmp_path,
+        "dac_her/cache.json",
+        "{\"value\": 1}\n",
+    )
+
+    changed = _sha256_source_tree(
+        tmp_path
+    )
+
     assert changed == baseline
+
+
+def test_source_tree_hash_is_independent_of_file_creation_order(
+    tmp_path: Path,
+):
+    left = tmp_path / "left"
+    right = tmp_path / "right"
+
+    files = (
+        (
+            "dac_her/example.py",
+            "VALUE = 'dac'\n",
+        ),
+        (
+            "pipeline_core/example.py",
+            "VALUE = 'core'\n",
+        ),
+        (
+            "pipeline_core/nested/runtime.py",
+            "VALUE = 'nested'\n",
+        ),
+        (
+            "scripts/extract_paper.py",
+            "VALUE = 'script'\n",
+        ),
+    )
+
+    for relative, content in files:
+        _write(
+            left,
+            relative,
+            content,
+        )
+
+    for relative, content in reversed(files):
+        _write(
+            right,
+            relative,
+            content,
+        )
+
+    assert (
+        _sha256_source_tree(left)
+        == _sha256_source_tree(right)
+    )
+

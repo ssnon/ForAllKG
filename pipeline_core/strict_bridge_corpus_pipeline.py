@@ -52,27 +52,52 @@ def _sha256_source_tree(root: Path) -> str:
     tree hash only decides whether the orchestration state itself may be reused;
     a changed tree causes the CLI stages to be revisited, after which their own
     caches/fingerprints can still avoid unnecessary LLM work.
+
+    Shared implementation under ``pipeline_core`` participates in the same
+    resume-safety boundary as the historical ``dac_her`` compatibility/domain
+    tree.  Candidate paths are de-duplicated and ordered by repository-relative
+    POSIX path so the fingerprint is deterministic across equivalent checkouts.
     """
     digest = hashlib.sha256()
-    candidates = sorted(
-        [*root.glob("dac_her/**/*.py")]
-        + [
-            root / "scripts" / "extract_paper.py",
-            root / "scripts" / "build_paper_graph.py",
-            root / "scripts" / "extract_bridge_graph.py",
-            root / "scripts" / "build_graphagents_projection.py",
-            root / "scripts" / "build_corpus_graph.py",
-        ],
-        key=lambda item: str(item),
+
+    script_candidates = (
+        root / "scripts" / "extract_paper.py",
+        root / "scripts" / "build_paper_graph.py",
+        root / "scripts" / "extract_bridge_graph.py",
+        root / "scripts" / "build_graphagents_projection.py",
+        root / "scripts" / "build_corpus_graph.py",
     )
-    for path in candidates:
-        if not path.is_file():
-            continue
-        relative = str(path.relative_to(root)).replace("\\", "/")
-        digest.update(relative.encode("utf-8"))
+
+    candidates = {
+        *root.glob("dac_her/**/*.py"),
+        *root.glob("pipeline_core/**/*.py"),
+        *script_candidates,
+    }
+
+    ordered_candidates = sorted(
+        (
+            path
+            for path in candidates
+            if path.is_file()
+        ),
+        key=lambda item: (
+            item.relative_to(root).as_posix()
+        ),
+    )
+
+    for path in ordered_candidates:
+        relative = (
+            path.relative_to(root).as_posix()
+        )
+        digest.update(
+            relative.encode("utf-8")
+        )
         digest.update(b"\0")
-        digest.update(_sha256_file(path).encode("ascii"))
+        digest.update(
+            _sha256_file(path).encode("ascii")
+        )
         digest.update(b"\0")
+
     return digest.hexdigest()
 
 
