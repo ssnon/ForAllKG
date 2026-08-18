@@ -70,6 +70,7 @@ def _sha256_source_tree(root: Path) -> str:
 
     candidates = {
         *root.glob("dac_her/**/*.py"),
+        *root.glob("domains/**/*.py"),
         *root.glob("pipeline_core/**/*.py"),
         *script_candidates,
     }
