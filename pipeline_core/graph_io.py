@@ -4,7 +4,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.knowledge_graph_schema import KnowledgeGraph
 import json
 
 def knowledge_graph_to_networkx(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.knowledge_graph_schema import KnowledgeGraph
 
 
 def validate_graph_provenance(
