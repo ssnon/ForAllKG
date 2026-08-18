@@ -9,6 +9,8 @@ import dac_her.graph_validation as legacy_graph_validation
 import dac_her.node_references as legacy_node_references
 import dac_her.discovery_semantics as legacy_discovery
 import dac_her.extraction_policy as legacy_extraction_policy
+import dac_her.explorer_text_safety as legacy_text_safety
+import dac_her.markdown as legacy_markdown
 import dac_her.validation as legacy_validation
 import dac_her.validation_issues as legacy_issues
 import pipeline_core.bridge_draft_schema as core_bridge_draft
@@ -18,6 +20,8 @@ import pipeline_core.graph_validation as core_graph_validation
 import pipeline_core.node_references as core_node_references
 import pipeline_core.discovery_semantics as core_discovery
 import pipeline_core.extraction_policy as core_extraction_policy
+import pipeline_core.explorer_text_safety as core_text_safety
+import pipeline_core.markdown as core_markdown
 import pipeline_core.validation as core_validation
 import pipeline_core.validation_issues as core_issues
 
@@ -39,6 +43,8 @@ def test_legacy_graph_bridge_modules_reexport_core_implementations():
         (legacy_discovery.is_mechanism_node, core_discovery.is_mechanism_node),
         (legacy_discovery.is_generic_entity_node, core_discovery.is_generic_entity_node),
         (legacy_extraction_policy.ExtractionPolicy, core_extraction_policy.ExtractionPolicy),
+        (legacy_text_safety.contains_absence_language, core_text_safety.contains_absence_language),
+        (legacy_markdown.extract_markdown_section, core_markdown.extract_markdown_section),
         (legacy_validation.validate_graph_provenance, core_validation.validate_graph_provenance),
         (legacy_issues.ValidationIssue, core_issues.ValidationIssue),
         (legacy_issues.ValidationReport, core_issues.ValidationReport),
