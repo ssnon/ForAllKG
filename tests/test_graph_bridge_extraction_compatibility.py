@@ -9,6 +9,7 @@ import dac_her.graph_validation as legacy_graph_validation
 import dac_her.node_references as legacy_node_references
 import dac_her.discovery_semantics as legacy_discovery
 import dac_her.asset_index as legacy_assets
+import dac_her.locator_index as legacy_locators
 import dac_her.extraction_policy as legacy_extraction_policy
 import dac_her.explorer_text_safety as legacy_text_safety
 import dac_her.markdown as legacy_markdown
@@ -22,6 +23,7 @@ import pipeline_core.graph_validation as core_graph_validation
 import pipeline_core.node_references as core_node_references
 import pipeline_core.discovery_semantics as core_discovery
 import pipeline_core.asset_index as core_assets
+import pipeline_core.locator_index as core_locators
 import pipeline_core.extraction_policy as core_extraction_policy
 import pipeline_core.explorer_text_safety as core_text_safety
 import pipeline_core.markdown as core_markdown
@@ -49,6 +51,10 @@ def test_legacy_graph_bridge_modules_reexport_core_implementations():
         (legacy_assets.AssetRecord, core_assets.AssetRecord),
         (legacy_assets.build_asset_index, core_assets.build_asset_index),
         (legacy_assets.write_assets_jsonl, core_assets.write_assets_jsonl),
+        (legacy_locators.LocatorOccurrence, core_locators.LocatorOccurrence),
+        (legacy_locators.LocatorIndexRecord, core_locators.LocatorIndexRecord),
+        (legacy_locators.build_locator_index, core_locators.build_locator_index),
+        (legacy_locators.write_locator_index_json, core_locators.write_locator_index_json),
         (legacy_extraction_policy.ExtractionPolicy, core_extraction_policy.ExtractionPolicy),
         (legacy_text_safety.contains_absence_language, core_text_safety.contains_absence_language),
         (legacy_markdown.extract_markdown_section, core_markdown.extract_markdown_section),
@@ -121,6 +127,24 @@ def test_asset_index_preserves_asset_identity_and_package_scan(tmp_path):
 
     output = core_assets.write_assets_jsonl(tmp_path / "assets.jsonl", assets)
     assert output.read_text(encoding="utf-8").count("\n") == 2
+
+    locators = core_locators.build_locator_index(
+        document_id="main",
+        document_role="main",
+        markdown=markdown,
+        assets=assets,
+    )
+    figure = next(item for item in locators if item.locator_key == "figure:1")
+    assert set(figure.asset_ids) == {linked.asset_id, loose.asset_id}
+    assert figure.mapping_method == "asset_caption_exact"
+    assert figure.confidence == "high"
+    assert figure.ambiguous is True
+    locator_output = core_locators.write_locator_index_json(
+        tmp_path / "locators.json",
+        locators,
+    )
+    loaded = core_locators.load_locator_index(locator_output)
+    assert any(row["locator_key"] == "figure:1" for row in loaded)
 
 
 def test_traversal_policy_preserves_legacy_depth_and_budget_boundaries():
