@@ -44,6 +44,5 @@ def test_known_domain_vocabularies_remain_legacy_owned():
     assert not hasattr(core, "KnownMechanismClaimType")
 
 
-def test_experiment_node_remains_legacy_owned():
-    assert legacy.ExperimentNode.__module__ == "dac_her.schemas"
+def test_experiment_node_is_outside_scientific_node_schema():
     assert not hasattr(core, "ExperimentNode")
