@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from pipeline_core.legacy_dac_relation_policy import (
+    LEGACY_DAC_RELATION_ENDPOINT_POLICY_BY_RELATION,
+)
+
 
 def validate_legacy_relation_semantics_compat(
     graph: Any,
@@ -64,6 +68,74 @@ def validate_legacy_relation_semantics_compat(
             and node.type in allowed_types
         )
 
+    collection_ids_by_semantic_type = {
+        "Entity": entity_ids,
+        "Experiment": experiment_ids,
+        "Calculation": calculation_ids,
+        "Measurement": measurement_ids,
+        "MeasurementGroup": measurement_group_ids,
+        "ObservationClaim": observation_claim_ids,
+        "MechanismClaim": mechanism_claim_ids,
+    }
+
+    def legacy_endpoint_matches(
+        *,
+        relation: str,
+        side: str,
+        node_id: str,
+    ) -> bool:
+        policy = (
+            LEGACY_DAC_RELATION_ENDPOINT_POLICY_BY_RELATION.get(
+                relation
+            )
+        )
+
+        if policy is None:
+            raise RuntimeError(
+                "Missing legacy DAC relation policy "
+                f"for {relation!r}."
+            )
+
+        if side == "source":
+            expected_types = policy.source_types
+        elif side == "target":
+            expected_types = policy.target_types
+        else:
+            raise ValueError(
+                f"Unknown relation endpoint side: {side!r}"
+            )
+
+        collection_types = {
+            semantic_type
+            for semantic_type in expected_types
+            if semantic_type
+            in collection_ids_by_semantic_type
+        }
+
+        if collection_types:
+            if len(collection_types) != len(
+                expected_types
+            ):
+                raise RuntimeError(
+                    "Mixed entity/collection legacy relation "
+                    f"policy is unsupported for {relation!r} "
+                    f"{side}."
+                )
+
+            return any(
+                node_id
+                in collection_ids_by_semantic_type[
+                    semantic_type
+                ]
+                for semantic_type
+                in collection_types
+            )
+
+        return entity_has_type(
+            node_id,
+            set(expected_types),
+        )
+
     for edge in self.edges:
         relation = edge.relation
         source = edge.source
@@ -71,14 +143,7 @@ def validate_legacy_relation_semantics_compat(
 
         # Catalyst -> Experiment
         if relation == "EVALUATED_IN":
-            if not entity_has_type(
-                source,
-                {
-                    "Catalyst",
-                    "CatalystModel",
-                    "Material",
-                },
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "EVALUATED_IN source must be "
                     "a Catalyst, CatalystModel, "
@@ -86,7 +151,7 @@ def validate_legacy_relation_semantics_compat(
                     f"{source!r}"
                 )
 
-            if target not in experiment_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "EVALUATED_IN target must be "
                     f"an Experiment: {target!r}"
@@ -94,22 +159,14 @@ def validate_legacy_relation_semantics_compat(
 
         # Physical scientific object -> characterization
         elif relation == "CHARACTERIZED_BY":
-            if not entity_has_type(
-                source,
-                {
-                    "Catalyst",
-                    "Support",
-                    "Material",
-                    "CoordinationMotif",
-                },
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "CHARACTERIZED_BY source must be "
                     "a physical scientific entity: "
                     f"{source!r}"
                 )
 
-            if target not in experiment_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "CHARACTERIZED_BY target must be "
                     f"an Experiment: {target!r}"
@@ -117,16 +174,13 @@ def validate_legacy_relation_semantics_compat(
 
         # CatalystModel -> Calculation
         elif relation == "MODELED_BY":
-            if not entity_has_type(
-                source,
-                {"CatalystModel"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "MODELED_BY source must be "
                     f"a CatalystModel: {source!r}"
                 )
 
-            if target not in calculation_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "MODELED_BY target must be "
                     f"a Calculation: {target!r}"
@@ -134,19 +188,13 @@ def validate_legacy_relation_semantics_compat(
 
         # Catalyst -> SynthesisMethod
         elif relation == "SYNTHESIZED_BY":
-            if not entity_has_type(
-                source,
-                {"Catalyst"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "SYNTHESIZED_BY source must be "
                     f"a Catalyst: {source!r}"
                 )
 
-            if not entity_has_type(
-                target,
-                {"SynthesisMethod"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "SYNTHESIZED_BY target must be "
                     f"a SynthesisMethod: {target!r}"
@@ -154,19 +202,13 @@ def validate_legacy_relation_semantics_compat(
 
         # SynthesisMethod -> Precursor
         elif relation == "USES_PRECURSOR":
-            if not entity_has_type(
-                source,
-                {"SynthesisMethod"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "USES_PRECURSOR source must be "
                     f"a SynthesisMethod: {source!r}"
                 )
 
-            if not entity_has_type(
-                target,
-                {"Precursor"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "USES_PRECURSOR target must be "
                     f"a Precursor: {target!r}"
@@ -175,8 +217,7 @@ def validate_legacy_relation_semantics_compat(
         # Experiment/Calculation -> Measurement
         elif relation == "HAS_MEASUREMENT":
             if (
-                source not in experiment_ids
-                and source not in calculation_ids
+                not legacy_endpoint_matches(relation=relation, side="source", node_id=source)
             ):
                 semantic_errors.append(
                     "HAS_MEASUREMENT source must be "
@@ -184,40 +225,40 @@ def validate_legacy_relation_semantics_compat(
                     f"{source!r}"
                 )
 
-            if target not in measurement_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "HAS_MEASUREMENT target must be "
                     f"a Measurement: {target!r}"
                 )
 
         elif relation == "MEASURED_FOR":
-            if source not in measurement_ids:
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     f"MEASURED_FOR source must be a Measurement: {source!r}"
                 )
-            if target not in entity_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     f"MEASURED_FOR target must be an Entity: {target!r}"
                 )
 
         elif relation == "IN_MEASUREMENT_GROUP":
-            if source not in measurement_ids:
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "IN_MEASUREMENT_GROUP source must be a Measurement: "
                     f"{source!r}"
                 )
-            if target not in measurement_group_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "IN_MEASUREMENT_GROUP target must be a MeasurementGroup: "
                     f"{target!r}"
                 )
 
         elif relation == "MODEL_OF":
-            if not entity_has_type(source, {"CatalystModel"}):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     f"MODEL_OF source must be a CatalystModel: {source!r}"
                 )
-            if not entity_has_type(target, {"Catalyst"}):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     f"MODEL_OF target must be a Catalyst: {target!r}"
                 )
@@ -230,14 +271,14 @@ def validate_legacy_relation_semantics_compat(
                 | calculation_ids
             )
 
-            if source not in valid_sources:
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "SUPPORTS_CLAIM source must be "
                     "a Measurement, Experiment, or "
                     f"Calculation: {source!r}"
                 )
 
-            if target not in all_claim_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "SUPPORTS_CLAIM target must be "
                     f"a claim: {target!r}"
@@ -245,14 +286,14 @@ def validate_legacy_relation_semantics_compat(
 
         # ObservationClaim -> MechanismClaim
         elif relation == "INTERPRETED_AS":
-            if source not in observation_claim_ids:
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "INTERPRETED_AS source must be "
                     "an ObservationClaim: "
                     f"{source!r}"
                 )
 
-            if target not in mechanism_claim_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "INTERPRETED_AS target must be "
                     "a MechanismClaim: "
@@ -261,13 +302,13 @@ def validate_legacy_relation_semantics_compat(
 
         # Claim -> scientific entity
         elif relation == "APPLIES_TO":
-            if source not in all_claim_ids:
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "APPLIES_TO source must be "
                     f"a claim: {source!r}"
                 )
 
-            if target not in entity_ids:
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "APPLIES_TO target must be "
                     f"an Entity: {target!r}"
@@ -276,65 +317,41 @@ def validate_legacy_relation_semantics_compat(
         # SynthesisMethod -> Precursor already handled;
         # catalyst composition
         elif relation == "HAS_METAL":
-            if not entity_has_type(
-                source,
-                {
-                    "Catalyst",
-                    "CatalystModel",
-                },
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "HAS_METAL source must be "
                     "a Catalyst or CatalystModel: "
                     f"{source!r}"
                 )
 
-            if not entity_has_type(
-                target,
-                {"Metal"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "HAS_METAL target must be "
                     f"a Metal: {target!r}"
                 )
 
         elif relation == "SUPPORTED_ON":
-            if not entity_has_type(
-                source,
-                {
-                    "Catalyst",
-                    "CatalystModel",
-                },
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "SUPPORTED_ON source must be "
                     "a Catalyst or CatalystModel: "
                     f"{source!r}"
                 )
 
-            if not entity_has_type(
-                target,
-                {"Support"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "SUPPORTED_ON target must be "
                     f"a Support: {target!r}"
                 )
 
         elif relation == "CATALYZES":
-            if not entity_has_type(
-                source,
-                {"Catalyst"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="source", node_id=source):
                 semantic_errors.append(
                     "CATALYZES source must be "
                     f"a Catalyst: {source!r}"
                 )
 
-            if not entity_has_type(
-                target,
-                {"Reaction"},
-            ):
+            if not legacy_endpoint_matches(relation=relation, side="target", node_id=target):
                 semantic_errors.append(
                     "CATALYZES target must be "
                     f"a Reaction: {target!r}"
