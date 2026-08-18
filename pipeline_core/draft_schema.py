@@ -9,9 +9,11 @@ from dac_her.schemas import (
     ExperimentNode,
     KGEdge,
     MechanismClaimNode,
+    ObservationClaimNode,
+)
+from pipeline_core.measurement_schema import (
     MeasurementGroupType,
     MeasurementNode,
-    ObservationClaimNode,
 )
 
 
