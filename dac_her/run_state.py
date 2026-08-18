@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import pipeline_core.run_lifecycle as _run_lifecycle
+
 from pipeline_core.document_provenance import (
     document_source_fingerprints,
     sha256_file,
@@ -119,10 +121,11 @@ def paper_output_root(
     paper_id: str,
     data_root: str | Path = "data_dac",
 ) -> Path:
-    data_root_path = Path(data_root)
-    if not data_root_path.is_absolute():
-        data_root_path = Path(project_root).resolve() / data_root_path
-    return data_root_path.resolve() / "extracted" / paper_id
+    return _run_lifecycle.paper_output_root(
+        project_root,
+        paper_id,
+        data_root=data_root,
+    )
 
 
 def run_directory(
@@ -131,9 +134,12 @@ def run_directory(
     run_id: str,
     data_root: str | Path = "data_dac",
 ) -> Path:
-    return paper_output_root(
-        project_root, paper_id, data_root=data_root
-    ) / "runs" / run_id
+    return _run_lifecycle.run_directory(
+        project_root,
+        paper_id,
+        run_id,
+        data_root=data_root,
+    )
 
 
 def attempt_directory(
@@ -143,28 +149,21 @@ def attempt_directory(
     attempt_id: str,
     data_root: str | Path = "data_dac",
 ) -> Path:
-    return (
-        run_directory(
-            project_root,
-            paper_id,
-            run_id,
-            data_root=data_root,
-        )
-        / "attempts"
-        / attempt_id
+    return _run_lifecycle.attempt_directory(
+        project_root,
+        paper_id,
+        run_id,
+        attempt_id,
+        data_root=data_root,
     )
 
 
-def _latest_attempt_from_family(run_dir: Path) -> Path:
-    pointer_path = run_dir / "latest_attempt.json"
-    if not pointer_path.exists():
-        return run_dir
-    pointer = read_json(pointer_path)
-    raw = pointer.get("attempt_directory")
-    if not raw:
-        return run_dir
-    path = Path(str(raw))
-    return path if path.exists() else run_dir
+def _latest_attempt_from_family(
+    run_dir: Path,
+) -> Path:
+    return _run_lifecycle._latest_attempt_from_family(
+        run_dir
+    )
 
 
 
@@ -179,31 +178,16 @@ def write_latest_attempt_pointer(
     attempt_id: str,
     data_root: str | Path = "data_dac",
 ) -> Path:
-    run_id = str(run_metadata["run_id"])
-    family_dir = run_directory(
-        project_root,
-        paper_id,
-        run_id,
+    return _run_lifecycle.write_latest_attempt_pointer(
+        project_root=project_root,
+        paper_id=paper_id,
+        run_metadata=run_metadata,
+        attempt_id=attempt_id,
         data_root=data_root,
-    )
-    concrete_dir = attempt_directory(
-        project_root,
-        paper_id,
-        run_id,
-        attempt_id,
-        data_root=data_root,
-    )
-    return write_json(
-        family_dir / "latest_attempt.json",
-        {
-            "paper_id": paper_id,
-            "run_id": run_id,
-            "run_fingerprint": run_metadata["run_fingerprint"],
-            "attempt_layout_version": ATTEMPT_LAYOUT_VERSION,
-            "attempt_id": attempt_id,
-            "attempt_directory": str(concrete_dir),
-            "updated_at_utc": datetime.now(timezone.utc).isoformat(),
-        },
+        attempt_layout_version=ATTEMPT_LAYOUT_VERSION,
+        updated_at_utc=datetime.now(
+            timezone.utc
+        ).isoformat(),
     )
 
 
@@ -215,34 +199,17 @@ def write_latest_run_pointer(
     data_root: str | Path = "data_dac",
     attempt_id: str | None = None,
 ) -> Path:
-    root = paper_output_root(project_root, paper_id, data_root=data_root)
-    run_id = str(run_metadata["run_id"])
-    family_dir = run_directory(
-        project_root,
-        paper_id,
-        run_id,
+    return _run_lifecycle.write_latest_run_pointer(
+        project_root=project_root,
+        paper_id=paper_id,
+        run_metadata=run_metadata,
         data_root=data_root,
+        attempt_layout_version=ATTEMPT_LAYOUT_VERSION,
+        updated_at_utc=datetime.now(
+            timezone.utc
+        ).isoformat(),
+        attempt_id=attempt_id,
     )
-    payload: dict[str, Any] = {
-        "paper_id": paper_id,
-        "run_id": run_id,
-        "run_fingerprint": run_metadata["run_fingerprint"],
-        "run_directory": str(family_dir),
-        "updated_at_utc": datetime.now(timezone.utc).isoformat(),
-    }
-    if attempt_id:
-        payload["attempt_layout_version"] = ATTEMPT_LAYOUT_VERSION
-        payload["attempt_id"] = attempt_id
-        payload["attempt_directory"] = str(
-            attempt_directory(
-                project_root,
-                paper_id,
-                run_id,
-                attempt_id,
-                data_root=data_root,
-            )
-        )
-    return write_json(root / "latest_run.json", payload)
 
 
 def resolve_run_directory(
@@ -253,37 +220,10 @@ def resolve_run_directory(
     data_root: str | Path = "data_dac",
     attempt_id: str | None = None,
 ) -> Path:
-    pointer: dict[str, Any] | None = None
-    if run_id:
-        family_dir = run_directory(
-            project_root, paper_id, run_id, data_root=data_root
-        )
-    else:
-        pointer_path = (
-            paper_output_root(project_root, paper_id, data_root=data_root)
-            / "latest_run.json"
-        )
-        if not pointer_path.exists():
-            raise FileNotFoundError(
-                "No latest run pointer found for "
-                f"{paper_id!r}: {pointer_path}"
-            )
-        pointer = read_json(pointer_path)
-        family_dir = Path(pointer["run_directory"])
-
-    if attempt_id:
-        path = family_dir / "attempts" / attempt_id
-    elif pointer and pointer.get("attempt_directory"):
-        candidate = Path(str(pointer["attempt_directory"]))
-        path = (
-            candidate
-            if candidate.exists()
-            else _latest_attempt_from_family(family_dir)
-        )
-    else:
-        path = _latest_attempt_from_family(family_dir)
-
-    if not path.exists():
-        raise FileNotFoundError(f"Run directory not found: {path}")
-
-    return path.resolve()
+    return _run_lifecycle.resolve_run_directory(
+        project_root=project_root,
+        paper_id=paper_id,
+        run_id=run_id,
+        data_root=data_root,
+        attempt_id=attempt_id,
+    )
