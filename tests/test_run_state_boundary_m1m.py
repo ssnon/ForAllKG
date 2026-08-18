@@ -26,6 +26,8 @@ from dac_her.prompts import (
 )
 import dac_her.run_state as legacy
 import pipeline_core.document_provenance as provenance
+import pipeline_core.evaluation_runtime.artifacts as evaluation_artifacts
+import pipeline_core.serialization_primitives as serialization
 
 
 def _paper(
@@ -155,6 +157,37 @@ def test_current_run_state_ownership_and_provenance_compatibility():
     assert (
         legacy.sha256_file
         is provenance.sha256_file
+    )
+
+    for name in (
+        "sha256_bytes",
+        "sha256_text",
+        "canonical_json",
+        "read_json",
+        "write_json",
+    ):
+        assert (
+            getattr(legacy, name)
+            is getattr(
+                serialization,
+                name,
+            )
+        )
+
+        assert (
+            getattr(
+                serialization,
+                name,
+            ).__module__
+            == (
+                "pipeline_core."
+                "serialization_primitives"
+            )
+        )
+
+    assert (
+        provenance.sha256_bytes
+        is serialization.sha256_bytes
     )
 
 
@@ -902,4 +935,31 @@ def test_resolver_error_contracts_are_frozen(
             run_id="run-A",
             data_root=data_root,
             attempt_id="missing",
+        )
+
+
+def test_run_canonical_json_remains_stricter_than_evaluation_artifact_helper():
+    class Dumpable:
+        def model_dump(
+            self,
+            *,
+            mode: str,
+        ):
+            assert mode == "json"
+            return {
+                "value": 1,
+            }
+
+    assert (
+        evaluation_artifacts.canonical_json(
+            Dumpable()
+        )
+        == '{"value":1}'
+    )
+
+    with pytest.raises(
+        TypeError
+    ):
+        serialization.canonical_json(
+            Dumpable()
         )

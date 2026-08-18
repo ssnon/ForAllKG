@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +8,13 @@ from typing import Any
 from pipeline_core.document_provenance import (
     document_source_fingerprints,
     sha256_file,
+)
+from pipeline_core.serialization_primitives import (
+    canonical_json,
+    read_json,
+    sha256_bytes,
+    sha256_text,
+    write_json,
 )
 
 from dac_her.config import PaperConfig, paper_config_fingerprint_payload
@@ -21,23 +26,12 @@ RUN_STATE_VERSION = "semantic-si-assets-run-v5-strict-recovery"
 ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 
 
-def sha256_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def sha256_text(text: str) -> str:
-    return sha256_bytes(text.encode("utf-8"))
 
 
 
 
-def canonical_json(value: Any) -> str:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+
+
 
 
 
@@ -173,26 +167,8 @@ def _latest_attempt_from_family(run_dir: Path) -> Path:
     return path if path.exists() else run_dir
 
 
-def write_json(
-    path: str | Path,
-    payload: Any,
-) -> Path:
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(
-            payload,
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        ),
-        encoding="utf-8",
-    )
-    return path
 
 
-def read_json(path: str | Path) -> Any:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def write_latest_attempt_pointer(
