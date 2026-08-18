@@ -489,9 +489,9 @@ def test_select_referenced_blocks_and_fallback_contract(
         )
 
 
-def test_current_document_package_dependency_boundary():
+def test_shared_document_package_dependency_boundary():
     path = Path(
-        "dac_her/document_package.py"
+        "pipeline_core/document_package.py"
     )
 
     tree = ast.parse(
@@ -500,7 +500,7 @@ def test_current_document_package_dependency_boundary():
         )
     )
 
-    dac_modules = {
+    imported_modules = {
         node.module
         for node in ast.walk(tree)
         if (
@@ -509,17 +509,48 @@ def test_current_document_package_dependency_boundary():
                 ast.ImportFrom,
             )
             and node.module is not None
-            and node.module.startswith(
-                "dac_her."
-            )
         )
     }
 
-    # M1k.2a characterization.
-    # These become pipeline_core imports
-    # when document_package ownership moves.
-    assert dac_modules == {
-        "dac_her.asset_index",
-        "dac_her.config",
-        "dac_her.markdown",
+    dac_modules = {
+        module
+        for module in imported_modules
+        if module.startswith(
+            "dac_her."
+        )
     }
+
+    assert dac_modules == set()
+
+    assert {
+        "pipeline_core.asset_index",
+        "pipeline_core.document_config",
+        "pipeline_core.markdown",
+    }.issubset(
+        imported_modules
+    )
+
+def test_document_package_facade_reexports_shared_core_identity():
+    import dac_her.document_package as legacy
+    import pipeline_core.document_package as core
+
+    names = (
+        "DocumentPackage",
+        "SelectedSource",
+        "load_document_package",
+        "extract_supplementary_references",
+        "select_referenced_blocks",
+        "select_document_sources",
+    )
+
+    for name in names:
+        assert (
+            getattr(
+                legacy,
+                name,
+            )
+            is getattr(
+                core,
+                name,
+            )
+        )
