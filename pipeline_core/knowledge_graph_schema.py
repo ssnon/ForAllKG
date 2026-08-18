@@ -5,11 +5,16 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    ValidationInfo,
     model_validator,
 )
 
 from pipeline_core.knowledge_graph_compat_validation import (
     validate_graph_integrity_compat,
+)
+
+from pipeline_core.knowledge_graph_validation_context import (
+    relation_semantics_already_validated,
 )
 
 from pipeline_core.evidence_schema import (
@@ -171,5 +176,16 @@ class KnowledgeGraph(BaseModel):
         }
 
     @model_validator(mode="after")
-    def validate_graph_integrity(self) -> "KnowledgeGraph":
+    def validate_graph_integrity(
+        self,
+        info: ValidationInfo,
+    ) -> "KnowledgeGraph":
+        if relation_semantics_already_validated(
+            info.context
+        ):
+            return validate_graph_integrity_compat(
+                self,
+                validate_legacy_relations=False,
+            )
+
         return validate_graph_integrity_compat(self)

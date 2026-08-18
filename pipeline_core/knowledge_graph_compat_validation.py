@@ -10,6 +10,8 @@ from pipeline_core.knowledge_graph_legacy_relation_compat import (
 
 def validate_graph_integrity_compat(
     graph: Any,
+    *,
+    validate_legacy_relations: bool = True,
 ) -> Any:
     """Preserve historical direct KnowledgeGraph validation behavior."""
 
@@ -343,5 +345,7 @@ def validate_graph_integrity_compat(
             )
         )
 
-    validate_legacy_relation_semantics_compat(self)
+    if validate_legacy_relations:
+        validate_legacy_relation_semantics_compat(self)
+
     return self
