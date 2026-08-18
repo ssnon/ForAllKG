@@ -127,6 +127,84 @@ Prefer delegation before deleting historical helper APIs.
 Preserve existing public and private function names when compatibility is
 uncertain.
 
+## Repository restructuring track
+
+In addition to the SERS runtime deduplication work, this repository may be
+incrementally restructured to separate:
+
+- legacy upstream GraphAgents material
+- reusable domain-agnostic pipeline infrastructure
+- domain packages such as DAC-HER and SERS
+- frozen evaluation and campaign evidence
+
+This restructuring must remain behavior-preserving for the completed SERS
+campaign and must not modify protected scientific state.
+
+Use the following staged sequence:
+
+1. Establish a baseline and identify the legacy GraphAgents boundary.
+2. Measure all live references from the current runtime into that legacy
+   boundary.
+3. Document the safe isolation strategy, including compatibility shims needed
+   before any moves or renames.
+4. Extract or delegate shared domain-agnostic infrastructure behind existing
+   call surfaces.
+5. Move domain-specific implementations only after the shared layer is proven
+   by targeted regression and full Fresh-C characterization.
+
+Do not start with broad package renames or large file moves.
+
+Prefer compatibility shims and delegation layers before removing historical
+paths.
+
+Treat DAC-HER and SERS as current domain examples of a more general pipeline,
+but do not assume a correct general abstraction without first characterizing
+the existing shared behavior.
+
+Legacy packaging and environment entrypoints may be quarantined instead of
+migrated.
+
+In particular, if `setup.py` and `requirements.txt` are determined to be legacy
+GraphAgents surfaces, they do not need behavior-preserving line-by-line
+porting. They may be isolated and later replaced with newly generated
+repository-appropriate packaging and environment definitions after the core
+refactor stabilizes.
+
+When repository restructuring progresses from characterization into actual
+large-scale file edits, record a checkpoint commit before each substantial edit
+batch.
+
+For this purpose, a substantial edit batch means any broad rename, file move,
+package split, or multi-file structural refactor that would be difficult to
+review or revert mentally as one uncommitted change.
+
+This checkpoint-commit rule does not override the rule against making commits
+without explicit user authorization. It means that once such a refactor step is
+authorized, the work should be organized into commit-sized checkpoints and each
+major edit phase should begin from a recorded commit boundary.
+
+## Stage 1 checkpoint: legacy boundary characterization
+
+The first repository-restructuring checkpoint is strictly limited to:
+
+- identifying legacy GraphAgents candidate files and directories
+- building a repository-wide reference map to those candidates
+- classifying each candidate as live dependency, documentation-only, notebook-
+  only, or currently unused
+- documenting constraints that block immediate isolation
+
+During this checkpoint:
+
+- do not move files
+- do not rename packages
+- do not delete legacy material
+- do not alter import paths
+- do not touch `evaluation/sers_fresh_c/`
+- do not touch existing SERS protocol JSON files
+
+If isolation appears safe, record the required shim or delegation plan first.
+Actual movement or renaming belongs to a later checkpoint.
+
 ## Required preflight
 
 Before editing:
