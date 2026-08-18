@@ -182,4 +182,3 @@ def test_source_tree_hash_is_independent_of_file_creation_order(
         _sha256_source_tree(left)
         == _sha256_source_tree(right)
     )
-
