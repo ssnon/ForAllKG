@@ -7,6 +7,10 @@ from typing import Any, Iterable
 
 import networkx as nx
 
+from pipeline_core.knowledge_graph_validation_context import (
+    RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY,
+)
+
 from dac_her.schemas import Condition, KnowledgeGraph
 from dac_her.vocab_registry import VocabularyRegistry
 
@@ -214,6 +218,7 @@ def normalize_graph_vocabularies(
     *,
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
+    relation_semantics_already_validated: bool = False,
 ) -> tuple[KnowledgeGraph, list[VocabularyIssue]]:
     issues: list[VocabularyIssue] = []
 
@@ -328,7 +333,22 @@ def normalize_graph_vocabularies(
     payload = graph.model_dump()
     payload["experiments"] = [node.model_dump() for node in experiments]
     payload["measurements"] = [node.model_dump() for node in measurements]
-    return KnowledgeGraph.model_validate(payload), issues
+
+    relation_validation_context = (
+        {
+            RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY: True,
+        }
+        if relation_semantics_already_validated
+        else None
+    )
+
+    return (
+        KnowledgeGraph.model_validate(
+            payload,
+            context=relation_validation_context,
+        ),
+        issues,
+    )
 
 
 def _parse_conditions_json(value: Any) -> list[Condition]:

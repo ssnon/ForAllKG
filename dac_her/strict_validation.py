@@ -5,6 +5,10 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from pipeline_core.knowledge_graph_validation_context import (
+    RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY,
+)
+
 from dac_her.draft_schema import KnowledgeGraphDraft
 from dac_her.graph_domain import RelationConstraint
 from dac_her.graph_normalization import normalize_graph_vocabularies
@@ -68,8 +72,19 @@ def finalize_draft(
     if not report.valid:
         return FinalizationResult(report=report, graph=None, vocabulary_issues=[])
 
+    relation_validation_context = (
+        {
+            RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY: True,
+        }
+        if relation_constraints is not None
+        else None
+    )
+
     try:
-        graph = KnowledgeGraph.model_validate(draft.model_dump())
+        graph = KnowledgeGraph.model_validate(
+            draft.model_dump(),
+            context=relation_validation_context,
+        )
     except ValidationError as error:
         fallback = issue(
             code=IssueCode.FINAL_STRICT_VALIDATION_FAILURE,
@@ -87,6 +102,9 @@ def finalize_draft(
             graph,
             experiment_registry=experiment_registry,
             metric_registry=metric_registry,
+            relation_semantics_already_validated=(
+                relation_constraints is not None
+            ),
         )
     except Exception as error:
         fallback = issue(
@@ -101,7 +119,10 @@ def finalize_draft(
         )
 
     try:
-        graph = KnowledgeGraph.model_validate(graph.model_dump())
+        graph = KnowledgeGraph.model_validate(
+            graph.model_dump(),
+            context=relation_validation_context,
+        )
     except ValidationError as error:
         fallback = issue(
             code=IssueCode.FINAL_STRICT_VALIDATION_FAILURE,
