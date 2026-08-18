@@ -256,9 +256,43 @@ The shared artifact layer is intentionally free of:
 - network behavior
 - hypothesis logic
 
+## Subsequent implementation slices
+
+The following compatibility-first extraction slices were completed after the
+initial F1.2 planning document was written. They preserve the historical
+`dac_her.*` import paths while placing the implementation in `pipeline_core`:
+
+```text
+884eb6b  shared graph/Bridge schemas, I/O, validation, and issue models
+86d3eb2  shared graph node-reference helpers
+da256be  shared domain-configured discovery semantics
+7812217  shared extraction policy defaults
+d6c54c9  shared Markdown and explorer text utilities
+```
+
+Each slice included:
+
+- `py_compile` for changed Python files
+- targeted characterization/regression tests
+- Fresh-C characterization
+- frozen-tree hash comparison
+- `git diff --check`
+
+The targeted tests for these slices passed. Fresh-C characterization reached
+`116 passed, 1 failed` in the restricted development sandbox because the
+sandbox denies socket creation before the repository's own network guard can
+intercept it. The frozen `evaluation/sers_fresh_c/` tree hash remained:
+
+```text
+4ed77eaff69344d8649897a8b1ba0de5f0b2e96fac7482cb2bef1e99677443cd
+```
+
+These slices are implementation checkpoints, not scientific campaign stages.
+No SERS protocol, evaluation artifact, or campaign state was modified.
+
 ---
 
-## Current checkpoint
+## F1.2a plan (historical checkpoint)
 
 # F1.2a — Fresh-C live-discovery hashing migration
 
