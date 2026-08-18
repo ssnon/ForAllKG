@@ -587,3 +587,130 @@ STOP
 ```
 
 Do not begin the next checkpoint automatically.
+
+---
+
+## Status checkpoint — after M1g
+
+Date:
+
+```text
+2026-08-18
+```
+
+Refactor checkpoint:
+
+```text
+2904c1d
+refactor: drive legacy strict relations from policy data
+```
+
+The infrastructure refactor has progressed beyond the initial F1
+extraction plan. Shared implementation now lives substantially under
+`pipeline_core`, while historical `dac_her.*` import paths remain
+as compatibility facades where required.
+
+### Current ownership summary
+
+Shared/core ownership now includes:
+
+```text
+evaluation artifact primitives
+graph / Bridge structural contracts
+graph I/O and validation mechanics
+document asset / locator indexing
+discovery and traversal mechanics
+shared evidence / experiment / measurement schemas
+shared scientific node schemas
+KnowledgeGraph wire schema
+```
+
+Domain-specific semantics remain explicitly configured through
+domain profiles and adapters.
+
+### M1g — relation-validation boundary
+
+Status:
+
+```text
+CLOSED
+```
+
+The current domain-aware runtime validates relation semantics through
+the active domain's explicit `RelationConstraint` contract.
+
+When that validation has already occurred, strict `KnowledgeGraph`
+construction preserves structural and measurement validation while
+skipping the historical DAC relation gate.
+
+Historical / standalone compatibility remains available through a
+single legacy DAC endpoint-policy payload with separate compatibility
+renderers for:
+
+```text
+ValidationIssue
+historical strict ValueError
+```
+
+This preserves historical behavior without treating DAC relation
+semantics as current shared scientific policy.
+
+Latest verification at closure:
+
+```text
+targeted M1/schema-validation regression: 193 / 193 PASS
+Fresh-C regression: 117 / 117 PASS
+Fresh-C frozen evaluation files: 113
+frozen-tree diff: zero
+```
+
+### Remaining transitional boundaries
+
+Known remaining mixed-ownership areas include:
+
+```text
+pipeline_core/graphagents_adapter.py
+    legacy DAC-HER projection default
+
+dac_her/graph_normalization.py
+    generic normalization mechanism
+    + chemistry-specific metric interpretation
+
+dac_her/domains/
+    multiple scientific domains still live under the historical
+    dac_her namespace
+```
+
+`pipeline_core/legacy_dac_relation_policy.py` is intentionally
+retained as historical compatibility state. Removing it is not
+an M1g objective.
+
+### Branch / baseline note
+
+The immutable refactor baseline remains the commit:
+
+```text
+9760966f93a6c2cdf440f538c43e3c1c97b2024d
+```
+
+Do not use a moving branch name as the historical scientific baseline.
+
+### Next checkpoint
+
+```text
+M1h — GraphAgents projection boundary
+```
+
+M1h begins with characterization only.
+
+The first question is whether the legacy DAC-HER projection default
+in the shared projection engine is:
+
+```text
+historical compatibility only
+current runtime dependency
+or both
+```
+
+No projection-policy migration is authorized until that dependency
+boundary has been characterized.
