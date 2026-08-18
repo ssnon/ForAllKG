@@ -11,7 +11,7 @@ from pipeline_core.bridge_schemas import (
     BridgeRelationStrength,
     BridgeRetentionLane,
 )
-from dac_her.schemas import (
+from pipeline_core.evidence_schema import (
     ConfidenceLevel,
     DocumentRole,
     EvidencePointer,

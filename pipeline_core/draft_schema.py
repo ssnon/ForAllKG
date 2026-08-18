@@ -4,12 +4,14 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from dac_her.schemas import (
     CalculationNode,
-    DocumentRole,
     EntityNode,
     ExperimentNode,
-    KGEdge,
     MechanismClaimNode,
     ObservationClaimNode,
+)
+from pipeline_core.evidence_schema import (
+    DocumentRole,
+    KGEdge,
 )
 from pipeline_core.measurement_schema import (
     MeasurementGroupType,

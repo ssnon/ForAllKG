@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from dac_her.schemas import (
+from pipeline_core.evidence_schema import (
     ConfidenceLevel,
     DocumentRole,
     EvidencePointer,
