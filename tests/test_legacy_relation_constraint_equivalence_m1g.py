@@ -469,3 +469,151 @@ def test_matrix_covers_every_dac_relation_constraint():
     }
 
     assert matrix_relations == constraint_relations
+
+# ------------------------------------------------------------------
+# M1g.5.2
+#
+# Triangulate the second historical relation implementation:
+#
+#   strict KnowledgeGraph legacy compatibility
+#                ==
+#   explicit DAC RelationConstraint table
+#                ==
+#   collect_graph_issues no-contract legacy compatibility
+#
+# This characterization compares endpoint acceptance semantics only.
+# Historical error-message formatting remains a separate contract.
+# ------------------------------------------------------------------
+
+
+_RELATION_MISMATCH_CODES = {
+    IssueCode.RELATION_SOURCE_TYPE_MISMATCH,
+    IssueCode.RELATION_TARGET_TYPE_MISMATCH,
+}
+
+
+def _explicit_relation_constraint_codes(payload):
+    draft = KnowledgeGraphDraft.model_validate(
+        payload
+    )
+
+    report = collect_graph_issues(
+        draft,
+        relation_constraints=(
+            DAC_HER_STRICT_RELATION_CONSTRAINTS
+        ),
+    )
+
+    return (
+        report.codes()
+        & _RELATION_MISMATCH_CODES
+    )
+
+
+def _legacy_graph_validation_relation_codes(payload):
+    draft = KnowledgeGraphDraft.model_validate(
+        payload
+    )
+
+    report = collect_graph_issues(
+        draft
+    )
+
+    return (
+        report.codes()
+        & _RELATION_MISMATCH_CODES
+    )
+
+
+@pytest.mark.parametrize(
+    (
+        "relation",
+        "source_type",
+        "target_type",
+        "invalid_side",
+        "invalid_type",
+    ),
+    RELATION_CASES,
+)
+def test_no_contract_graph_validation_matches_explicit_contract_for_valid_cases(
+    relation,
+    source_type,
+    target_type,
+    invalid_side,
+    invalid_type,
+):
+    del invalid_side, invalid_type
+
+    payload = _payload_for(
+        relation,
+        source_type,
+        target_type,
+    )
+
+    legacy_codes = (
+        _legacy_graph_validation_relation_codes(
+            payload
+        )
+    )
+    explicit_codes = (
+        _explicit_relation_constraint_codes(
+            payload
+        )
+    )
+
+    assert legacy_codes == explicit_codes == set()
+
+    # Existing M1g.3 strict-model side of the triangle.
+    assert _legacy_relation_valid(payload)
+
+
+@pytest.mark.parametrize(
+    (
+        "relation",
+        "source_type",
+        "target_type",
+        "invalid_side",
+        "invalid_type",
+    ),
+    RELATION_CASES,
+)
+def test_no_contract_graph_validation_matches_explicit_contract_for_invalid_cases(
+    relation,
+    source_type,
+    target_type,
+    invalid_side,
+    invalid_type,
+):
+    if invalid_side == "source":
+        source_type = invalid_type
+    elif invalid_side == "target":
+        target_type = invalid_type
+    else:
+        raise AssertionError(
+            f"unknown invalid side: {invalid_side}"
+        )
+
+    payload = _payload_for(
+        relation,
+        source_type,
+        target_type,
+    )
+
+    legacy_codes = (
+        _legacy_graph_validation_relation_codes(
+            payload
+        )
+    )
+    explicit_codes = (
+        _explicit_relation_constraint_codes(
+            payload
+        )
+    )
+
+    # Equality here is stronger than merely "both reject":
+    # it also preserves which endpoint side is rejected.
+    assert legacy_codes == explicit_codes
+    assert legacy_codes
+
+    # Existing M1g.3 strict-model side of the triangle.
+    assert not _legacy_relation_valid(payload)
