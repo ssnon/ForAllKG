@@ -270,6 +270,7 @@ da256be  shared domain-configured discovery semantics
 d6c54c9  shared Markdown and explorer text utilities
 a209599  shared traversal runtime policy helpers
 de953d4  shared document asset indexing and hashing helpers
+553ce66  shared document locator indexing and provenance helpers
 ```
 
 Each slice included:
