@@ -9,6 +9,9 @@ from pydantic import (
     model_validator,
 )
 
+from pipeline_core.experiment_legacy_compat import (
+    backfill_legacy_experiment_registry_fields,
+)
 from pipeline_core.measurement_schema import Condition
 
 
@@ -107,25 +110,4 @@ class ExperimentNode(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def backfill_legacy_registry_fields(cls, value):
-        if isinstance(value, dict):
-            value = dict(value)
-            method_id = str(value.get("experiment_type", "other"))
-            family_map = {
-                "cyclic_voltammetry": "electrochemistry",
-                "linear_sweep_voltammetry": "electrochemistry",
-                "tafel_analysis": "electrochemistry",
-                "accelerated_degradation_test": "stability_test",
-                "extended_electrolysis": "stability_test",
-                "chronoamperometry": "electrochemistry",
-                "chronopotentiometry": "electrochemistry",
-                "haadf_stem": "microscopy",
-                "tem": "microscopy",
-                "xanes": "spectroscopy",
-                "exafs": "spectroscopy",
-                "xas": "spectroscopy",
-                "icp_oes": "composition_analysis",
-            }
-            value.setdefault("experiment_family", family_map.get(method_id, "other"))
-            value.setdefault("method_label", value.get("name") or method_id)
-            value.setdefault("raw_method_name", None)
-        return value
+        return backfill_legacy_experiment_registry_fields(value)
