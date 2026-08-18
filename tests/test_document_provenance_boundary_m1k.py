@@ -222,7 +222,7 @@ def test_document_source_fingerprints_preserve_document_and_package_semantics(
     )
 
 
-def test_current_strict_bridge_depends_only_on_document_fingerprints_from_run_state():
+def test_strict_bridge_uses_shared_document_provenance():
     path = Path(
         "pipeline_core/"
         "strict_bridge_corpus_pipeline.py"
@@ -234,29 +234,54 @@ def test_current_strict_bridge_depends_only_on_document_fingerprints_from_run_st
         )
     )
 
-    run_state_imports = []
-
-    for node in ast.walk(tree):
+    imports = {
+        node.module: [
+            alias.name
+            for alias in node.names
+        ]
+        for node in ast.walk(tree)
         if (
             isinstance(
                 node,
                 ast.ImportFrom,
             )
-            and node.module
-            == "dac_her.run_state"
-        ):
-            run_state_imports.extend(
-                alias.name
-                for alias in node.names
-            )
+            and node.module is not None
+        )
+    }
 
-    assert run_state_imports == [
-        "document_source_fingerprints"
-    ]
+    assert (
+        "dac_her.run_state"
+        not in imports
+    )
+
+    assert (
+        imports[
+            "pipeline_core."
+            "document_provenance"
+        ]
+        == [
+            "document_source_fingerprints"
+        ]
+    )
 
 
-def test_shared_document_provenance_owner_does_not_exist_yet():
-    assert not Path(
+def test_shared_document_provenance_owner_exists_and_run_state_reexports_it():
+    import dac_her.run_state as legacy
+    import pipeline_core.document_provenance as core
+
+    assert Path(
+        core.__file__
+    ).resolve() == Path(
         "pipeline_core/"
         "document_provenance.py"
-    ).exists()
+    ).resolve()
+
+    assert (
+        legacy.sha256_file
+        is core.sha256_file
+    )
+
+    assert (
+        legacy.document_source_fingerprints
+        is core.document_source_fingerprints
+    )

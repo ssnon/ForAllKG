@@ -409,7 +409,7 @@ class StrictBridgeCorpusPipeline:
                 get_paper_config,
                 paper_config_fingerprint_payload,
             )
-            from dac_her.run_state import document_source_fingerprints
+            from pipeline_core.document_provenance import document_source_fingerprints
 
             paper = get_paper_config(
                 self.config,
