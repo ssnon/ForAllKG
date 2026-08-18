@@ -26,6 +26,18 @@ from pipeline_core.measurement_schema import (
     MeasurementNode,
 )
 
+from pipeline_core.scientific_node_schema import (
+    CalculationNode,
+    CalculationType,
+    EntityNode,
+    EntityType,
+    MechanismBasis,
+    MechanismClaimNode,
+    MechanismClaimType,
+    ObservationClaimNode,
+    ObservationClaimType,
+)
+
 
 # ============================================================
 # Controlled vocabularies
@@ -45,7 +57,6 @@ KnownEntityType = Literal[
     "Intermediate",
     "Material",
 ]
-EntityType = str
 
 
 ExperimentFamily = Literal[
@@ -77,7 +88,6 @@ KnownCalculationType = Literal[
     "exafs_fitting",
     "other",
 ]
-CalculationType = str
 
 KnownObservationClaimType = Literal[
     "performance_comparison",
@@ -87,7 +97,6 @@ KnownObservationClaimType = Literal[
     "adsorption_site_preference",
     "other",
 ]
-ObservationClaimType = str
 
 KnownMechanismClaimType = Literal[
     "active_site",
@@ -99,14 +108,8 @@ KnownMechanismClaimType = Literal[
     "performance_mechanism",
     "other",
 ]
-MechanismClaimType = str
 
 
-MechanismBasis = Literal[
-    "experimental",
-    "computational",
-    "mixed",
-]
 
 
 KnownRelationType = Literal[
@@ -141,43 +144,6 @@ KnownRelationType = Literal[
 # ============================================================
 # Graph node models
 # ============================================================
-
-class EntityNode(BaseModel):
-    """
-    Ordinary scientific entities.
-
-    Measurements, experiments, calculations, and
-    mechanism claims should not be placed here.
-    """
-
-    model_config = ConfigDict(
-        extra="forbid"
-    )
-
-    id: str = Field(
-        ...,
-        description=(
-            "Unique canonical graph node identifier."
-        ),
-    )
-
-    type: EntityType
-
-    label: str = Field(
-        ...,
-        description=(
-            "Human-readable canonical node label."
-        ),
-    )
-
-    description: str | None = Field(
-        ...,
-        description=(
-            "Brief source-grounded description. "
-            "Use null when unnecessary."
-        ),
-    )
-
 
 class ExperimentNode(BaseModel):
     """
@@ -275,142 +241,6 @@ class ExperimentNode(BaseModel):
             value.setdefault("raw_method_name", None)
         return value
 
-
-class CalculationNode(BaseModel):
-    """
-    Computational procedure such as DFT, PDOS,
-    adsorption-energy calculation, or FPMD.
-    """
-
-    model_config = ConfigDict(
-        extra="forbid"
-    )
-
-    id: str = Field(
-        ...,
-        description=(
-            "Unique calculation identifier."
-        ),
-    )
-
-    name: str = Field(
-        ...,
-        description=(
-            "Concise human-readable calculation name."
-        ),
-    )
-
-    calculation_type: CalculationType
-
-    conditions: list[Condition] = Field(
-        ...,
-        description=(
-            "Explicit computational settings or "
-            "coverage conditions. Use an empty list "
-            "when none are stated."
-        ),
-    )
-
-    method_details: str | None = Field(
-        ...,
-        description=(
-            "Brief method description, such as DFT "
-            "model or functional. Use null when the "
-            "chunk does not provide this information."
-        ),
-    )
-
-
-class ObservationClaimNode(BaseModel):
-    """
-    Measurements or calculations summarized into a
-    directly evidence-supported scientific conclusion.
-
-    This node must not contain a causal explanation.
-    """
-
-    model_config = ConfigDict(
-        extra="forbid"
-    )
-
-    id: str = Field(
-        ...,
-        description=(
-            "Unique observation-claim identifier."
-        ),
-    )
-
-    claim_type: ObservationClaimType
-
-    statement: str = Field(
-        ...,
-        description=(
-            "A concise conclusion directly supported "
-            "by reported measurements, calculations, "
-            "or characterization results."
-        ),
-    )
-
-    basis: MechanismBasis = Field(
-        ...,
-        description=(
-            "Whether the observation is based on "
-            "experimental, computational, or mixed "
-            "evidence."
-        ),
-    )
-
-    description: str | None = Field(
-        ...,
-        description=(
-            "Additional source-grounded clarification. "
-            "Use null when unnecessary."
-        ),
-    )
-
-class MechanismClaimNode(BaseModel):
-    """
-    A causal, mechanistic, or explanatory interpretation.
-
-    Directly reported numerical comparisons belong in
-    ObservationClaimNode, not here.
-    """
-
-    model_config = ConfigDict(
-        extra="forbid"
-    )
-
-    id: str = Field(
-        ...,
-        description=(
-            "Unique mechanism-claim identifier."
-        ),
-    )
-
-    claim_type: MechanismClaimType
-
-    statement: str = Field(
-        ...,
-        description=(
-            "Concise faithful statement of the authors' "
-            "causal or mechanistic interpretation."
-        ),
-    )
-
-    basis: MechanismBasis
-
-    description: str | None = Field(
-        ...,
-        description=(
-            "Additional clarification. "
-            "Use null when unnecessary."
-        ),
-    )
-
-
-# ============================================================
-# Edge and graph models
-# ============================================================
 
 class KnowledgeGraph(BaseModel):
     """
