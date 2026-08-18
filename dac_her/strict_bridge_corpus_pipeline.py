@@ -9,4 +9,3 @@ from pipeline_core.strict_bridge_corpus_pipeline import (
     _sha256_file,
     _sha256_source_tree,
 )
-
