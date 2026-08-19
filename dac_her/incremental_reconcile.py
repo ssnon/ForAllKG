@@ -48,6 +48,13 @@ from pipeline_core.reconcile_validation import (
     validate_strict_run as _shared_validate_strict_run,
 )
 
+from pipeline_core.reconcile_recovery import (
+    discover_strict_run_candidates as _shared_discover_strict_run_candidates,
+    first_usable_strict_run as _shared_first_usable_strict_run,
+    run_directories_newest_first as _shared_run_directories_newest_first,
+    select_compatible_strict_run as _shared_select_compatible_strict_run,
+)
+
 
 @dataclass(frozen=True)
 class ReconcileOptions:
@@ -345,80 +352,85 @@ class IncrementalCorpusReconciler:
             )
         )
 
-    def _strict_run_candidates(self, paper_id: str) -> tuple[list[Path], str]:
-        paper_root = self.paper_root(paper_id)
-        pointer_path = paper_root / "latest_run.json"
-        pointer = _read_json(pointer_path)
-        candidates: list[Path] = []
-        pointer_reason = "no latest strict run"
-        if pointer:
-            run_id = str(pointer.get("run_id") or "").strip()
-            if run_id:
-                candidates.append(paper_root / "runs" / run_id)
-                pointer_reason = f"latest pointer={run_id}"
-            else:
-                pointer_reason = "latest_run.json has no run_id"
-
-        runs_root = paper_root / "runs"
-        if runs_root.is_dir():
-            others = sorted(
-                (path for path in runs_root.iterdir() if path.is_dir()),
-                key=lambda path: path.stat().st_mtime_ns,
-                reverse=True,
+    def _strict_run_candidates(
+        self,
+        paper_id: str,
+    ) -> tuple[list[Path], str]:
+        return (
+            _shared_discover_strict_run_candidates(
+                paper_root=(
+                    self.paper_root(
+                        paper_id
+                    )
+                ),
             )
-            seen = {path.resolve() for path in candidates}
-            candidates.extend(
-                path for path in others if path.resolve() not in seen
-            )
-        return candidates, pointer_reason
+        )
 
-    def strict_state(self, paper_id: str) -> StrictRunState:
+    def strict_state(
+        self,
+        paper_id: str,
+    ) -> StrictRunState:
         try:
-            current = self._current_contract(paper_id)
+            current = (
+                self._current_contract(
+                    paper_id
+                )
+            )
         except Exception as error:
             return StrictRunState(
                 StageState.pending(
-                    f"cannot compute current {self.options.freshness} contract: {error}"
+                    "cannot compute current "
+                    f"{self.options.freshness} "
+                    f"contract: {error}"
                 )
             )
-        if self.options.freshness in {"semantic", "full"}:
-            if not current["semantic"].get("model"):
+
+        if (
+            self.options.freshness
+            in {
+                "semantic",
+                "full",
+            }
+        ):
+            if not (
+                current[
+                    "semantic"
+                ].get("model")
+            ):
                 return StrictRunState(
                     StageState.pending(
-                        "current extraction model is unknown; set "
-                        "OPENROUTER_EXTRACT_MODEL or --extract-model"
+                        "current extraction model "
+                        "is unknown; set "
+                        "OPENROUTER_EXTRACT_MODEL "
+                        "or --extract-model"
                     )
                 )
 
-        candidates, pointer_reason = self._strict_run_candidates(paper_id)
-        if not candidates:
-            return StrictRunState(StageState.pending(pointer_reason))
+        (
+            candidates,
+            pointer_reason,
+        ) = (
+            self
+            ._strict_run_candidates(
+                paper_id
+            )
+        )
 
-        failures: list[str] = []
-        for index, run_dir in enumerate(candidates):
-            state = self._validate_strict_run(paper_id, run_dir, current)
-            if state.stage.valid:
-                if index == 0:
-                    return state
-                return StrictRunState(
-                    StageState.ready(
-                        "recovered compatible usable strict run from runs/*; "
-                        f"{pointer_reason}; selected={state.run_id}",
-                        state.run_dir,
-                        state.stage.metadata,
-                    ),
-                    state.run_id,
-                    state.run_dir,
-                )
-            failures.append(f"{run_dir.name}: {state.stage.reason}")
-
-        detail = "; ".join(failures[:3])
-        if len(failures) > 3:
-            detail += f"; +{len(failures) - 3} older run(s)"
-        return StrictRunState(
-            StageState.pending(
-                "no compatible usable strict run exists"
-                + (f" ({detail})" if detail else "")
+        return (
+            _shared_select_compatible_strict_run(
+                candidates=candidates,
+                pointer_reason=(
+                    pointer_reason
+                ),
+                validate_run=(
+                    lambda run_dir:
+                        self
+                        ._validate_strict_run(
+                            paper_id,
+                            run_dir,
+                            current,
+                        )
+                ),
             )
         )
 
@@ -451,46 +463,42 @@ class IncrementalCorpusReconciler:
         )
 
     def _latest_usable_run_without_freshness(
-        self, paper_id: str
+        self,
+        paper_id: str,
     ) -> StrictRunState | None:
-        runs_root = self.paper_root(paper_id) / "runs"
-        if not runs_root.is_dir():
-            return None
-        candidates = sorted(
-            (path for path in runs_root.iterdir() if path.is_dir()),
-            key=lambda path: path.stat().st_mtime_ns,
-            reverse=True,
-        )
-        for run_dir in candidates:
-            run_id = run_dir.name
-            run_meta = _read_json(run_dir / "run.json")
-            active = _read_json(run_dir / "active_chunks.json")
-            if not run_meta or not active:
-                continue
-            if str(run_meta.get("run_id") or "") != run_id:
-                continue
-            if str(active.get("run_id") or "") != run_id:
-                continue
-            chunks = active.get("chunks")
-            if not isinstance(chunks, list) or not chunks:
-                continue
-            quality = str(active.get("graph_materialization_status") or "")
-            if not quality and isinstance(active.get("quality"), dict):
-                quality = str(
-                    active["quality"].get("graph_materialization_status") or ""
+        candidates = (
+            _shared_run_directories_newest_first(
+                self.paper_root(
+                    paper_id
                 )
-            if quality == "rejected":
-                continue
-            if quality == "partial_critical" and not self.options.allow_partial:
-                continue
-            return StrictRunState(
-                StageState.ready(
-                    "latest structurally usable strict run", run_dir, run_meta
-                ),
-                run_id,
-                run_dir,
+                / "runs"
             )
-        return None
+        )
+
+        return (
+            _shared_first_usable_strict_run(
+                candidates=candidates,
+                validate_run=(
+                    lambda run_dir:
+                        _shared_validate_strict_run(
+                            run_dir=run_dir,
+                            current={},
+                            active_payload_issue=(
+                                self
+                                ._strict_run_admission_issue
+                            ),
+                            compatibility_check=(
+                                lambda run_meta, current:
+                                    (
+                                        True,
+                                        "latest structurally "
+                                        "usable strict run",
+                                    )
+                            ),
+                        )
+                ),
+            )
+        )
 
     def _repair_broken_latest_pointer_before_attempt(self, paper_id: str) -> None:
         pointer_path = self.paper_root(paper_id) / "latest_run.json"
