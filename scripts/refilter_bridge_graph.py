@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-import dac_her.bridge_filtering \
+import pipeline_core.bridge_filtering \
     as bridge_filtering_module
 import dac_her.bridge_graph \
     as bridge_graph_module
@@ -18,7 +18,7 @@ import dac_her.schemas \
     as schemas_module
 import domains.dac_her.scientific_signatures \
     as scientific_signatures_module
-import dac_her.bridge_policy_run \
+import pipeline_core.bridge_policy_run \
     as bridge_policy_run_module
 
 from dac_her.bridge_policy_run import (

@@ -22,7 +22,7 @@ import dac_her.domains.dac_her_bridge \
     as dac_her_bridge_module
 import dac_her.bridge_extraction \
     as bridge_extraction_module
-import dac_her.bridge_filtering \
+import pipeline_core.bridge_filtering \
     as bridge_filtering_module
 import dac_her.bridge_graph \
     as bridge_graph_module
@@ -42,7 +42,7 @@ import dac_her.schemas \
     as schemas_module
 import dac_her.scientific_signatures \
     as scientific_signatures_module
-import dac_her.bridge_policy_run \
+import pipeline_core.bridge_policy_run \
     as bridge_policy_run_module
 import dac_her.bridge_recovery \
     as bridge_recovery_module

@@ -181,11 +181,17 @@ def test_refilter_imports_canonical_policy_module():
         not in imports
     )
 
-    # The separate run/orchestration module remains legacy
-    # in this bounded ownership move.
+    # M3 moves the canonical policy-run implementation
+    # into pipeline_core while retaining the DAC facade
+    # as the runtime compatibility entrypoint.
+    assert (
+        "pipeline_core.bridge_policy_run"
+        in imports
+    )
+
     assert (
         "dac_her.bridge_policy_run"
-        in imports
+        not in imports
     )
 
     assert (
