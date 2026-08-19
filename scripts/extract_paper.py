@@ -32,7 +32,7 @@ import dac_her.extraction_quality as extraction_quality_module
 import dac_her.lossless_normalization as lossless_normalization_module
 import dac_her.recovery_policy as recovery_policy_module
 import dac_her.semantic_patch as semantic_patch_module
-import dac_her.semantic_patch_prompts as semantic_patch_prompts_module
+import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import dac_her.semantic_patch_schema as semantic_patch_schema_module
 import dac_her.strict_recovery as strict_recovery_module
 import dac_her.strict_validation as strict_validation_module
