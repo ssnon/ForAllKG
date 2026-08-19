@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.fresh_c_c1a_r1_recovery_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1a_r1_recovery_v1 import (
     load_and_validate_protocol,
     render_page_bounded_text,
 )

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.fresh_c_live_discovery_recovery_v2_2 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_live_discovery_recovery_v2_2 import (
     EXPECTED_V21_FAILED_ATTEMPT_ID,
     make_transport_diagnostics_payload_v2_2,
     load_and_validate_protocol,

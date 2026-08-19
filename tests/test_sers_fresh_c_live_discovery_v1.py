@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from dac_her.fresh_c_acquisition import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_acquisition import (
     HistoricalLedgerSource,
     make_historical_exclusion_ledger,
 )
-from dac_her.fresh_c_live_discovery import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_live_discovery import (
     DEFAULT_PROTOCOL_PATH,
     EXPECTED_BROAD_QUERIES,
     EXPECTED_PROVIDERS,
@@ -28,7 +28,7 @@ from dac_her.literature_catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,
 )
-from scripts.run_sers_fresh_c_live_discovery_v1 import execute
+from campaigns.sers_alpha4_epoch.fresh_c.cli.run_sers_fresh_c_live_discovery_v1 import execute
 
 
 def _ledger(*ids: str):

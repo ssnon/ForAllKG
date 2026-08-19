@@ -8,8 +8,8 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-import dac_her.fresh_c_acquisition as fresh_c
-from dac_her.fresh_c_acquisition import (
+import campaigns.sers_alpha4_epoch.fresh_c.fresh_c_acquisition as fresh_c
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_acquisition import (
     FRESH_C_BLIND_ORDER_NAMESPACE,
     FreshCIdentityRecord,
     FreshCPreConsumptionSemanticState,

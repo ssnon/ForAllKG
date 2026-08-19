@@ -1,4 +1,4 @@
-from dac_her.sers_fresh_c_final_closeout_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.sers_fresh_c_final_closeout_v1 import (
     DEFAULT_PROTOCOL_PATH,
     FINAL_H1,
     FINAL_H2,

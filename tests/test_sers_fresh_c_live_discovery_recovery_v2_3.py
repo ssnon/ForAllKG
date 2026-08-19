@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import pytest
 
-from dac_her.fresh_c_live_discovery_recovery_v2_3 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_live_discovery_recovery_v2_3 import (
     EXPECTED_V22_FAILED_ATTEMPT_ID,
     load_and_validate_protocol,
     require_api_key_presence,

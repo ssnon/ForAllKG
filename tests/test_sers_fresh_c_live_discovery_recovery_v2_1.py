@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.fresh_c_live_discovery_recovery_v2_1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_live_discovery_recovery_v2_1 import (
     EXPECTED_V2_FREEZE_COMMIT,
     load_and_validate_protocol,
 )
@@ -54,7 +54,7 @@ def test_v21_still_does_not_consume_fresh_c():
 
 def test_runner_source_exposes_exact_preflight_and_confirmation_flags():
     source = Path(
-        "scripts/run_sers_fresh_c_live_discovery_recovery_v2_1.py"
+        "campaigns/sers_alpha4_epoch/fresh_c/cli/run_sers_fresh_c_live_discovery_recovery_v2_1.py"
     ).read_text(encoding="utf-8")
     assert 'group.add_argument("--preflight", action="store_true")' in source
     assert '"--confirm-live-discovery-recovery-v2-1"' in source

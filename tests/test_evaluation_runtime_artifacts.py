@@ -13,7 +13,7 @@ from dac_her.evaluation_runtime.artifacts import (
     sha256_json,
     sha256_json_without_fields,
 )
-from dac_her.fresh_c_acquisition import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_acquisition import (
     canonical_json as legacy_canonical_json,
     sha256_file as legacy_sha256_file,
     sha256_json as legacy_sha256_json,

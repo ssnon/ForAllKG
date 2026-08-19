@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.fresh_c_c1b0_contract_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b0_contract_v1 import (
     H1,
     H2,
     H3,

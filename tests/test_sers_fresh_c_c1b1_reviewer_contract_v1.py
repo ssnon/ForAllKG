@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from dac_her.fresh_c_c1b1_reviewer_contract_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b1_reviewer_contract_v1 import (
     DEFAULT_PROTOCOL_PATH,
     EvidenceLocator,
     FreshCFinalAdjudication,

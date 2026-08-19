@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from email.message import Message
 
-from dac_her.fresh_c_live_discovery_recovery_v2 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_live_discovery_recovery_v2 import (
     EXPECTED_V1_FAILED_ATTEMPT_ID,
     RETRYABLE_HTTP_STATUS,
     SEMANTIC_SCHOLAR_BASE_BACKOFF_SECONDS,

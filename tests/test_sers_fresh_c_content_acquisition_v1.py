@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from dac_her.fresh_c_content_acquisition_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_content_acquisition_v1 import (
     canonical_id_to_doi,
     load_and_validate_protocol,
     locator_record_to_minimal_work,

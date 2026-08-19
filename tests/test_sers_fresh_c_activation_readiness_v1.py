@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.fresh_c_activation import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_activation import (
     EXPECTED_BROAD_QUERIES,
     EXPECTED_C01A_FREEZE_COMMIT,
     EXPECTED_PROVIDERS,

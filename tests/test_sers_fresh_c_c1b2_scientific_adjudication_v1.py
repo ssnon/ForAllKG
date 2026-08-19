@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from dac_her.fresh_c_c1b1_reviewer_contract_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b1_reviewer_contract_v1 import (
     EvidenceLocator,
     FinalEvidenceReference,
     FreshCFinalAdjudication,
@@ -11,7 +11,7 @@ from dac_her.fresh_c_c1b1_reviewer_contract_v1 import (
     H3,
     HypothesisPaperAssessment,
 )
-from dac_her.fresh_c_c1b2_scientific_adjudication_v1 import (
+from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b2_scientific_adjudication_v1 import (
     DEFAULT_PROTOCOL_PATH,
     build_target_boundaries,
     canonical_json_sha256,
@@ -218,7 +218,7 @@ def _walk_objects(node):
 
 
 def test_openai_strict_transport_schema_requires_every_object_property():
-    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
     schema = openai_strict_transport_schema(FreshCPaperReview)
     for obj in _walk_objects(schema):
         assert obj["required"] == list(obj["properties"].keys())
@@ -227,7 +227,7 @@ def test_openai_strict_transport_schema_requires_every_object_property():
 
 
 def test_optional_verbatim_quote_is_required_key_but_nullable():
-    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
     schema = openai_strict_transport_schema(FreshCPaperReview)
     locator = schema["$defs"]["EvidenceLocator"]
     assert "verbatim_quote" in locator["required"]
@@ -236,8 +236,8 @@ def test_optional_verbatim_quote_is_required_key_but_nullable():
 
 
 def test_raw_c1b1_schema_hash_is_not_changed_by_transport_adapter():
-    from dac_her.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
-    from dac_her.fresh_c_c1b2_scientific_adjudication_v1 import (
+    from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b1_reviewer_contract_v1 import FreshCPaperReview
+    from campaigns.sers_alpha4_epoch.fresh_c.fresh_c_c1b2_scientific_adjudication_v1 import (
         EXPECTED_PAPER_SCHEMA_SHA256,
     )
     assert canonical_json_sha256(FreshCPaperReview.model_json_schema()) == (
