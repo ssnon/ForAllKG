@@ -12,7 +12,7 @@ from dac_her.external_novelty_contracts import (
 )
 from dac_her.novelty_refinement_contracts import NoveltyGapPlan
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 BUNDLE_ROOT = ROOT / (
     "evaluation/sers_novelty_gap/t1_frozen_input_bundle_v1"
 )

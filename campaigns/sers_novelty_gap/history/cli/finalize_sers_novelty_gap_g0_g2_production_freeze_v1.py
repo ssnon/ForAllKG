@@ -4,12 +4,12 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from scripts.verify_sers_novelty_gap_g0_g2_production_freeze_v1 import (
+from campaigns.sers_novelty_gap.history.cli.verify_sers_novelty_gap_g0_g2_production_freeze_v1 import (
     DEFAULT_FREEZE_ROOT,
     verify_freeze,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 EXPECTED_BRANCH = "feat/SERS-novelty-gap-next"
 FREEZE_BRANCH = "freeze/SERS-novelty-gap-g0-g2-v1-20260817"
 COMMIT_MESSAGE = "freeze SERS novelty gap G0-G2 production v1"
@@ -17,10 +17,10 @@ COMMIT_MESSAGE = "freeze SERS novelty gap G0-G2 production v1"
 COMMIT_PATHS = (
     "dac_her/novelty_gap_analysis.py",
     "tests/test_sers_novelty_gap_query_compaction_production_v2.py",
-    "scripts/run_sers_novelty_gap_g0_g2_production_integration_v2.py",
-    "scripts/verify_sers_novelty_gap_g0_g2_production_integration_v2.py",
-    "scripts/verify_sers_novelty_gap_g0_g2_production_freeze_v1.py",
-    "scripts/finalize_sers_novelty_gap_g0_g2_production_freeze_v1.py",
+    "campaigns/sers_novelty_gap/history/cli/run_sers_novelty_gap_g0_g2_production_integration_v2.py",
+    "campaigns/sers_novelty_gap/history/cli/verify_sers_novelty_gap_g0_g2_production_integration_v2.py",
+    "campaigns/sers_novelty_gap/history/cli/verify_sers_novelty_gap_g0_g2_production_freeze_v1.py",
+    "campaigns/sers_novelty_gap/history/cli/finalize_sers_novelty_gap_g0_g2_production_freeze_v1.py",
     "evaluation/sers_novelty_gap/g0_g2_production_freeze_v1",
 )
 

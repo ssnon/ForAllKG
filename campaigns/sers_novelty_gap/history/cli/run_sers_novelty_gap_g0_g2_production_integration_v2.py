@@ -14,7 +14,7 @@ from dac_her.sers_novelty_gap_g0_g2_dev_validation import (
     load_frozen_input,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 DEV_V4_REPORT = ROOT / (
     "evaluation/sers_novelty_gap/g0_g2_dev_run_v4/"
     "g0_g2_dev_report_v4.json"

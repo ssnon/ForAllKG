@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 FREEZE_ROOT = ROOT / (
     "evaluation/sers_novelty_gap/"
     "t0_targeted_retrieval_canonicalization_freeze_v2"

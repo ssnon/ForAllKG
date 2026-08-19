@@ -28,7 +28,7 @@ from dac_her.targeted_novelty_retrieval import (
     TargetedNoveltyRetriever,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_SPEC_ROOT = ROOT / (
     "evaluation/sers_novelty_gap/"
     "t1_live_targeted_retrieval_spec_v1"

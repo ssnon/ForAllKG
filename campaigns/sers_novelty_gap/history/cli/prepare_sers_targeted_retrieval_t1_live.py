@@ -19,7 +19,7 @@ from dac_her.literature_provider_plan import (
 )
 from dac_her.novelty_refinement_contracts import NoveltyGapPlan
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_INPUT_ROOT = ROOT / (
     "evaluation/sers_novelty_gap/t1_frozen_input_bundle_v1"
 )

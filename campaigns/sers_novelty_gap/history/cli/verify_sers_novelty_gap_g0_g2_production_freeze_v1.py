@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_FREEZE_ROOT = ROOT / (
     "evaluation/sers_novelty_gap/g0_g2_production_freeze_v1"
 )

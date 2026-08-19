@@ -4,12 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
-from scripts.run_sers_novelty_gap_g0_g2_production_integration_v2 import (
+from campaigns.sers_novelty_gap.history.cli.run_sers_novelty_gap_g0_g2_production_integration_v2 import (
     DEFAULT_RUN_ROOT,
     build_production_run,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 
 
 def main() -> int:
