@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_metric_definition import (
+from domains.sers.metric_definition import (
     SERS_AU_AG_METRIC_DEFINITION_ADAPTER,
 )
 from dac_her.metric_definition_domain import MetricDefinitionDomainAdapter

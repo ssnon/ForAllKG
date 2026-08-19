@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_reproducibility import (
+from domains.sers.reproducibility import (
     SERS_AU_AG_REPRODUCIBILITY_ADAPTER,
 )
 from dac_her.reproducibility_domain import ReproducibilityDomainAdapter

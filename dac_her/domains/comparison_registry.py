@@ -3,7 +3,7 @@ from __future__ import annotations
 from dac_her.comparison_domain import ComparisonDomainAdapter
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_comparison import (
+from domains.sers.comparison import (
     SERS_AU_AG_COMPARISON_ADAPTER,
 )
 
