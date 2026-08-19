@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend_alpha4c21 import (
+from domains.sers.trend_alpha4c21 import (
     SERS_AU_AG_TREND_ADAPTER,
     SERS_AU_AG_TREND_SEMANTICS_ID,
 )

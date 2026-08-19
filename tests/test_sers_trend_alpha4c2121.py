@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend_alpha4c2121 import (
+from domains.sers.trend_alpha4c2121 import (
     SERS_AU_AG_TREND_ADAPTER,
     SERS_AU_AG_TREND_SEMANTICS_ID,
     _canonical_claim_text_bundle,
     _is_spectral_alignment_claim,
     _reground_item,
 )
-from dac_her.domains.sers_au_ag_trend_precision_alpha4c2121 import (
+from domains.sers.trend_precision_alpha4c2121 import (
     SERS_AU_AG_TREND_PRECISION_ADAPTER,
     SERS_AU_AG_TREND_PRECISION_SEMANTICS_ID,
 )

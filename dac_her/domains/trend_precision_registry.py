@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_trend_precision_alpha4c21211 import (
+from domains.sers.trend_precision_alpha4c21211 import (
     SERS_AU_AG_TREND_PRECISION_ADAPTER,
 )
 from dac_her.trend_precision import TrendPrecisionAdapter

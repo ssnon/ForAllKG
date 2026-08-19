@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.domains.sers_au_ag_trend_alpha4c5g2r1 import (
+from domains.sers.trend_alpha4c5g2r1 import (
     _nanogap_size_cue,
     _resolved_claim_control,
     _resolved_direction_shape,

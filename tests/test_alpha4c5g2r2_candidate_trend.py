@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend_alpha4c5g2r2 import (
+from domains.sers.trend_alpha4c5g2r2 import (
     _candidate_local_methods_compatible,
 )
 

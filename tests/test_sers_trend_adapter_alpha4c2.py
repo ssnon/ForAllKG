@@ -4,7 +4,7 @@ import json
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend import (
+from domains.sers.trend import (
     SERS_AU_AG_TREND_ADAPTER,
     SERS_AU_AG_TREND_SEMANTICS_ID,
 )

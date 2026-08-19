@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend_alpha4c5g2 import (
+from domains.sers.trend_alpha4c5g2 import (
     _comparative_gap_direction,
     _resolved_claim_control,
     resolve_measurement_local_method_contexts,

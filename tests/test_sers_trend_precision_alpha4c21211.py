@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_trend_precision_alpha4c21211 import (
+from domains.sers.trend_precision_alpha4c21211 import (
     SERS_AU_AG_TREND_PRECISION_ADAPTER,
     SERS_AU_AG_TREND_PRECISION_SEMANTICS_ID,
 )

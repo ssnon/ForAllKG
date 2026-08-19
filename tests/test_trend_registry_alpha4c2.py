@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_trend_alpha4c21 import (
+from domains.sers.trend_alpha4c21 import (
     SERS_AU_AG_TREND_ADAPTER as HISTORICAL_ALPHA4C21_ADAPTER,
 )
 from dac_her.domains.trend_registry import (
