@@ -234,6 +234,20 @@ def _base_model_args(args: argparse.Namespace, *, critic: bool = False) -> list[
     return result
 
 
+def _data_root_args(
+    args: argparse.Namespace,
+) -> list[str]:
+    value = str(
+        args.data_root or ""
+    ).strip()
+
+    return (
+        ["--data-root", value]
+        if value
+        else []
+    )
+
+
 def _check_alpha6_available() -> None:
     try:
         __import__("scripts.run_novelty_refinement")
@@ -320,6 +334,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             [
                 "--corpus-id", args.corpus_id,
                 "--domain-profile", domain_profile.profile_id,
+                *_data_root_args(args),
                 "--mode", "mechanism",
                 "--algorithm", "semantic_stop",
                 "--source", args.source,
@@ -360,6 +375,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             [
                 "--corpus-id", args.corpus_id,
                 "--domain-profile", domain_profile.profile_id,
+                *_data_root_args(args),
                 "--mode", "mechanism",
                 "--algorithm", "top_n",
                 "--source", args.source,
@@ -603,6 +619,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         [
             "--corpus-id", args.corpus_id,
             "--domain-profile", domain_profile.profile_id,
+            *_data_root_args(args),
             "--source", args.source,
             "--target", args.target,
             "--node-map-k", str(args.node_map_k),
@@ -898,6 +915,16 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--corpus-id", default="dac_her_expanded_v1")
+    parser.add_argument(
+        "--data-root",
+        default=None,
+        help=(
+            "Override the scientific-domain data root for "
+            "grounding and candidate-unit traversal stages. "
+            "When omitted, child stages retain the domain "
+            "adapter default."
+        ),
+    )
     parser.add_argument(
         "--domain-profile",
         default="dac_her",
