@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.extraction_domain import ExtractionDomainAdapter
-from dac_her.domains.strict_relation_contracts import (
+from domains.dac_her.relation_constraints import (
     DAC_HER_STRICT_RELATION_CONSTRAINTS,
 )
 from dac_her.micro_reextract_prompts import MICRO_REEXTRACT_SYSTEM_PROMPT
