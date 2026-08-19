@@ -3,6 +3,7 @@ from __future__ import annotations
 import dac_her.bridge_policy as bridge_policy_module
 import domains.dac_her.bridge_prompts as bridge_prompts_module
 import dac_her.bridge_validation as bridge_validation_module
+import pipeline_core.bridge_validation as bridge_validation_core_module
 import domains.dac_her.scientific_signatures as scientific_signatures_module
 
 from dac_her.bridge_domain import (
@@ -53,6 +54,7 @@ DAC_HER_BRIDGE_ADAPTER = BridgeDomainAdapter(
             __file__,
             bridge_prompts_module.__file__,
             bridge_validation_module.__file__,
+            bridge_validation_core_module.__file__,
             scientific_signatures_module.__file__,
         ),
         policy=(
