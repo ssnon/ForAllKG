@@ -10,7 +10,7 @@ from pipeline_core.bridge_policy_runtime import (
     partition_with_policy,
 )
 from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
-from dac_her.sers_bridge_signatures import normalize_sers_bridge_text
+from campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_signatures import normalize_sers_bridge_text
 
 
 SERS_BRIDGE_POLICY_VERSION = 'sers-au-ag-bridge-policy-v1-alpha4b2b2'

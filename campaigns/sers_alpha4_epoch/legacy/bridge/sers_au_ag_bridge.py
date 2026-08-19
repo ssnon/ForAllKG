@@ -2,31 +2,31 @@ from __future__ import annotations
 
 import pipeline_core.bridge_policy_runtime as bridge_policy_runtime_module
 import pipeline_core.bridge_validation as bridge_validation_module
-import dac_her.sers_bridge_policy as sers_bridge_policy_module
-import dac_her.sers_bridge_prompts as sers_bridge_prompts_module
-import dac_her.sers_bridge_recovery_prompts as sers_bridge_recovery_prompts_module
-import dac_her.sers_bridge_signatures as sers_bridge_signatures_module
+import campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_policy as sers_bridge_policy_module
+import campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_prompts as sers_bridge_prompts_module
+import campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_recovery_prompts as sers_bridge_recovery_prompts_module
+import campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_signatures as sers_bridge_signatures_module
 
 from dac_her.bridge_domain import (
     BridgeDomainAdapter,
     BridgeImplementationFiles,
 )
 from pipeline_core.bridge_validation import bind_bridge_validation
-from dac_her.sers_bridge_policy import (
+from campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_policy import (
     SERS_BRIDGE_POLICY_VERSION,
     partition_sers_bridge_result,
 )
-from dac_her.sers_bridge_prompts import (
+from campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_prompts import (
     SERS_BRIDGE_PROMPT_VERSION,
     SERS_BRIDGE_SYSTEM_PROMPT,
     build_sers_bridge_prompt,
 )
-from dac_her.sers_bridge_recovery_prompts import (
+from campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_recovery_prompts import (
     SERS_BRIDGE_RECOVERY_PROMPT_VERSION,
     SERS_BRIDGE_RECOVERY_SYSTEM_PROMPT,
     build_sers_bridge_candidate_repair_prompt,
 )
-from dac_her.sers_bridge_signatures import (
+from campaigns.sers_alpha4_epoch.legacy.bridge.sers_bridge_signatures import (
     strict_node_catalog,
     strong_anchor_context_issues,
 )
