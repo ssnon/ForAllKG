@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Mapping
 
 from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
-from dac_her.scientific_signatures import normalize_scientific_text
+from domains.dac_her.scientific_signatures import normalize_scientific_text
 
 
 BRIDGE_POLICY_VERSION = "dac-her-bridge-policy-v2.3.3-calibration"

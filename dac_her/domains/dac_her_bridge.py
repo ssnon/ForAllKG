@@ -3,7 +3,7 @@ from __future__ import annotations
 import dac_her.bridge_policy as bridge_policy_module
 import domains.dac_her.bridge_prompts as bridge_prompts_module
 import dac_her.bridge_validation as bridge_validation_module
-import dac_her.scientific_signatures as scientific_signatures_module
+import domains.dac_her.scientific_signatures as scientific_signatures_module
 
 from dac_her.bridge_domain import (
     BridgeDomainAdapter,
@@ -27,7 +27,7 @@ from dac_her.bridge_validation import (
     bridge_validation_issues,
     validate_bridge_chunk,
 )
-from dac_her.scientific_signatures import (
+from domains.dac_her.scientific_signatures import (
     strict_node_catalog,
     strong_anchor_context_issues,
 )

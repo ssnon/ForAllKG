@@ -16,7 +16,7 @@ import dac_her.bridge_schemas \
     as bridge_schemas_module
 import dac_her.schemas \
     as schemas_module
-import dac_her.scientific_signatures \
+import domains.dac_her.scientific_signatures \
     as scientific_signatures_module
 import dac_her.bridge_policy_run \
     as bridge_policy_run_module
