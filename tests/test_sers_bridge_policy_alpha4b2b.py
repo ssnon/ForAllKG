@@ -1,5 +1,5 @@
 from dac_her.bridge_schemas import BridgeConcept
-from dac_her.sers_bridge_policy import concept_policy_issues
+from domains.sers.bridge_policy import concept_policy_issues
 
 
 def _pattern(**updates):

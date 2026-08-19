@@ -1,5 +1,5 @@
 from dac_her.bridge_schemas import BridgeConcept
-from dac_her.sers_bridge_policy import (
+from domains.sers.bridge_policy import (
     SERS_BRIDGE_POLICY_VERSION,
     concept_policy_issues,
 )

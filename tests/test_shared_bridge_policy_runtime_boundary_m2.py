@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 
 import dac_her.bridge_policy_runtime as legacy
-import dac_her.domains.sers_au_ag_bridge as sers_adapter_module
+import domains.sers.bridge as sers_adapter_module
 import pipeline_core.bridge_policy_runtime as core
 
 
@@ -80,9 +80,7 @@ def test_core_has_no_reverse_dependency():
 
 def test_sers_policy_imports_canonical_runtime():
     path = (
-        ROOT
-        / "dac_her"
-        / "sers_bridge_policy.py"
+        ROOT / "domains" / "sers" / "bridge_policy.py"
     )
 
     tree = ast.parse(

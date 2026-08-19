@@ -1,5 +1,5 @@
-from dac_her.sers_bridge_prompts import SERS_BRIDGE_SYSTEM_PROMPT
-from dac_her.sers_bridge_recovery_prompts import SERS_BRIDGE_RECOVERY_SYSTEM_PROMPT
+from domains.sers.bridge_prompts import SERS_BRIDGE_SYSTEM_PROMPT
+from domains.sers.bridge_recovery_prompts import SERS_BRIDGE_RECOVERY_SYSTEM_PROMPT
 
 
 def test_alpha4b2b_prompt_is_sers_specific_and_zero_quota():

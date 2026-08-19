@@ -2,7 +2,7 @@ import json
 
 import networkx as nx
 
-from dac_her.sers_bridge_signatures import (
+from domains.sers.bridge_signatures import (
     strict_node_catalog,
     strong_anchor_context_issues,
 )

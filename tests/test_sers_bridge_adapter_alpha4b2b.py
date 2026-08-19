@@ -32,8 +32,8 @@ def test_alpha4b2b_sers_fingerprint_files_are_domain_owned():
         __import__('pathlib').Path(path).name
         for path in adapter.implementation_files.policy
     }
-    assert 'sers_bridge_prompts.py' in extraction_names
-    assert 'sers_bridge_recovery_prompts.py' in extraction_names
-    assert 'sers_bridge_signatures.py' in extraction_names
-    assert 'sers_bridge_policy.py' in policy_names
+    assert 'bridge_prompts.py' in extraction_names
+    assert 'bridge_recovery_prompts.py' in extraction_names
+    assert 'bridge_signatures.py' in extraction_names
+    assert 'bridge_policy.py' in policy_names
     assert 'bridge_policy_runtime.py' in policy_names
