@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Iterable
 
-from dac_her.bridge_policy_runtime import (
+from pipeline_core.bridge_policy_runtime import (
     PluginBridgePolicyIssue,
     PluginBridgePolicyPartition,
     dedupe_policy_issues,

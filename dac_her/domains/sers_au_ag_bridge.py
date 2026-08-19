@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import dac_her.bridge_policy_runtime as bridge_policy_runtime_module
+import pipeline_core.bridge_policy_runtime as bridge_policy_runtime_module
 import pipeline_core.bridge_validation as bridge_validation_module
 import dac_her.sers_bridge_policy as sers_bridge_policy_module
 import dac_her.sers_bridge_prompts as sers_bridge_prompts_module
