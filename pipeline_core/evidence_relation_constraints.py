@@ -37,4 +37,3 @@ COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS = (
         target_types=frozenset({"Entity"}),
     ),
 )
-
