@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from scripts.run_dac_discovery_e2e import (
     _data_root_args,
+    _mechanism_index_args,
     _returned_path_count,
     parse_args,
     run_pipeline,
@@ -99,6 +100,47 @@ def test_e2e_forwards_data_root_to_all_traversal_lanes():
     assert (
         source.count(
             '"scripts.run_candidate_unit_traversal"'
+        )
+        == 1
+    )
+
+
+def test_mechanism_index_args_preserve_default_behavior():
+    assert (
+        _mechanism_index_args(
+            SimpleNamespace(
+                data_root=None,
+                corpus_id="corpus-a",
+            )
+        )
+        == []
+    )
+
+
+def test_mechanism_index_args_follow_custom_data_root():
+    assert _mechanism_index_args(
+        SimpleNamespace(
+            data_root="/tmp/sers-root",
+            corpus_id="sers-corpus",
+        )
+    ) == [
+        "--index-dir",
+        (
+            "/tmp/sers-root/corpus/"
+            "sers-corpus/mechanism/"
+            "navigation/node_index"
+        ),
+    ]
+
+
+def test_e2e_forwards_custom_mechanism_index_to_alpha4():
+    source = inspect.getsource(
+        run_pipeline
+    )
+
+    assert (
+        source.count(
+            "*_mechanism_index_args(args)"
         )
         == 1
     )

@@ -248,6 +248,31 @@ def _data_root_args(
     )
 
 
+def _mechanism_index_args(
+    args: argparse.Namespace,
+) -> list[str]:
+    value = str(
+        args.data_root or ""
+    ).strip()
+
+    if not value:
+        return []
+
+    index_dir = (
+        Path(value)
+        / "corpus"
+        / args.corpus_id
+        / "mechanism"
+        / "navigation"
+        / "node_index"
+    )
+
+    return [
+        "--index-dir",
+        str(index_dir),
+    ]
+
+
 def _check_alpha6_available() -> None:
     try:
         __import__("scripts.run_novelty_refinement")
@@ -679,6 +704,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         [
             "--dual-context", str(dual_context),
             *_base_model_args(args),
+            *_mechanism_index_args(args),
             "--max-axes", str(args.max_axes),
             "--parse-retries", str(args.hypothesis_parse_retries),
             "--output-prefix", str(axis_prefix),
