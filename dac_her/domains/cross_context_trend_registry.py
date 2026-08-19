@@ -3,7 +3,7 @@ from __future__ import annotations
 from dac_her.cross_context_trend import CrossContextTrendAdapter
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_cross_context_trend import (
+from domains.sers.cross_context_trend import (
     SERS_AU_AG_CROSS_CONTEXT_TREND_ADAPTER,
 )
 

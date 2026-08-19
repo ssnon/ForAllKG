@@ -5,7 +5,7 @@ import pytest
 from dac_her.cross_context_trend import (
     CrossContextTrendSource,
 )
-from dac_her.domains.sers_au_ag_cross_context_trend import (
+from domains.sers.cross_context_trend import (
     SERS_AU_AG_CROSS_CONTEXT_TREND_ADAPTER,
     SERS_AU_AG_TREND_CONTEXT_SEMANTICS_ID,
     audit_sers_au_ag_trend_context_projection,

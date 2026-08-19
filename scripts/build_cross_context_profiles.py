@@ -17,7 +17,7 @@ from dac_her.domains.cross_context_trend_registry import (
     get_cross_context_trend_adapter,
 )
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_cross_context_trend import (
+from domains.sers.cross_context_trend import (
     audit_sers_au_ag_trend_context_projection,
 )
 from dac_her.domains.trend_precision_registry import (
