@@ -36,11 +36,39 @@ EXPECTED_T1_FREEZE_ID = (
 EXPECTED_T1_MANIFEST_SHA256 = (
     "d7d8919a7c1c819f57c38e2b07abb84a9dcc8b93579f160f1f9ebee884361201"
 )
-R0_2_FROZEN_FILES = (
+R0_2_HISTORICAL_FROZEN_FILES = (
     "dac_her/r0_contracts.py",
     "dac_her/r0_runtime.py",
     "tests/test_r0_runtime.py",
     "tests/test_r0_sers_regression.py",
+)
+
+R0_2_HISTORICAL_SHA256 = {
+    "dac_her/r0_contracts.py": (
+        "e9c6faf344cd10186ab7ccf9ee27b015"
+        "5db6ad959704881d2dcc2ed5048b98fe"
+    ),
+    "dac_her/r0_runtime.py": (
+        "d1e01f1e79791ac194186d22d59d27e8"
+        "6027f3a2a3ab94ba336a1df5e4b132a6"
+    ),
+    "tests/test_r0_runtime.py": (
+        "227f156988b85e80879f9a704670d904"
+        "a070bd5370f135e37426526f1366ea95"
+    ),
+    "tests/test_r0_sers_regression.py": (
+        "9f4565a75aee5244b15363e5b06ac7c"
+        "aeefd00fad3cb93629281f1746c41b54a"
+    ),
+}
+
+# These remain byte-identical to the R0.2 source commit in the current
+# checkout.  The SERS regression test is intentionally excluded here because
+# M5/M6 changed only the canonical SERS source location it inspects.
+R0_2_CURRENT_IMMUTABLE_FILES = (
+    "dac_her/r0_contracts.py",
+    "dac_her/r0_runtime.py",
+    "tests/test_r0_runtime.py",
 )
 
 H1 = "direction_aware_trend_hypothesis:ad13dac8334238124899"
@@ -295,6 +323,30 @@ def main() -> int:
         if ancestor_check.returncode != 0:
             issues.append("R0.2 source commit is not an ancestor of HEAD")
         else:
+            # Historical freeze identity is verified at the historical source
+            # commit itself.  Later repository refactors must not rewrite that
+            # historical path/hash evidence.
+            for historical_path in R0_2_HISTORICAL_FROZEN_FILES:
+                committed = subprocess.check_output(
+                    [
+                        "git",
+                        "show",
+                        f"{EXPECTED_R0_2_COMMIT}:{historical_path}",
+                    ],
+                    cwd=ROOT,
+                )
+                observed_sha = hashlib.sha256(committed).hexdigest()
+                expected_sha = R0_2_HISTORICAL_SHA256[historical_path]
+
+                if observed_sha != expected_sha:
+                    issues.append(
+                        "R0.2 historical frozen-file SHA mismatch:"
+                        f"{historical_path}"
+                    )
+
+            # Current scientific implementation remains frozen byte-for-byte.
+            # The architecture-location regression test may track canonical
+            # namespace relocation without invalidating historical R0.2.
             r0_diff = subprocess.run(
                 [
                     "git",
@@ -302,12 +354,16 @@ def main() -> int:
                     "--quiet",
                     f"{EXPECTED_R0_2_COMMIT}..HEAD",
                     "--",
-                    *R0_2_FROZEN_FILES,
+                    *R0_2_CURRENT_IMMUTABLE_FILES,
                 ],
                 cwd=ROOT,
             )
+
             if r0_diff.returncode != 0:
-                issues.append("R0.2 frozen implementation files changed after source commit")
+                issues.append(
+                    "R0.2 current immutable implementation files "
+                    "changed after source commit"
+                )
     except (OSError, subprocess.CalledProcessError) as exc:
         issues.append(f"git lineage verification failed:{exc}")
 
