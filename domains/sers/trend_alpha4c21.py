@@ -9,7 +9,7 @@ from typing import Any, Iterable, Mapping
 
 import networkx as nx
 
-from dac_her.domains import sers_au_ag_trend as v1
+from domains.sers import trend as v1
 from dac_her.trend_domain import (
     TrendDomainAdapter,
     TrendEvidence,

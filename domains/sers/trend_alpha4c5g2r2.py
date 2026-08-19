@@ -5,8 +5,8 @@ from collections import defaultdict
 from dataclasses import replace
 from typing import Any, Iterable, Mapping
 
-from dac_her.domains import sers_au_ag_trend as v1
-from dac_her.domains import sers_au_ag_trend_alpha4c211 as v3
+from domains.sers import trend as v1
+from domains.sers import trend_alpha4c211 as v3
 from domains.sers.trend_alpha4c2121 import (
     SERS_AU_AG_TREND_ADAPTER as _V5_ADAPTER,
 )
