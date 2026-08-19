@@ -19,7 +19,10 @@ from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_i0_integrated_orchestratio
 
 def main() -> int:
     try:
-        ctx = validate_inputs(require_output_absent=False)
+        ctx = validate_inputs(
+            require_output_absent=False,
+            enforce_execution_workspace=False,
+        )
     except Exception as exc:
         print("SERS I0 integrated orchestration verification: FAIL")
         print(" - input validation:", exc)

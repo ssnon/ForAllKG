@@ -468,7 +468,11 @@ def _validate_i0_implementation_tracked(head: str) -> str:
     return code_commit
 
 
-def validate_inputs(*, require_output_absent: bool) -> dict[str, Any]:
+def validate_inputs(
+    *,
+    require_output_absent: bool,
+    enforce_execution_workspace: bool = True,
+) -> dict[str, Any]:
     issues: list[str] = []
     spec: dict[str, Any] | None = None
     try:
@@ -476,20 +480,23 @@ def validate_inputs(*, require_output_absent: bool) -> dict[str, Any]:
     except Exception as exc:
         issues.append(str(exc))
 
-    if spec is not None:
-        expected_branch = spec["source_contract"]["required_branch"]
-        branch = git_text("branch", "--show-current")
-        if branch != expected_branch:
-            issues.append(f"unexpected branch:{branch}")
-    else:
-        branch = git_text("branch", "--show-current")
+    branch = git_text("branch", "--show-current")
 
-    tracked_dirty = (
-        subprocess.run(["git", "diff", "--quiet"], cwd=ROOT).returncode != 0
-        or subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT).returncode != 0
-    )
-    if tracked_dirty:
-        issues.append("tracked working tree/index is not clean")
+    if enforce_execution_workspace:
+        if spec is not None:
+            expected_branch = spec["source_contract"]["required_branch"]
+            if branch != expected_branch:
+                issues.append(f"unexpected branch:{branch}")
+
+        tracked_dirty = (
+            subprocess.run(["git", "diff", "--quiet"], cwd=ROOT).returncode != 0
+            or subprocess.run(
+                ["git", "diff", "--cached", "--quiet"],
+                cwd=ROOT,
+            ).returncode != 0
+        )
+        if tracked_dirty:
+            issues.append("tracked working tree/index is not clean")
 
     required_paths = [
         SPEC_PATH,

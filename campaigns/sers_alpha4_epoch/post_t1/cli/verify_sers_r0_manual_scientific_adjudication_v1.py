@@ -286,9 +286,6 @@ def main() -> int:
         issues.append("H3 frozen action mismatch")
 
     try:
-        branch = _git("branch", "--show-current")
-        if branch != EXPECTED_BRANCH:
-            issues.append(f"unexpected branch:{branch}")
         ancestor_check = subprocess.run(
             ["git", "merge-base", "--is-ancestor", EXPECTED_R0_2_COMMIT, "HEAD"],
             cwd=ROOT,

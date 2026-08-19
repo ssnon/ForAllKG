@@ -94,18 +94,27 @@ def _assert_r0_outcomes(adjudication: dict[str, Any]) -> None:
             raise ValueError(f"R2 requirement missing:{hid}")
 
 
-def validate_inputs(*, require_output_absent: bool) -> dict[str, Any]:
+def validate_inputs(
+    *,
+    require_output_absent: bool,
+    enforce_execution_workspace: bool = True,
+) -> dict[str, Any]:
     issues: list[str] = []
     branch = git_text("branch", "--show-current")
-    if branch != EXPECTED_BRANCH:
-        issues.append(f"unexpected branch:{branch}")
 
-    tracked_dirty = (
-        subprocess.run(["git", "diff", "--quiet"], cwd=ROOT).returncode != 0
-        or subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT).returncode != 0
-    )
-    if tracked_dirty:
-        issues.append("tracked working tree/index is not clean")
+    if enforce_execution_workspace:
+        if branch != EXPECTED_BRANCH:
+            issues.append(f"unexpected branch:{branch}")
+
+        tracked_dirty = (
+            subprocess.run(["git", "diff", "--quiet"], cwd=ROOT).returncode != 0
+            or subprocess.run(
+                ["git", "diff", "--cached", "--quiet"],
+                cwd=ROOT,
+            ).returncode != 0
+        )
+        if tracked_dirty:
+            issues.append("tracked working tree/index is not clean")
 
     for path in [SPEC_PATH, R0_ADJ_PATH, R0_REVIEW_PATH, R0_FREEZE_MANIFEST, R0_FREEZE_READY]:
         if not path.is_file():
