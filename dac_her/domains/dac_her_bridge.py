@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import dac_her.bridge_policy as bridge_policy_module
+import domains.dac_her.bridge_policy as bridge_policy_module
 import domains.dac_her.bridge_prompts as bridge_prompts_module
 import dac_her.bridge_validation as bridge_validation_module
 import pipeline_core.bridge_validation as bridge_validation_core_module
@@ -10,7 +10,7 @@ from dac_her.bridge_domain import (
     BridgeDomainAdapter,
     BridgeImplementationFiles,
 )
-from dac_her.bridge_policy import (
+from domains.dac_her.bridge_policy import (
     BRIDGE_POLICY_VERSION,
     partition_bridge_result,
 )

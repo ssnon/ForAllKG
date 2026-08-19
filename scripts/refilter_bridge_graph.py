@@ -8,7 +8,7 @@ import dac_her.bridge_filtering \
     as bridge_filtering_module
 import dac_her.bridge_graph \
     as bridge_graph_module
-import dac_her.bridge_policy \
+import domains.dac_her.bridge_policy \
     as bridge_policy_module
 import dac_her.bridge_relation_repairs \
     as bridge_relation_repairs_module
