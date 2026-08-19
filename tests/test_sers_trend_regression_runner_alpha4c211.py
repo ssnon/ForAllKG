@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.sers_alpha4c211_regression_checks import (
+from campaigns.sers_alpha4_epoch.alpha4.cli.sers_alpha4c211_regression_checks import (
     checks_gate,
     seen_regression_checks,
 )

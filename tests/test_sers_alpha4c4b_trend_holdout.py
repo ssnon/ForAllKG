@@ -5,16 +5,16 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_sers_alpha4c4b_trend_holdout import (
+from campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4c4b_trend_holdout import (
     FrozenTrendHoldoutError,
     _require_equal,
 )
-from dac_her.trend_holdout import validate_protocol_split
+from campaigns.sers_alpha4_epoch.holdout.trend_holdout import validate_protocol_split
 
 
 def test_runner_exposes_no_arbitrary_paper_list_cli():
     source = Path(
-        "scripts/run_sers_alpha4c4b_trend_holdout.py"
+        "campaigns/sers_alpha4_epoch/holdout/cli/run_sers_alpha4c4b_trend_holdout.py"
     ).read_text(encoding="utf-8")
     # The runner legitimately passes --paper-id to the frozen projection
     # builder internally. What is forbidden is exposing a user CLI argument
@@ -25,7 +25,7 @@ def test_runner_exposes_no_arbitrary_paper_list_cli():
 
 def test_runner_is_explicitly_llm_and_bridge_free():
     source = Path(
-        "scripts/run_sers_alpha4c4b_trend_holdout.py"
+        "campaigns/sers_alpha4_epoch/holdout/cli/run_sers_alpha4c4b_trend_holdout.py"
     ).read_text(encoding="utf-8")
     assert "scripts.extract_paper" not in source
     assert "scripts.extract_bridge_graph" not in source

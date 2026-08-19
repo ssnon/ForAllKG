@@ -4,7 +4,7 @@ import copy
 
 import pytest
 
-from dac_her.trend_holdout import (
+from campaigns.sers_alpha4_epoch.holdout.trend_holdout import (
     TREND_HOLDOUT_SELECTION_ALGORITHM,
     TREND_HOLDOUT_SPLIT_SEMANTICS_ID,
     build_trend_holdout_split,

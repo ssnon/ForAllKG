@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import dac_her.alpha4c5i_dev_explorer_context as devx
+import campaigns.sers_alpha4_epoch.alpha4.alpha4c5i_dev_explorer_context as devx
 
 
 def _packet(

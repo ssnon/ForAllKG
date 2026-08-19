@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.trend_yield_diagnostic import (
+from campaigns.sers_alpha4_epoch.support.trend_yield_diagnostic import (
     broad_claim_candidate,
     classify_paper,
     methods_compatible,

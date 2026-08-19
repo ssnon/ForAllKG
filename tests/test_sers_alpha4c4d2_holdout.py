@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.alpha4c4d2_holdout_support import quality_snapshot
+from campaigns.sers_alpha4_epoch.holdout.alpha4c4d2_holdout_support import quality_snapshot
 
 
 def test_protocol_freezes_exact_v2_split():

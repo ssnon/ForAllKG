@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 
-from dac_her.alpha4c5f2_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f2_reserve import (
     make_blind_split,
 )
-from dac_her.alpha4c5h_freeze import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5h_freeze import (
     EXPECTED_SPLIT_SEMANTIC_SHA256,
     find_reserve_b_paper_ids,
     make_confirmation_protocol_id,

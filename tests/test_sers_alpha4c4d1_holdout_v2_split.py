@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 
-from dac_her.trend_holdout import rank_candidate_papers
+from campaigns.sers_alpha4_epoch.holdout.trend_holdout import rank_candidate_papers
 
 
 CANDIDATES = ['Kiwook_SERS_26', 'Kiwook_SERS_15', 'Kiwook_SERS_14', 'Kiwook_SERS_11', 'Kiwook_SERS_38', 'Kiwook_SERS_20', 'Kiwook_SERS_24', 'Kiwook_SERS_23', 'Kiwook_SERS_9', 'Kiwook_SERS_36', 'Kiwook_SERS_33', 'Kiwook_SERS_32', 'Kiwook_SERS_29', 'Kiwook_SERS_27', 'Kiwook_SERS_12', 'Kiwook_SERS_3', 'Kiwook_SERS_22', 'Kiwook_SERS_7', 'Kiwook_SERS_31', 'Kiwook_SERS_17', 'Kiwook_SERS_21', 'Kiwook_SERS_28']

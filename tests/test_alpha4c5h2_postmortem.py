@@ -6,14 +6,14 @@ from types import SimpleNamespace
 
 import pytest
 
-import dac_her.alpha4c5h2_postmortem as postmortem
-from dac_her.alpha4c5h2_postmortem import (
+import campaigns.sers_alpha4_epoch.alpha4.alpha4c5h2_postmortem as postmortem
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5h2_postmortem import (
     ALPHA4C5H2_POSTMORTEM_SEMANTICS_ID,
     EXPECTED_FAILURE_ERROR_CODES,
     build_postmortem_manifest,
     verify_postmortem_manifest,
 )
-from dac_her.alpha4c5h1_reserve_b import (
+from campaigns.sers_alpha4_epoch.reserve_b.alpha4c5h1_reserve_b import (
     ALPHA4C5H1_PROTOCOL_SEMANTICS_ID,
     EXPECTED_5H_FREEZE_ID,
 )

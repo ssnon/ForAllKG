@@ -4,7 +4,7 @@ import copy
 
 import pytest
 
-from scripts.run_sers_alpha4b4a11_holdout import (
+from campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4b4a11_holdout import (
     FrozenContractViolation,
     detection_limit_ranking_violations,
     validate_campaign_id,

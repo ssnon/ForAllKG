@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_sers_alpha4b4_holdout import (
+from campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4b4_holdout import (
     FrozenContractViolation,
     build_holdout_report,
     validate_protocol,

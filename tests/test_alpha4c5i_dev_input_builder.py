@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import dac_her.alpha4c5i_dev_input_builder as builder
+import campaigns.sers_alpha4_epoch.alpha4.alpha4c5i_dev_input_builder as builder
 
 
 def test_closed_reserve_path_guard():

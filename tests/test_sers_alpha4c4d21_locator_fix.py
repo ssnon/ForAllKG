@@ -3,10 +3,10 @@ from __future__ import annotations
 import inspect
 from pathlib import Path
 
-from dac_her.alpha4c4d2_holdout_support import (
+from campaigns.sers_alpha4_epoch.holdout.alpha4c4d2_holdout_support import (
     verify_strict_source_unchanged,
 )
-from scripts.prepare_sers_alpha4c4d2_holdout_inputs import copy_if_exists
+from campaigns.sers_alpha4_epoch.holdout.cli.prepare_sers_alpha4c4d2_holdout_inputs import copy_if_exists
 
 
 def test_locator_is_not_an_immutable_strict_source_gate():

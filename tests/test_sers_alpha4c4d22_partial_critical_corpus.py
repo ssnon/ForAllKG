@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 
-import scripts.run_sers_alpha4c4d2_trend_holdout as runner
+import campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4c4d2_trend_holdout as runner
 
 
 def test_runner_propagates_partial_critical_override_to_corpus():

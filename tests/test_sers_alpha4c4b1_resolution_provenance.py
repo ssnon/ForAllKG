@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_sers_alpha4c4b1_trend_holdout import (
+from campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4c4b1_trend_holdout import (
     FrozenTrendHoldoutError,
     _require_equal,
     _resolution_decisions_snapshot,
@@ -16,7 +16,7 @@ def test_preexisting_resolution_decisions_are_snapshotted_not_rejected(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    import scripts.run_sers_alpha4c4b1_trend_holdout as runner
+    import campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4c4b1_trend_holdout as runner
 
     monkeypatch.setattr(runner, "PROJECT_ROOT", tmp_path)
     paper_root = tmp_path / "data_sers" / "extracted" / "P"
@@ -34,7 +34,7 @@ def test_missing_resolution_file_is_explicitly_snapshotted(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    import scripts.run_sers_alpha4c4b1_trend_holdout as runner
+    import campaigns.sers_alpha4_epoch.holdout.cli.run_sers_alpha4c4b1_trend_holdout as runner
 
     monkeypatch.setattr(runner, "PROJECT_ROOT", tmp_path)
     paper_root = tmp_path / "data_sers" / "extracted" / "P"

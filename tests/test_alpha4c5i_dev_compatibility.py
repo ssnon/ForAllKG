@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import dac_her.alpha4c5i_dev_compatibility as compat
+import campaigns.sers_alpha4_epoch.alpha4.alpha4c5i_dev_compatibility as compat
 
 
 def _write(path: Path, value: object) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.alpha4c5f_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f_reserve import (
     EXPECTED_RESERVE_SET,
     Alpha4c5fExecutionPolicy,
     Alpha4c5fTraversalPolicy,

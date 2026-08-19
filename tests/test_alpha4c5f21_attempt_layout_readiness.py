@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.alpha4c5f2_strict_source import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f2_strict_source import (
     STRICT_SOURCE_LAYOUT_SEMANTICS_ID,
     _resolve_concrete_run_directory,
 )

@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import networkx as nx
 
-from dac_her.trend_rejection_attribution import (
+from campaigns.sers_alpha4_epoch.support.trend_rejection_attribution import (
     attribute_claim_miss,
     build_stratified_sample,
 )

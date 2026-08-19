@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from dac_her.alpha4c5f2_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f2_reserve import (
     BLIND_SPLIT_SEMANTICS_ID,
     DEVELOPMENT_COUNT,
     EXPECTED_POOL_SIZE,
@@ -14,7 +14,7 @@ from dac_her.alpha4c5f2_reserve import (
     make_blind_split,
     validate_blind_split,
 )
-from scripts.run_sers_alpha4c5f2_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.cli.run_sers_alpha4c5f2_reserve import (
     ReadinessLockedRunner,
 )
 

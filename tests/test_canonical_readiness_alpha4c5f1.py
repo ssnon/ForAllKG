@@ -6,10 +6,10 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from dac_her.alpha4c5f1_sers_readiness import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f1_sers_readiness import (
     REFREEZE_ELIGIBLE_REASONS,
 )
-from dac_her.canonical_readiness import (
+from campaigns.sers_alpha4_epoch.readiness.canonical_readiness import (
     CANONICAL_READINESS_SEMANTICS_ID,
     CanonicalReadinessError,
     atomic_json,

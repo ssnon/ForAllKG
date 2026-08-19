@@ -11,7 +11,7 @@ from dac_her.fresh_c_acquisition import (
     sha256_file,
     sha256_json,
 )
-from dac_her.alpha4c5f2_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f2_reserve import (
     RESERVE_A_COUNT,
     RESERVE_B_COUNT,
 )

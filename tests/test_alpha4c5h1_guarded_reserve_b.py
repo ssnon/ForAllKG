@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from dac_her.alpha4c5h1_reserve_b import (
+from campaigns.sers_alpha4_epoch.reserve_b.alpha4c5h1_reserve_b import (
     ALPHA4C5H1_PROTOCOL_SEMANTICS_ID,
     Alpha4c5h1ExecutionPolicy,
     DEFAULT_RESERVE_A_TEMPLATE_PROTOCOL,
@@ -15,11 +15,11 @@ from dac_her.alpha4c5h1_reserve_b import (
     discover_reserve_a_template_protocol,
     protocol_sha_payload,
 )
-from dac_her.alpha4c5f_reserve import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5f_reserve import (
     Alpha4c5fArtifactIds,
     sha256_json,
 )
-from dac_her.alpha4c5h1_runtime_bindings import (
+from campaigns.sers_alpha4_epoch.alpha4.alpha4c5h1_runtime_bindings import (
     V5_PRECISION_ADAPTER,
     V6R2_RUNTIME_PRECISION_ADAPTER,
     V6R2_TREND_ADAPTER,
