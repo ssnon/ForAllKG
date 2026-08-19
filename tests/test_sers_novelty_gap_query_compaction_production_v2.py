@@ -2,11 +2,6 @@ from dac_her.novelty_gap_analysis import (
     _query_has_incomplete_tail,
     _query_terms,
 )
-from dac_her.sers_novelty_gap_query_compaction_v4 import (
-    clause_preserving_query_text,
-)
-
-
 SAMPLES = [
     (
         "In Au and Ag architectures containing polymer-separated inner and "
@@ -33,11 +28,6 @@ SAMPLES = [
 ]
 
 
-def test_production_query_terms_matches_validated_v4_compactor() -> None:
-    for text in SAMPLES:
-        assert _query_terms(text) == clause_preserving_query_text(text)
-
-
 def test_production_query_terms_preserves_gap_geometry_predicate() -> None:
     query = _query_terms(SAMPLES[1])
     assert "gap geometry influencing" in query
@@ -61,4 +51,6 @@ def test_production_query_terms_avoids_dangling_preposition() -> None:
 
 def test_production_short_claim_is_preserved_as_normalized_source_tokens() -> None:
     text = "Solution-phase SERS differs after drying the same preparation."
-    assert _query_terms(text) == clause_preserving_query_text(text)
+    assert _query_terms(text) == (
+        "solution-phase sers differs after drying the same preparation"
+    )

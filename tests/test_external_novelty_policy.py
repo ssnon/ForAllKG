@@ -66,12 +66,12 @@ def test_direct_core_claims_are_well_established() -> None:
     assert status == "WELL_ESTABLISHED"
 
 
-def test_known_components_plus_unmatched_core_is_new_combination() -> None:
+def test_known_components_plus_unmatched_core_is_relational_gap() -> None:
     status, _, _ = assessor()._status(
         [review("COMPONENTS_ONLY"), review("NO_DIRECT_MATCH_FOUND")],
         coverage(),
     )
-    assert status == "NEW_COMBINATION_OF_KNOWN_EFFECTS"
+    assert status == "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP"
 
 
 def test_absence_based_status_fails_closed_under_low_coverage() -> None:
