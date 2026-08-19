@@ -44,6 +44,10 @@ from pipeline_core.reconcile_freshness import (
     semantic_policy_payload as _shared_semantic_policy_payload,
 )
 
+from pipeline_core.reconcile_validation import (
+    validate_strict_run as _shared_validate_strict_run,
+)
+
 
 @dataclass(frozen=True)
 class ReconcileOptions:
@@ -272,74 +276,73 @@ class IncrementalCorpusReconciler:
             )
         )
 
-    def _validate_strict_run(
-        self, paper_id: str, run_dir: Path, current: dict[str, Any]
-    ) -> StrictRunState:
-        run_path = run_dir / "run.json"
-        active_path = run_dir / "active_chunks.json"
-        run_meta = _read_json(run_path)
-        active = _read_json(active_path)
-        run_id = run_dir.name
-        if not run_meta:
-            return StrictRunState(
-                StageState.pending("strict run.json missing/invalid", run_path),
-                run_id,
-                run_dir,
+    def _strict_run_admission_issue(
+        self,
+        active: dict[str, Any],
+    ) -> str | None:
+        quality = str(
+            active.get(
+                "graph_materialization_status"
             )
-        if not active:
-            return StrictRunState(
-                StageState.pending("active_chunks.json missing/invalid", active_path),
-                run_id,
-                run_dir,
+            or ""
+        )
+
+        if (
+            not quality
+            and isinstance(
+                active.get("quality"),
+                dict,
             )
-        if str(run_meta.get("run_id") or "") != run_id:
-            return StrictRunState(
-                StageState.pending("strict run directory/metadata mismatch", run_path),
-                run_id,
-                run_dir,
+        ):
+            quality = str(
+                active[
+                    "quality"
+                ].get(
+                    "graph_materialization_status"
+                )
+                or ""
             )
-        if str(active.get("run_id") or "") != run_id:
-            return StrictRunState(
-                StageState.pending("strict active/run metadata mismatch", active_path),
-                run_id,
-                run_dir,
-            )
-        chunks = active.get("chunks")
-        if not isinstance(chunks, list) or not chunks:
-            return StrictRunState(
-                StageState.pending("strict run has no active chunks", active_path),
-                run_id,
-                run_dir,
-            )
-        quality = str(active.get("graph_materialization_status") or "")
-        if not quality and isinstance(active.get("quality"), dict):
-            quality = str(active["quality"].get("graph_materialization_status") or "")
+
         if quality == "rejected":
-            return StrictRunState(
-                StageState.pending("strict run is rejected", active_path),
-                run_id,
-                run_dir,
+            return (
+                "strict run is rejected"
             )
-        if quality == "partial_critical" and not self.options.allow_partial:
-            return StrictRunState(
-                StageState.pending(
-                    "strict run is partial_critical and override is disabled",
-                    active_path,
+
+        if (
+            quality
+            == "partial_critical"
+            and not (
+                self.options
+                .allow_partial
+            )
+        ):
+            return (
+                "strict run is "
+                "partial_critical and "
+                "override is disabled"
+            )
+
+        return None
+
+    def _validate_strict_run(
+        self,
+        paper_id: str,
+        run_dir: Path,
+        current: dict[str, Any],
+    ) -> StrictRunState:
+        return (
+            _shared_validate_strict_run(
+                run_dir=run_dir,
+                current=current,
+                active_payload_issue=(
+                    self
+                    ._strict_run_admission_issue
                 ),
-                run_id,
-                run_dir,
+                compatibility_check=(
+                    self
+                    ._run_compatibility_reason
+                ),
             )
-        compatible, reason = self._run_compatibility_reason(run_meta, current)
-        if not compatible:
-            return StrictRunState(
-                StageState.pending(reason, run_path, run_meta),
-                run_id,
-                run_dir,
-            )
-        return StrictRunState(
-            StageState.ready(reason, run_dir, run_meta),
-            run_id,
-            run_dir,
         )
 
     def _strict_run_candidates(self, paper_id: str) -> tuple[list[Path], str]:
