@@ -6,7 +6,7 @@ from dac_her.domains.catalysis_mechanism_graph import (
 )
 from dac_her.domains.dac_her_graph import DAC_HER_GRAPH_ADAPTER
 from dac_her.domains.registry import get_domain_profile
-from dac_her.domains.sers_au_ag_graph import SERS_AU_AG_GRAPH_ADAPTER
+from domains.sers.graph import SERS_AU_AG_GRAPH_ADAPTER
 from dac_her.graph_domain import GraphDomainAdapter
 
 
