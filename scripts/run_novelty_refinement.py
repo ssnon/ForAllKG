@@ -74,6 +74,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--base-url", default=os.getenv("OPENAI_BASE_URL"))
     p.add_argument("--api-key-env", default="OPENAI_API_KEY")
     p.add_argument("--embed-model", default=DEFAULT_EMBED_MODEL)
+    p.add_argument(
+        "--index-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Mechanism node index used for refinement grounding. "
+            "Defaults to the historical data_dac corpus layout when omitted."
+        ),
+    )
     p.add_argument("--device", default=None)
     p.add_argument(
         "--providers",
@@ -211,7 +220,7 @@ def main() -> int:
         compiler=compiler,
     )
 
-    index_dir = (
+    index_dir = args.index_dir or (
         PROJECT_ROOT
         / "data_dac"
         / "corpus"

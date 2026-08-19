@@ -824,6 +824,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--external-report", str(external_report),
             "--external-query-plan", str(external_plan),
             "--external-prior-art", str(external_prior),
+            *_mechanism_index_args(args),
             "--model", args.model,
             "--critic-model", args.critic_model,
             *( ["--base-url", args.base_url] if args.base_url else [] ),

@@ -1,6 +1,9 @@
 import inspect
 import sys
+from pathlib import Path
 from types import SimpleNamespace
+
+from scripts import run_novelty_refinement as novelty_refinement_runner
 
 from scripts.run_dac_discovery_e2e import (
     _data_root_args,
@@ -133,7 +136,7 @@ def test_mechanism_index_args_follow_custom_data_root():
     ]
 
 
-def test_e2e_forwards_custom_mechanism_index_to_alpha4():
+def test_e2e_forwards_custom_mechanism_index_to_embedding_consumers():
     source = inspect.getsource(
         run_pipeline
     )
@@ -142,5 +145,32 @@ def test_e2e_forwards_custom_mechanism_index_to_alpha4():
         source.count(
             "*_mechanism_index_args(args)"
         )
-        == 1
+        == 2
+    )
+
+
+def test_novelty_refinement_parser_accepts_explicit_index_dir(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_novelty_refinement",
+            "--dual-context", "dual.json",
+            "--axis-plan", "axis.json",
+            "--portfolio", "portfolio.json",
+            "--lineage", "lineage.json",
+            "--external-report", "external.json",
+            "--external-query-plan", "queries.json",
+            "--external-prior-art", "prior.json",
+            "--index-dir", "/tmp/sers-index",
+            "--output-prefix", "/tmp/refinement",
+        ],
+    )
+
+    args = novelty_refinement_runner.parse_args()
+
+    assert args.index_dir == Path(
+        "/tmp/sers-index"
     )
