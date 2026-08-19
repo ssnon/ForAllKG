@@ -226,13 +226,74 @@ def validate_inputs(
     freeze_commit = git_text("log", "-1", "--format=%H", "--", rel(R0_FREEZE_MANIFEST))
     if not freeze_commit:
         raise ValueError("cannot resolve git commit containing R0 freeze manifest")
-    r2_code_commit = git_text("log", "-1", "--format=%H", "--", rel(SPEC_PATH))
+    r2_code_commit = git_text(
+        "log",
+        "-1",
+        "--format=%H",
+        "--",
+        rel(SPEC_PATH),
+    )
     if not r2_code_commit:
-        raise ValueError("cannot resolve git commit containing R2 spec")
-    for path in [SPEC_PATH, ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_r2_final_reassessment_v1.py", ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r2_final_reassessment_v1.py"]:
-        rp = rel(path)
-        if not tracked_at(r2_code_commit, rp):
-            raise ValueError(f"R2 code commit missing critical implementation:{rp}")
+        raise ValueError(
+            "cannot resolve git commit containing R2 spec"
+        )
+
+    # Historical R2 code identity belongs to the path vocabulary that existed
+    # at the code commit.  Current campaign relocation must not be projected
+    # backwards onto that historical commit.
+    historical_r2_implementation = (
+        rel(SPEC_PATH),
+        "scripts/run_sers_r2_final_reassessment_v1.py",
+        "scripts/verify_sers_r2_final_reassessment_v1.py",
+    )
+
+    for historical_path in historical_r2_implementation:
+        if not tracked_at(
+            r2_code_commit,
+            historical_path,
+        ):
+            raise ValueError(
+                "R2 historical code commit missing implementation:"
+                f"{historical_path}"
+            )
+
+    # The R2 spec itself remains the scientific/code-lineage anchor and must
+    # still match the bytes recorded at its historical code commit.
+    if (
+        git_bytes_at(
+            r2_code_commit,
+            rel(SPEC_PATH),
+        )
+        != SPEC_PATH.read_bytes()
+    ):
+        raise ValueError(
+            "R2 spec drifted from historical code commit"
+        )
+
+    # Relocated run/verify modules are the current replay surface.  Their
+    # current bytes may legitimately differ because relocation/workspace
+    # compatibility repairs are not part of historical R2 scientific identity.
+    current_r2_replay = (
+        ROOT
+        / "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "run_sers_r2_final_reassessment_v1.py",
+        ROOT
+        / "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "verify_sers_r2_final_reassessment_v1.py",
+    )
+
+    for current_path in current_r2_replay:
+        rp = rel(current_path)
+
+        if not current_path.is_file():
+            raise ValueError(
+                f"R2 current replay implementation missing:{rp}"
+            )
+
+        if not tracked_at("HEAD", rp):
+            raise ValueError(
+                f"R2 current replay implementation not tracked:{rp}"
+            )
 
     return {
         "head": head,
