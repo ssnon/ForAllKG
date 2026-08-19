@@ -446,25 +446,77 @@ def _validate_i0_rules(spec: dict[str, Any]) -> None:
 
 
 def _validate_i0_implementation_tracked(head: str) -> str:
-    implementation = [
+    current_implementation = (
         SPEC_PATH,
         RUN_PATH,
         VERIFY_PATH,
         FREEZE_CREATE_PATH,
         FREEZE_VERIFY_PATH,
         TEST_PATH,
-    ]
-    for path in implementation:
-        _validate_exact_tracked_file(path, "HEAD", "I0 implementation")
-    code_commit = git_text("log", "-1", "--format=%H", "--", rel(SPEC_PATH))
+    )
+
+    # Current replay surface must be exactly the tracked HEAD checkout.
+    for path in current_implementation:
+        _validate_exact_tracked_file(
+            path,
+            "HEAD",
+            "I0 implementation",
+        )
+
+    code_commit = git_text(
+        "log",
+        "-1",
+        "--format=%H",
+        "--",
+        rel(SPEC_PATH),
+    )
+
     if not code_commit:
-        raise ValueError("cannot resolve I0 implementation commit")
-    for path in implementation:
-        rp = rel(path)
-        if not tracked_at(code_commit, rp):
-            raise ValueError(f"I0 code commit missing implementation:{rp}")
-    if not is_ancestor(code_commit, head):
-        raise ValueError("I0 implementation commit is not an ancestor of HEAD")
+        raise ValueError(
+            "cannot resolve I0 implementation commit"
+        )
+
+    # Historical I0 identity belongs to the original scripts/* path
+    # vocabulary that existed at the frozen code commit.
+    historical_implementation = (
+        rel(SPEC_PATH),
+        "scripts/run_sers_i0_integrated_orchestration_v1.py",
+        "scripts/verify_sers_i0_integrated_orchestration_v1.py",
+        "scripts/freeze_sers_i0_integrated_orchestration_v1.py",
+        "scripts/verify_sers_i0_integrated_orchestration_freeze_v1.py",
+        "tests/test_sers_i0_integrated_orchestration_v1.py",
+    )
+
+    for historical_path in historical_implementation:
+        if not tracked_at(
+            code_commit,
+            historical_path,
+        ):
+            raise ValueError(
+                "I0 historical code commit missing implementation:"
+                f"{historical_path}"
+            )
+
+    # The I0 spec is the stable orchestration/code-lineage anchor.
+    if (
+        git_bytes_at(
+            code_commit,
+            rel(SPEC_PATH),
+        )
+        != SPEC_PATH.read_bytes()
+    ):
+        raise ValueError(
+            "I0 spec drifted from historical code commit"
+        )
+
+    if not is_ancestor(
+        code_commit,
+        head,
+    ):
+        raise ValueError(
+            "I0 implementation commit is not an ancestor of HEAD"
+        )
+
     return code_commit
 
 
