@@ -5,7 +5,7 @@ from typing import Any
 
 import networkx as nx
 
-from dac_her.chemistry_signatures import (
+from pipeline_core.chemistry_signatures import (
     composition_signature,
 )
 

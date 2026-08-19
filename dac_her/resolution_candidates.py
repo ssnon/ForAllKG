@@ -14,7 +14,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import networkx as nx
 
-from dac_her.chemistry_signatures import (
+from pipeline_core.chemistry_signatures import (
     METAL_NAMES,
     metal_signature,
 )
