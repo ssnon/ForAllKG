@@ -7,7 +7,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from dac_her.bridge_audit import write_bridge_audit
+from domains.dac_her.bridge_audit import write_bridge_audit
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
