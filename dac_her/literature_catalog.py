@@ -483,13 +483,23 @@ def _canonical_work_id(work: CatalogWork) -> str:
     doi = doi_family(work.doi)
     if doi:
         return _stable_id("catalog_work", "doi", doi)
+
     title = normalize_title(work.title)
-    if title:
+
+    # Exact-title canonical identity is only safe when the normalized
+    # title carries enough information. Non-Latin titles can collapse
+    # to very short strings such as "sers"; using those strings as
+    # global identity keys can merge unrelated works.
+    if len(title) >= 20:
         return _stable_id(
             "catalog_work",
             "title",
             title,
         )
+
+    # Provider adapters already assign deterministic provider-derived
+    # work IDs. Preserve that stronger identity for weak-title,
+    # DOI-less records rather than manufacturing a global title ID.
     return work.work_id
 
 
@@ -602,14 +612,19 @@ def canonicalize_catalog_works(
             key = "doi_family:" + family
         else:
             title = normalize_title(work.title)
-            key = (
-                "title:"
-                + hashlib.sha256(
-                    title.encode("utf-8")
-                ).hexdigest()[:24]
-                if title
-                else work.work_id
-            )
+
+            # A weak normalized title is not a safe bibliographic
+            # identity. Keep provider-derived records separate unless
+            # the normalized exact title is sufficiently specific.
+            if len(title) >= 20:
+                key = (
+                    "title:"
+                    + hashlib.sha256(
+                        title.encode("utf-8")
+                    ).hexdigest()[:24]
+                )
+            else:
+                key = "provider_work:" + work.work_id
 
         if key in by_key:
             by_key[key] = _merge_work(

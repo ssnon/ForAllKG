@@ -140,6 +140,20 @@ def main() -> int:
         queries=queries,
     ).packet
 
+    # Persist the provider-retrieval packet before append-only
+    # reconciliation. If identity reconciliation fails closed,
+    # the expensive network retrieval remains available for audit
+    # and deterministic recovery.
+    output = args.output_dir
+    _write_json(
+        output / "incoming_catalog.json",
+        incoming,
+    )
+    print(
+        "Incoming catalog checkpoint:",
+        output / "incoming_catalog.json",
+    )
+
     result = append_catalog_expansion(
         base=base,
         incoming=incoming,

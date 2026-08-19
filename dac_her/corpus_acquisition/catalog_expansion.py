@@ -38,14 +38,48 @@ def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
 
 def _identity_keys(work: CatalogWork) -> tuple[str, ...]:
     keys: list[str] = []
+
     family = doi_family(work.doi)
     if family:
         keys.append(f"doi:{family}")
+
+    # Native provider IDs are stronger than weak normalized titles.
+    # Use providers with stable work-level identifiers so a frozen
+    # legacy row can still be recognized after canonical-ID hardening.
+    for provider, raw_provider_id in sorted(
+        work.provider_ids.items()
+    ):
+        provider_id = str(raw_provider_id or "").strip()
+        if not provider_id:
+            continue
+
+        if provider == "openalex":
+            normalized = (
+                provider_id
+                .rstrip("/")
+                .rsplit("/", 1)[-1]
+                .upper()
+            )
+            if (
+                normalized.startswith("W")
+                and normalized[1:].isdigit()
+            ):
+                keys.append(
+                    f"provider:openalex:{normalized}"
+                )
+
+        elif provider == "semantic_scholar":
+            keys.append(
+                "provider:semantic_scholar:"
+                + provider_id
+            )
+
     title = normalize_title(work.title)
-    # Keep the same conservative exact-title spirit as M1 canonicalization,
-    # while avoiding extremely short-title collisions during expansion.
+
+    # Keep exact-title identity conservative.
     if len(title) >= 20:
         keys.append(f"title:{title}")
+
     return tuple(keys)
 
 
