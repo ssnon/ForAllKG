@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.external_novelty_llm import _REVIEW_SYSTEM
-from dac_her.standard2_claim_review_dev_validation_v2 import (
+from campaigns.sers_standard2.claim_review_dev_validation_v2 import (
     REQUIRED_PROMPT_SENTINELS,
     validate_hardened_prompt,
 )

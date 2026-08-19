@@ -16,7 +16,7 @@ from dac_her.external_novelty_llm import (
     InstructorOpenAICompatibleExternalNoveltyBackend,
     _REVIEW_SYSTEM,
 )
-from dac_her.standard2_claim_review_dev_validation import (
+from campaigns.sers_standard2.claim_review_dev_validation import (
     CANONICAL_ROOT,
     RANKER_RUN_ROOT,
     RANKER_SPEC_ROOT,
@@ -33,7 +33,7 @@ from dac_her.standard2_claim_review_dev_validation import (
     sha256_file,
     sha256_json,
 )
-from dac_her.standard2_claim_review_dev_validation_v2 import (
+from campaigns.sers_standard2.claim_review_dev_validation_v2 import (
     source_hashes,
 )
 

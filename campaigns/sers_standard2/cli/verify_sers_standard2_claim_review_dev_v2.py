@@ -3,13 +3,17 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.standard2_claim_review_dev_validation import (
+from campaigns.sers_standard2.claim_review_dev_validation import (
+    load_inputs,
+    render_human_audit,
+)
+from campaigns.sers_standard2.claim_review_dev_validation_v2 import (
     DEFAULT_RUN_ROOT,
     DEFAULT_SPEC_ROOT,
     canonical_json,
     offline_recompile_from_report,
     read_json,
-    render_human_audit,
+    sha256_json,
     verify_spec,
 )
 
@@ -43,16 +47,16 @@ def main() -> int:
 
     spec_issues, spec = verify_spec(
         repo_root=ROOT,
-        spec_path=spec_root / "claim_review_spec.json",
+        spec_path=spec_root / "claim_review_spec_v2.json",
     )
     if spec_issues:
-        print("claim-review-only DEV verification: FAIL")
+        print("claim-review-only DEV v2 verification: FAIL")
         for issue in spec_issues:
             print(" -", issue)
         return 2
 
-    report_path = run_root / "claim_review_report.json"
-    audit_path = run_root / "human_relationship_audit.md"
+    report_path = run_root / "claim_review_report_v2.json"
+    audit_path = run_root / "human_relationship_audit_v2.md"
     marker_path = run_root / "STRUCTURAL_PASS.json"
 
     issues = []
@@ -60,7 +64,7 @@ def main() -> int:
         if not path.is_file():
             issues.append(f"required artifact missing: {path.name}")
     if issues:
-        print("claim-review-only DEV verification: FAIL")
+        print("claim-review-only DEV v2 verification: FAIL")
         for issue in issues:
             print(" -", issue)
         return 2
@@ -71,12 +75,11 @@ def main() -> int:
     body = dict(report)
     run_id = body.pop("run_id", None)
     run_sha = body.pop("run_sha256", None)
-    from dac_her.standard2_claim_review_dev_validation import sha256_json
     observed = sha256_json(body)
     if run_sha != observed:
         issues.append("run SHA mismatch")
     if run_id != (
-        "sers_standard2_claim_review_only_dev_run:"
+        "sers_standard2_claim_review_only_dev_run_v2:"
         + observed[:20]
     ):
         issues.append("run ID mismatch")
@@ -86,14 +89,16 @@ def main() -> int:
     if marker.get("run_id") != report.get("run_id"):
         issues.append("STRUCTURAL_PASS run ID mismatch")
     if report.get("structural_outcome") != (
-        "CLAIM_REVIEW_STRUCTURAL_DEV_PASS"
+        "CLAIM_REVIEW_V2_STRUCTURAL_DEV_PASS"
     ):
         issues.append("structural outcome is not PASS")
     if report.get("scientific_relationship_outcome") != (
         "MANUAL_REVIEW_REQUIRED"
     ):
         issues.append("scientific relationship outcome overclaimed")
-    if report.get("hypothesis_level_novelty_status_computed") is not False:
+    if report.get(
+        "hypothesis_level_novelty_status_computed"
+    ) is not False:
         issues.append("hypothesis-level novelty status was computed")
     if report.get("automatic_next_stage_authorized") is not False:
         issues.append("automatic next stage was authorized")
@@ -101,6 +106,10 @@ def main() -> int:
         issues.append("unexpected literature network calls")
     if report.get("ranker_recomputed") is not False:
         issues.append("ranker was unexpectedly recomputed")
+    if report.get("compiler_changed_from_v1") is not False:
+        issues.append("compiler changed from v1")
+    if report.get("case_specific_expected_statuses_used") is not False:
+        issues.append("case-specific expected statuses were used")
     if report.get("fresh_reserve_consumed") is not False:
         issues.append("Fresh Reserve consumption violation")
     if report.get("secret_scan_pass") is not True:
@@ -122,7 +131,6 @@ def main() -> int:
         ):
             issues.append("offline compiler recomputation mismatch")
 
-        from dac_her.standard2_claim_review_dev_validation import load_inputs
         _plan, _packet, _ranker_spec, ranker_report = load_inputs(ROOT)
         expected_md = render_human_audit(
             reviews=reviews,
@@ -134,20 +142,22 @@ def main() -> int:
             issues.append("human relationship audit mismatch")
     except Exception as exc:
         issues.append(
-            f"offline verification failed: {type(exc).__name__}: {exc}"
+            f"offline verification failed: "
+            f"{type(exc).__name__}: {exc}"
         )
 
     if issues:
-        print("claim-review-only DEV verification: FAIL")
+        print("claim-review-only DEV v2 verification: FAIL")
         for issue in sorted(set(issues)):
             print(" -", issue)
         print("LLM calls during verification:", 0)
         print("Literature network calls during verification:", 0)
         return 2
 
-    print("claim-review-only DEV verification: PASS")
+    print("claim-review-only DEV v2 verification: PASS")
     print("Spec ID:", spec["spec_id"])
     print("Run ID:", report["run_id"])
+    print("Parent v1 run:", report["parent_v1_run_id"])
     print("Structural outcome:", report["structural_outcome"])
     print(
         "Scientific relationship outcome:",
@@ -165,6 +175,8 @@ def main() -> int:
     print("LLM calls during verification:", 0)
     print("Literature network calls during verification:", 0)
     print("Ranker recomputed:", False)
+    print("Compiler changed:", False)
+    print("Case-specific expected statuses used:", False)
     print("Hypothesis-level novelty verdict:", False)
     print("Fresh Reserve consumed:", False)
     print("Automatic next stage authorized:", False)

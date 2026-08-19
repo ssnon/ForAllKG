@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.standard2_claim_review_dev_validation import (
+from campaigns.sers_standard2.claim_review_dev_validation import (
     DEFAULT_SPEC_ROOT,
     atomic_json,
     build_spec,

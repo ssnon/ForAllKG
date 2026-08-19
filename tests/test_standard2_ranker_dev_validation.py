@@ -11,7 +11,7 @@ from dac_her.external_novelty_contracts import (
 )
 from dac_her.prior_art_matching import PriorArtRanker
 from dac_her.domains import get_domain_profile
-from dac_her.standard2_ranker_dev_validation import sha256_json
+from campaigns.sers_standard2.ranker_dev_validation import sha256_json
 
 
 class FakeEncoder:

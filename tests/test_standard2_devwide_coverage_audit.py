@@ -1,4 +1,4 @@
-from dac_her.standard2_devwide_coverage_audit import sha256_json
+from campaigns.sers_standard2.devwide_coverage_audit import sha256_json
 
 
 def test_hash_canonical():

@@ -7,7 +7,7 @@ from dac_her.external_novelty_contracts import (
     PriorArtMatchDraft,
 )
 from dac_her.external_novelty_llm import _REVIEW_SYSTEM
-from dac_her.standard2_claim_review_dev_validation_v3 import (
+from campaigns.sers_standard2.claim_review_dev_validation_v3 import (
     REQUIRED_PROMPT_SENTINELS,
     validate_draft_work_ids,
     validate_hardened_prompt,

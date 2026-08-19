@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.standard2_provider_health_probe import sha256_json
+from campaigns.sers_standard2.provider_health_probe import sha256_json
 
 
 def test_hash_is_deterministic():

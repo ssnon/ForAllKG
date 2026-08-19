@@ -2,28 +2,29 @@ from __future__ import annotations
 
 import argparse
 import os
-import traceback
 from pathlib import Path
 
-from dac_her.standard2_claim_review_dev_validation import (
+from dac_her.prior_art_review_audit import prior_art_review_audit_scope
+from campaigns.sers_standard2.claim_review_dev_validation import (
+    candidate_set_from_ranker_row,
+    compile_drafts,
+    load_inputs,
+    read_json,
+    read_jsonl,
+    render_human_audit,
+    reviewer_input_from_candidates,
+    scan_output_for_secrets,
+    structural_checks,
+)
+from campaigns.sers_standard2.claim_review_dev_validation_v2 import (
     DEFAULT_RUN_ROOT,
     DEFAULT_SPEC_ROOT,
     atomic_json,
     atomic_text,
-    compile_drafts,
     create_backend,
-    load_inputs,
-    read_json,
-    read_jsonl,
     report_from_results,
-    render_human_audit,
-    reviewer_input_from_candidates,
-    candidate_set_from_ranker_row,
-    scan_output_for_secrets,
-    structural_checks,
     verify_spec,
 )
-from dac_her.prior_art_review_audit import prior_art_review_audit_scope
 
 ROOT = Path.cwd()
 
@@ -32,7 +33,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", action="store_true")
     parser.add_argument(
-        "--confirm-one-shot-claim-review-dev",
+        "--confirm-one-shot-claim-review-dev-v2",
         action="store_true",
     )
     parser.add_argument(
@@ -49,9 +50,9 @@ def main() -> int:
 
     if not args.run:
         parser.error("--run is required")
-    if not args.confirm_one_shot_claim_review_dev:
+    if not args.confirm_one_shot_claim_review_dev_v2:
         parser.error(
-            "--confirm-one-shot-claim-review-dev is required"
+            "--confirm-one-shot-claim-review-dev-v2 is required"
         )
 
     spec_root = (
@@ -67,10 +68,10 @@ def main() -> int:
 
     issues, spec = verify_spec(
         repo_root=ROOT,
-        spec_path=spec_root / "claim_review_spec.json",
+        spec_path=spec_root / "claim_review_spec_v2.json",
     )
     if issues:
-        print("claim-review-only DEV preflight: FAIL")
+        print("claim-review-only DEV v2 preflight: FAIL")
         for issue in issues:
             print(" -", issue)
         print("Literature network calls:", 0)
@@ -79,7 +80,7 @@ def main() -> int:
 
     marker_path = spec_root / "SPEC_FREEZE_PASS.json"
     if not marker_path.is_file():
-        print("claim-review-only DEV preflight: FAIL")
+        print("claim-review-only DEV v2 preflight: FAIL")
         print(" - SPEC_FREEZE_PASS missing")
         return 2
     marker = read_json(marker_path)
@@ -87,25 +88,28 @@ def main() -> int:
         marker.get("status") != "spec_freeze_pass"
         or marker.get("spec_id") != spec.get("spec_id")
     ):
-        print("claim-review-only DEV preflight: FAIL")
+        print("claim-review-only DEV v2 preflight: FAIL")
         print(" - spec freeze marker mismatch")
         return 2
 
     if output_root.exists():
-        print("claim-review-only DEV preflight: FAIL")
+        print("claim-review-only DEV v2 preflight: FAIL")
         print(" - output root exists:", output_root)
         print("Automatic rerun:", False)
         return 2
 
     plan, packet, _ranker_spec, ranker_report = load_inputs(ROOT)
 
-    print("SERS Claim-review-only DEV One-Shot Validation")
+    print("SERS Claim-review-only DEV v2 One-Shot Validation")
     print("Spec ID:", spec["spec_id"])
+    print("Parent v1 run:", spec["parent_v1_run_id"])
     print("Source ranker run:", spec["source_ranker_run_id"])
     print("Claims:", spec["claim_count"])
     print("Core claims:", spec["core_claim_count"])
     print("Frozen top-N:", 8)
     print("Review model:", spec["review_backend"]["model"])
+    print("Relation-nucleus hardening:", True)
+    print("Compiler changed:", False)
     print("Ranker recomputed:", False)
     print("Literature retrieval:", False)
     print("Claim decomposition:", False)
@@ -122,6 +126,7 @@ def main() -> int:
         {
             "status": "run_started",
             "spec_id": spec["spec_id"],
+            "parent_v1_run_id": spec["parent_v1_run_id"],
             "source_ranker_run_id": spec["source_ranker_run_id"],
             "expected_logical_review_calls": 12,
             "automatic_rerun_authorized": False,
@@ -151,12 +156,13 @@ def main() -> int:
         }
 
         with prior_art_review_audit_scope(
-            assessment_kind="claim_review_only_dev_v1",
+            assessment_kind="claim_review_only_dev_v2_relation_nucleus",
             source_portfolio_id=plan.source_portfolio_id,
             query_plan_id=plan.plan_id,
             prior_art_packet_id=packet.packet_id,
             source_ranker_run_id=spec["source_ranker_run_id"],
             claim_review_spec_id=spec["spec_id"],
+            parent_v1_run_id=spec["parent_v1_run_id"],
         ):
             for index, row in enumerate(
                 ranker_report["claim_reports"],
@@ -211,7 +217,10 @@ def main() -> int:
 
         prompt_manifest = {
             "schema_version":
-                "claim-review-prompt-manifest-v1",
+                "claim-review-prompt-manifest-v2",
+            "relation_nucleus_hardening": True,
+            "review_prompt_sha256":
+                spec["review_backend"]["review_prompt_sha256"],
             "prompts": [
                 {
                     "name": record.name,
@@ -260,7 +269,6 @@ def main() -> int:
             spec=spec,
             reviews=reviews,
             drafts=drafts,
-            ranker_report=ranker_report,
             checks=checks,
             diagnostics=diagnostics,
             prompt_records=backend.prompt_records,
@@ -269,21 +277,22 @@ def main() -> int:
             secret_scan_pass=secret_scan_pass,
         )
 
+        atomic_json(
+            output_root / "claim_review_report_v2.json",
+            report,
+        )
+        atomic_text(
+            output_root / "human_relationship_audit_v2.md",
+            render_human_audit(
+                reviews=reviews,
+                drafts=drafts,
+                ranker_report=ranker_report,
+            ),
+        )
+
         if report["structural_outcome"] != (
-            "CLAIM_REVIEW_STRUCTURAL_DEV_PASS"
+            "CLAIM_REVIEW_V2_STRUCTURAL_DEV_PASS"
         ):
-            atomic_json(
-                output_root / "claim_review_report.json",
-                report,
-            )
-            atomic_text(
-                output_root / "human_relationship_audit.md",
-                render_human_audit(
-                    reviews=reviews,
-                    drafts=drafts,
-                    ranker_report=ranker_report,
-                ),
-            )
             atomic_json(
                 output_root / "STRUCTURAL_FAIL.json",
                 {
@@ -295,25 +304,13 @@ def main() -> int:
                 },
             )
             print()
-            print("claim-review-only DEV: STRUCTURAL FAIL")
+            print("claim-review-only DEV v2: STRUCTURAL FAIL")
             print("Run ID:", report["run_id"])
             print("Checks:", report["checks"])
             print("Diagnostics:", report["diagnostics"])
             print("Automatic rerun:", False)
             return 2
 
-        atomic_json(
-            output_root / "claim_review_report.json",
-            report,
-        )
-        atomic_text(
-            output_root / "human_relationship_audit.md",
-            render_human_audit(
-                reviews=reviews,
-                drafts=drafts,
-                ranker_report=ranker_report,
-            ),
-        )
         atomic_json(
             output_root / "STRUCTURAL_PASS.json",
             {
@@ -333,7 +330,7 @@ def main() -> int:
             pass
 
         print()
-        print("claim-review-only DEV: COMPLETE")
+        print("claim-review-only DEV v2: COMPLETE")
         print("Run ID:", report["run_id"])
         print(
             "Structural outcome:",
@@ -366,11 +363,12 @@ def main() -> int:
         print("Logical LLM review calls:", report["logical_review_calls"])
         print("Literature network calls:", 0)
         print("Ranker recomputed:", False)
+        print("Compiler changed:", False)
         print("Hypothesis-level novelty verdict:", False)
         print("Automatic next stage authorized:", False)
         print(
             "Human audit:",
-            output_root / "human_relationship_audit.md",
+            output_root / "human_relationship_audit_v2.md",
         )
         return 0
 
@@ -388,7 +386,7 @@ def main() -> int:
             },
         )
         print()
-        print("claim-review-only DEV: INTERRUPTED")
+        print("claim-review-only DEV v2: INTERRUPTED")
         print(" -", f"{type(exc).__name__}: {exc}")
         print("Completed logical review calls:", logical_calls)
         print("Automatic rerun:", False)

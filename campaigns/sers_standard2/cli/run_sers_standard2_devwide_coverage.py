@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.standard2_devwide_coverage_audit import (
+from campaigns.sers_standard2.devwide_coverage_audit import (
     DEFAULT_DIAGNOSTIC_ROOT,
     DEFAULT_RUN_ROOT,
     DEFAULT_SPEC_ROOT,

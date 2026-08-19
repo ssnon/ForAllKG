@@ -11,7 +11,7 @@ from dac_her.external_novelty_contracts import (
     PriorArtWork,
     QueryExecution,
 )
-from dac_her.standard2_claim_review_dev_validation import (
+from campaigns.sers_standard2.claim_review_dev_validation import (
     candidate_set_from_ranker_row,
     compile_drafts,
     reviewer_input_from_candidates,

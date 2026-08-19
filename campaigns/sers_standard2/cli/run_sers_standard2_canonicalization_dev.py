@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.standard2_canonicalization_dev_validation import (
+from campaigns.sers_standard2.canonicalization_dev_validation import (
     DEFAULT_DIAGNOSTIC_ROOT,
     DEFAULT_RUN_ROOT,
     DEFAULT_SPEC_ROOT,

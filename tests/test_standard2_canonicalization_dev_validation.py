@@ -7,7 +7,7 @@ from dac_her.external_novelty_contracts import (
 from dac_her.literature_retrieval import (
     canonicalize_prior_art_packet,
 )
-from dac_her.standard2_canonicalization_dev_validation import (
+from campaigns.sers_standard2.canonicalization_dev_validation import (
     canonical_json,
     sha256_json,
     title_cross_doi_collision_groups,

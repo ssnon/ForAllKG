@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.standard2_provider_health_probe import (
+from campaigns.sers_standard2.provider_health_probe import (
     DEFAULT_DIAGNOSTIC_ROOT,
     DEFAULT_RUN_ROOT,
     DEFAULT_SPEC_ROOT,
