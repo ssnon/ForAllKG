@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 ADJUDICATION_PATH = (
     ROOT
     / "evaluation/sers_novelty_gap/r0_manual_scientific_adjudication_v1"

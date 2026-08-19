@@ -4,7 +4,7 @@ import json
 import subprocess
 import sys
 
-from scripts.run_sers_i0_integrated_orchestration_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_i0_integrated_orchestration_v1 import (
     COMPLETE_PATH,
     HANDOFF_PATH,
     ROOT,

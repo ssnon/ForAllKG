@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from scripts.run_sers_r2_final_reassessment_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_r2_final_reassessment_v1 import (
     COMPLETE_PATH,
     REPORT_PATH,
     ROOT,
@@ -23,10 +23,10 @@ from scripts.run_sers_r2_final_reassessment_v1 import (
 )
 
 FREEZE_ROOT = ROOT / "evaluation/sers_novelty_gap/r2_final_reassessment_freeze_v1"
-VERIFY_PATH = ROOT / "scripts/verify_sers_r2_final_reassessment_v1.py"
-RUN_PATH = ROOT / "scripts/run_sers_r2_final_reassessment_v1.py"
-FREEZE_CREATE_PATH = ROOT / "scripts/freeze_sers_r2_final_reassessment_v1.py"
-FREEZE_VERIFY_PATH = ROOT / "scripts/verify_sers_r2_final_reassessment_freeze_v1.py"
+VERIFY_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r2_final_reassessment_v1.py"
+RUN_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_r2_final_reassessment_v1.py"
+FREEZE_CREATE_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/freeze_sers_r2_final_reassessment_v1.py"
+FREEZE_VERIFY_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r2_final_reassessment_freeze_v1.py"
 TEST_PATH = ROOT / "tests/test_sers_r2_final_reassessment_v1.py"
 
 

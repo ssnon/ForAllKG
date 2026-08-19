@@ -9,7 +9,7 @@ import subprocess
 import sys
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 
 SPEC_PATH = ROOT / "dac_her/sers_i0_integrated_orchestration_spec_v1.json"
 
@@ -33,10 +33,10 @@ OUTPUT_ROOT = ROOT / "evaluation/sers_novelty_gap/i0_integrated_orchestration_ru
 HANDOFF_PATH = OUTPUT_ROOT / "i0_handoff.json"
 COMPLETE_PATH = OUTPUT_ROOT / "I0_COMPLETE.json"
 
-RUN_PATH = ROOT / "scripts/run_sers_i0_integrated_orchestration_v1.py"
-VERIFY_PATH = ROOT / "scripts/verify_sers_i0_integrated_orchestration_v1.py"
-FREEZE_CREATE_PATH = ROOT / "scripts/freeze_sers_i0_integrated_orchestration_v1.py"
-FREEZE_VERIFY_PATH = ROOT / "scripts/verify_sers_i0_integrated_orchestration_freeze_v1.py"
+RUN_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_i0_integrated_orchestration_v1.py"
+VERIFY_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_i0_integrated_orchestration_v1.py"
+FREEZE_CREATE_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/freeze_sers_i0_integrated_orchestration_v1.py"
+FREEZE_VERIFY_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_i0_integrated_orchestration_freeze_v1.py"
 TEST_PATH = ROOT / "tests/test_sers_i0_integrated_orchestration_v1.py"
 
 ALLOWED_DISPOSITIONS = {

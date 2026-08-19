@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_sers_i0_integrated_orchestration_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_i0_integrated_orchestration_v1 import (
     ALLOWED_DISPOSITIONS,
     build_handoff,
     canonical,
@@ -15,9 +15,9 @@ from scripts.run_sers_i0_integrated_orchestration_v1 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "dac_her/sers_i0_integrated_orchestration_spec_v1.json"
-RUNNER = ROOT / "scripts/run_sers_i0_integrated_orchestration_v1.py"
-FREEZER = ROOT / "scripts/freeze_sers_i0_integrated_orchestration_v1.py"
-FREEZE_VERIFIER = ROOT / "scripts/verify_sers_i0_integrated_orchestration_freeze_v1.py"
+RUNNER = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_i0_integrated_orchestration_v1.py"
+FREEZER = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/freeze_sers_i0_integrated_orchestration_v1.py"
+FREEZE_VERIFIER = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_i0_integrated_orchestration_freeze_v1.py"
 
 
 def load_spec() -> dict:

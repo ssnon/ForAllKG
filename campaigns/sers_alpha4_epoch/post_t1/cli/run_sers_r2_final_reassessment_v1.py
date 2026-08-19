@@ -8,7 +8,7 @@ import subprocess
 import sys
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 EXPECTED_BRANCH = "feat/SERS-targeted-retrieval-live-dev"
 SPEC_PATH = ROOT / "dac_her/sers_r2_final_reassessment_spec_v1.json"
 R0_ADJ_ROOT = ROOT / "evaluation/sers_novelty_gap/r0_manual_scientific_adjudication_v1"
@@ -220,7 +220,7 @@ def validate_inputs(*, require_output_absent: bool) -> dict[str, Any]:
     r2_code_commit = git_text("log", "-1", "--format=%H", "--", rel(SPEC_PATH))
     if not r2_code_commit:
         raise ValueError("cannot resolve git commit containing R2 spec")
-    for path in [SPEC_PATH, ROOT / "scripts/run_sers_r2_final_reassessment_v1.py", ROOT / "scripts/verify_sers_r2_final_reassessment_v1.py"]:
+    for path in [SPEC_PATH, ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_r2_final_reassessment_v1.py", ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r2_final_reassessment_v1.py"]:
         rp = rel(path)
         if not tracked_at(r2_code_commit, rp):
             raise ValueError(f"R2 code commit missing critical implementation:{rp}")

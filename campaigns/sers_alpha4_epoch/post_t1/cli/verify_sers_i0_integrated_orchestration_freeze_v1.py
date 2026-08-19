@@ -4,12 +4,12 @@ import json
 import subprocess
 import sys
 
-from scripts.freeze_sers_i0_integrated_orchestration_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.freeze_sers_i0_integrated_orchestration_v1 import (
     FREEZE_ROOT,
     MANIFEST_PATH,
     READY_PATH,
 )
-from scripts.run_sers_i0_integrated_orchestration_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_i0_integrated_orchestration_v1 import (
     ROOT,
     canonical,
     git_bytes_at,

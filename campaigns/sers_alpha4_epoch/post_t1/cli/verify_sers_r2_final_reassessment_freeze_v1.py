@@ -6,8 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
-from scripts.freeze_sers_r2_final_reassessment_v1 import FREEZE_ROOT
-from scripts.run_sers_r2_final_reassessment_v1 import ROOT, canonical, git_bytes_at, rel, sha256_bytes, sha256_file, tracked_at
+from campaigns.sers_alpha4_epoch.post_t1.cli.freeze_sers_r2_final_reassessment_v1 import FREEZE_ROOT
+from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_r2_final_reassessment_v1 import ROOT, canonical, git_bytes_at, rel, sha256_bytes, sha256_file, tracked_at
 
 MANIFEST_PATH = FREEZE_ROOT / "freeze_manifest.json"
 READY_PATH = FREEZE_ROOT / "FREEZE_READY.json"

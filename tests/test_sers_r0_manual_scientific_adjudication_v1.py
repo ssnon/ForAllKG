@@ -4,7 +4,7 @@ import copy
 import json
 from pathlib import Path
 
-from scripts.verify_sers_r0_manual_scientific_adjudication_v1 import (
+from campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r0_manual_scientific_adjudication_v1 import (
     H1,
     H2,
     H3,

@@ -6,8 +6,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "dac_her/sers_r2_final_reassessment_spec_v1.json"
-RUNNER = ROOT / "scripts/run_sers_r2_final_reassessment_v1.py"
-FREEZER = ROOT / "scripts/freeze_sers_r2_final_reassessment_v1.py"
+RUNNER = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/run_sers_r2_final_reassessment_v1.py"
+FREEZER = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/freeze_sers_r2_final_reassessment_v1.py"
 H1 = "direction_aware_trend_hypothesis:ad13dac8334238124899"
 H2 = "direction_aware_trend_hypothesis:8507f8cadfc46d8d80de"
 H3 = "direction_aware_trend_hypothesis:1cf889e57332402d88c9"

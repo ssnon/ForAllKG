@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 FREEZE_ROOT = (
     ROOT
     / "evaluation/sers_novelty_gap/r0_manual_scientific_adjudication_freeze_v1"

@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 ADJUDICATION_ROOT = (
     ROOT
     / "evaluation/sers_novelty_gap/r0_manual_scientific_adjudication_v1"
@@ -17,13 +17,13 @@ FREEZE_ROOT = (
 )
 ADJUDICATION_PATH = ADJUDICATION_ROOT / "adjudication.json"
 REVIEW_PATH = ADJUDICATION_ROOT / "SCIENTIFIC_REVIEW.md"
-VERIFY_PATH = ROOT / "scripts/verify_sers_r0_manual_scientific_adjudication_v1.py"
+VERIFY_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r0_manual_scientific_adjudication_v1.py"
 FREEZE_VERIFY_PATH = (
     ROOT
-    / "scripts/verify_sers_r0_manual_scientific_adjudication_freeze_v1.py"
+    / "campaigns/sers_alpha4_epoch/post_t1/cli/verify_sers_r0_manual_scientific_adjudication_freeze_v1.py"
 )
 TEST_PATH = ROOT / "tests/test_sers_r0_manual_scientific_adjudication_v1.py"
-FREEZE_CREATE_PATH = ROOT / "scripts/freeze_sers_r0_manual_scientific_adjudication_v1.py"
+FREEZE_CREATE_PATH = ROOT / "campaigns/sers_alpha4_epoch/post_t1/cli/freeze_sers_r0_manual_scientific_adjudication_v1.py"
 T1_FREEZE_PATH = (
     ROOT
     / "evaluation/sers_novelty_gap/t1_live_targeted_retrieval_freeze_v2"
