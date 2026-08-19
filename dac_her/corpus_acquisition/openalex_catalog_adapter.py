@@ -70,7 +70,7 @@ class OpenAlexCatalogProvider:
             LiteratureSearchRequest(
                 query=query.query_text,
                 mechanism_bucket=query.axis_id,
-                limit=max(1, min(100, int(limit))),
+                limit=max(1, int(limit)),
             )
         )
         rows: list[CatalogWork] = []

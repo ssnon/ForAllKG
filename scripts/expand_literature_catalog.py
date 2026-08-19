@@ -17,6 +17,8 @@ from dac_her.literature_catalog import (
 )
 from dac_her.literature_catalog_contracts import LiteratureCatalogPacket
 
+MAX_RESULTS_PER_QUERY = 1000
+
 
 def _write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,6 +79,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+
+def _validate_results_per_query(value: int) -> int:
+    resolved = int(value)
+    if resolved < 1 or resolved > MAX_RESULTS_PER_QUERY:
+        raise ValueError(
+            "results-per-query must be between "
+            f"1 and {MAX_RESULTS_PER_QUERY}"
+        )
+    return resolved
+
 def main() -> int:
     args = parse_args()
     profile = load_acquisition_profile(args.profile)
@@ -85,8 +97,9 @@ def main() -> int:
     )
     if base.acquisition_profile_id != profile.profile_id:
         raise ValueError("Base catalog/profile mismatch")
-    if args.results_per_query < 1 or args.results_per_query > 100:
-        raise ValueError("results-per-query must be between 1 and 100")
+    results_per_query = _validate_results_per_query(
+        args.results_per_query
+    )
 
     provider_names = [
         value.strip()
@@ -120,7 +133,7 @@ def main() -> int:
 
     incoming = LiteratureCatalogRetriever(
         _providers(provider_names),
-        results_per_query=args.results_per_query,
+        results_per_query=results_per_query,
         progress_callback=progress,
     ).retrieve(
         profile_id=profile.profile_id,
