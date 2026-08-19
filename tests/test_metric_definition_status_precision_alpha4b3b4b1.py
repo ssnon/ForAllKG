@@ -175,5 +175,5 @@ def test_alpha4b3b4b1_detection_level_statement_is_known():
 def test_alpha4b3b4b1_semantics_version():
     assert (
         SERS_AU_AG_METRIC_DEFINITION_ADAPTER.semantics_id
-        == "sers_au_ag_metric_definition_v2_alpha4b3b4b1"
+        == "sers_au_ag_metric_definition_v3_alpha4c4c1"
     )
