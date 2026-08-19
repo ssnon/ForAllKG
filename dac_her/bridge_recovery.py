@@ -15,7 +15,7 @@ from dac_her.bridge_schemas import (
     BridgeConcept,
     BridgeLink,
 )
-from dac_her.bridge_source_reconciliation import (
+from pipeline_core.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
     reconcile_concept_payload,
 )
