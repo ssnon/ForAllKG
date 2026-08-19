@@ -19,8 +19,8 @@ from dac_her.novelty_refinement_contracts import NoveltyGapPlan
 EXPECTED_BRANCH = "feat/SERS-targeted-retrieval-live-dev"
 
 RUNTIME_TRACKED_FILES = [
-    "dac_her/sers_targeted_retrieval_t1_live_guard.py",
-    "dac_her/sers_targeted_retrieval_t1_live_validation.py",
+    'campaigns/sers_novelty_gap/sers_targeted_retrieval_t1_live_guard.py',
+    'campaigns/sers_novelty_gap/sers_targeted_retrieval_t1_live_validation.py',
     "campaigns/sers_novelty_gap/history/cli/run_sers_targeted_retrieval_t1_live.py",
     "campaigns/sers_novelty_gap/history/cli/verify_sers_targeted_retrieval_t0_freeze_v2.py",
     "campaigns/sers_novelty_gap/history/cli/verify_sers_targeted_retrieval_t1_input_bundle_v1.py",

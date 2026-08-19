@@ -8,7 +8,7 @@ from dac_her.domains.comparison_registry import (
     get_comparison_adapter,
 )
 from dac_her.domains.dac_her import DAC_HER_PROFILE
-from dac_her.domains.sers_au_ag import SERS_AU_AG_PROFILE
+from domains.sers.profile import SERS_AU_AG_PROFILE
 
 
 def test_alpha4b3b_only_sers_comparison_adapter_is_implemented():

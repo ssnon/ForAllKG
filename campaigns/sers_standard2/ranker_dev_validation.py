@@ -61,7 +61,7 @@ SOURCE_FILES_TO_FREEZE = (
     Path("dac_her/external_novelty_contracts.py"),
     Path("dac_her/domain_profile.py"),
     Path("dac_her/domains/registry.py"),
-    Path("dac_her/domains/sers_au_ag.py"),
+    Path('domains/sers/profile.py'),
 )
 
 MODEL_SENTINELS = (

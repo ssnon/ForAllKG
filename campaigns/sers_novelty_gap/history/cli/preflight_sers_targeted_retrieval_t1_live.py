@@ -10,7 +10,7 @@ from dac_her.external_novelty_contracts import (
 )
 from dac_her.literature_provider_plan import LiteratureProviderPlan
 from dac_her.novelty_refinement_contracts import NoveltyGapPlan
-from dac_her.sers_targeted_retrieval_t1_live_guard import (
+from campaigns.sers_novelty_gap.sers_targeted_retrieval_t1_live_guard import (
     validate_t1_pre_network_guard,
 )
 

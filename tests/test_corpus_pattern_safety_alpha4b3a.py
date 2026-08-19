@@ -9,7 +9,7 @@ from dac_her.corpus_graph import (
     build_corpus_graph,
     is_confirmed_corpus_pattern,
 )
-from dac_her.domains.sers_au_ag import SERS_AU_AG_PROFILE
+from domains.sers.profile import SERS_AU_AG_PROFILE
 
 
 def _bundle(paper_id: str) -> ProjectionBundle:

@@ -131,7 +131,7 @@ def main() -> int:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_targeted_retrieval_t0_offline",
+            'campaigns.sers_novelty_gap.scripts.verify_sers_targeted_retrieval_t0_offline',
         ],
         cwd=ROOT,
         text=True,

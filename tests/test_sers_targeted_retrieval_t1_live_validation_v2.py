@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from dac_her.sers_targeted_retrieval_t1_live_validation_v2 import (
+from campaigns.sers_novelty_gap.sers_targeted_retrieval_t1_live_validation_v2 import (
     _canonical_json,
 )
 

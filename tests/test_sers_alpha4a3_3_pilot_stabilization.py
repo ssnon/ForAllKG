@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.sers_prompts import SERS_PROMPT_VERSION, SERS_SYSTEM_PROMPT
+from domains.sers.prompts import SERS_PROMPT_VERSION, SERS_SYSTEM_PROMPT
 from dac_her.vocab_registry import load_default_registries
 
 

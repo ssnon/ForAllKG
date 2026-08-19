@@ -29,7 +29,7 @@ def _literal_dict_assignment(tree: ast.Module, name: str) -> dict[str, str]:
 
 
 def test_sers_au_ag_profile_id_and_aliases_remain_registered() -> None:
-    sers_tree = _parse("dac_her/domains/sers_au_ag.py")
+    sers_tree = _parse('domains/sers/profile.py')
     profile_ids: list[str] = []
     for node in ast.walk(sers_tree):
         if not isinstance(node, ast.Call):

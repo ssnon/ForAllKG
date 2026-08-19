@@ -8,7 +8,7 @@ from dac_her.graph_semantics import (
     relation_contract_triage,
     relation_direction_diagnostics,
 )
-from dac_her.sers_prompts import (
+from domains.sers.prompts import (
     SERS_MICRO_REEXTRACT_SYSTEM_PROMPT,
     SERS_PATCH_SYSTEM_PROMPT,
     SERS_PROMPT_VERSION,

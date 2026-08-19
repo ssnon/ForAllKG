@@ -17,12 +17,12 @@ from campaigns.sers_novelty_gap.sers_targeted_retrieval_t1_live_recovery_v2 impo
 )
 
 V2_RUNTIME_FILES = [
-    "dac_her/sers_targeted_retrieval_t1_live_validation_v2.py",
-    "dac_her/sers_targeted_retrieval_t1_live_recovery_v2.py",
-    "scripts/preflight_sers_targeted_retrieval_t1_live_v2.py",
-    "scripts/run_sers_targeted_retrieval_t1_live_v2.py",
-    "scripts/verify_sers_targeted_retrieval_t1_live_v2.py",
-    "scripts/verify_sers_targeted_retrieval_t1_v1_failure_evidence.py",
+    'campaigns/sers_novelty_gap/sers_targeted_retrieval_t1_live_validation_v2.py',
+    'campaigns/sers_novelty_gap/sers_targeted_retrieval_t1_live_recovery_v2.py',
+    'campaigns/sers_novelty_gap/scripts/preflight_sers_targeted_retrieval_t1_live_v2.py',
+    'campaigns/sers_novelty_gap/scripts/run_sers_targeted_retrieval_t1_live_v2.py',
+    'campaigns/sers_novelty_gap/scripts/verify_sers_targeted_retrieval_t1_live_v2.py',
+    'campaigns/sers_novelty_gap/scripts/verify_sers_targeted_retrieval_t1_v1_failure_evidence.py',
     "tests/test_sers_targeted_retrieval_t1_live_validation_v2.py",
     "evaluation/sers_novelty_gap/"
     "t1_live_targeted_retrieval_v1_failure_freeze_v1/"

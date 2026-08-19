@@ -4,7 +4,7 @@ import networkx as nx
 from pathlib import Path
 
 from dac_her.graph_semantics import evidence_topology_diagnostics
-from dac_her.sers_prompts import (
+from domains.sers.prompts import (
     SERS_MICRO_REEXTRACT_SYSTEM_PROMPT,
     SERS_PATCH_SYSTEM_PROMPT,
     SERS_PROMPT_VERSION,

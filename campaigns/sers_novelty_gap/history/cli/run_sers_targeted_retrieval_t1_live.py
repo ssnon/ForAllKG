@@ -17,10 +17,10 @@ from dac_her.literature_provider_plan import (
 )
 from dac_her.literature_retrieval import LiteratureRetriever
 from dac_her.novelty_refinement_contracts import NoveltyGapPlan
-from dac_her.sers_targeted_retrieval_t1_live_guard import (
+from campaigns.sers_novelty_gap.sers_targeted_retrieval_t1_live_guard import (
     validate_t1_pre_network_guard,
 )
-from dac_her.sers_targeted_retrieval_t1_live_validation import (
+from campaigns.sers_novelty_gap.sers_targeted_retrieval_t1_live_validation import (
     aggregate_t1_report,
     audit_live_gap_outcome,
 )

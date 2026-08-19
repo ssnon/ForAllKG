@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_metric_definition import (
+from domains.sers.metric_definition import (
     SERS_AU_AG_METRIC_DEFINITION_ADAPTER,
 )
 

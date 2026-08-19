@@ -1,4 +1,4 @@
-from dac_her.sers_targeted_retrieval_t0_offline_validation import (
+from campaigns.sers_novelty_gap.sers_targeted_retrieval_t0_offline_validation import (
     build_t0_offline_report,
 )
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.domains.sers_au_ag_graph import (
+from domains.sers.graph import (
     SERS_RELATION_CONSTRAINTS,
 )
 from dac_her.domains.strict_relation_contracts import (

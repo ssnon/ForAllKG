@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.domains.sers_au_ag_metric_definition import (
+from domains.sers.metric_definition import (
     SERS_METRIC_DEFINITION_SEMANTICS_ID,
     _finalize_definition_interpretation,
 )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import networkx as nx
 
 from dac_her.comparison_context import dimension_from_values
-from dac_her.domains.sers_au_ag_comparison import (
+from domains.sers.comparison import (
     SERS_AU_AG_COMPARISON_ADAPTER,
     _canonical_concentration,
     _canonical_entity,

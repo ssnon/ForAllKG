@@ -6,7 +6,7 @@ import networkx as nx
 import pytest
 
 from dac_her.corpus_graph import ProjectionBundle, build_corpus_graph
-from dac_her.domains.sers_au_ag import SERS_AU_AG_PROFILE
+from domains.sers.profile import SERS_AU_AG_PROFILE
 
 
 def _bundle(

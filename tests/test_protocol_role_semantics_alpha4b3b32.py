@@ -5,7 +5,7 @@ import json
 import networkx as nx
 
 from dac_her.comparison_context import build_protocol_assessments
-from dac_her.domains.sers_au_ag_comparison import (
+from domains.sers.comparison import (
     SERS_AU_AG_COMPARISON_ADAPTER,
 )
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.sers_au_ag_reproducibility import (
+from domains.sers.reproducibility import (
     SERS_AU_AG_REPRODUCIBILITY_ADAPTER,
 )
 from dac_her.reproducibility_evidence import (

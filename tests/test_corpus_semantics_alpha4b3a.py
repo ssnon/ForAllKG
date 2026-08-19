@@ -5,7 +5,7 @@ import pytest
 from dac_her.domain_profile import CorpusSemantics
 from dac_her.domains.catalysis_mechanism import CATALYSIS_MECHANISM_PROFILE
 from dac_her.domains.dac_her import DAC_HER_PROFILE
-from dac_her.domains.sers_au_ag import SERS_AU_AG_PROFILE
+from domains.sers.profile import SERS_AU_AG_PROFILE
 from dac_her.resolution_candidates import normalize_scientific_text
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dac_her.comparison_context import compare_contexts, dimension_from_values
 from dac_her.comparison_domain import ComparisonContext
-from dac_her.domains.sers_au_ag_comparison import (
+from domains.sers.comparison import (
     SERS_AU_AG_COMPARISON_ADAPTER,
 )
 
