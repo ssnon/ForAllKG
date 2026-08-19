@@ -415,7 +415,7 @@ def reconcile_concept_payload(
                 )
 
             payload["supporting_phrases"] = supporting
-            
+
     # After supporting spans are reconciled to exact source text, evidence fields
     # are reconciled *within that supporting span* to preserve the strict
     # substring invariant used by bridge_validation.py.
