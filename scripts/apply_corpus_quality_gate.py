@@ -30,7 +30,11 @@ from dac_her.literature_catalog_contracts import (
 
 def _read_jsonl(path: Path, model) -> list[Any]:
     rows = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    # JSON Lines uses LF as the record delimiter.
+    # Do not use str.splitlines(): valid JSON strings may contain
+    # Unicode line/paragraph separators such as U+2028/U+2029,
+    # which splitlines() would incorrectly treat as record boundaries.
+    for line in path.read_text(encoding="utf-8").split("\n"):
         if line.strip():
             rows.append(model.model_validate_json(line))
     return rows
