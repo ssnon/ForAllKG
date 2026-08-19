@@ -3,14 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import shlex
-import subprocess
 import sys
-import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, Sequence
+from typing import Any, Sequence
 
 import networkx as nx
 
@@ -25,78 +21,20 @@ import pipeline_core.chunking as chunking_module
 import dac_her.schemas as schemas_module
 
 
-Mode = Literal["evidence", "mechanism", "exploratory"]
-FreshnessPolicy = Literal["source", "semantic", "full"]
-StageName = Literal[
-    "strict",
-    "strict_graph",
-    "bridge",
-    "projection",
-    "corpus",
-    "navigation",
-    "index",
-]
-
-
-class ReconcileError(RuntimeError):
-    pass
-
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _read_json(path: Path) -> dict[str, Any] | None:
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    return value if isinstance(value, dict) else None
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _safe_component(value: str) -> str:
-    return value.replace("/", "_").replace("\\", "_").strip() or "paper"
-
-
-def _same_path(left: str | Path, right: str | Path) -> bool:
-    try:
-        return Path(left).resolve() == Path(right).resolve()
-    except Exception:
-        return str(left) == str(right)
-
-
-@dataclass(frozen=True)
-class StageState:
-    valid: bool
-    reason: str
-    path: Path | None = None
-    metadata: dict[str, Any] | None = None
-
-    @classmethod
-    def ready(
-        cls,
-        reason: str,
-        path: Path | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> "StageState":
-        return cls(True, reason, path, metadata)
-
-    @classmethod
-    def pending(
-        cls,
-        reason: str,
-        path: Path | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> "StageState":
-        return cls(False, reason, path, metadata)
+from pipeline_core.reconcile_runtime import (
+    FreshnessPolicy,
+    Mode,
+    ReconcileError,
+    StageName,
+    StageState,
+    StrictRunState,
+    read_json as _read_json,
+    run_logged_command,
+    safe_component as _safe_component,
+    same_path as _same_path,
+    sha256_file as _sha256_file,
+    utc_now as _utc_now,
+)
 
 
 @dataclass(frozen=True)
@@ -118,13 +56,6 @@ class ReconcileOptions:
     device: str | None = None
     force_stages: frozenset[str] = frozenset()
     dry_run: bool = False
-
-
-@dataclass(frozen=True)
-class StrictRunState:
-    stage: StageState
-    run_id: str | None = None
-    run_dir: Path | None = None
 
 
 class IncrementalCorpusReconciler:
@@ -931,48 +862,23 @@ class IncrementalCorpusReconciler:
             return command
         raise KeyError(stage)
 
-    def _run_logged(self, command: Sequence[str], *, label: str, log_dir: Path) -> bool:
-        print(f"[reconcile] {label} | start", flush=True)
-        print(f"[reconcile]   $ {shlex.join(list(command))}", flush=True)
-        if self.options.dry_run:
-            return True
-
-        log_dir.mkdir(parents=True, exist_ok=True)
-        stdout_path = log_dir / "stdout.log"
-        stderr_path = log_dir / "stderr.log"
-        started = time.monotonic()
-        with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open(
-            "w", encoding="utf-8"
-        ) as stderr:
-            process = subprocess.Popen(
-                list(command),
-                cwd=self.root,
-                stdout=stdout,
-                stderr=stderr,
-                text=True,
-            )
-            while True:
-                try:
-                    code = process.wait(
-                        timeout=(self.options.heartbeat_seconds or None)
-                    )
-                    break
-                except subprocess.TimeoutExpired:
-                    print(
-                        f"[reconcile] {label} | still running | "
-                        f"elapsed={time.monotonic() - started:.0f}s",
-                        flush=True,
-                    )
-        elapsed = time.monotonic() - started
-        if code == 0:
-            print(f"[reconcile] {label} | passed | {elapsed:.1f}s", flush=True)
-            return True
-        print(
-            f"[reconcile] {label} | failed({code}) | {elapsed:.1f}s | "
-            f"stderr={stderr_path}",
-            flush=True,
+    def _run_logged(
+        self,
+        command: Sequence[str],
+        *,
+        label: str,
+        log_dir: Path,
+    ) -> bool:
+        return run_logged_command(
+            command,
+            cwd=self.root,
+            label=label,
+            log_dir=log_dir,
+            heartbeat_seconds=(
+                self.options.heartbeat_seconds
+            ),
+            dry_run=self.options.dry_run,
         )
-        return False
 
     def _force(self, stage: StageName) -> bool:
         return stage in self.options.force_stages
