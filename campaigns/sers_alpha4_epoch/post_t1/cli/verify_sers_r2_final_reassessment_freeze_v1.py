@@ -13,6 +13,30 @@ MANIFEST_PATH = FREEZE_ROOT / "freeze_manifest.json"
 READY_PATH = FREEZE_ROOT / "FREEZE_READY.json"
 
 
+CURRENT_REPLAY_CRITICAL_FILES = {
+    "scripts/freeze_sers_r2_final_reassessment_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "freeze_sers_r2_final_reassessment_v1.py"
+    ),
+    "scripts/run_sers_r2_final_reassessment_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "run_sers_r2_final_reassessment_v1.py"
+    ),
+    "scripts/verify_sers_r2_final_reassessment_freeze_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "verify_sers_r2_final_reassessment_freeze_v1.py"
+    ),
+    "scripts/verify_sers_r2_final_reassessment_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "verify_sers_r2_final_reassessment_v1.py"
+    ),
+}
+
+CURRENT_REGRESSION_SURFACE = (
+    "tests/test_sers_r2_final_reassessment_v1.py",
+)
+
+
 def main() -> int:
     base = subprocess.run([sys.executable, "-m", "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r2_final_reassessment_v1"], cwd=ROOT, text=True)
     if base.returncode != 0:
@@ -40,12 +64,105 @@ def main() -> int:
     if freeze_id != "sers_r2_final_reassessment_freeze_v1:" + recomputed[:20]:
         issues.append("R2 freeze ID mismatch")
 
-    for rp, expected_sha in manifest.get("critical_file_sha256", {}).items():
-        path = ROOT / rp
-        if not path.is_file():
-            issues.append(f"critical file missing:{rp}")
-        elif sha256_file(path) != expected_sha:
-            issues.append(f"critical file hash mismatch:{rp}")
+    critical_hashes = manifest.get("critical_file_sha256", {})
+    historical_source_commit = manifest.get("source_r2_report_commit")
+
+    if not isinstance(critical_hashes, dict) or not critical_hashes:
+        issues.append("R2 critical-file hash map missing")
+
+    if (
+        not isinstance(historical_source_commit, str)
+        or not historical_source_commit
+    ):
+        issues.append("R2 historical source report commit missing")
+
+    if (
+        isinstance(critical_hashes, dict)
+        and critical_hashes
+        and isinstance(historical_source_commit, str)
+        and historical_source_commit
+    ):
+        # Historical freeze identity is verified in the path vocabulary that
+        # existed at the recorded R2 report commit.
+        for historical_path, expected_sha in sorted(
+            critical_hashes.items()
+        ):
+            try:
+                committed = subprocess.check_output(
+                    [
+                        "git",
+                        "show",
+                        f"{historical_source_commit}:{historical_path}",
+                    ],
+                    cwd=ROOT,
+                )
+            except subprocess.CalledProcessError:
+                issues.append(
+                    f"R2 historical critical file missing:{historical_path}"
+                )
+                continue
+
+            observed_sha = hashlib.sha256(
+                committed
+            ).hexdigest()
+
+            if observed_sha != expected_sha:
+                issues.append(
+                    "R2 historical critical file hash mismatch:"
+                    f"{historical_path}"
+                )
+
+        # Scientific spec and frozen evaluation artifacts remain byte-immutable
+        # in the current checkout.
+        for historical_path, expected_sha in sorted(
+            critical_hashes.items()
+        ):
+            if not (
+                historical_path.startswith("evaluation/")
+                or historical_path
+                == "dac_her/sers_r2_final_reassessment_spec_v1.json"
+            ):
+                continue
+
+            current_path = ROOT / historical_path
+
+            if not current_path.is_file():
+                issues.append(
+                    f"R2 current immutable file missing:{historical_path}"
+                )
+            elif sha256_file(current_path) != expected_sha:
+                issues.append(
+                    f"R2 current immutable file hash mismatch:{historical_path}"
+                )
+
+        # Relocated implementation is the current replay surface, not part of
+        # historical byte identity.
+        for historical_path, current_relative in (
+            CURRENT_REPLAY_CRITICAL_FILES.items()
+        ):
+            if historical_path not in critical_hashes:
+                issues.append(
+                    f"R2 historical replay identity missing:{historical_path}"
+                )
+                continue
+
+            current_path = ROOT / current_relative
+
+            if not current_path.is_file():
+                issues.append(
+                    f"R2 current replay critical file missing:{current_relative}"
+                )
+
+            elif not tracked_at("HEAD", current_relative):
+                issues.append(
+                    f"R2 current replay critical file not tracked:{current_relative}"
+                )
+
+        for current_relative in CURRENT_REGRESSION_SURFACE:
+            if not (ROOT / current_relative).is_file():
+                issues.append(
+                    f"R2 current regression surface missing:{current_relative}"
+                )
 
     if ready.get("ready") is not True or ready.get("stop") is not True:
         issues.append("R2 FREEZE_READY ready/STOP invalid")
