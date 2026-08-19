@@ -15,6 +15,26 @@ MANIFEST_PATH = FREEZE_ROOT / "freeze_manifest.json"
 READY_PATH = FREEZE_ROOT / "FREEZE_READY.json"
 
 
+CURRENT_REPLAY_CRITICAL_FILES = {
+    "scripts/freeze_sers_r0_manual_scientific_adjudication_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "freeze_sers_r0_manual_scientific_adjudication_v1.py"
+    ),
+    "scripts/verify_sers_r0_manual_scientific_adjudication_freeze_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "verify_sers_r0_manual_scientific_adjudication_freeze_v1.py"
+    ),
+    "scripts/verify_sers_r0_manual_scientific_adjudication_v1.py": (
+        "campaigns/sers_alpha4_epoch/post_t1/cli/"
+        "verify_sers_r0_manual_scientific_adjudication_v1.py"
+    ),
+}
+
+CURRENT_REGRESSION_SURFACE = (
+    "tests/test_sers_r0_manual_scientific_adjudication_v1.py"
+,)
+
+
 def _canonical(value: object) -> str:
     return json.dumps(
         value,
@@ -68,12 +88,86 @@ def main() -> int:
     if freeze_id != expected_freeze_id:
         issues.append("freeze ID mismatch")
 
-    for relpath, expected_sha in manifest.get("critical_file_sha256", {}).items():
-        path = ROOT / relpath
-        if not path.is_file():
-            issues.append(f"critical file missing:{relpath}")
-        elif _sha256_file(path) != expected_sha:
-            issues.append(f"critical file hash mismatch:{relpath}")
+    critical_hashes = manifest.get("critical_file_sha256", {})
+    historical_source_commit = manifest.get("source_adjudication_commit")
+
+    if not isinstance(critical_hashes, dict) or not critical_hashes:
+        issues.append("critical-file hash map missing")
+
+    if not isinstance(historical_source_commit, str) or not historical_source_commit:
+        issues.append("historical source adjudication commit missing")
+
+    if (
+        isinstance(critical_hashes, dict)
+        and critical_hashes
+        and isinstance(historical_source_commit, str)
+        and historical_source_commit
+    ):
+        # Historical freeze identity belongs to the original source commit and
+        # original path vocabulary.  Repository relocation must not rewrite it.
+        for historical_path, expected_sha in sorted(critical_hashes.items()):
+            try:
+                committed = subprocess.check_output(
+                    [
+                        "git",
+                        "show",
+                        f"{historical_source_commit}:{historical_path}",
+                    ],
+                    cwd=ROOT,
+                )
+            except subprocess.CalledProcessError:
+                issues.append(
+                    f"historical critical file missing:{historical_path}"
+                )
+                continue
+
+            observed_sha = hashlib.sha256(committed).hexdigest()
+
+            if observed_sha != expected_sha:
+                issues.append(
+                    f"historical critical file hash mismatch:{historical_path}"
+                )
+
+        # Scientific/evaluation evidence remains immutable in the current
+        # checkout even though implementation/test paths may evolve.
+        for historical_path, expected_sha in sorted(critical_hashes.items()):
+            if not historical_path.startswith("evaluation/"):
+                continue
+
+            current_path = ROOT / historical_path
+
+            if not current_path.is_file():
+                issues.append(
+                    f"current frozen evidence missing:{historical_path}"
+                )
+            elif _sha256_file(current_path) != expected_sha:
+                issues.append(
+                    f"current frozen evidence hash mismatch:{historical_path}"
+                )
+
+        # Relocated implementation is a current replay/verification surface,
+        # not part of the historical byte identity.
+        for historical_path, current_relative in (
+            CURRENT_REPLAY_CRITICAL_FILES.items()
+        ):
+            if historical_path not in critical_hashes:
+                issues.append(
+                    f"historical replay identity missing:{historical_path}"
+                )
+                continue
+
+            current_path = ROOT / current_relative
+
+            if not current_path.is_file():
+                issues.append(
+                    f"current replay critical file missing:{current_relative}"
+                )
+
+        for current_relative in CURRENT_REGRESSION_SURFACE:
+            if not (ROOT / current_relative).is_file():
+                issues.append(
+                    f"current regression surface missing:{current_relative}"
+                )
 
     if ready.get("ready") is not True:
         issues.append("FREEZE_READY ready flag false")
