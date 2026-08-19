@@ -19,7 +19,7 @@ def test_sers_profile_resolves_metric_definition_adapter():
     adapter = get_metric_definition_adapter(profile)
     assert adapter.adapter_id == "sers_au_ag"
     assert adapter.domain_profile_id == "sers_au_ag"
-    assert adapter.semantics_id == "sers_au_ag_metric_definition_v2_alpha4b3b4b1"
+    assert adapter.semantics_id == "sers_au_ag_metric_definition_v3_alpha4c4c1"
 
 
 def test_unimplemented_domain_fails_closed():
