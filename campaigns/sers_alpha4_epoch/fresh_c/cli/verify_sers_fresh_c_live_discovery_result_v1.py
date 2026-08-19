@@ -56,7 +56,7 @@ def main() -> int:
     run_dir = args.run_dir if args.run_dir.is_absolute() else root / args.run_dir
 
     subprocess.run(
-        [sys.executable, "-m", "scripts.verify_sers_fresh_c_live_discovery_protocol_freeze_v1"],
+        [sys.executable, "-m", "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_live_discovery_protocol_freeze_v1"],
         cwd=root,
         check=True,
     )

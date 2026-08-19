@@ -43,7 +43,7 @@ def main() -> int:
     root = Path(_git(Path.cwd(), "rev-parse", "--show-toplevel"))
     subprocess.run(
         [sys.executable, "-m",
-         "scripts.verify_sers_fresh_c_live_discovery_recovery_v2_3_protocol_freeze"],
+         "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_live_discovery_recovery_v2_3_protocol_freeze"],
         cwd=root, check=True,
     )
     validate_v22_failure(root)

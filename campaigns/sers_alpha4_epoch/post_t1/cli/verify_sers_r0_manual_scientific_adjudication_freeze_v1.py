@@ -33,7 +33,7 @@ def main() -> int:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_r0_manual_scientific_adjudication_v1",
+            "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r0_manual_scientific_adjudication_v1",
         ],
         cwd=ROOT,
         text=True,

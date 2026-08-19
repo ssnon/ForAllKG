@@ -88,7 +88,7 @@ def main() -> int:
         raise RuntimeError("Index is dirty; refuse C0.1C freeze.")
 
     subprocess.run(
-        [sys.executable, "-m", "scripts.verify_sers_fresh_c_activation_readiness_v1"],
+        [sys.executable, "-m", "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_activation_readiness_v1"],
         cwd=root,
         check=True,
     )

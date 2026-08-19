@@ -103,7 +103,7 @@ def verify_protocol_and_lock() -> tuple[dict, dict]:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_alpha4c4d1_holdout_v2_protocol",
+            "campaigns.sers_alpha4_epoch.holdout.cli.verify_sers_alpha4c4d1_holdout_v2_protocol",
         ],
         cwd=ROOT,
         check=True,

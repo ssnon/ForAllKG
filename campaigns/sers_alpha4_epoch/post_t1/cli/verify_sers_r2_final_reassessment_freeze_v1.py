@@ -14,7 +14,7 @@ READY_PATH = FREEZE_ROOT / "FREEZE_READY.json"
 
 
 def main() -> int:
-    base = subprocess.run([sys.executable, "-m", "scripts.verify_sers_r2_final_reassessment_v1"], cwd=ROOT, text=True)
+    base = subprocess.run([sys.executable, "-m", "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r2_final_reassessment_v1"], cwd=ROOT, text=True)
     if base.returncode != 0:
         return 2
 

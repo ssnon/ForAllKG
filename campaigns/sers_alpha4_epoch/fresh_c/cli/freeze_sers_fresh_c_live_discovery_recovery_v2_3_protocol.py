@@ -79,7 +79,7 @@ def main() -> int:
 
     subprocess.run(
         [sys.executable, "-m",
-         "scripts.verify_sers_fresh_c_live_discovery_recovery_v2_2_protocol_freeze"],
+         "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_live_discovery_recovery_v2_2_protocol_freeze"],
         cwd=root, check=True,
     )
     subprocess.run(

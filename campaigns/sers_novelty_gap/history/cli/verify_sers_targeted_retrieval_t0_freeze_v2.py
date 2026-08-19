@@ -62,7 +62,7 @@ def _run_parent_verifier(parent_commit: str) -> tuple[bool, str]:
                 [
                     sys.executable,
                     "-m",
-                    "scripts.verify_sers_novelty_gap_g0_g2_production_freeze_v1",
+                    "campaigns.sers_novelty_gap.history.cli.verify_sers_novelty_gap_g0_g2_production_freeze_v1",
                 ],
                 cwd=worktree,
                 text=True,

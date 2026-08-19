@@ -118,7 +118,7 @@ def validate_inputs(*, require_output_absent: bool) -> dict[str, Any]:
         raise ValueError("; ".join(issues))
 
     base_verify = subprocess.run(
-        [sys.executable, "-m", "scripts.verify_sers_r0_manual_scientific_adjudication_freeze_v1"],
+        [sys.executable, "-m", "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r0_manual_scientific_adjudication_freeze_v1"],
         cwd=ROOT,
         text=True,
     )

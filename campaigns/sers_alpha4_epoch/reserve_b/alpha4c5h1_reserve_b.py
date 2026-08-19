@@ -151,7 +151,7 @@ def verify_5h_freeze_command(root: Path) -> None:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_alpha4c5h_freeze",
+            "campaigns.sers_alpha4_epoch.alpha4.cli.verify_sers_alpha4c5h_freeze",
         ],
         cwd=root,
         text=True,

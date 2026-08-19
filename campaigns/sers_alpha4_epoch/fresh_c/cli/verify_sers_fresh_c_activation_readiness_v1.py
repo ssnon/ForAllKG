@@ -79,7 +79,7 @@ def main() -> int:
         [
             "python",
             "-m",
-            "scripts.verify_sers_i0_integrated_orchestration_freeze_v1",
+            "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_i0_integrated_orchestration_freeze_v1",
         ],
         cwd=root,
         check=True,
@@ -88,7 +88,7 @@ def main() -> int:
         [
             "python",
             "-m",
-            "scripts.verify_sers_fresh_c_acquisition_protocol_freeze_v1",
+            "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_acquisition_protocol_freeze_v1",
         ],
         cwd=root,
         check=True,

@@ -22,7 +22,7 @@ from campaigns.sers_alpha4_epoch.post_t1.cli.run_sers_i0_integrated_orchestratio
 
 def main() -> int:
     base = subprocess.run(
-        [sys.executable, "-m", "scripts.verify_sers_i0_integrated_orchestration_v1"],
+        [sys.executable, "-m", "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_i0_integrated_orchestration_v1"],
         cwd=ROOT,
         text=True,
     )

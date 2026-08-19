@@ -111,7 +111,7 @@ def main() -> int:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_targeted_retrieval_t0_freeze_v2",
+            "campaigns.sers_novelty_gap.history.cli.verify_sers_targeted_retrieval_t0_freeze_v2",
         ],
         cwd=ROOT,
         text=True,

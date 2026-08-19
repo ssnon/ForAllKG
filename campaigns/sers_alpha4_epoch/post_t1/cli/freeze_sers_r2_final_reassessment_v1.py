@@ -45,7 +45,7 @@ def main() -> int:
         print(" - tracked working tree/index is not clean")
         return 2
 
-    verify = subprocess.run([sys.executable, "-m", "scripts.verify_sers_r2_final_reassessment_v1"], cwd=ROOT, text=True)
+    verify = subprocess.run([sys.executable, "-m", "campaigns.sers_alpha4_epoch.post_t1.cli.verify_sers_r2_final_reassessment_v1"], cwd=ROOT, text=True)
     if verify.returncode != 0:
         return 2
 

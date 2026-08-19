@@ -81,7 +81,7 @@ def main() -> int:
         [
             sys.executable,
             "-m",
-            "scripts.verify_sers_fresh_c_live_discovery_protocol_freeze_v1",
+            "campaigns.sers_alpha4_epoch.fresh_c.cli.verify_sers_fresh_c_live_discovery_protocol_freeze_v1",
         ],
         cwd=root,
         check=True,
