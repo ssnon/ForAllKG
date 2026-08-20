@@ -1,8 +1,0 @@
-{
-  "freeze_id": "sers_fresh_c_c1a_materialization_protocol_freeze_v1:8ba12585eb5b9bc620af",
-  "fresh_reserve_c_consumed": false,
-  "live_materialization_authorized": false,
-  "live_materialization_ready": true,
-  "manifest_sha256": "5802f2757a352ebbd20f5834dafecf20157a46bf39e88ce7107d540572a6deba",
-  "stop": true
-}

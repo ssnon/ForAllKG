@@ -1,9 +1,0 @@
-{
-  "automatic_next_stage_authorized": false,
-  "freeze_id": "sers_fresh_c_acquisition_protocol_preregistration_freeze_v1:f8423322c602383bb317",
-  "fresh_c_stage_activated": false,
-  "fresh_reserve_c_consumed": false,
-  "manifest_sha256": "40aa2d94ebb6155874178b668d2557fd0cfe3346d7cc31e071d76ff04b686872",
-  "schema_version": "sers-fresh-c-acquisition-protocol-preregistration-ready-v1",
-  "stop": true
-}

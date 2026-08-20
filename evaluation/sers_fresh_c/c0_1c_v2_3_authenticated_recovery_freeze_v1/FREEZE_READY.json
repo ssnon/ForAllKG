@@ -1,9 +1,0 @@
-{
-  "freeze_id": "sers_fresh_c_authenticated_recovery_v2_3_freeze_v1:f10065583b516a28fbda",
-  "fresh_reserve_c_consumed": false,
-  "manifest_sha256": "70e8e650017799e3629b74974653a946a0c12e486d7edb836875052fab4d77bd",
-  "recovery_live_discovery_authorized": false,
-  "recovery_live_discovery_ready": true,
-  "semantic_scholar_api_key_required": true,
-  "stop": true
-}

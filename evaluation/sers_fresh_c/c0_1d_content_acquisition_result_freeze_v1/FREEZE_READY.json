@@ -1,9 +1,0 @@
-{
-  "c1_authorized": false,
-  "freeze_id": "sers_fresh_c_content_acquisition_result_freeze_v1:afc55cfdc78819827cde",
-  "fresh_reserve_c_consumed": false,
-  "manifest_sha256": "c0686755c472dd936f5e58a3bea9599eb32b259b884a2fe51d65b427976fbf84",
-  "reserve_c_content_sealed": true,
-  "reserve_c_identity_selection_finalized": true,
-  "stop": true
-}

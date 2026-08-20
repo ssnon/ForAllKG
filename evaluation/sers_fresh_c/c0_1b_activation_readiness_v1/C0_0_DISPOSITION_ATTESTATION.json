@@ -1,9 +1,0 @@
-{
-  "attestation_sha256": "662a439cb03c97d02f6cc43de4c0426fc55f94cfac4489de664b0b0b8663a0c1",
-  "basis": "completed_read_only_lineage_audit_no_eligible_existing_fresh_reserve",
-  "disposition": "NEW_FRESH_ACQUISITION_REQUIRED",
-  "fresh_reserve_c_consumed": false,
-  "operator_attested": true,
-  "schema_version": "sers-fresh-c-c0-0-disposition-attestation-v1",
-  "scientific_values_read_for_attestation": false
-}

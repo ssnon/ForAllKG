@@ -1,6 +1,0 @@
-{
-  "exception_type": "TypeError",
-  "fresh_reserve_c_consumed": false,
-  "message": "Fatal harness/runtime error; v1 attempt remains consumed and must not be silently rerun.",
-  "stage": "T1_LIVE_TARGETED_RETRIEVAL"
-}

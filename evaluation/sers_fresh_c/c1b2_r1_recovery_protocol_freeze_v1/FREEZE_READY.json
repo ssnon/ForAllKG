@@ -1,7 +1,0 @@
-{
-  "freeze_id": "sers_fresh_c_c1b2_r1_recovery_protocol_freeze_v1:a788b204dd503ab64f5e",
-  "manifest_sha256": "698e619a5931f4c251e4aa1feed65cdd29f4b7924301432cf4909f4fd30044b3",
-  "recovery_execution_authorized": false,
-  "recovery_execution_ready": true,
-  "stop": true
-}

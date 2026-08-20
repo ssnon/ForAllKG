@@ -1,8 +1,0 @@
-{
-  "freeze_id": "sers_fresh_c_content_acquisition_protocol_freeze_v1:5fc48f32b139793ee86b",
-  "fresh_reserve_c_consumed": false,
-  "live_acquisition_authorized": false,
-  "live_acquisition_ready": true,
-  "manifest_sha256": "d4fb7533f04ce226d47244f65d4f0a1269622234a028c7366728b19e1722a682",
-  "stop": true
-}

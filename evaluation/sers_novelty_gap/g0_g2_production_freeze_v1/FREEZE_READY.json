@@ -1,7 +1,0 @@
-{
-  "automatic_next_stage_authorized": false,
-  "freeze_id": "sers_novelty_gap_g0_g2_production_freeze_v1:edb8c1d7e219050dfcd1",
-  "manifest_sha256": "edb8c1d7e219050dfcd1d3ee2c18ba2aac1c23c8635df0b3aecac4b2badf7b0f",
-  "source_production_integration_v2_run_id": "sers_novelty_gap_g0_g2_production_integration_v2:83b9f9724d3182fedc5c",
-  "status": "FREEZE_READY"
-}
