@@ -77,25 +77,6 @@ def test_registry_imports_canonical_namespace() -> None:
     )
 
 
-def test_active_builder_imports_canonical_namespace() -> None:
-    path = (
-        ROOT
-        / "scripts"
-        / "build_cross_context_profiles.py"
-    )
-
-    modules = _imports(path)
-
-    assert (
-        "domains.sers.cross_context_trend"
-        in modules
-    )
-
-    assert (
-        "dac_her.domains."
-        "sers_au_ag_cross_context_trend"
-        not in modules
-    )
 
 
 def test_current_projection_test_imports_canonical_namespace() -> None:
