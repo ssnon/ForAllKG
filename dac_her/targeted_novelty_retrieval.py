@@ -11,7 +11,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     PriorArtWork,
     QueryExecution,
 )
-from dac_her.literature_retrieval import (
+from pipeline_core.discovery.prior_art_retrieval import (
     LiteratureRetriever,
     canonicalize_prior_art_works,
 )

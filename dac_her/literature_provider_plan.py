@@ -8,7 +8,7 @@ from typing import Any, Literal, Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from dac_her.literature_retrieval import (
+from pipeline_core.discovery.prior_art_retrieval import (
     CrossrefProvider,
     LiteratureSearchProvider,
     OpenAlexProvider,
