@@ -23,7 +23,7 @@ from domains.dac_her.semantic_patch_prompts import (
     build_patch_rejection_feedback,
     build_semantic_patch_prompt,
 )
-from dac_her.semantic_patch_schema import KnowledgeGraphPatch
+from pipeline_core.corpus.semantic_patch_schema import KnowledgeGraphPatch
 from dac_her.strict_validation import (
     ValidationContext,
     finalize_draft,

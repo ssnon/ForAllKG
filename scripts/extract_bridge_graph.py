@@ -24,7 +24,7 @@ import dac_her.bridge_extraction \
     as bridge_extraction_module
 import pipeline_core.bridge_filtering \
     as bridge_filtering_module
-import dac_her.bridge_graph \
+import pipeline_core.corpus.bridge_graph \
     as bridge_graph_module
 import domains.dac_her.bridge_policy \
     as bridge_policy_module

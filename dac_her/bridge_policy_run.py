@@ -25,7 +25,7 @@ from dac_her.bridge_extraction import (
 from dac_her.bridge_filtering import (
     filter_bridge_raw_chunk,
 )
-from dac_her.bridge_graph import (
+from pipeline_core.corpus.bridge_graph import (
     build_bridge_graph,
     save_bridge_graph,
     write_bridge_tables,

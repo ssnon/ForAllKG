@@ -20,9 +20,9 @@ import dac_her.graph_normalization as graph_normalization_module
 import dac_her.metric_normalization_policy as metric_normalization_policy_module
 import pipeline_core.graph_normalization_runtime as graph_normalization_runtime_module
 import dac_her.llm_openrouter as llm_openrouter_module
-import dac_her.measurement_scalarization as measurement_scalarization_module
+import pipeline_core.corpus.measurement_scalarization as measurement_scalarization_module
 import pipeline_core.corpus.structural_repair as structural_repair_module
-import dac_her.extraction_vocabulary_context as extraction_vocabulary_context_module
+import pipeline_core.corpus.extraction_vocabulary_context as extraction_vocabulary_context_module
 import pipeline_core.validation as validation_module
 import pipeline_core.corpus.chunking_recovery as chunking_recovery_module
 import pipeline_core.draft_schema as draft_schema_module
@@ -33,7 +33,7 @@ import pipeline_core.corpus.lossless_normalization as lossless_normalization_mod
 import pipeline_core.corpus.recovery_policy as recovery_policy_module
 import dac_her.semantic_patch as semantic_patch_module
 import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
-import dac_her.semantic_patch_schema as semantic_patch_schema_module
+import pipeline_core.corpus.semantic_patch_schema as semantic_patch_schema_module
 import dac_her.strict_recovery as strict_recovery_module
 import dac_her.strict_validation as strict_validation_module
 import pipeline_core.validation_issues as validation_issues_module
@@ -64,7 +64,7 @@ from pipeline_core.corpus.extraction_quality import (
     annotate_quarantined_records,
     evaluate_extraction_quality,
 )
-from dac_her.extraction_vocabulary_context import (
+from pipeline_core.corpus.extraction_vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
 )
