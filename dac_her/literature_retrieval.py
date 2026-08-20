@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from dac_her.provider_resilience import (
+from pipeline_core.literature.acquisition.provider_resilience import (
     ProviderRequestPacer,
     RequestTelemetry,
     resilient_request_json,

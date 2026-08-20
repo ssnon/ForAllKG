@@ -6,7 +6,7 @@ from urllib.error import HTTPError
 
 import pytest
 
-from dac_her.provider_resilience import (
+from pipeline_core.literature.acquisition.provider_resilience import (
     ProviderRequestPacer,
     RequestTelemetry,
     parse_retry_after_seconds,
