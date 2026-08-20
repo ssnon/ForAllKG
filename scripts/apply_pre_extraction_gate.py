@@ -10,10 +10,11 @@ import yaml
 from dac_her.config import load_paper_configs
 from pipeline_core.literature.acquisition.contracts import SelectedCorpusWork
 from pipeline_core.literature.acquisition.materialization_contracts import CorpusMaterializationReport, MaterializedDocument, PaperMaterializationRecord
-from dac_her.corpus_acquisition.materialization_package import (
+from pipeline_core.literature.acquisition.materialization_package import (
     write_extraction_plan,
     write_generated_config,
 )
+from scripts.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
 from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, write_jsonl
 from pipeline_core.literature.acquisition.pre_extraction_gate import assess_pre_extraction_gate, build_pre_extraction_gate_report, load_pre_extraction_gate_policy
 from pipeline_core.literature.acquisition.profile import load_acquisition_profile
@@ -206,6 +207,7 @@ def main() -> int:
         generated_config_path=args.output_config,
         domain_profile_id=args.domain_profile_id,
         data_root=args.data_root,
+        extract_command_prefix=EXTRACT_PAPER_COMMAND_PREFIX,
         project_root=PROJECT_ROOT,
     )
 

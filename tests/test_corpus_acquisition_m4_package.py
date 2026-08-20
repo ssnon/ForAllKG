@@ -6,7 +6,7 @@ from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
 from pipeline_core.literature.acquisition.materialization_contracts import (
     MaterializationPolicy,
 )
-from dac_her.corpus_acquisition.materialization_package import (
+from pipeline_core.literature.acquisition.materialization_package import (
     materialize_artifact,
 )
 from pipeline_core.literature.catalog_contracts import CatalogWork

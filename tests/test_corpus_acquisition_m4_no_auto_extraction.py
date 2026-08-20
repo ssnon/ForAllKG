@@ -3,8 +3,9 @@ from __future__ import annotations
 import ast
 import inspect
 
-import dac_her.corpus_acquisition.materialization_package as package_module
+import pipeline_core.literature.acquisition.materialization_package as package_module
 import scripts.materialize_corpus_documents as materialize_script
+import scripts.materialization_plan_runtime as plan_runtime
 
 
 def _extract_paper_subprocess_calls(source: str) -> list[int]:
@@ -49,14 +50,21 @@ def _extract_paper_subprocess_calls(source: str) -> list[int]:
     return hits
 
 
-def test_materialization_package_serializes_extract_paper_handoff():
-    source = inspect.getsource(package_module)
-    assert '"scripts.extract_paper"' in source
+def test_extract_paper_handoff_is_application_owned():
+    assert '"scripts.extract_paper"' not in inspect.getsource(package_module)
+    assert plan_runtime.EXTRACT_PAPER_COMMAND_PREFIX == (
+        "python",
+        "-m",
+        "scripts.extract_paper",
+    )
 
 
 def test_m4_never_executes_extract_paper():
     assert _extract_paper_subprocess_calls(
         inspect.getsource(package_module)
+    ) == []
+    assert _extract_paper_subprocess_calls(
+        inspect.getsource(plan_runtime)
     ) == []
     assert _extract_paper_subprocess_calls(
         inspect.getsource(materialize_script)

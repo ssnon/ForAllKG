@@ -340,6 +340,7 @@ def write_extraction_plan(
     generated_config_path: Path,
     domain_profile_id: str,
     data_root: str,
+    extract_command_prefix: tuple[str, ...],
     project_root: Path,
 ) -> None:
     config_value = _project_path(
@@ -353,9 +354,7 @@ def write_extraction_plan(
                 {
                     "paper_id": paper_id,
                     "command": [
-                        "python",
-                        "-m",
-                        "scripts.extract_paper",
+                        *extract_command_prefix,
                         "--paper-id",
                         paper_id,
                         "--config",

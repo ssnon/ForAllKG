@@ -8,7 +8,7 @@ from pipeline_core.literature.acquisition.materialization_contracts import (
     MaterializationPolicy,
     MaterializedDocument,
 )
-from dac_her.corpus_acquisition.materialization_package import (
+from pipeline_core.literature.acquisition.materialization_package import (
     generated_paper_config_entry,
     stable_paper_id,
     write_generated_config,

@@ -16,13 +16,14 @@ from dac_her.config import load_paper_configs
 from pipeline_core.literature.acquisition.access_contracts import CorpusSourceAcquisitionReport, SourceArtifact
 from pipeline_core.literature.acquisition.contracts import CorpusSelectionReport, SelectedCorpusWork
 from pipeline_core.literature.acquisition.materialization_contracts import CorpusMaterializationReport, MaterializedDocument, PaperMaterializationRecord
-from dac_her.corpus_acquisition.materialization_package import (
+from pipeline_core.literature.acquisition.materialization_package import (
     generated_paper_config_entry,
     materialize_artifact,
     stable_paper_id,
     write_extraction_plan,
     write_generated_config,
 )
+from scripts.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
 from pipeline_core.literature.acquisition.materialization_policy import load_materialization_policy
 from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, load_state, state_path, write_jsonl
 from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
@@ -717,6 +718,7 @@ def main() -> int:
         generated_config_path=args.generated_config,
         domain_profile_id=args.domain_profile_id,
         data_root=args.data_root,
+        extract_command_prefix=EXTRACT_PAPER_COMMAND_PREFIX,
         project_root=PROJECT_ROOT,
     )
     write_jsonl(output_root / "materialized_documents.jsonl", all_documents)
