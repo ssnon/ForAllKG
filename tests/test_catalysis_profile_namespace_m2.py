@@ -8,7 +8,7 @@ from pathlib import Path
 
 import domains.catalysis_mechanism.profile as canonical
 
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 ROOT = Path(__file__).resolve().parents[1]

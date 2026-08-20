@@ -11,7 +11,7 @@ from dac_her.discovery_bundle import (
     DiscoveryPolicy,
     load_traversal_with_graph,
 )
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 def _sers_graph() -> nx.DiGraph:

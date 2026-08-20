@@ -238,7 +238,7 @@ def test_telemetry_sink_failure_is_nonfatal(monkeypatch, tmp_path):
     def fail_open(*args, **kwargs):
         raise OSError("disk unavailable")
 
-    monkeypatch.setattr("dac_her.llm_telemetry.os.open", fail_open)
+    monkeypatch.setattr('pipeline_core.llm_telemetry.os.open', fail_open)
     with __import__("pytest").warns(RuntimeWarning, match="telemetry append failed"):
         assert append_usage_event(tmp_path / "calls.jsonl", event) is False
 

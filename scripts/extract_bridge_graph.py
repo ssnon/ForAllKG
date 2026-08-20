@@ -54,7 +54,7 @@ from dac_her.bridge_extraction import (
 )
 from dac_her.domains.bridge_registry import resolve_bridge_adapter
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
 from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,

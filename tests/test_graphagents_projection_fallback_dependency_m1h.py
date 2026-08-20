@@ -4,7 +4,7 @@ import networkx as nx
 
 import pipeline_core.graphagents_adapter as adapter
 
-from dac_her.domains.registry import (
+from domains.registry import (
     get_domain_profile,
 )
 

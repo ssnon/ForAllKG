@@ -5,7 +5,7 @@ from dac_her.domains.catalysis_mechanism_graph import (
     CATALYSIS_MECHANISM_GRAPH_ADAPTER,
 )
 from domains.dac_her.graph import DAC_HER_GRAPH_ADAPTER
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from domains.sers.graph import SERS_AU_AG_GRAPH_ADAPTER
 from pipeline_core.graph_domain import GraphDomainAdapter
 

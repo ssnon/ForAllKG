@@ -16,7 +16,7 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_node,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.explorer_text_safety import contains_absence_language
 from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,

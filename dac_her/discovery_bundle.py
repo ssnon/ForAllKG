@@ -27,7 +27,7 @@ from pipeline_core.domain_profile import (
     DiscoverySemantics,
     ScientificDomainProfile,
 )
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from dac_her.domains.extraction_registry import get_extraction_adapter
 
 

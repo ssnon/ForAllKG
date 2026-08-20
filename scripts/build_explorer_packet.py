@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from dac_her.domains.extraction_registry import (
     get_extraction_adapter,
 )

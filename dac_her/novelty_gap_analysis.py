@@ -5,7 +5,7 @@ import json
 import re
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,

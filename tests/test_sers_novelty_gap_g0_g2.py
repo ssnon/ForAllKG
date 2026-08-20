@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,

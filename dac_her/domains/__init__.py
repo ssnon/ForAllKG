@@ -1,4 +1,4 @@
-from dac_her.domains.registry import (
+from domains.registry import (
     available_domain_profiles,
     get_domain_profile,
     register_domain_profile,

@@ -11,7 +11,7 @@ from dac_her.corpus_graph import (
     write_jsonl,
 )
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.graph_io import save_graphml
 
 

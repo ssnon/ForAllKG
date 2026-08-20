@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pipeline_core.discovery.candidate_decision import CandidateDecisionEngine
 from dac_her.domains.feasibility_registry import get_feasibility_adapter
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.feasibility_intake import FeasibilityIntakeBuilder
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from pipeline_core.discovery.hypothesis_semantic_contracts import HypothesisSemanticReview

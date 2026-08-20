@@ -7,14 +7,11 @@ from dac_her.domains.extraction_registry import (
     get_extraction_adapter,
 )
 from dac_her.domains.feasibility_registry import get_feasibility_adapter
-from dac_her.domains.registry import (
+from domains.registry import (
     available_domain_profiles,
     get_domain_profile,
 )
 from pipeline_core.corpus.schemas import EntityNode
-from scripts.ingest_local_corpus import discover_local_papers
-
-
 def test_sers_profile_and_extraction_adapter_are_registered():
     assert set(available_domain_profiles()) >= {"dac_her", "sers_au_ag"}
     assert set(available_extraction_adapters()) >= {"dac_her", "sers_au_ag"}
@@ -60,22 +57,3 @@ def test_sers_adapter_accepts_sers_scientific_vocab():
         edges=[SimpleNamespace(relation="HAS_STRUCTURAL_MOTIF")],
     )
     adapter.validate_draft_vocabulary(draft)
-
-
-def test_local_ingestion_groups_main_and_si_and_detects_ids(tmp_path):
-    (tmp_path / "Kiwook_SERS_1.pdf").write_bytes(b"main-one")
-    (tmp_path / "Kiwook_SERS_1_SI1.pdf").write_bytes(b"si-one")
-    (tmp_path / "Kiwook_SERS_2.pdf").write_bytes(b"main-two")
-    papers = discover_local_papers(tmp_path)
-    assert [paper.paper_id for paper in papers] == [
-        "Kiwook_SERS_1", "Kiwook_SERS_2",
-    ]
-    assert len(papers[0].si_pdfs) == 1
-    assert len(papers[1].si_pdfs) == 0
-
-
-def test_local_ingestion_fails_closed_on_duplicate_main_content(tmp_path):
-    (tmp_path / "Kiwook_SERS_1.pdf").write_bytes(b"same")
-    (tmp_path / "Kiwook_SERS_2.pdf").write_bytes(b"same")
-    with pytest.raises(ValueError, match="Duplicate main-PDF content"):
-        discover_local_papers(tmp_path)

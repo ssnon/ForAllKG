@@ -8,7 +8,7 @@ from pathlib import Path
 
 import domains.dac_her.profile as canonical
 
-from dac_her.domains.registry import (
+from domains.registry import (
     get_domain_profile,
 )
 

@@ -9,7 +9,7 @@ from typing import Any, Iterable, Mapping
 import networkx as nx
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,

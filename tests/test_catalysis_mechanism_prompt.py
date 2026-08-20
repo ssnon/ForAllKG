@@ -30,7 +30,7 @@ def test_abstract_prompt_preserves_epistemic_boundary():
 def test_registry_source_wires_broad_profile_and_adapter():
     root = Path(__file__).resolve().parents[1]
     profile_registry = (
-        root / "dac_her" / "domains" / "registry.py"
+        root / "domains" / "registry.py"
     ).read_text(encoding="utf-8")
     extraction_registry = (
         root / "dac_her" / "domains" / "extraction_registry.py"

@@ -17,7 +17,7 @@ from pipeline_core.discovery_semantics import (
     is_scaffold_edge,
     normalized_node_type,
 )
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 def test_shared_generic_helper_excludes_alignment_and_mechanism_nodes():

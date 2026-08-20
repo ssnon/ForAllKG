@@ -7,7 +7,7 @@ from dac_her.candidate_unit_selection import (
     CandidateUnitSelector,
 )
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 def _confirmed(g: nx.DiGraph, u: str, v: str, relation: str = "APPLIES_TO") -> None:

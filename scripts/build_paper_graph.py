@@ -12,7 +12,7 @@ import networkx as nx
 from pipeline_core.document_config import get_paper_config
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.graph_registry import get_graph_adapter
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
 from pipeline_core.corpus.graph_semantics import (
     apply_graph_domain_canonicalization,

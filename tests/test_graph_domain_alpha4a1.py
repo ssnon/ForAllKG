@@ -11,7 +11,7 @@ from dac_her.domains.graph_registry import (
     available_graph_adapters,
     get_graph_adapter,
 )
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from dac_her.paper_graph_postprocess import load_resolution_plan
 from dac_her.resolution_candidates import generate_resolution_candidates
 from dac_her.strict_recovery import _domain_gate

@@ -8,7 +8,7 @@ import networkx as nx
 from collections import Counter
 
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.graph_io import save_graphml
 from pipeline_core.corpus.extraction_quality import projection_quality_summary
 from pipeline_core.graphagents_adapter import (

@@ -1,5 +1,5 @@
 from pipeline_core.domain_profile import NoveltySemantics
-from dac_her.domains import available_domain_profiles, get_domain_profile
+from domains.registry import available_domain_profiles, get_domain_profile
 
 
 def test_default_domain_profile_is_dac_her():

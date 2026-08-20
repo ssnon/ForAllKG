@@ -43,7 +43,7 @@ def test_sers_au_ag_profile_id_and_aliases_remain_registered() -> None:
                 profile_ids.append(keyword.value.value)
     assert "sers_au_ag" in profile_ids
 
-    registry_tree = _parse("dac_her/domains/registry.py")
+    registry_tree = _parse('domains/registry.py')
     aliases = _literal_dict_assignment(registry_tree, "_ALIASES")
     assert aliases["sers"] == "sers_au_ag"
     assert aliases["au-ag-sers"] == "sers_au_ag"

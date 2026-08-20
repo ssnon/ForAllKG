@@ -10,7 +10,7 @@ from dac_her.candidate_unit_selection import (
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 from pipeline_core.discovery.discovery_contracts import DiscoveryScoreBreakdown
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 def _confirmed(g: nx.DiGraph, u: str, v: str, relation: str = "INTERPRETED_AS") -> None:

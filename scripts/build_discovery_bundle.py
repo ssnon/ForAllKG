@@ -9,7 +9,7 @@ from dac_her.discovery_bundle import (
     load_semantic_index_for_traversal,
     load_traversal_with_graph,
 )
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 def main() -> int:

@@ -6,7 +6,7 @@ from collections import Counter
 from pathlib import Path
 
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisSynthesisReport
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,

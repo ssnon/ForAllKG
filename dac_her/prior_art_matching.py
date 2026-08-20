@@ -6,7 +6,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReview,

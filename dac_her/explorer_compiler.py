@@ -24,7 +24,7 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_edge,
     is_mechanism_node,
 )
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 
 

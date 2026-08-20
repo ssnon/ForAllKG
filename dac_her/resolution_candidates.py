@@ -19,7 +19,7 @@ from pipeline_core.chemistry_signatures import (
     metal_signature,
 )
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 _DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
 _ACTIVE_DOMAIN_PROFILE: ContextVar[ScientificDomainProfile] = ContextVar(

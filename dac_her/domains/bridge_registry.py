@@ -4,7 +4,7 @@ from pipeline_core.bridge_domain import BridgeDomainAdapter
 from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains.dac_her_bridge import DAC_HER_BRIDGE_ADAPTER
 from domains.sers.bridge import SERS_AU_AG_BRIDGE_ADAPTER
-from dac_her.domains.registry import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 _ADAPTERS: dict[str, BridgeDomainAdapter] = {

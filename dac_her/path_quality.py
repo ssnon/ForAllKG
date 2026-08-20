@@ -15,7 +15,7 @@ from pipeline_core.discovery_semantics import (
     normalized_node_type,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
-from dac_her.domains import get_domain_profile
+from domains.registry import get_domain_profile
 
 
 PATH_TYPE_CANDIDATE = "CANDIDATE_EXPLORATION"
