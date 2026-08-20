@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from dac_her.literature_discovery.query_plan import load_query_plan
+from pipeline_core.literature.discovery.query_plan import load_query_plan
 
 
 def test_query_plan_loads_bucket_targets_and_queries(tmp_path: Path):

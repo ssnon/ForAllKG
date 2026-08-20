@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 
-from dac_her.literature_discovery.providers import (
+from pipeline_core.literature.discovery.providers import (
     OpenAlexProvider,
     TransportResponse,
     reconstruct_abstract,
 )
-from dac_her.literature_discovery.providers.base import LiteratureSearchRequest
+from pipeline_core.literature.discovery.providers.base import LiteratureSearchRequest
 
 
 class FakeTransport:

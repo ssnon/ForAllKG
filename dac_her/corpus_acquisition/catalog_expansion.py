@@ -5,8 +5,8 @@ import json
 from dataclasses import dataclass
 from typing import Iterable
 
-from dac_her.literature_catalog import doi_family, normalize_title
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog import doi_family, normalize_title
+from pipeline_core.literature.catalog_contracts import (
     CatalogQuery,
     CatalogQueryExecution,
     CatalogWork,

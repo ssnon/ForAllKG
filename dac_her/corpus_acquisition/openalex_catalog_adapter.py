@@ -4,9 +4,9 @@ import hashlib
 import os
 from typing import Any
 
-from dac_her.literature_catalog import normalize_doi
-from dac_her.literature_catalog_contracts import CatalogQuery, CatalogWork
-from dac_her.literature_discovery.providers import (
+from pipeline_core.literature.catalog import normalize_doi
+from pipeline_core.literature.catalog_contracts import CatalogQuery, CatalogWork
+from pipeline_core.literature.discovery.providers import (
     LiteratureSearchRequest,
     OpenAlexProvider,
 )

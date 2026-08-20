@@ -16,7 +16,7 @@ from dac_her.corpus_acquisition.access_contracts import (
     ResolverAttempt,
     SourceAcquisitionPolicy,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 PMC_AWS_BUCKET = (

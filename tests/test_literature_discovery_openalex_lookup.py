@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from dac_her.literature_discovery.providers.openalex import (
+from pipeline_core.literature.discovery.providers.openalex import (
     OpenAlexProvider,
     TransportResponse,
     openalex_location_metadata,

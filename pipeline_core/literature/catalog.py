@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogQuery,
     CatalogQueryExecution,
     CatalogWork,

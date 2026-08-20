@@ -1,7 +1,7 @@
-from dac_her.literature_discovery.contracts import LiteratureRecord
-from dac_her.literature_discovery.query_plan import LiteratureQueryPlan, QueryBucket
-from dac_her.literature_discovery.selection import select_literature
-from dac_her.literature_discovery.selection_plan import (
+from pipeline_core.literature.discovery.contracts import LiteratureRecord
+from pipeline_core.literature.discovery.query_plan import LiteratureQueryPlan, QueryBucket
+from pipeline_core.literature.discovery.selection import select_literature
+from pipeline_core.literature.discovery.selection_plan import (
     BucketSelectionRule,
     LiteratureSelectionPlan,
 )

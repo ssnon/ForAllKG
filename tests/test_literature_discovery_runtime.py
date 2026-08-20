@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.literature_discovery import (
+from pipeline_core.literature.discovery import (
     LiteratureRecord,
     LiteratureRegistry,
     load_query_plan,

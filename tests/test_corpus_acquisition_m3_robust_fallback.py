@@ -12,7 +12,7 @@ from dac_her.corpus_acquisition.artifact_acquisition import (
     MainArtifactDownloader,
     ordered_download_locations,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 class _Headers:

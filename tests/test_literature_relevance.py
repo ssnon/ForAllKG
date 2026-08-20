@@ -1,6 +1,6 @@
-from dac_her.literature_discovery.contracts import LiteratureRecord
-from dac_her.literature_discovery.relevance import assess_candidate
-from dac_her.literature_discovery.selection_plan import (
+from pipeline_core.literature.discovery.contracts import LiteratureRecord
+from pipeline_core.literature.discovery.relevance import assess_candidate
+from pipeline_core.literature.discovery.selection_plan import (
     BucketSelectionRule,
     LiteratureSelectionPlan,
 )

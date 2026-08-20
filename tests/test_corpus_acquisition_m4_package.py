@@ -9,7 +9,7 @@ from dac_her.corpus_acquisition.materialization_contracts import (
 from dac_her.corpus_acquisition.materialization_package import (
     materialize_artifact,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def test_text_artifact_materializes_with_metadata(tmp_path):

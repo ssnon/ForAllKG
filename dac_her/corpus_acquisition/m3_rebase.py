@@ -24,7 +24,7 @@ from dac_her.corpus_acquisition.source_state import (
     write_jsonl,
     write_work_state,
 )
-from dac_her.literature_catalog_contracts import LiteratureCatalogPacket
+from pipeline_core.literature.catalog_contracts import LiteratureCatalogPacket
 
 
 def _sha256_file(path: Path) -> str:

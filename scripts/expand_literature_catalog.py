@@ -10,12 +10,12 @@ from dac_her.corpus_acquisition.catalog_expansion import append_catalog_expansio
 from dac_her.corpus_acquisition.profile import build_catalog_queries, load_acquisition_profile
 from dac_her.corpus_acquisition.progress import compact_text, progress_prefix
 from dac_her.corpus_acquisition.openalex_catalog_adapter import OpenAlexCatalogProvider
-from dac_her.literature_catalog import (
+from pipeline_core.literature.catalog import (
     CrossrefCatalogProvider,
     LiteratureCatalogRetriever,
     SemanticScholarCatalogProvider,
 )
-from dac_her.literature_catalog_contracts import LiteratureCatalogPacket
+from pipeline_core.literature.catalog_contracts import LiteratureCatalogPacket
 
 MAX_RESULTS_PER_QUERY = 1000
 

@@ -17,7 +17,7 @@ from dac_her.corpus_acquisition.pre_extraction_gate import (
     assess_pre_extraction_gate,
     build_pre_extraction_gate_report,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def _profile() -> AcquisitionProfile:

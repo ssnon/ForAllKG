@@ -24,7 +24,7 @@ from dac_her.corpus_acquisition.access_priority import (
 from dac_her.corpus_acquisition.access_recovery import (
     suppressed_download_urls,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:

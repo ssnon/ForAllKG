@@ -17,7 +17,7 @@ from dac_her.corpus_acquisition.contracts import (
 from dac_her.corpus_acquisition.m3_rebase import rebase_downloaded_m3_snapshot
 from dac_her.corpus_acquisition.quality_contracts import CorpusQualityAssessment
 from dac_her.corpus_acquisition.source_state import atomic_write_json, write_jsonl
-from dac_her.literature_catalog_contracts import CatalogWork, LiteratureCatalogPacket
+from pipeline_core.literature.catalog_contracts import CatalogWork, LiteratureCatalogPacket
 
 
 def _profile():

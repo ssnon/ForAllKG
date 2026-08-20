@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.literature_discovery.contracts import LiteratureRecord
-from dac_her.literature_discovery.registry import LiteratureRegistry
+from pipeline_core.literature.discovery.contracts import LiteratureRecord
+from pipeline_core.literature.discovery.registry import LiteratureRegistry
 
 
 def test_registry_roundtrip_and_upsert_merge(tmp_path: Path):

@@ -34,7 +34,7 @@ from dac_her.corpus_acquisition.contracts import (
     CorpusSelectionReport,
     SelectedCorpusWork,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,
 )

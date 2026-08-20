@@ -19,7 +19,7 @@ from dac_her.corpus_acquisition.materializers import (
     materializer_for,
     sha256_file,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def stable_paper_id(

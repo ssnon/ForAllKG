@@ -10,7 +10,7 @@ from dac_her.corpus_acquisition.oa_resolution import (
     _catalog_location,
     _location_from_unpaywall,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def _policy() -> SourceAcquisitionPolicy:

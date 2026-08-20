@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dac_her.literature_catalog import (
+from pipeline_core.literature.catalog import (
     canonicalize_catalog_works,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
 )
 

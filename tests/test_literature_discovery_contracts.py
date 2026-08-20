@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.literature_discovery.contracts import (
+from pipeline_core.literature.discovery.contracts import (
     LiteratureRecord,
     literature_paper_id,
     merge_literature_records,

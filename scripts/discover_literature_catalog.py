@@ -13,7 +13,7 @@ from dac_her.corpus_acquisition.progress import (
     compact_text,
     progress_prefix,
 )
-from dac_her.literature_catalog import (
+from pipeline_core.literature.catalog import (
     CrossrefCatalogProvider,
     LiteratureCatalogRetriever,
     SemanticScholarCatalogProvider,

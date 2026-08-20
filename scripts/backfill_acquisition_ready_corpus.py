@@ -59,7 +59,7 @@ from dac_her.corpus_acquisition.source_state import (
     safe_state_name,
     write_work_state,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,
 )

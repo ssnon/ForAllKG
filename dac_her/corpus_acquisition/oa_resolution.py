@@ -27,7 +27,7 @@ from dac_her.corpus_acquisition.openalex_access import (
 from dac_her.corpus_acquisition.pmc_access import (
     PmcAwsAccessResolver,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:

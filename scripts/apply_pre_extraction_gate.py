@@ -28,7 +28,7 @@ from dac_her.corpus_acquisition.pre_extraction_gate import (
     load_pre_extraction_gate_policy,
 )
 from dac_her.corpus_acquisition.profile import load_acquisition_profile
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,
 )

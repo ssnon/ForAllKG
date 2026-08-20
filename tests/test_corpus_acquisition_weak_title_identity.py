@@ -1,11 +1,11 @@
 from dac_her.corpus_acquisition.catalog_expansion import (
     _identity_keys,
 )
-from dac_her.literature_catalog import (
+from pipeline_core.literature.catalog import (
     canonicalize_catalog_works,
     normalize_title,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
 )
 

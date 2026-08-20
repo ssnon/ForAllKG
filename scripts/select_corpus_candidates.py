@@ -16,7 +16,7 @@ from dac_her.corpus_acquisition.progress import (
     compact_text,
     progress_prefix,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     LiteratureCatalogPacket,
 )
 

@@ -6,7 +6,7 @@ from dac_her.corpus_acquisition.supplementary_resolution import (
     _crossref_candidates,
     _deduplicate_candidates,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def test_strong_supporting_information_anchor_is_high_confidence_file():

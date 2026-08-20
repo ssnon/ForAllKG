@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.literature_discovery import load_query_plan, load_selection_plan, scaled_bucket_quotas
+from pipeline_core.literature.discovery import load_query_plan, load_selection_plan, scaled_bucket_quotas
 
 
 ROOT = Path(__file__).resolve().parents[1]

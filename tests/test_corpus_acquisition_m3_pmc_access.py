@@ -13,7 +13,7 @@ from dac_her.corpus_acquisition.pmc_access import (
     PmcAwsAccessResolver,
     extract_pmcids,
 )
-from dac_her.literature_catalog_contracts import CatalogWork
+from pipeline_core.literature.catalog_contracts import CatalogWork
 
 
 def _existing_pmc_location() -> AccessLocation:

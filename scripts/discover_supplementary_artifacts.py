@@ -40,7 +40,7 @@ from dac_her.corpus_acquisition.supplementary_state import (
     write_jsonl,
     write_state,
 )
-from dac_her.literature_catalog_contracts import (
+from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,
 )
