@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
-from dac_her.llm_telemetry import (
+from pipeline_core.llm_telemetry import (
     append_usage_event,
     build_usage_event,
     component_fingerprint,
@@ -181,7 +181,7 @@ def test_instructor_helper_falls_back_to_create():
 
 
 def test_run_instructor_structured_call_records_raw_usage(tmp_path):
-    from dac_her.llm_telemetry import run_instructor_structured_call
+    from pipeline_core.llm_telemetry import run_instructor_structured_call
 
     class ResponseModel:
         @classmethod
@@ -275,7 +275,7 @@ def test_prompt_context_infers_axis_from_mapping_serialization():
 
 
 def test_instructor_structured_call_preserves_extra_request_kwargs(tmp_path):
-    from dac_her.llm_telemetry import run_instructor_structured_call
+    from pipeline_core.llm_telemetry import run_instructor_structured_call
 
     class ResponseModel:
         @classmethod

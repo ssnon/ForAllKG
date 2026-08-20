@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
-from dac_her.llm_telemetry import (
+from pipeline_core.llm_telemetry import (
     append_usage_event,
     build_usage_event,
     normalize_stage_name,

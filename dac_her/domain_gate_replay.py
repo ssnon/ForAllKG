@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict
 from pipeline_core.chunking import ChunkSpec
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
-from dac_her.llm_telemetry import estimate_tokens
+from pipeline_core.llm_telemetry import estimate_tokens
 from pipeline_core.corpus.strict_validation import (
     ValidationContext,
     finalize_draft,

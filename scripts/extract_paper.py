@@ -53,7 +53,7 @@ from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existi
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
-from dac_her.llm_telemetry import append_extraction_artifact_resolutions
+from pipeline_core.llm_telemetry import append_extraction_artifact_resolutions
 from pipeline_core.corpus.broad_extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,

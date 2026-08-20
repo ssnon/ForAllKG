@@ -7,7 +7,7 @@ from typing import Any, Mapping, Protocol, runtime_checkable
 
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_prompt import ExplorerPrompt
-from dac_her.llm_telemetry import run_instructor_structured_call
+from pipeline_core.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)

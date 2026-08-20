@@ -8,7 +8,7 @@ from pipeline_core.corpus.extraction_vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
 )
-from dac_her.llm_telemetry import estimate_tokens
+from pipeline_core.llm_telemetry import estimate_tokens
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 

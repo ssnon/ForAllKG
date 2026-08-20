@@ -12,7 +12,7 @@ from dac_her.external_novelty_contracts import (
     NoveltyClaimDecompositionDraft,
 )
 from dac_her.hypothesis_contracts import HypothesisCard
-from dac_her.llm_telemetry import run_instructor_structured_call
+from pipeline_core.llm_telemetry import run_instructor_structured_call
 from dac_her.prior_art_review_audit import (
     record_prior_art_review_call,
 )
