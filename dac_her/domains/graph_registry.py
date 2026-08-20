@@ -4,10 +4,10 @@ from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.catalysis_mechanism_graph import (
     CATALYSIS_MECHANISM_GRAPH_ADAPTER,
 )
-from dac_her.domains.dac_her_graph import DAC_HER_GRAPH_ADAPTER
+from domains.dac_her.graph import DAC_HER_GRAPH_ADAPTER
 from dac_her.domains.registry import get_domain_profile
 from domains.sers.graph import SERS_AU_AG_GRAPH_ADAPTER
-from dac_her.graph_domain import GraphDomainAdapter
+from pipeline_core.graph_domain import GraphDomainAdapter
 
 
 _ADAPTERS: dict[str, GraphDomainAdapter] = {

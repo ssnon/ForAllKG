@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.draft_schema import KnowledgeGraphDraft
-from dac_her.graph_domain import RelationConstraint
+from pipeline_core.draft_schema import KnowledgeGraphDraft
+from pipeline_core.graph_domain import RelationConstraint
 from dac_her.graph_normalization import (
     normalize_graph_vocabularies,
 )

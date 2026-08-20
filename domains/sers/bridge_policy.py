@@ -9,7 +9,7 @@ from pipeline_core.bridge_policy_runtime import (
     dedupe_policy_issues,
     partition_with_policy,
 )
-from dac_her.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
+from pipeline_core.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from domains.sers.bridge_signatures import normalize_sers_bridge_text
 
 

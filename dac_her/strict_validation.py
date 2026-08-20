@@ -9,17 +9,17 @@ from pipeline_core.knowledge_graph_validation_context import (
     RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY,
 )
 
-from dac_her.draft_schema import KnowledgeGraphDraft
-from dac_her.graph_domain import RelationConstraint
+from pipeline_core.draft_schema import KnowledgeGraphDraft
+from pipeline_core.graph_domain import RelationConstraint
 from dac_her.graph_normalization import normalize_graph_vocabularies
-from dac_her.graph_validation import collect_graph_issues
+from pipeline_core.graph_validation import collect_graph_issues
 from dac_her.measurement_scalarization import (
     format_scalarization_errors,
     measurement_scalarization_issues,
 )
 from dac_her.schemas import KnowledgeGraph
-from dac_her.validation import validate_graph_provenance
-from dac_her.validation_issues import (
+from pipeline_core.validation import validate_graph_provenance
+from pipeline_core.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

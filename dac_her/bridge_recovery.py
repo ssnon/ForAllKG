@@ -6,11 +6,11 @@ from typing import Any, Callable
 
 from pydantic import ValidationError
 
-from dac_her.bridge_draft_schema import (
+from pipeline_core.bridge_draft_schema import (
     BridgeCandidateRepair,
     BridgeChunkDraft,
 )
-from dac_her.bridge_schemas import (
+from pipeline_core.bridge_schemas import (
     BridgeChunkGraph,
     BridgeConcept,
     BridgeLink,

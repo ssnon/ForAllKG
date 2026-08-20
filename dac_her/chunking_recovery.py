@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import re
 
-from dac_her.chunking import (
+from pipeline_core.chunking import (
     ChunkSpec,
     _filter_parent_assets,
     count_tokens,
@@ -12,7 +12,7 @@ from dac_her.chunking import (
     make_chunk_id,
     split_chunk_in_half,
 )
-from dac_her.extraction_policy import ExtractionPolicy
+from pipeline_core.extraction_policy import ExtractionPolicy
 
 
 @dataclass(frozen=True)

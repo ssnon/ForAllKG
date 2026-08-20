@@ -7,7 +7,7 @@ import domains.sers.bridge_prompts as sers_bridge_prompts_module
 import domains.sers.bridge_recovery_prompts as sers_bridge_recovery_prompts_module
 import domains.sers.bridge_signatures as sers_bridge_signatures_module
 
-from dac_her.bridge_domain import (
+from pipeline_core.bridge_domain import (
     BridgeDomainAdapter,
     BridgeImplementationFiles,
 )

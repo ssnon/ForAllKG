@@ -1,7 +1,7 @@
 import networkx as nx
 
 from domains.sers.profile import SERS_AU_AG_PROFILE
-from dac_her.graphagents_adapter import build_graphagents_projection
+from pipeline_core.graphagents_adapter import build_graphagents_projection
 
 
 def _bridge(anchor: str) -> nx.MultiDiGraph:

@@ -7,7 +7,7 @@ import yaml
 
 from dac_her.broad_compact_schema import BroadMechanismGraphDraft
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.draft_schema import KnowledgeGraphDraft
+from pipeline_core.draft_schema import KnowledgeGraphDraft
 from dac_her.strict_recovery import (
     _domain_gate_recovery_response_model,
 )

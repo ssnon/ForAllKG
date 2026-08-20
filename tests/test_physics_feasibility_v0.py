@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.feasibility_contracts import (
+from pipeline_core.feasibility_contracts import (
     FeasibilityHypothesis,
     FeasibilityIntake,
     FeasibilityPremise,

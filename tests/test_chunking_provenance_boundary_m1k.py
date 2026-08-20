@@ -4,7 +4,7 @@ import ast
 from dataclasses import fields
 from pathlib import Path
 
-import dac_her.chunking as chunking
+import pipeline_core.chunking as chunking
 
 from dac_her.config import (
     DocumentConfig,
@@ -12,7 +12,7 @@ from dac_her.config import (
     FigureProcessingConfig,
     PaperConfig,
 )
-from dac_her.extraction_policy import (
+from pipeline_core.extraction_policy import (
     ExtractionPolicy,
 )
 from dac_her.run_state import (
@@ -280,34 +280,6 @@ def test_shared_chunking_dependency_boundary():
         imported_modules
     )
 
-def test_chunking_facade_reexports_shared_core_identity():
-    import dac_her.chunking as legacy
-    import pipeline_core.chunking as core
-
-    names = (
-        "ChunkSpec",
-        "count_tokens",
-        "first_tokens",
-        "last_tokens",
-        "make_chunk_id",
-        "split_long_unit",
-        "paragraph_units",
-        "build_core_chunks",
-        "create_chunks",
-        "split_chunk_in_half",
-    )
-
-    for name in names:
-        assert (
-            getattr(
-                legacy,
-                name,
-            )
-            is getattr(
-                core,
-                name,
-            )
-        )
 
 
 def test_shared_chunking_owner_is_real_provenance_file():

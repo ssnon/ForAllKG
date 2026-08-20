@@ -14,7 +14,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-import dac_her.bridge_domain \
+import pipeline_core.bridge_domain \
     as bridge_domain_module
 import dac_her.domains.bridge_registry \
     as bridge_registry_module
@@ -26,13 +26,13 @@ import pipeline_core.bridge_filtering \
     as bridge_filtering_module
 import dac_her.bridge_graph \
     as bridge_graph_module
-import dac_her.bridge_policy \
+import domains.dac_her.bridge_policy \
     as bridge_policy_module
-import dac_her.bridge_prompts \
+import domains.dac_her.bridge_prompts \
     as bridge_prompts_module
 import dac_her.bridge_relation_repairs \
     as bridge_relation_repairs_module
-import dac_her.bridge_schemas \
+import pipeline_core.bridge_schemas \
     as bridge_schemas_module
 import dac_her.bridge_validation \
     as bridge_validation_module
@@ -46,7 +46,7 @@ import pipeline_core.bridge_policy_run \
     as bridge_policy_run_module
 import dac_her.bridge_recovery \
     as bridge_recovery_module
-import dac_her.bridge_source_reconciliation \
+import pipeline_core.bridge_source_reconciliation \
     as bridge_source_reconciliation_module
 
 from dac_her.bridge_extraction import (
@@ -55,7 +55,7 @@ from dac_her.bridge_extraction import (
 from dac_her.domains.bridge_registry import resolve_bridge_adapter
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
-from dac_her.extraction_policy import ExtractionPolicy
+from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dac_her.candidate_decision import CandidateDecisionEngine
 from dac_her.experimental_runtime import ExperimentalRealizabilityRuntime
-from dac_her.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
+from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
 from dac_her.physics_runtime import PhysicsFeasibilityRuntime
 from dac_her.scope_compiler import HypothesisScopeCompiler
 from dac_her.validation_specification import ValidationSpecificationCompiler

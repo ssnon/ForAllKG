@@ -2,19 +2,6 @@
 
 from __future__ import annotations
 
-import dac_her.bridge_draft_schema as legacy_bridge_draft
-import dac_her.bridge_schemas as legacy_bridge
-import dac_her.graph_io as legacy_graph_io
-import dac_her.graph_validation as legacy_graph_validation
-import dac_her.node_references as legacy_node_references
-import dac_her.discovery_semantics as legacy_discovery
-import dac_her.asset_index as legacy_assets
-import dac_her.locator_index as legacy_locators
-import dac_her.extraction_policy as legacy_extraction_policy
-import dac_her.explorer_text_safety as legacy_text_safety
-import dac_her.traversal_runtime_policy as legacy_traversal_policy
-import dac_her.validation as legacy_validation
-import dac_her.validation_issues as legacy_issues
 import pipeline_core.bridge_draft_schema as core_bridge_draft
 import pipeline_core.bridge_schemas as core_bridge
 import pipeline_core.graph_io as core_graph_io
@@ -40,7 +27,7 @@ def test_node_reference_remapping_preserves_graphml_foreign_keys():
         "group_id": "group-1",
         "unrelated": "keep",
     }
-    assert legacy_node_references.remap_node_reference_attributes(
+    assert core_node_references.remap_node_reference_attributes(
         payload,
         {"entity-1": "paper:entity-1", "group-1": "paper:group-1"},
     ) == {

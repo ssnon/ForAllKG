@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dac_her.micro_reextract_prompts import build_micro_reextract_prompt
+from domains.dac_her.micro_reextract_prompts import build_micro_reextract_prompt
 from dac_her.recovery_policy import (
     RecoveryAction,
     decide_recovery,
     has_coupled_claim_subgraph_residual,
     has_dominant_undefined_endpoint_cluster,
 )
-from dac_her.validation_issues import (
+from pipeline_core.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

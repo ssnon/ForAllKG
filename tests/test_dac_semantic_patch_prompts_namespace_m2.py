@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.semantic_patch_prompts as legacy
 import domains.dac_her.semantic_patch_prompts as canonical
 
 from pipeline_core.validation_issues import (
@@ -14,33 +13,10 @@ from pipeline_core.validation_issues import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_legacy_and_canonical_semantics_match():
-    assert (
-        legacy.PATCH_PROMPT_VERSION
-        == canonical.PATCH_PROMPT_VERSION
-    )
-
-    assert (
-        legacy.PATCH_SYSTEM_PROMPT
-        == canonical.PATCH_SYSTEM_PROMPT
-    )
 
 
-def test_prompt_builders_preserve_identity():
-    assert (
-        legacy.build_semantic_patch_prompt
-        is canonical.build_semantic_patch_prompt
-    )
-
-    assert (
-        legacy.build_patch_rejection_feedback
-        is canonical.build_patch_rejection_feedback
-    )
 
 
-def test_validation_report_is_shared_core_type():
-    assert canonical.ValidationReport is ValidationReport
-    assert legacy.ValidationReport is ValidationReport
 
 
 def test_canonical_functions_are_domain_owned():

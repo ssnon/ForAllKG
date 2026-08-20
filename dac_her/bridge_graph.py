@@ -8,8 +8,8 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from dac_her.bridge_schemas import BridgeChunkGraph
-from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
+from pipeline_core.bridge_schemas import BridgeChunkGraph
+from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
 from dac_her.schemas import KnowledgeGraph
 
 

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from dac_her.chunking import ChunkSpec
+from pipeline_core.chunking import ChunkSpec
 from dac_her.domain_gate_replay import (
     build_domain_gate_replay_fixture,
     build_zero_loss_summary,
     verify_fixture_contract,
 )
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.draft_schema import KnowledgeGraphDraft
-from dac_her.micro_reextract_prompts import (
+from pipeline_core.draft_schema import KnowledgeGraphDraft
+from domains.dac_her.micro_reextract_prompts import (
     build_domain_gate_recovery_prompt,
 )
 

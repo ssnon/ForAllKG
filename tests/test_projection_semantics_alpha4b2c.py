@@ -1,9 +1,9 @@
 import json
 import networkx as nx
 
-from dac_her.domains.dac_her import DAC_HER_PROFILE
+from domains.dac_her.profile import DAC_HER_PROFILE
 from domains.sers.profile import SERS_AU_AG_PROFILE
-from dac_her.graphagents_adapter import build_graphagents_projection
+from pipeline_core.graphagents_adapter import build_graphagents_projection
 
 
 def _sers_graph():

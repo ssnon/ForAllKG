@@ -6,19 +6,19 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from dac_her.chunking import ChunkSpec, count_tokens
-from dac_her.draft_schema import KnowledgeGraphDraft
+from pipeline_core.chunking import ChunkSpec, count_tokens
+from pipeline_core.draft_schema import KnowledgeGraphDraft
 from dac_her.domain_gate_replay import build_domain_gate_replay_fixture
-from dac_her.extraction_domain import ExtractionDomainAdapter
-from dac_her.extraction_policy import ExtractionPolicy
+from pipeline_core.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.llm_openrouter import OpenRouterLLM
 from dac_her.lossless_normalization import normalize_knowledge_graph_payload
-from dac_her.prompts import build_extraction_prompt
+from domains.dac_her.prompts import build_extraction_prompt
 from dac_her.recovery_policy import RecoveryAction, decide_recovery
 from dac_her.schemas import KnowledgeGraph
 from dac_her.semantic_patch import PatchRejected, apply_semantic_patch
-from dac_her.semantic_patch_prompts import (
+from domains.dac_her.semantic_patch_prompts import (
     PATCH_SYSTEM_PROMPT,
     build_patch_rejection_feedback,
     build_semantic_patch_prompt,
@@ -29,10 +29,10 @@ from dac_her.strict_validation import (
     finalize_draft,
     validate_draft,
 )
-from dac_her.validation import validate_graph_provenance
-from dac_her.validation_issues import ValidationReport
+from pipeline_core.validation import validate_graph_provenance
+from pipeline_core.validation_issues import ValidationReport
 from dac_her.vocab_registry import VocabularyRegistry
-from dac_her.micro_reextract_prompts import (
+from domains.dac_her.micro_reextract_prompts import (
     MICRO_REEXTRACT_SYSTEM_PROMPT,
     build_domain_gate_recovery_prompt,
     build_micro_reextract_prompt,

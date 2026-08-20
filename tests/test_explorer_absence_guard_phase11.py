@@ -5,7 +5,7 @@ from dac_her.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_normalization import ExplorerDraftNormalizer
 from dac_her.explorer_validation import ExplorationReportValidator
-from dac_her.explorer_text_safety import contains_absence_language
+from pipeline_core.explorer_text_safety import contains_absence_language
 
 
 def _packet(*, absence_allowed: bool) -> GraphExplorerPacket:

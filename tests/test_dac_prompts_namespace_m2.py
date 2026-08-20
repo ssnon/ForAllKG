@@ -3,30 +3,14 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.prompts as legacy
 import domains.dac_her.prompts as canonical
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_legacy_and_canonical_prompt_values_match():
-    assert (
-        legacy.PROMPT_VERSION
-        == canonical.PROMPT_VERSION
-    )
-
-    assert (
-        legacy.SYSTEM_PROMPT
-        == canonical.SYSTEM_PROMPT
-    )
 
 
-def test_prompt_builder_preserves_identity():
-    assert (
-        legacy.build_extraction_prompt
-        is canonical.build_extraction_prompt
-    )
 
 
 def test_prompt_builder_is_domain_owned():

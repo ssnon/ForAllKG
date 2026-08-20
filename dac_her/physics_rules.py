@@ -4,10 +4,10 @@ import hashlib
 import re
 from collections.abc import Iterable
 
-from dac_her.feasibility_contracts import FeasibilityHypothesis
-from dac_her.physics_contracts import PhysicsCheckRequest
-from dac_her.scope_contracts import ScientificScope
-from dac_her.validation_contracts import ValidationSpecification
+from pipeline_core.feasibility_contracts import FeasibilityHypothesis
+from pipeline_core.physics_contracts import PhysicsCheckRequest
+from pipeline_core.scope_contracts import ScientificScope
+from pipeline_core.validation_contracts import ValidationSpecification
 
 
 _CHECK_TERMS: dict[str, tuple[str, ...]] = {

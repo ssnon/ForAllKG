@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.bridge_policy as legacy
 import dac_her.domains.dac_her_bridge as adapter_module
 import domains.dac_her.bridge_policy as canonical
 import pipeline_core.bridge_schemas as bridge_schemas
@@ -23,12 +22,6 @@ POLICY_OBJECTS = (
 )
 
 
-def test_legacy_policy_identity_is_preserved():
-    for name in POLICY_OBJECTS:
-        assert (
-            getattr(legacy, name)
-            is getattr(canonical, name)
-        )
 
 
 def test_policy_objects_are_domain_owned():
@@ -39,12 +32,6 @@ def test_policy_objects_are_domain_owned():
         )
 
 
-def test_policy_version_is_preserved():
-    assert (
-        legacy.BRIDGE_POLICY_VERSION
-        == canonical.BRIDGE_POLICY_VERSION
-        == "dac-her-bridge-policy-v2.3.3-calibration"
-    )
 
 
 def test_canonical_policy_uses_core_schema():
@@ -119,28 +106,3 @@ def test_adapter_binds_canonical_policy_objects():
         adapter.policy_version
         == canonical.BRIDGE_POLICY_VERSION
     )
-
-
-def test_adapter_policy_provenance_is_canonical():
-    adapter = (
-        adapter_module.DAC_HER_BRIDGE_ADAPTER
-    )
-
-    canonical_path = Path(
-        canonical.__file__
-    ).resolve()
-
-    legacy_path = Path(
-        legacy.__file__
-    ).resolve()
-
-    paths = {
-        Path(value).resolve()
-        for value
-        in adapter.implementation_files.policy
-    }
-
-    assert canonical_path in paths
-    assert legacy_path not in paths
-
-

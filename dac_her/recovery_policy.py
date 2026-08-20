@@ -4,7 +4,7 @@ from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
 
-from dac_her.validation_issues import IssueCode, ValidationReport
+from pipeline_core.validation_issues import IssueCode, ValidationReport
 
 
 class RecoveryAction(str, Enum):

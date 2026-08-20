@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.graph_domain import GraphDomainAdapter, RelationConstraint
+from pipeline_core.graph_domain import GraphDomainAdapter, RelationConstraint
 
 
 BROAD_MECHANISM_NODE_TYPES = frozenset({

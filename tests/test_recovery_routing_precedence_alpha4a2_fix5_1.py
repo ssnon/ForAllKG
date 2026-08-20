@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.recovery_policy import RecoveryAction, decide_recovery
-from dac_her.validation_issues import (
+from pipeline_core.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

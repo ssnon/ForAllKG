@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 import re
 
-from dac_her.experimental_contracts import ExperimentalRequirement
-from dac_her.feasibility_contracts import FeasibilityHypothesis
-from dac_her.scope_contracts import ScientificScope
-from dac_her.validation_contracts import ValidationSpecification
+from pipeline_core.experimental_contracts import ExperimentalRequirement
+from pipeline_core.feasibility_contracts import FeasibilityHypothesis
+from pipeline_core.scope_contracts import ScientificScope
+from pipeline_core.validation_contracts import ValidationSpecification
 
 
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:

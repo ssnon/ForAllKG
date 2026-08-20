@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import hashlib
 
-from dac_her.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
-from dac_her.scope_contracts import ScientificScope
-from dac_her.validation_contracts import ValidationSpecification
+from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
+from pipeline_core.scope_contracts import ScientificScope
+from pipeline_core.validation_contracts import ValidationSpecification
 
 
 _DUAL_CHECKS = [

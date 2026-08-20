@@ -8,10 +8,10 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from dac_her.asset_index import AssetRecord, write_assets_jsonl
+from pipeline_core.asset_index import AssetRecord, write_assets_jsonl
 from dac_her.config import PaperConfig
-from dac_her.document_package import load_document_package
-from dac_her.locator_index import (
+from pipeline_core.document_package import load_document_package
+from pipeline_core.locator_index import (
     LocatorIndexRecord,
     build_locator_index,
     locator_index_lookup,

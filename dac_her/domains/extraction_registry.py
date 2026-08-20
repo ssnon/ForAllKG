@@ -7,7 +7,7 @@ from dac_her.domains.catalysis_mechanism_extraction import (
 from domains.dac_her.extraction import DAC_HER_EXTRACTION_ADAPTER
 from domains.sers.extraction import SERS_AU_AG_EXTRACTION_ADAPTER
 from dac_her.domains.registry import get_domain_profile
-from dac_her.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.extraction_domain import ExtractionDomainAdapter
 
 
 _ADAPTERS: dict[str, ExtractionDomainAdapter] = {

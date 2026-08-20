@@ -12,7 +12,7 @@ from dac_her.config import (
     DocumentSelection,
     FigureProcessingConfig,
 )
-from dac_her.document_package import (
+from pipeline_core.document_package import (
     DocumentPackage,
     SelectedSource,
     extract_supplementary_references,
@@ -529,28 +529,3 @@ def test_shared_document_package_dependency_boundary():
     }.issubset(
         imported_modules
     )
-
-def test_document_package_facade_reexports_shared_core_identity():
-    import dac_her.document_package as legacy
-    import pipeline_core.document_package as core
-
-    names = (
-        "DocumentPackage",
-        "SelectedSource",
-        "load_document_package",
-        "extract_supplementary_references",
-        "select_referenced_blocks",
-        "select_document_sources",
-    )
-
-    for name in names:
-        assert (
-            getattr(
-                legacy,
-                name,
-            )
-            is getattr(
-                core,
-                name,
-            )
-        )

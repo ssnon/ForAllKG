@@ -1,4 +1,4 @@
-from dac_her.bridge_schemas import BridgeConcept
+from pipeline_core.bridge_schemas import BridgeConcept
 from domains.sers.bridge_policy import (
     SERS_BRIDGE_POLICY_VERSION,
     concept_policy_issues,

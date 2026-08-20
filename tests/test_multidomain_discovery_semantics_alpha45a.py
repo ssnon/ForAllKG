@@ -4,7 +4,7 @@ import pytest
 import dac_her.candidate_unit_selection as candidate_unit_selection_module
 from dac_her.candidate_unit_selection import CandidateUnitSelector
 
-from dac_her.discovery_semantics import (
+from pipeline_core.discovery_semantics import (
     is_alignment_edge,
     is_alignment_node,
     is_mechanism_edge,

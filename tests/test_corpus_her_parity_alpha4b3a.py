@@ -5,8 +5,8 @@ from pathlib import Path
 import networkx as nx
 
 from dac_her.corpus_graph import ProjectionBundle, build_corpus_graph
-from dac_her.domains.catalysis_mechanism import CATALYSIS_MECHANISM_PROFILE
-from dac_her.domains.dac_her import DAC_HER_PROFILE
+from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
+from domains.dac_her.profile import DAC_HER_PROFILE
 
 
 def _bundle(paper_id: str, *, domain: str = "dac_her") -> ProjectionBundle:

@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.discovery_semantics import (
+from pipeline_core.discovery_semantics import (
     contains_strong_causal_language,
     is_alignment_edge,
     is_alignment_node,
@@ -15,7 +15,7 @@ from dac_her.discovery_semantics import (
 from dac_her.domains import get_domain_profile
 from dac_her.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
-from dac_her.explorer_text_safety import contains_absence_language
+from pipeline_core.explorer_text_safety import contains_absence_language
 
 
 class _StrictModel(BaseModel):

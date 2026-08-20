@@ -13,19 +13,19 @@ from dac_her.config import get_paper_config
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.graph_registry import get_graph_adapter
 from dac_her.domains.registry import get_domain_profile
-from dac_her.graph_io import knowledge_graph_to_networkx, save_graphml
+from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
 from dac_her.graph_semantics import (
     apply_graph_domain_canonicalization,
     write_graph_semantics_report,
 )
-from dac_her.extraction_policy import ExtractionPolicy
+from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     graph_quality_attributes,
     quality_from_active_payload,
 )
-from dac_her.locator_index import load_locator_index
+from pipeline_core.locator_index import load_locator_index
 from dac_her.measurement_merge_invariants import (
     MEASUREMENT_MERGE_INVARIANT_ID,
     assert_measurement_value_xor,
@@ -37,7 +37,7 @@ from dac_her.provenance_backfill import (
 )
 from dac_her.semantic_repairs import repair_model_of_targets
 from dac_her.graph_normalization import normalize_networkx_metric_vocabularies
-from dac_her.node_references import remap_node_reference_attributes
+from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.paper_graph_postprocess import (
     canonicalize_paper_graph,
     load_resolution_plan,
@@ -51,7 +51,7 @@ from dac_her.resolution_candidates import (
     write_candidates_csv,
 )
 from dac_her.claim_overlap import write_claim_overlap_audit
-from dac_her.semantic_roles import SemanticRoleAdjustment
+from domains.dac_her.semantic_roles import SemanticRoleAdjustment
 from dac_her.run_state import (
     paper_output_root,
     read_json,
@@ -59,7 +59,7 @@ from dac_her.run_state import (
     write_json,
 )
 from dac_her.schemas import KnowledgeGraph
-from dac_her.validation import validate_graph_provenance
+from pipeline_core.validation import validate_graph_provenance
 from dac_her.vocab_registry import load_default_registries
 
 

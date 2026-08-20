@@ -6,7 +6,7 @@ from pathlib import Path
 import networkx as nx
 import yaml
 
-from dac_her.strict_bridge_corpus_pipeline import (
+from pipeline_core.strict_bridge_corpus_pipeline import (
     StrictBridgeCorpusPipeline,
     StrictBridgePipelineOptions,
     _sha256_file,

@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.micro_reextract_prompts as legacy
 import domains.dac_her.micro_reextract_prompts as canonical
 
 from pipeline_core.validation_issues import (
@@ -15,36 +14,10 @@ from pipeline_core.validation_issues import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_legacy_and_canonical_semantics_match():
-    assert (
-        legacy.MICRO_REEXTRACT_PROMPT_VERSION
-        == canonical.MICRO_REEXTRACT_PROMPT_VERSION
-    )
-
-    assert (
-        legacy.MICRO_REEXTRACT_SYSTEM_PROMPT
-        == canonical.MICRO_REEXTRACT_SYSTEM_PROMPT
-    )
 
 
-def test_public_builders_preserve_identity():
-    assert (
-        legacy.build_micro_reextract_prompt
-        is canonical.build_micro_reextract_prompt
-    )
-
-    assert (
-        legacy.build_domain_gate_recovery_prompt
-        is canonical.build_domain_gate_recovery_prompt
-    )
 
 
-def test_validation_types_are_shared_core_objects():
-    assert canonical.IssueCode is IssueCode
-    assert canonical.ValidationReport is ValidationReport
-
-    assert legacy.IssueCode is IssueCode
-    assert legacy.ValidationReport is ValidationReport
 
 
 def test_public_builders_are_domain_owned():

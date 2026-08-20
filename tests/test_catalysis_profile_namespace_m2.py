@@ -6,7 +6,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import dac_her.domains.catalysis_mechanism as legacy
 import domains.catalysis_mechanism.profile as canonical
 
 from dac_her.domains.registry import get_domain_profile
@@ -121,11 +120,6 @@ def _profile_sha(value) -> str:
     ).hexdigest()
 
 
-def test_legacy_and_canonical_profile_are_same_object():
-    assert (
-        legacy.CATALYSIS_MECHANISM_PROFILE
-        is canonical.CATALYSIS_MECHANISM_PROFILE
-    )
 
 
 def test_registry_resolves_canonical_profile_object():

@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.bridge_source_reconciliation as legacy
 import pipeline_core.bridge_source_reconciliation as core
 
 
@@ -26,21 +25,10 @@ PRIVATE_COMPAT_SYMBOLS = (
 )
 
 
-def test_public_symbol_identity_is_preserved():
-    for name in PUBLIC_SYMBOLS:
-        assert getattr(legacy, name) is getattr(core, name)
 
 
-def test_private_compatibility_identity_is_preserved():
-    for name in PRIVATE_COMPAT_SYMBOLS:
-        assert getattr(legacy, name) is getattr(core, name)
 
 
-def test_version_is_preserved():
-    assert (
-        legacy.BRIDGE_SOURCE_RECONCILIATION_VERSION
-        == core.BRIDGE_SOURCE_RECONCILIATION_VERSION
-    )
 
 
 def test_functions_are_core_owned():

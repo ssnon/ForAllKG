@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.asset_index import AssetRecord
+from pipeline_core.asset_index import AssetRecord
 from dac_her.config import FigureProcessingConfig
 from dac_her.llm_openrouter import OpenRouterLLM
 

@@ -18,7 +18,7 @@ from dac_her.explorer_contracts import (
     ReportedDesignLever,
     UnresolvedConnection,
 )
-from dac_her.discovery_semantics import (
+from pipeline_core.discovery_semantics import (
     is_alignment_edge,
     is_alignment_node,
     is_mechanism_edge,

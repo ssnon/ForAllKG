@@ -7,7 +7,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from dac_her.graph_io import save_graphml
+from pipeline_core.graph_io import save_graphml
 from dac_her.navigation_graph import NavigationPolicy, build_navigation_graph
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

@@ -6,7 +6,7 @@ import dac_her.bridge_validation as bridge_validation_module
 import pipeline_core.bridge_validation as bridge_validation_core_module
 import domains.dac_her.scientific_signatures as scientific_signatures_module
 
-from dac_her.bridge_domain import (
+from pipeline_core.bridge_domain import (
     BridgeDomainAdapter,
     BridgeImplementationFiles,
 )

@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.bridge_prompts as legacy
 import domains.dac_her.bridge_prompts as canonical
 
 import dac_her.domains.dac_her_bridge as bridge_adapter_module
@@ -17,29 +16,8 @@ EXPECTED_VERSION = (
 )
 
 
-def test_legacy_and_canonical_prompt_values_match():
-    assert (
-        legacy.BRIDGE_PROMPT_VERSION
-        == canonical.BRIDGE_PROMPT_VERSION
-        == EXPECTED_VERSION
-    )
-
-    assert (
-        legacy.BRIDGE_SYSTEM_PROMPT
-        == canonical.BRIDGE_SYSTEM_PROMPT
-    )
 
 
-def test_prompt_builder_identity_is_preserved():
-    assert (
-        legacy.build_bridge_prompt
-        is canonical.build_bridge_prompt
-    )
-
-    assert (
-        legacy.build_bridge_repair_prompt
-        is canonical.build_bridge_repair_prompt
-    )
 
 
 def test_prompt_builders_are_domain_owned():

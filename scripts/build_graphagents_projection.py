@@ -9,9 +9,9 @@ from collections import Counter
 
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
-from dac_her.graph_io import save_graphml
+from pipeline_core.graph_io import save_graphml
 from dac_her.extraction_quality import projection_quality_summary
-from dac_her.graphagents_adapter import (
+from pipeline_core.graphagents_adapter import (
     build_graphagents_projection,
     write_jsonl,
 )

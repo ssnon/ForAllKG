@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 import networkx as nx
 
-from dac_her.node_references import remap_node_reference_attributes
+from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.resolution_candidates import (
     CLAIM_NODE_TYPES,
     RESOLVABLE_NODE_TYPES,

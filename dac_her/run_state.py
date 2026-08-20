@@ -20,8 +20,8 @@ from pipeline_core.serialization_primitives import (
 )
 
 from dac_her.config import PaperConfig, paper_config_fingerprint_payload
-from dac_her.extraction_policy import ExtractionPolicy
-from dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
+from pipeline_core.extraction_policy import ExtractionPolicy
+from domains.dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 
 
 RUN_STATE_VERSION = "semantic-si-assets-run-v5-strict-recovery"

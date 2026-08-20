@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dac_her.bridge_policy import BRIDGE_POLICY_VERSION, partition_bridge_result
+from domains.dac_her.bridge_policy import BRIDGE_POLICY_VERSION, partition_bridge_result
 from dac_her.bridge_validation import bridge_validation_issues, validate_bridge_chunk
 from dac_her.domains.bridge_registry import get_bridge_adapter
 from dac_her.scientific_signatures import (

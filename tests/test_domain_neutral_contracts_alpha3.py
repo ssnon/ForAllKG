@@ -1,12 +1,12 @@
 from dac_her.candidate_contracts import CandidateDecisionCard
-from dac_her.experimental_contracts import (
+from pipeline_core.experimental_contracts import (
     ExperimentalCheckResult,
     ExperimentalRealizabilityReport,
     ExperimentalRequirement,
 )
-from dac_her.physics_contracts import PhysicsCheckRequest
-from dac_her.scope_contracts import ScientificScope
-from dac_her.validation_contracts import ValidationSpecification
+from pipeline_core.physics_contracts import PhysicsCheckRequest
+from pipeline_core.scope_contracts import ScientificScope
+from pipeline_core.validation_contracts import ValidationSpecification
 
 
 def test_legacy_v02_scope_populates_generic_mirrors():

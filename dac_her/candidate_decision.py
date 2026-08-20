@@ -3,11 +3,11 @@ from __future__ import annotations
 import hashlib
 
 from dac_her.candidate_contracts import CandidateDecisionCard, CandidateDecisionPortfolio
-from dac_her.experimental_contracts import ExperimentalRealizabilityReport
-from dac_her.feasibility_contracts import FeasibilityIntake
-from dac_her.physics_contracts import PhysicsFeasibilityReport
-from dac_her.scope_contracts import ScientificScope
-from dac_her.validation_contracts import ValidationSpecification
+from pipeline_core.experimental_contracts import ExperimentalRealizabilityReport
+from pipeline_core.feasibility_contracts import FeasibilityIntake
+from pipeline_core.physics_contracts import PhysicsFeasibilityReport
+from pipeline_core.scope_contracts import ScientificScope
+from pipeline_core.validation_contracts import ValidationSpecification
 
 
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dac_her.domain_profile import ScientificDomainProfile
-from dac_her.domains.catalysis_mechanism import CATALYSIS_MECHANISM_PROFILE
-from dac_her.domains.dac_her import DAC_HER_PROFILE
+from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
+from domains.dac_her.profile import DAC_HER_PROFILE
 from domains.sers.profile import SERS_AU_AG_PROFILE
 
 

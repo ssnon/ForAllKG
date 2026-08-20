@@ -6,7 +6,7 @@ from dac_her.catalysis_mechanism_prompts import (
     CATALYSIS_MECHANISM_PROMPT_VERSION,
     CATALYSIS_MECHANISM_SYSTEM_PROMPT,
 )
-from dac_her.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from dac_her.broad_compact_schema import BroadMechanismGraphDraft
 from dac_her.domains.strict_relation_contracts import (
     CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,

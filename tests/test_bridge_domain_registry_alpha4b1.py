@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.bridge_policy import BRIDGE_POLICY_VERSION, partition_bridge_result
-from dac_her.bridge_prompts import (
+from domains.dac_her.bridge_policy import BRIDGE_POLICY_VERSION, partition_bridge_result
+from domains.dac_her.bridge_prompts import (
     BRIDGE_PROMPT_VERSION,
     BRIDGE_SYSTEM_PROMPT,
     build_bridge_prompt,
 )
-from dac_her.bridge_recovery_prompts import (
+from domains.dac_her.bridge_recovery_prompts import (
     BRIDGE_RECOVERY_PROMPT_VERSION,
     BRIDGE_RECOVERY_SYSTEM_PROMPT,
     build_bridge_candidate_repair_prompt,

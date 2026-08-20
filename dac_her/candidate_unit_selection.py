@@ -10,7 +10,7 @@ import networkx as nx
 
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains import get_domain_profile
-from dac_her.discovery_semantics import (
+from pipeline_core.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,
     is_mechanism_edge,

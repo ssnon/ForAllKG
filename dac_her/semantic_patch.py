@@ -4,9 +4,9 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.draft_schema import KnowledgeGraphDraft
+from pipeline_core.draft_schema import KnowledgeGraphDraft
 from dac_her.semantic_patch_schema import KnowledgeGraphPatch, PatchOperation
-from dac_her.validation_issues import ValidationReport
+from pipeline_core.validation_issues import ValidationReport
 
 
 class PatchRejected(ValueError):

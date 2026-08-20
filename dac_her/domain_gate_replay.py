@@ -7,9 +7,9 @@ from typing import Any, Iterable
 
 from pydantic import BaseModel, ConfigDict
 
-from dac_her.chunking import ChunkSpec
-from dac_her.draft_schema import KnowledgeGraphDraft
-from dac_her.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.chunking import ChunkSpec
+from pipeline_core.draft_schema import KnowledgeGraphDraft
+from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from dac_her.llm_telemetry import estimate_tokens
 from dac_her.strict_validation import (
     ValidationContext,

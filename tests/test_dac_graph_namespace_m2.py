@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.domains.dac_her_graph as legacy
 import domains.dac_her.graph as canonical
 
 from dac_her.domains.graph_registry import (
@@ -17,11 +16,6 @@ from domains.dac_her.semantic_roles import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_legacy_and_canonical_adapter_are_same_object():
-    assert (
-        legacy.DAC_HER_GRAPH_ADAPTER
-        is canonical.DAC_HER_GRAPH_ADAPTER
-    )
 
 
 def test_registry_resolves_canonical_adapter():

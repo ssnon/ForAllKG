@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.micro_reextract_prompts import (
+from domains.dac_her.micro_reextract_prompts import (
     build_domain_gate_recovery_prompt,
     build_micro_reextract_prompt,
 )
@@ -10,7 +10,7 @@ from dac_her.recovery_policy import (
     has_common_undefined_endpoint_cluster,
 )
 from dac_her.strict_recovery import _is_reserved_collection_domain_violation
-from dac_her.validation_issues import (
+from pipeline_core.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

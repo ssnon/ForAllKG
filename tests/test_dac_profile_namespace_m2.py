@@ -6,7 +6,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import dac_her.domains.dac_her as legacy
 import domains.dac_her.profile as canonical
 
 from dac_her.domains.registry import (
@@ -136,11 +135,6 @@ def _profile_sha256(value) -> str:
     ).hexdigest()
 
 
-def test_legacy_and_canonical_profile_are_same_object():
-    assert (
-        legacy.DAC_HER_PROFILE
-        is canonical.DAC_HER_PROFILE
-    )
 
 
 def test_registry_resolves_canonical_profile_object():

@@ -6,13 +6,13 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from dac_her.bridge_domain import BridgeDomainAdapter
+from pipeline_core.bridge_domain import BridgeDomainAdapter
 
-from dac_her.bridge_draft_schema import (
+from pipeline_core.bridge_draft_schema import (
     BridgeCandidateRepair,
     BridgeChunkDraft,
 )
-from dac_her.bridge_prompts import (
+from domains.dac_her.bridge_prompts import (
     BRIDGE_SYSTEM_PROMPT,
     build_bridge_prompt,
 )
@@ -21,17 +21,17 @@ from dac_her.bridge_recovery import (
     BridgeRecoveryError,
     recover_bridge_draft,
 )
-from dac_her.bridge_recovery_prompts import (
+from domains.dac_her.bridge_recovery_prompts import (
     BRIDGE_RECOVERY_PROMPT_VERSION,
     BRIDGE_RECOVERY_SYSTEM_PROMPT,
     build_bridge_candidate_repair_prompt,
 )
-from dac_her.bridge_schemas import BridgeChunkGraph
-from dac_her.bridge_source_reconciliation import (
+from pipeline_core.bridge_schemas import BridgeChunkGraph
+from pipeline_core.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
 )
 from dac_her.bridge_validation import validate_bridge_chunk
-from dac_her.graph_io import knowledge_graph_to_networkx
+from pipeline_core.graph_io import knowledge_graph_to_networkx
 from dac_her.scientific_signatures import strict_node_catalog
 from dac_her.schemas import KnowledgeGraph
 

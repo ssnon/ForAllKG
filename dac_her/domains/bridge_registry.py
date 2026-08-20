@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.bridge_domain import BridgeDomainAdapter
+from pipeline_core.bridge_domain import BridgeDomainAdapter
 from dac_her.domain_profile import ScientificDomainProfile
 from dac_her.domains.dac_her_bridge import DAC_HER_BRIDGE_ADAPTER
 from domains.sers.bridge import SERS_AU_AG_BRIDGE_ADAPTER

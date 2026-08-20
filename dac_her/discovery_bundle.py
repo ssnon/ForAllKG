@@ -17,7 +17,7 @@ from dac_her.discovery_contracts import (
     DiscoveryInspiration,
     DiscoveryScoreBreakdown,
 )
-from dac_her.discovery_semantics import (
+from pipeline_core.discovery_semantics import (
     is_alignment_node as domain_is_alignment_node,
     is_mechanism_edge as domain_is_mechanism_edge,
     is_mechanism_node as domain_is_mechanism_node,
