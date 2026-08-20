@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.candidate_decision import CandidateDecisionEngine
+from pipeline_core.discovery.candidate_decision import CandidateDecisionEngine
 from dac_her.experimental_runtime import ExperimentalRealizabilityRuntime
 from pipeline_core.feasibility_contracts import FeasibilityIntake
 from dac_her.physics_runtime import PhysicsFeasibilityRuntime

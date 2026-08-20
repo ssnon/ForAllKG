@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
-from dac_her.path_lineage_diagnostics import (
+from pipeline_core.discovery.path_lineage_diagnostics import (
     StatementPathLineageAssessor,
     StatementPathLineageDiagnostic,
     StatementPathLineageReport,

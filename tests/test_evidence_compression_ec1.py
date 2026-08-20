@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.evidence_compression import (
+from pipeline_core.discovery.evidence_compression import (
     EvidenceCompressionAssessor,
 )
 from pipeline_core.discovery.explorer_contracts import (

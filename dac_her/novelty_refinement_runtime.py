@@ -5,9 +5,9 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
 from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyCard,
@@ -15,7 +15,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
     PriorArtPacket,
 )
-from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisCard,
@@ -25,11 +25,11 @@ from pipeline_core.discovery.hypothesis_contracts import (
     PredictedObservationDraft,
 )
 from dac_her.hypothesis_llm import HypothesisDraftBackend
-from dac_her.hypothesis_validation import HypothesisValidator
+from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from dac_her.internal_novelty import InternalNoveltyAssessor
-from dac_her.novelty_claim_decomposition import LiteratureQueryPlanner
+from pipeline_core.discovery.novelty_claim_decomposition import LiteratureQueryPlanner
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
-from dac_her.novelty_refinement_contracts import (
+from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGapPlan,
     NoveltyRefinementReport,
     RefinementAttempt,

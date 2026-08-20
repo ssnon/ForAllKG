@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
-from dac_her.explorer_draft import ExplorationDraft
+from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from dac_her.explorer_normalization import ExplorerDraftNormalizer
 
 

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from dac_her.discovery_axis_planner import DiscoveryAxisPlanner
-from dac_her.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 from dac_her.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
 from dac_her.evidence_family_decomposition import (
     EvidenceFamilyDecompositionReport,
@@ -15,9 +15,9 @@ from dac_her.evidence_family_selection import (
     EvidenceFamilyHierarchy,
     audit_family_premise_selection,
 )
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
-from dac_her.hypothesis_evidence_diversity import (
+from pipeline_core.discovery.hypothesis_evidence_diversity import (
     HypothesisEvidenceDiversityAssessor,
 )
 from dac_her.node_mapping import NodeMapper

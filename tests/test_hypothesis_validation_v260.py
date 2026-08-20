@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dac_her.hypothesis_compiler import HypothesisCompiler
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolioDraft
-from dac_her.hypothesis_validation import HypothesisValidator
+from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from tests._hypothesis_v260_fixtures import make_context
 from tests.test_hypothesis_compiler_v260 import proposal
 

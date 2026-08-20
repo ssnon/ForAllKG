@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.evidence_compression import EvidenceCompressionReport
+from pipeline_core.discovery.evidence_compression import EvidenceCompressionReport
 from dac_her.evidence_family_diagnostics import (
     EvidenceFamilyCandidateAssessor,
 )

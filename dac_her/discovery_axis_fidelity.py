@@ -7,7 +7,7 @@ from typing import Any, Protocol
 
 import numpy as np
 
-from dac_her.discovery_axis_contracts import AxisFidelityReview, DiscoveryAxis
+from pipeline_core.discovery.discovery_axis_contracts import AxisFidelityReview, DiscoveryAxis
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard
 
 

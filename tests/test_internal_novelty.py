@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle, DiscoveryInspiration, DiscoveryScoreBreakdown
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
     HypothesisCard,

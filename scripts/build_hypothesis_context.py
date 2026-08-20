@@ -4,11 +4,11 @@ import argparse
 import json
 from pathlib import Path
 
-from dac_her.evidence_compression import EvidenceCompressionAssessor
+from pipeline_core.discovery.evidence_compression import EvidenceCompressionAssessor
 from dac_her.evidence_family_diagnostics import (
     EvidenceFamilyCandidateAssessor,
 )
-from dac_her.path_lineage_diagnostics import (
+from pipeline_core.discovery.path_lineage_diagnostics import (
     StatementPathLineageAssessor,
 )
 from dac_her.path_lineage_propagation import (

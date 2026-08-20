@@ -9,7 +9,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from dac_her.node_mapping import QueryConcept
 

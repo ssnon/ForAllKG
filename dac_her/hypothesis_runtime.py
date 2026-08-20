@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.hypothesis_compiler import (
+from pipeline_core.discovery.hypothesis_compiler import (
     HypothesisCompileError,
     HypothesisCompileIssue,
     HypothesisCompiler,
@@ -19,7 +19,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 from dac_her.hypothesis_llm import HypothesisDraftBackend, HypothesisDraftGeneration
 from dac_her.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
 from pipeline_core.discovery.hypothesis_run_record import HypothesisMakerRunRecord
-from dac_her.hypothesis_validation import HypothesisValidationResult, HypothesisValidator
+from pipeline_core.discovery.hypothesis_validation import HypothesisValidationResult, HypothesisValidator
 
 
 def _canonical_json(value: Any) -> str:

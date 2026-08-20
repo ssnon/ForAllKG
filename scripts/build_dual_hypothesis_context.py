@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
 
 

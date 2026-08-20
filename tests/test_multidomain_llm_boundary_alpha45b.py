@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from dac_her.explorer_draft import (
+from pipeline_core.discovery.explorer_draft import (
     ExplorationDraft,
     ExplorerStatementDraft,
     MechanisticMotifDraft,

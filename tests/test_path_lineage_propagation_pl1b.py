@@ -4,7 +4,7 @@ from dac_her.path_lineage_propagation import (
     MinimalPathLineagePropagator,
     _minimum_full_cover,
 )
-from dac_her.path_lineage_diagnostics import (
+from pipeline_core.discovery.path_lineage_diagnostics import (
     StatementPathLineageDiagnostic,
     StatementPathOverlap,
 )

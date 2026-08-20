@@ -5,9 +5,9 @@ import json
 import os
 from pathlib import Path
 
-from dac_her.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
 from dac_her.domains.registry import get_domain_profile
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
@@ -26,7 +26,7 @@ from dac_her.literature_provider_plan import (
     resolve_literature_provider_plan,
 )
 from dac_her.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
-from dac_her.novelty_claim_decomposition import NoveltyClaimDecomposer
+from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker

@@ -5,7 +5,7 @@ import json
 from collections import Counter
 from typing import Any, Iterable
 
-from dac_her.discovery_axis_contracts import DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisSynthesisReport
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
@@ -16,7 +16,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     PriorArtPacket,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
-from dac_her.novelty_claim_decomposition import NoveltyClaimDecomposer
+from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
 from dac_her.prior_art_matching import (
     ClaimPriorArtCompiler,
     ClaimReviewBackend,

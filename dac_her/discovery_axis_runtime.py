@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.discovery_axis_contracts import (
+from pipeline_core.discovery.discovery_axis_contracts import (
     AxisAttemptRecord,
     AxisFidelityReview,
     DiscoveryAxis,
@@ -16,8 +16,8 @@ from dac_her.discovery_axis_contracts import (
 from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from dac_her.evidence_family_selection import EvidenceFamilyHierarchy
 from dac_her.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
-from dac_her.dual_hypothesis_context import DualHypothesisContext
-from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisPortfolio,
@@ -28,7 +28,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 from dac_her.hypothesis_llm import HypothesisDraftBackend
 from dac_her.hypothesis_prompt import HypothesisPrompt
 from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
-from dac_her.hypothesis_validation import HypothesisValidator
+from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from dac_her.internal_novelty import (
     InternalNoveltyAssessor,
     InternalNoveltyCard,

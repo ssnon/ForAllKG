@@ -5,7 +5,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from dac_her.discovery_axis_contracts import DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisSynthesisReport
 from dac_her.domains import get_domain_profile
 from dac_her.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
@@ -28,7 +28,7 @@ from dac_her.literature_provider_plan import (
     resolve_literature_provider_plan,
 )
 from dac_her.node_mapping import DEFAULT_EMBED_MODEL, SentenceTransformerEncoder
-from dac_her.novelty_claim_decomposition import (
+from pipeline_core.discovery.novelty_claim_decomposition import (
     LiteratureQueryPlanner,
     NoveltyClaimDecomposer,
 )

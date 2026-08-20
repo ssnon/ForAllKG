@@ -7,7 +7,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisEvidenceStatement,
 )
-from dac_her.path_lineage_diagnostics import (
+from pipeline_core.discovery.path_lineage_diagnostics import (
     StatementPathLineageAssessor,
 )
 

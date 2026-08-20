@@ -4,12 +4,12 @@ import hashlib
 import json
 from typing import Any
 
-from dac_her.discovery_axis_contracts import (
+from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxis,
     DiscoveryAxisPlan,
     DiscoveryAxisPlannerPolicy,
 )
-from dac_her.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 
 
 def _canonical_json(value: Any) -> str:

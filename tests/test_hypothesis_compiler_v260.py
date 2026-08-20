@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisPortfolioDraft,

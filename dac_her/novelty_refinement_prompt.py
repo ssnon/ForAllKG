@@ -6,7 +6,7 @@ import json
 from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyCard
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisContext, HypothesisPortfolioDraft
 from dac_her.hypothesis_prompt import HypothesisPrompt
-from dac_her.novelty_refinement_contracts import NoveltyGap
+from pipeline_core.discovery.novelty_refinement_contracts import NoveltyGap
 
 
 def _sha(system: str, user: str) -> str:

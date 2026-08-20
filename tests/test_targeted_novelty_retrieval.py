@@ -4,7 +4,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     HypothesisNoveltyClaims,
     PriorArtPacket,
 )
-from dac_her.novelty_refinement_contracts import (
+from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGap,
     TargetedGapQuery,
 )

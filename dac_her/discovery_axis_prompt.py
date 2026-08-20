@@ -4,7 +4,7 @@ import hashlib
 import json
 from typing import Iterable
 
-from dac_her.discovery_axis_contracts import DiscoveryAxis
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxis
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolioDraft,

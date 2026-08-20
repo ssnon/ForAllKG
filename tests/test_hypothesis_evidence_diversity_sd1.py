@@ -11,7 +11,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisPortfolio,
     PredictedObservation,
 )
-from dac_her.hypothesis_evidence_diversity import (
+from pipeline_core.discovery.hypothesis_evidence_diversity import (
     HypothesisEvidenceDiversityAssessor,
 )
 

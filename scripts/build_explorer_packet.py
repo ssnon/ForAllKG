@@ -7,7 +7,7 @@ from dac_her.domains import get_domain_profile
 from dac_her.domains.extraction_registry import (
     get_extraction_adapter,
 )
-from dac_her.explorer_packet import GraphExplorerPacketBuilder, write_packet
+from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder, write_packet
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

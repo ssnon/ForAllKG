@@ -13,7 +13,7 @@ from pipeline_core.discovery_semantics import (
     is_shared_entity_node,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
-from dac_her.explorer_packet import GraphExplorerPacketBuilder
+from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder
 from dac_her.path_quality import PathQualityScorer
 
 

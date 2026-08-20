@@ -6,8 +6,8 @@ import pytest
 from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from dac_her.domains import get_domain_profile
-from dac_her.dual_hypothesis_context import DualHypothesisContext
-from dac_her.hypothesis_compiler import HypothesisCompiler
+from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolioDraft,

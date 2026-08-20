@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.evidence_compression import (
+from pipeline_core.discovery.evidence_compression import (
     EvidenceCompressionReport,
     EvidenceCompressionStatementCard,
 )

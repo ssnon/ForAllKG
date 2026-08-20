@@ -13,7 +13,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
-from dac_her.novelty_refinement_contracts import (
+from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGap,
     NoveltyGapPlan,
     TargetedGapQuery,

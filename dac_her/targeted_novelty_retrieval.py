@@ -15,7 +15,7 @@ from dac_her.literature_retrieval import (
     LiteratureRetriever,
     canonicalize_prior_art_works,
 )
-from dac_her.novelty_refinement_contracts import NoveltyGap
+from pipeline_core.discovery.novelty_refinement_contracts import NoveltyGap
 
 
 def _canonical_json(value: object) -> str:

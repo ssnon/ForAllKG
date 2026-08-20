@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
-from dac_her.feasibility_intake import FeasibilityIntakeBuilder
-from dac_her.hypothesis_compiler import HypothesisCompiler
+from pipeline_core.discovery.feasibility_intake import FeasibilityIntakeBuilder
+from pipeline_core.discovery.hypothesis_compiler import HypothesisCompiler
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisContext,
