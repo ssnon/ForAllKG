@@ -9,7 +9,7 @@ import networkx as nx
 from pipeline_core.discovery_semantics import is_mechanism_node
 from pipeline_core.domain_profile import DiscoverySemantics
 from dac_her.domains import get_domain_profile
-from dac_her.waypoint_selection import match_tier
+from pipeline_core.discovery.waypoint_selection import match_tier
 
 
 def _as_bool(value: Any) -> bool:

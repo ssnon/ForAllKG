@@ -7,7 +7,7 @@ from typing import Any, Iterable, Literal
 
 import networkx as nx
 
-from dac_her.traversal_policy import candidate_edge_count, path_allowed, path_cost
+from pipeline_core.discovery.traversal_policy import candidate_edge_count, path_allowed, path_cost
 
 TraversalAlgorithm = Literal["shortest", "top_n", "bounded_dfs", "semantic_stop"]
 

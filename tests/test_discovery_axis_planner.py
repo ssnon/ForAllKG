@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from dac_her.discovery_axis_planner import DiscoveryAxisPlanner
+from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 
 

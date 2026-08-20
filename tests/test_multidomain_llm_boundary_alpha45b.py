@@ -13,7 +13,7 @@ from pipeline_core.discovery.hypothesis_semantic_contracts import (
     HypothesisSemanticReviewDraft,
     SEMANTIC_DIMENSIONS,
 )
-from dac_her.hypothesis_semantic_reference import (
+from pipeline_core.discovery.hypothesis_semantic_reference import (
     HypothesisSemanticReferenceSanitizer,
 )
 

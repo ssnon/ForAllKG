@@ -3,7 +3,7 @@ from __future__ import annotations
 from dac_her.evidence_family_decomposition import (
     _child_statement,
 )
-from dac_her.evidence_family_diagnostics import (
+from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyProfile,
 )
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket

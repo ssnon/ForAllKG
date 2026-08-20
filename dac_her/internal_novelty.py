@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
-from dac_her.node_mapping import QueryConcept
+from pipeline_core.discovery.node_mapping import QueryConcept
 
 
 class StrictModel(BaseModel):

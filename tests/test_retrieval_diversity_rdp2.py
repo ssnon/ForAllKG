@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.path_bundle import PathBundlePolicy, PathBundleSelector
+from pipeline_core.discovery.path_bundle import PathBundlePolicy, PathBundleSelector
 
 
 def _path(path_id, papers, endpoint, edge):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.node_mapping import DEFAULT_EMBED_MODEL, build_node_embedding_index
+from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, build_node_embedding_index
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

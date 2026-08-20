@@ -18,7 +18,7 @@ from dac_her.domains import get_domain_profile
 from dac_her.domains.extraction_registry import (
     get_extraction_adapter,
 )
-from dac_her.candidate_units import (
+from pipeline_core.discovery.candidate_units import (
     CandidateUnitBuilder,
     candidate_unit_inventory,
     confirmed_navigation_graph,
@@ -28,7 +28,7 @@ from dac_her.candidate_units import (
     node_label,
     paper_ids_from_node,
 )
-from dac_her.node_mapping import NodeMapper, QueryConcept, load_node_embedding_index
+from pipeline_core.discovery.node_mapping import NodeMapper, QueryConcept, load_node_embedding_index
 from dac_her.path_quality import PathQualityScorer
 
 

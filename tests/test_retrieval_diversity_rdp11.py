@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.endpoint_selection import EndpointPairSelector
+from pipeline_core.discovery.endpoint_selection import EndpointPairSelector
 
 
 def test_same_paper_pair_counts_as_one_new_unique_paper():

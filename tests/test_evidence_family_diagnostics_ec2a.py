@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.discovery.evidence_compression import EvidenceCompressionReport
-from dac_her.evidence_family_diagnostics import (
+from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyCandidateAssessor,
 )
 

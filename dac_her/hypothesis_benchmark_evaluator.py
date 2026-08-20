@@ -9,7 +9,7 @@ from pipeline_core.discovery.hypothesis_benchmark_contracts import (
     HypothesisEvaluationReport,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
-from dac_her.hypothesis_semantic_checks import semantic_diagnostics
+from pipeline_core.discovery.hypothesis_semantic_checks import semantic_diagnostics
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 
 

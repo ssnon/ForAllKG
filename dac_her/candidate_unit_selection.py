@@ -18,7 +18,7 @@ from pipeline_core.discovery_semantics import (
     is_scaffold_edge,
     normalized_node_type,
 )
-from dac_her.candidate_units import (
+from pipeline_core.discovery.candidate_units import (
     CandidateAnchor,
     CandidateUnit,
     edge_is_alignment,

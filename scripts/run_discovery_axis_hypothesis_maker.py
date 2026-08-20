@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from dac_her.discovery_axis_planner import DiscoveryAxisPlanner
+from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 from dac_her.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
 from dac_her.evidence_family_decomposition import (
@@ -20,7 +20,7 @@ from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
 from pipeline_core.discovery.hypothesis_evidence_diversity import (
     HypothesisEvidenceDiversityAssessor,
 )
-from dac_her.node_mapping import NodeMapper
+from pipeline_core.discovery.node_mapping import NodeMapper
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

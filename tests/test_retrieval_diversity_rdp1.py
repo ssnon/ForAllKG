@@ -1,6 +1,6 @@
 from __future__ import annotations
 import networkx as nx
-from dac_her.endpoint_selection import EndpointPairSelector, _paper_id_for_node
+from pipeline_core.discovery.endpoint_selection import EndpointPairSelector, _paper_id_for_node
 
 
 def graph():

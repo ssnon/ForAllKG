@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.path_lineage_propagation import (
+from pipeline_core.discovery.path_lineage_propagation import (
     MinimalPathLineagePropagator,
     _minimum_full_cover,
 )
@@ -112,7 +112,7 @@ def test_tie_break_prefers_lower_navigation_after_scientific_equivalence():
 
 
 def test_policy_keeps_propagation_as_provenance_only():
-    from dac_her.path_lineage_propagation import PathLineagePropagationPolicy
+    from pipeline_core.discovery.path_lineage_propagation import PathLineagePropagationPolicy
     policy = PathLineagePropagationPolicy()
     assert policy.scientific_support_content_changed is False
     assert policy.premise_eligibility_changed is False

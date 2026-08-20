@@ -2,7 +2,7 @@ import numpy as np
 from types import SimpleNamespace
 
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxis
-from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
+from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 
 
 class KeywordEncoder:

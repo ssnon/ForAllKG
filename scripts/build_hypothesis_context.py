@@ -5,13 +5,13 @@ import json
 from pathlib import Path
 
 from pipeline_core.discovery.evidence_compression import EvidenceCompressionAssessor
-from dac_her.evidence_family_diagnostics import (
+from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyCandidateAssessor,
 )
 from pipeline_core.discovery.path_lineage_diagnostics import (
     StatementPathLineageAssessor,
 )
-from dac_her.path_lineage_propagation import (
+from pipeline_core.discovery.path_lineage_propagation import (
     MinimalPathLineagePropagator,
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket

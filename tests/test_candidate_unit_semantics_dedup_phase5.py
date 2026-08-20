@@ -8,7 +8,7 @@ from dac_her.candidate_unit_selection import (
     CandidateUnitSelectionPolicy,
     CandidateUnitSelector,
 )
-from dac_her.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
+from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 from pipeline_core.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,

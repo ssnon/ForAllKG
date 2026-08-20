@@ -5,7 +5,7 @@ from dac_her.evidence_family_decomposition import (
     _family_claim_kind,
     EvidenceFamilyDecompositionPolicy,
 )
-from dac_her.evidence_family_diagnostics import (
+from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyProfile,
 )
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
+from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 
 
 def _candidate_pair(g: nx.DiGraph, anchor: str, candidate: str) -> None:

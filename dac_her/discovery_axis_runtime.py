@@ -13,7 +13,7 @@ from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxisSynthesisReport,
     DiscoveryHypothesisLineage,
 )
-from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
+from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from dac_her.evidence_family_selection import EvidenceFamilyHierarchy
 from dac_her.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext

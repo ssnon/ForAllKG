@@ -25,7 +25,7 @@ from dac_her.literature_provider_plan import (
     require_standard_or_full_auto_plan,
     resolve_literature_provider_plan,
 )
-from dac_her.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
+from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
 from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime

@@ -3,7 +3,7 @@ from __future__ import annotations
 import networkx as nx
 
 from dac_her.candidate_unit_selection import CandidateUnitSelectionPolicy, CandidateUnitSelector
-from dac_her.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
+from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 
 
 def _confirmed(g: nx.DiGraph, u: str, v: str, relation: str = "INTERPRETED_AS", cost: float = 1.0) -> None:

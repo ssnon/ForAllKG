@@ -27,13 +27,13 @@ from dac_her.literature_provider_plan import (
     require_standard_or_full_auto_plan,
     resolve_literature_provider_plan,
 )
-from dac_her.node_mapping import DEFAULT_EMBED_MODEL, SentenceTransformerEncoder
+from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, SentenceTransformerEncoder
 from pipeline_core.discovery.novelty_claim_decomposition import (
     LiteratureQueryPlanner,
     NoveltyClaimDecomposer,
 )
 from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
-from dac_her.prior_art_review_audit import (
+from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
 )
 

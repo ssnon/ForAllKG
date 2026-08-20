@@ -1275,7 +1275,7 @@ def load_semantic_index_for_traversal(
     if not (index_dir / "manifest.json").exists():
         return None
     try:
-        from dac_her.node_mapping import load_node_embedding_index
+        from pipeline_core.discovery.node_mapping import load_node_embedding_index
 
         return load_node_embedding_index(index_dir)
     except (FileNotFoundError, ValueError, RuntimeError, json.JSONDecodeError):

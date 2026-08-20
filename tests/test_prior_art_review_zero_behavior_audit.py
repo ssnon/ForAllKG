@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.prior_art_review_audit import (
+from pipeline_core.discovery.prior_art_review_audit import (
     current_prior_art_review_audit_context,
     prior_art_review_audit_scope,
     summarize_prior_art_review_audit,

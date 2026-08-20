@@ -14,10 +14,10 @@ from dac_her.domains.extraction_registry import (
 from dac_her.direct_concept import (
     DirectConceptHitSelector,
 )
-from dac_her.endpoint_selection import (
+from pipeline_core.discovery.endpoint_selection import (
     EndpointPairSelector,
 )
-from dac_her.path_bundle import (
+from pipeline_core.discovery.path_bundle import (
     PathBundlePolicy,
     PathBundleSelector,
     render_step_safe,
@@ -25,7 +25,7 @@ from dac_her.path_bundle import (
 from dac_her.path_quality import (
     PathQualityScorer,
 )
-from dac_her.node_mapping import (
+from pipeline_core.discovery.node_mapping import (
     NodeMapper,
     QueryConcept,
 )
@@ -38,7 +38,7 @@ from pipeline_core.traversal_runtime_policy import (
     guard_semantic_stop_ablation,
     resolve_semantic_stop_max_depth,
 )
-from dac_her.waypoint_selection import (
+from pipeline_core.discovery.waypoint_selection import (
     WaypointSelector,
     waypoint_relevance_pool,
 )

@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.evidence_family_diagnostics import (
+from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyDiagnosticReport,
     EvidenceFamilyProfile,
 )
@@ -15,7 +15,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisEvidenceStatement,
 )
-from dac_her.path_lineage_propagation import (
+from pipeline_core.discovery.path_lineage_propagation import (
     MinimalPathLineagePropagator,
     PathLineagePropagationReport,
 )
