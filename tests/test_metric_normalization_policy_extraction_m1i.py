@@ -59,5 +59,3 @@ def test_policy_module_owns_chemistry_refinement_payload():
 
     for token in required:
         assert token in source
-
-

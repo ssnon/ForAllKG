@@ -21,5 +21,3 @@ def test_broad_abstract_policy_limits_recovery_without_relaxing_acceptance():
     assert policy.max_post_micro_patch_attempts == 0
     assert policy.max_split_depth == 0
     assert policy.allow_destructive_patches is False
-
-

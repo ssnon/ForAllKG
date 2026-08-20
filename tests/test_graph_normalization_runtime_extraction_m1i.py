@@ -50,5 +50,3 @@ def test_facade_owns_historical_scientific_bindings():
         "_normalize_networkx_metric_vocabularies"
         in source
     )
-
-

@@ -69,7 +69,3 @@ def test_canonical_module_has_no_legacy_dac_import():
                 )
 
     assert violations == []
-
-
-
-
