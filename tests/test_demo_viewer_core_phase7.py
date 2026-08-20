@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.demo_viewer import (
+from scripts.demo_viewer_runtime import (
     build_demo_viewer,
     find_feasibility_dir,
     load_core_demo_payload,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.demo_viewer import build_demo_viewer, discover_feasibility_dir, load_demo_payload
+from scripts.demo_viewer_runtime import build_demo_viewer, discover_feasibility_dir, load_demo_payload
 
 
 def _dump(path: Path, value: dict) -> None:

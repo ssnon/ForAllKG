@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.demo_viewer import DemoViewerError, build_demo_viewer
+from scripts.demo_viewer_runtime import DemoViewerError, build_demo_viewer
 
 
 def main() -> int:
