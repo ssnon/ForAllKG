@@ -10,6 +10,7 @@ openalex_require_api_key: true
 
 use_unpaywall: true
 use_openalex: true
+use_pmc_aws: true
 use_catalog_open_access_url: true
 request_timeout_seconds: 45.0
 retries: 2

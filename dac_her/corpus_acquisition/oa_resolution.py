@@ -24,6 +24,9 @@ from dac_her.corpus_acquisition.access_priority import (
 from dac_her.corpus_acquisition.openalex_access import (
     OpenAlexAccessResolver,
 )
+from dac_her.corpus_acquisition.pmc_access import (
+    PmcAwsAccessResolver,
+)
 from dac_her.literature_catalog_contracts import CatalogWork
 
 
@@ -330,6 +333,34 @@ class OpenAccessResolver:
                         status="skipped",
                         message="no_open_access_url",
                     )
+                )
+
+        if self.policy.use_pmc_aws:
+            probe = PmcAwsAccessResolver(
+                self.policy
+            ).resolve(
+                work,
+                existing_locations=locations,
+            )
+
+            attempts.append(
+                probe.attempt
+            )
+
+            for location in probe.locations:
+                if all(
+                    location.location_id
+                    != existing.location_id
+                    for existing in locations
+                ):
+                    locations.append(
+                        location
+                    )
+
+            if probe.attempt.status == "failed":
+                notes.append(
+                    "PMC AWS access lookup failed; "
+                    "existing OA locations remain available."
                 )
 
         # Stable provider-aware priority shared with the downloader.

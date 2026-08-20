@@ -121,6 +121,7 @@ class SourceAcquisitionPolicy(StrictModel):
     openalex_require_api_key: bool = True
     use_unpaywall: bool = True
     use_openalex: bool = True
+    use_pmc_aws: bool = False
     use_catalog_open_access_url: bool = True
     request_timeout_seconds: float = Field(default=45.0, gt=0)
     retries: int = Field(default=2, ge=0, le=6)
