@@ -30,7 +30,7 @@ from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDeco
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
-from dac_her.targeted_novelty_retrieval import TargetedNoveltyRetriever
+from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

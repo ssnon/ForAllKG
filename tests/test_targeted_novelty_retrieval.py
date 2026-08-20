@@ -8,7 +8,7 @@ from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGap,
     TargetedGapQuery,
 )
-from dac_her.targeted_novelty_retrieval import build_augmented_query_plan
+from pipeline_core.discovery.targeted_novelty_retrieval import build_augmented_query_plan
 
 
 def test_targeted_query_plan_preserves_claims_and_adds_delta():

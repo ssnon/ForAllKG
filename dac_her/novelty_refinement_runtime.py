@@ -36,7 +36,7 @@ from pipeline_core.discovery.novelty_refinement_contracts import (
     TargetedSearchRecord,
 )
 from pipeline_core.discovery.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
-from dac_her.targeted_novelty_retrieval import TargetedNoveltyRetriever
+from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
 )

@@ -18,7 +18,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from pipeline_core.discovery.novelty_refinement_contracts import NoveltyGap, TargetedGapQuery
-from dac_her.targeted_novelty_retrieval import build_augmented_query_plan
+from pipeline_core.discovery.targeted_novelty_retrieval import build_augmented_query_plan
 
 
 def _claim(claim_id: str, hypothesis_id: str = "h1", text: str | None = None) -> NoveltyClaim:
