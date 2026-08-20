@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.graph_normalization as normalization
+import pipeline_core.corpus.graph_normalization as normalization
 import pipeline_core.corpus.metric_normalization_policy as policy
 
 

@@ -11,7 +11,7 @@ from pipeline_core.knowledge_graph_validation_context import (
 
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.graph_domain import RelationConstraint
-from dac_her.graph_normalization import normalize_graph_vocabularies
+from pipeline_core.corpus.graph_normalization import normalize_graph_vocabularies
 from pipeline_core.graph_validation import collect_graph_issues
 from pipeline_core.corpus.measurement_scalarization import (
     format_scalarization_errors,

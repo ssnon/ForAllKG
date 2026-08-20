@@ -4,10 +4,10 @@ import pytest
 
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.graph_domain import RelationConstraint
-from dac_her.graph_normalization import (
+from pipeline_core.corpus.graph_normalization import (
     normalize_graph_vocabularies,
 )
-from dac_her.strict_validation import (
+from pipeline_core.corpus.strict_validation import (
     ValidationContext,
     finalize_draft,
 )

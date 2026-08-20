@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import pipeline_core.chunking as chunking_module
 import pipeline_core.corpus.schemas as schemas_module
 import dac_her.extraction as extraction_module
-import dac_her.graph_normalization as graph_normalization_module
+import pipeline_core.corpus.graph_normalization as graph_normalization_module
 import pipeline_core.corpus.metric_normalization_policy as metric_normalization_policy_module
 import pipeline_core.graph_normalization_runtime as graph_normalization_runtime_module
 import dac_her.llm_openrouter as llm_openrouter_module
@@ -35,7 +35,7 @@ import pipeline_core.corpus.semantic_patch as semantic_patch_module
 import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import pipeline_core.corpus.semantic_patch_schema as semantic_patch_schema_module
 import dac_her.strict_recovery as strict_recovery_module
-import dac_her.strict_validation as strict_validation_module
+import pipeline_core.corpus.strict_validation as strict_validation_module
 import pipeline_core.validation_issues as validation_issues_module
 import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 

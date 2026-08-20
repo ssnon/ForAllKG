@@ -36,7 +36,7 @@ from dac_her.provenance_backfill import (
     refresh_run_asset_manifest,
 )
 from pipeline_core.corpus.semantic_repairs import repair_model_of_targets
-from dac_her.graph_normalization import normalize_networkx_metric_vocabularies
+from pipeline_core.corpus.graph_normalization import normalize_networkx_metric_vocabularies
 from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.paper_graph_postprocess import (
     canonicalize_paper_graph,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.graph_normalization as facade
+import pipeline_core.corpus.graph_normalization as facade
 import pipeline_core.graph_normalization_runtime as runtime
 
 

@@ -11,7 +11,7 @@ from pipeline_core.chunking import ChunkSpec
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from dac_her.llm_telemetry import estimate_tokens
-from dac_her.strict_validation import (
+from pipeline_core.corpus.strict_validation import (
     ValidationContext,
     finalize_draft,
     validate_draft,

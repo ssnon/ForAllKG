@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import networkx as nx
 
-import dac_her.graph_normalization as normalization
+import pipeline_core.corpus.graph_normalization as normalization
 
 
 def test_chemistry_metric_refinement_contract():
