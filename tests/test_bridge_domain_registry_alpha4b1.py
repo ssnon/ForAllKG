@@ -21,7 +21,7 @@ from dac_her.domains.bridge_registry import (
     available_bridge_adapters,
     get_bridge_adapter,
 )
-from dac_her.scientific_signatures import strict_node_catalog
+from domains.dac_her.scientific_signatures import strict_node_catalog
 
 
 def test_alpha4b1_dac_her_adapter_is_exact_legacy_wrapper():

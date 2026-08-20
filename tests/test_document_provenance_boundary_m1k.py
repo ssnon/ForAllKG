@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from dac_her.config import (
+from pipeline_core.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,

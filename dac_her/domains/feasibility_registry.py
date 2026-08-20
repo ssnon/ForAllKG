@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dac_her.domain_profile import ScientificDomainProfile
+from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains.dac_her_feasibility import DAC_HER_FEASIBILITY_ADAPTER
 from dac_her.domains.registry import get_domain_profile
-from dac_her.feasibility_domain import FeasibilityDomainAdapter
+from pipeline_core.feasibility_domain import FeasibilityDomainAdapter
 
 
 _ADAPTERS: dict[str, FeasibilityDomainAdapter] = {

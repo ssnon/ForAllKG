@@ -4,7 +4,7 @@ import hashlib
 import json
 import re
 
-from dac_her.domain_profile import ScientificDomainProfile
+from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
 from dac_her.external_novelty_contracts import (
     ClaimPriorArtReview,

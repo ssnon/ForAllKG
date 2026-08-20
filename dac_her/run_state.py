@@ -19,7 +19,7 @@ from pipeline_core.serialization_primitives import (
     write_json,
 )
 
-from dac_her.config import PaperConfig, paper_config_fingerprint_payload
+from pipeline_core.document_config import PaperConfig, paper_config_fingerprint_payload
 from pipeline_core.extraction_policy import ExtractionPolicy
 from domains.dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 

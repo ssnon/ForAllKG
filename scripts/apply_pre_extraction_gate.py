@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from dac_her.config import load_paper_configs
+from pipeline_core.document_config import load_paper_configs
 from pipeline_core.literature.acquisition.contracts import SelectedCorpusWork
 from pipeline_core.literature.acquisition.materialization_contracts import CorpusMaterializationReport, MaterializedDocument, PaperMaterializationRecord
 from pipeline_core.literature.acquisition.materialization_package import (

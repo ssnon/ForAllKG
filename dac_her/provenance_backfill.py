@@ -9,7 +9,7 @@ from typing import Any, Iterable
 import networkx as nx
 
 from pipeline_core.asset_index import AssetRecord, write_assets_jsonl
-from dac_her.config import PaperConfig
+from pipeline_core.document_config import PaperConfig
 from pipeline_core.document_package import load_document_package
 from pipeline_core.locator_index import (
     LocatorIndexRecord,

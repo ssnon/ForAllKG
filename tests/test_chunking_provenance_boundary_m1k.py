@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pipeline_core.chunking as chunking
 
-from dac_her.config import (
+from pipeline_core.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,

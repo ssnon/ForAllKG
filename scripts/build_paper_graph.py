@@ -9,7 +9,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from dac_her.config import get_paper_config
+from pipeline_core.document_config import get_paper_config
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.graph_registry import get_graph_adapter
 from dac_her.domains.registry import get_domain_profile

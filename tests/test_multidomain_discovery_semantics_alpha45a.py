@@ -12,7 +12,7 @@ from pipeline_core.discovery_semantics import (
     is_scaffold_edge,
     is_shared_entity_node,
 )
-from dac_her.domain_profile import DiscoverySemantics
+from pipeline_core.domain_profile import DiscoverySemantics
 from dac_her.explorer_packet import GraphExplorerPacketBuilder
 from dac_her.path_quality import PathQualityScorer
 

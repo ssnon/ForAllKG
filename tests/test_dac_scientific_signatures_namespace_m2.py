@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.scientific_signatures as legacy
 import domains.dac_her.scientific_signatures as canonical
 
 import dac_her.domains.dac_her_bridge as adapter_module
@@ -23,12 +22,6 @@ PUBLIC_FUNCTIONS = (
 )
 
 
-def test_legacy_function_identity_is_preserved():
-    for name in PUBLIC_FUNCTIONS:
-        assert (
-            getattr(legacy, name)
-            is getattr(canonical, name)
-        )
 
 
 def test_functions_are_domain_owned():
@@ -99,8 +92,10 @@ def test_adapter_provenance_uses_canonical_source():
         canonical.__file__
     ).resolve()
 
-    legacy_path = Path(
-        legacy.__file__
+    legacy_path = (
+        ROOT
+        / "dac_her"
+        / "scientific_signatures.py"
     ).resolve()
 
     extraction = {

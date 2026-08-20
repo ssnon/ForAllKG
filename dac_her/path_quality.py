@@ -14,7 +14,7 @@ from pipeline_core.discovery_semantics import (
     is_shared_entity_node,
     normalized_node_type,
 )
-from dac_her.domain_profile import DiscoverySemantics
+from pipeline_core.domain_profile import DiscoverySemantics
 from dac_her.domains import get_domain_profile
 
 

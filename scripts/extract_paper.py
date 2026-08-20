@@ -42,7 +42,7 @@ import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 from pipeline_core.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from pipeline_core.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
 from dac_her.chunking_recovery import split_chunk_structurally
-from dac_her.config import DocumentConfig, get_paper_config
+from pipeline_core.document_config import DocumentConfig, get_paper_config
 from pipeline_core.document_package import (
     DocumentPackage,
     extract_supplementary_references,

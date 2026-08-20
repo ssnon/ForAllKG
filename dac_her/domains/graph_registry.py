@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.domain_profile import ScientificDomainProfile
+from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains.catalysis_mechanism_graph import (
     CATALYSIS_MECHANISM_GRAPH_ADAPTER,
 )

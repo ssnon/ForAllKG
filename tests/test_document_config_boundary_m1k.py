@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-import dac_her.config as config
+import pipeline_core.document_config as config
 
 
 def _write_yaml(
@@ -419,23 +419,3 @@ def test_shared_core_no_longer_depends_on_dac_config():
         "pipeline_core.document_config"
         in imported_modules
     )
-
-def test_document_config_facade_reexports_shared_core_identity():
-    import dac_her.config as legacy
-    import pipeline_core.document_config as core
-
-    names = (
-        "DocumentSelection",
-        "FigureProcessingConfig",
-        "DocumentConfig",
-        "PaperConfig",
-        "load_paper_configs",
-        "get_paper_config",
-        "paper_config_fingerprint_payload",
-    )
-
-    for name in names:
-        assert (
-            getattr(legacy, name)
-            is getattr(core, name)
-        )

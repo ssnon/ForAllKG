@@ -1,7 +1,7 @@
 import inspect
 
 from dac_her.bridge_validation import bind_bridge_validation, bridge_validation_issues
-from dac_her.scientific_signatures import strong_anchor_context_issues
+from domains.dac_her.scientific_signatures import strong_anchor_context_issues
 
 
 def test_alpha4b2a_generic_validation_accepts_domain_anchor_hook():

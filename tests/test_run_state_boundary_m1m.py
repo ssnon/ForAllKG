@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from dac_her.config import (
+from pipeline_core.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,

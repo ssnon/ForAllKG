@@ -1,4 +1,4 @@
-from dac_her.domain_profile import NoveltySemantics
+from pipeline_core.domain_profile import NoveltySemantics
 from dac_her.domains import available_domain_profiles, get_domain_profile
 
 

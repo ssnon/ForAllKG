@@ -25,9 +25,9 @@ EXPECTED_DYNAMIC_STAGES = {
     "scripts.run_novelty_refinement",
 }
 
-DOMAIN_COMPATIBILITY_SURFACE = {
-    "dac_her.domain_profile",
-    "dac_her.feasibility_domain",
+EXPECTED_DOMAIN_SURFACE = {
+    "pipeline_core.domain_profile",
+    "pipeline_core.feasibility_domain",
     "dac_her.domains.registry",
     "dac_her.domains.extraction_registry",
     "dac_her.domains.feasibility_registry",
@@ -228,11 +228,11 @@ def test_e2e_dynamic_stage_capabilities_are_preserved():
     )
 
 
-def test_e2e_domain_compatibility_surface_is_reachable():
+def test_e2e_required_domain_surface_is_reachable():
     closure = _execution_closure()
 
     assert (
-        DOMAIN_COMPATIBILITY_SURFACE
+        EXPECTED_DOMAIN_SURFACE
         <= closure
     )
 

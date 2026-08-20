@@ -8,7 +8,7 @@ from typing import Any, Iterable, Mapping
 
 import networkx as nx
 
-from dac_her.domain_profile import ScientificDomainProfile
+from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains import get_domain_profile
 from pipeline_core.discovery_semantics import (
     is_alignment_node,

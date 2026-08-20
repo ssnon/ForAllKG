@@ -10,7 +10,7 @@ from typing import Any, Iterable, Literal
 
 import networkx as nx
 
-from dac_her.domain_profile import ScientificDomainProfile
+from pipeline_core.domain_profile import ScientificDomainProfile
 from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.resolution_candidates import normalize_scientific_text
 
