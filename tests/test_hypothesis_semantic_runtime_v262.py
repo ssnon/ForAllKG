@@ -15,7 +15,7 @@ from pipeline_core.discovery.hypothesis_semantic_contracts import (
     HypothesisSemanticReviewDraft,
     SEMANTIC_DIMENSIONS,
 )
-from dac_her.hypothesis_semantic_llm import HypothesisSemanticGeneration
+from pipeline_core.discovery.hypothesis_semantic_llm import HypothesisSemanticGeneration
 from dac_her.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime
 
 

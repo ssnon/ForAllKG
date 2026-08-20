@@ -1,6 +1,6 @@
 import pytest
 
-from dac_her.hypothesis_llm import (
+from pipeline_core.discovery.hypothesis_llm import (
     HypothesisDraftBackend,
     HypothesisDraftGeneration,
     InstructorOpenAICompatibleHypothesisBackend,

@@ -24,7 +24,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisProposalDraft,
     PredictedObservationDraft,
 )
-from dac_her.hypothesis_llm import HypothesisDraftBackend
+from pipeline_core.discovery.hypothesis_llm import HypothesisDraftBackend
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from pipeline_core.discovery.internal_novelty import InternalNoveltyAssessor
 from pipeline_core.discovery.novelty_claim_decomposition import LiteratureQueryPlanner
@@ -35,7 +35,7 @@ from pipeline_core.discovery.novelty_refinement_contracts import (
     RefinementAttempt,
     TargetedSearchRecord,
 )
-from dac_her.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
+from pipeline_core.discovery.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
 from dac_her.targeted_novelty_retrieval import TargetedNoveltyRetriever
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,

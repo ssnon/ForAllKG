@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
-from dac_her.hypothesis_semantic_llm import (
+from pipeline_core.discovery.hypothesis_semantic_llm import (
     InstructorOpenAICompatibleSemanticCriticBackend,
 )
 from dac_her.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime

@@ -14,7 +14,7 @@ from pipeline_core.discovery.hypothesis_semantic_contracts import (
     HypothesisSemanticReviewDraft,
     HypothesisSemanticRunRecord,
 )
-from dac_her.hypothesis_semantic_llm import (
+from pipeline_core.discovery.hypothesis_semantic_llm import (
     HypothesisSemanticBackend,
     HypothesisSemanticGeneration,
 )

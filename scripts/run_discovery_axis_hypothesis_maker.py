@@ -16,7 +16,7 @@ from pipeline_core.discovery.evidence_family_selection import (
     audit_family_premise_selection,
 )
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
-from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
+from pipeline_core.discovery.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
 from pipeline_core.discovery.hypothesis_evidence_diversity import (
     HypothesisEvidenceDiversityAssessor,
 )

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
-from dac_her.explorer_llm import InstructorOpenAICompatibleDraftBackend
+from pipeline_core.discovery.explorer_llm import InstructorOpenAICompatibleDraftBackend
 from dac_her.explorer_runtime import GraphExplorerAgentRuntime
 
 

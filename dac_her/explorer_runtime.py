@@ -13,7 +13,7 @@ from dac_her.explorer_compiler import (
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
-from dac_her.explorer_llm import DraftGeneration, ExplorationDraftBackend
+from pipeline_core.discovery.explorer_llm import DraftGeneration, ExplorationDraftBackend
 from dac_her.explorer_normalization import (
     ExplorerDraftNormalizer,
     ExplorerNormalizationAudit,
