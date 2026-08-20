@@ -12,7 +12,7 @@ from dac_her.domain_gate_replay import build_domain_gate_replay_fixture
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.llm_openrouter import OpenRouterLLM
+from pipeline_core.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
 from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
@@ -325,6 +325,8 @@ def extract_one_chunk(
             provider=provider,
             reproducible=False,
             zdr=True,
+            application_title="GraphAgents DAC-HER",
+            default_debug_path="data_dac/debug/last_invalid_structured_response.json",
         )
         raw_debug_path = debug_dir / f"{safe_chunk_id}__generation_{generation_attempt}.json"
         try:
@@ -435,6 +437,8 @@ def extract_one_chunk(
                     provider=provider,
                     reproducible=False,
                     zdr=True,
+                    application_title="GraphAgents DAC-HER",
+                    default_debug_path="data_dac/debug/last_invalid_structured_response.json",
                 )
                 domain_recovery_debug_path = (
                     debug_dir
@@ -740,6 +744,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
+                application_title="GraphAgents DAC-HER",
+                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
             )
             patch_debug_path = (
                 debug_dir / f"{patch_stem}.json"
@@ -971,6 +977,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
+                application_title="GraphAgents DAC-HER",
+                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
             )
 
             micro_index = micro_reextract_attempts

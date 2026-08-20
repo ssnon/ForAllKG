@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from pipeline_core.asset_index import AssetRecord
 from pipeline_core.document_config import FigureProcessingConfig
-from dac_her.llm_openrouter import OpenRouterLLM
+from pipeline_core.openrouter_llm import OpenRouterLLM
 
 
 class FigureValue(BaseModel):
@@ -108,6 +108,8 @@ def analyze_figure(
         provider=provider,
         reproducible=False,
         zdr=True,
+        application_title="GraphAgents DAC-HER",
+        default_debug_path="data_dac/debug/last_invalid_structured_response.json",
     )
     prompt = f"""
 ASSET_ID:

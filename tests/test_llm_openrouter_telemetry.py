@@ -18,7 +18,7 @@ if "dotenv" not in sys.modules:
     dotenv_stub.load_dotenv = lambda: None
     sys.modules["dotenv"] = dotenv_stub
 
-import dac_her.llm_openrouter as llm_module
+import pipeline_core.openrouter_llm as llm_module
 
 
 class TinyDraft(BaseModel):
@@ -71,6 +71,8 @@ def test_openrouter_structured_call_preserves_payload_and_records_telemetry(
     llm = llm_module.OpenRouterLLM(
         model="requested-model",
         telemetry_path=telemetry_path,
+        application_title="test-openrouter-client",
+        default_debug_path=tmp_path / "invalid.json",
     )
     result = llm.generate_structured(
         system_prompt="system prompt",

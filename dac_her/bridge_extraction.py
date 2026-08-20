@@ -296,7 +296,7 @@ def extract_bridge_raw_chunk(
             }
 
     # Import provider client only on a cache miss.
-    from dac_her.llm_openrouter import OpenRouterLLM
+    from pipeline_core.openrouter_llm import OpenRouterLLM
 
     nodes = _catalog(strict_result, bridge_adapter)
     validation_feedback: str | None = None
@@ -308,6 +308,8 @@ def extract_bridge_raw_chunk(
             provider=provider,
             reproducible=False,
             zdr=True,
+            application_title="GraphAgents DAC-HER",
+            default_debug_path="data_dac/debug/last_invalid_structured_response.json",
         )
 
         safe_id = strict_result.chunk_id.replace(
@@ -461,6 +463,8 @@ def extract_bridge_raw_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
+                application_title="GraphAgents DAC-HER",
+                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
             )
             repair_debug_path = (
                 debug_dir

@@ -71,6 +71,8 @@ class OpenRouterLLM:
         self,
         model: str,
         *,
+        application_title: str,
+        default_debug_path: str | Path,
         provider: str | None = None,
         reproducible: bool = True,
         zdr: bool = True,
@@ -80,6 +82,18 @@ class OpenRouterLLM:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY is not defined.")
+
+        title = str(application_title).strip()
+
+        if not title:
+            raise ValueError(
+                "application_title must be non-empty."
+            )
+
+        self.application_title = title
+        self.default_debug_path = Path(
+            default_debug_path
+        )
 
         self.model = model
         self.provider = (
@@ -97,7 +111,7 @@ class OpenRouterLLM:
             timeout=300.0,
             max_retries=3,
             default_headers={
-                "X-OpenRouter-Title": "GraphAgents DAC-HER",
+                "X-OpenRouter-Title": self.application_title,
                 "X-OpenRouter-Metadata": "enabled",
             },
         )
@@ -272,9 +286,7 @@ class OpenRouterLLM:
             path = (
                 Path(debug_path)
                 if debug_path is not None
-                else Path(
-                    "data_dac/debug/last_invalid_structured_response.json"
-                )
+                else self.default_debug_path
             )
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")

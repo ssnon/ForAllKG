@@ -36,7 +36,7 @@ import pipeline_core.bridge_schemas \
     as bridge_schemas_module
 import dac_her.bridge_validation \
     as bridge_validation_module
-import dac_her.llm_openrouter \
+import pipeline_core.openrouter_llm \
     as llm_openrouter_module
 import pipeline_core.corpus.schemas \
     as schemas_module
