@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains.feasibility_registry import resolve_feasibility_adapter
+from domains.feasibility_registry import resolve_feasibility_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.feasibility_domain import FeasibilityDomainAdapter
 from dac_her.literature_provider_plan import (

@@ -30,7 +30,7 @@ EXPECTED_DOMAIN_SURFACE = {
     "pipeline_core.feasibility_domain",
     'domains.registry',
     "dac_her.domains.extraction_registry",
-    "dac_her.domains.feasibility_registry",
+    'domains.feasibility_registry',
     "dac_her.domains.strict_relation_contracts",
 }
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.graph_registry import get_graph_adapter
+from domains.graph_registry import get_graph_adapter
 
 
 def _issues(graph: nx.MultiDiGraph):

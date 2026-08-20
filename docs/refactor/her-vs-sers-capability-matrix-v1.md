@@ -65,12 +65,12 @@ Shared and populated by both HER and SERS:
 
 - [dac_her/domains/registry.py](../../dac_her/domains/registry.py)
 - [dac_her/domains/extraction_registry.py](../../dac_her/domains/extraction_registry.py)
-- [dac_her/domains/graph_registry.py](../../dac_her/domains/graph_registry.py)
+- [dac_her/domains/graph_registry.py](../../domains/graph_registry.py)
 - [dac_her/domains/bridge_registry.py](../../dac_her/domains/bridge_registry.py)
 
 HER-populated, SERS absent:
 
-- [dac_her/domains/feasibility_registry.py](../../dac_her/domains/feasibility_registry.py)
+- [dac_her/domains/feasibility_registry.py](../../domains/feasibility_registry.py)
 
 SERS-populated, HER absent:
 

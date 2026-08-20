@@ -6,7 +6,7 @@ from dac_her.domains.extraction_registry import (
     available_extraction_adapters,
     get_extraction_adapter,
 )
-from dac_her.domains.feasibility_registry import get_feasibility_adapter
+from domains.feasibility_registry import get_feasibility_adapter
 from domains.registry import (
     available_domain_profiles,
     get_domain_profile,

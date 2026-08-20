@@ -7,7 +7,7 @@ import networkx as nx
 import pytest
 
 from dac_her.domains.extraction_registry import get_extraction_adapter
-from dac_her.domains.graph_registry import (
+from domains.graph_registry import (
     available_graph_adapters,
     get_graph_adapter,
 )

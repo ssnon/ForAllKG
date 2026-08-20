@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.graph as canonical
 
-from dac_her.domains.graph_registry import (
+from domains.graph_registry import (
     get_graph_adapter,
 )
 from domains.dac_her.semantic_roles import (

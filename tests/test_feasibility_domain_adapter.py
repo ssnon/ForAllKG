@@ -6,7 +6,7 @@ from pipeline_core.domain_profile import (
     ResolutionSemantics,
     ScientificDomainProfile,
 )
-from dac_her.domains.feasibility_registry import (
+from domains.feasibility_registry import (
     available_feasibility_adapters,
     get_feasibility_adapter,
     resolve_feasibility_adapter,
