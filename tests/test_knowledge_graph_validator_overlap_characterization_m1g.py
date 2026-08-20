@@ -5,9 +5,7 @@ import pytest
 from domains.sers.graph import (
     SERS_RELATION_CONSTRAINTS,
 )
-from dac_her.domains.strict_relation_contracts import (
-    DAC_HER_STRICT_RELATION_CONSTRAINTS,
-)
+from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as DAC_HER_STRICT_RELATION_CONSTRAINTS
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.graph_validation import collect_graph_issues
 from pipeline_core.knowledge_graph_schema import KnowledgeGraph

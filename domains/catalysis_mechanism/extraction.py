@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.catalysis_mechanism_prompts import (
+from domains.catalysis_mechanism.prompts import (
     CATALYSIS_MECHANISM_MICRO_REEXTRACT_SYSTEM_PROMPT,
     CATALYSIS_MECHANISM_PATCH_SYSTEM_PROMPT,
     CATALYSIS_MECHANISM_PROMPT_VERSION,
@@ -8,9 +8,7 @@ from dac_her.catalysis_mechanism_prompts import (
 )
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
-from dac_her.domains.strict_relation_contracts import (
-    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
-)
+from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
 
 
 CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(

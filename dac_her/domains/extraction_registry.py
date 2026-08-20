@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains.catalysis_mechanism_extraction import (
+from domains.catalysis_mechanism.extraction import (
     CATALYSIS_MECHANISM_EXTRACTION_ADAPTER,
 )
 from domains.dac_her.extraction import DAC_HER_EXTRACTION_ADAPTER

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
-from dac_her.domains.catalysis_mechanism_extraction import (
+from domains.catalysis_mechanism.extraction import (
     CATALYSIS_MECHANISM_EXTRACTION_ADAPTER,
 )
 

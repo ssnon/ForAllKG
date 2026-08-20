@@ -31,7 +31,6 @@ EXPECTED_DOMAIN_SURFACE = {
     'domains.registry',
     "dac_her.domains.extraction_registry",
     'domains.feasibility_registry',
-    "dac_her.domains.strict_relation_contracts",
 }
 
 CAMPAIGN_MODULE_PATTERN = re.compile(

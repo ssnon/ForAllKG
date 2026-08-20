@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.catalysis_mechanism_prompts import (
+from domains.catalysis_mechanism.prompts import (
     CATALYSIS_MECHANISM_PROMPT_VERSION,
     CATALYSIS_MECHANISM_SYSTEM_PROMPT,
 )
