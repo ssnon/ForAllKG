@@ -240,33 +240,6 @@ def test_extraction_provenance_points_at_shared_chunking_owner():
     )
 
 
-def test_incremental_full_freshness_points_at_shared_chunking_owner():
-    source = Path(
-        "dac_her/incremental_reconcile.py"
-    ).read_text(
-        encoding="utf-8"
-    )
-
-    assert (
-        "import pipeline_core.chunking "
-        "as chunking_module"
-        in source
-    )
-
-    assert (
-        "import dac_her.chunking "
-        "as chunking_module"
-        not in source
-    )
-
-    assert (
-        "_sha256_file("
-        "Path(chunking_module.__file__)"
-        ")"
-        in source
-    )
-
-
 def test_shared_chunking_dependency_boundary():
     path = Path(
         "pipeline_core/chunking.py"

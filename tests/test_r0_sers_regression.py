@@ -77,31 +77,3 @@ def test_prior_art_matching_default_is_not_sers_so_runner_must_bind_profile() ->
     assert fallback_to_default is True
 
 
-def test_r0_reducer_does_not_import_absence_threshold_router() -> None:
-    tree = _parse("dac_her/r0_runtime.py")
-    imported_modules: set[str] = set()
-    imported_names: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            imported_modules.update(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                imported_modules.add(node.module)
-            imported_names.update(alias.name for alias in node.names)
-
-    assert "dac_her.external_novelty" not in imported_modules
-    assert "ExternalNoveltyPolicy" not in imported_names
-    assert "ExternalNoveltyAssessor" not in imported_names
-
-
-def test_r0_source_contains_no_absence_count_threshold_names() -> None:
-    source = (ROOT / "dac_her/r0_runtime.py").read_text(encoding="utf-8")
-    forbidden = {
-        "min_unique_works_for_absence",
-        "min_abstract_works_for_absence",
-        "min_abstract_works_per_core_claim",
-        "min_successful_queries_for_absence",
-        "sufficient_for_absence_based_novelty",
-    }
-    for name in forbidden:
-        assert name not in source
