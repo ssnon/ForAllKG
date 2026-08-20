@@ -10,7 +10,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     PriorArtPacket,
     PriorArtWork,
 )
-from dac_her.prior_art_matching import PriorArtRanker
+from pipeline_core.discovery.prior_art_matching import PriorArtRanker
 
 
 class FlatEncoder:

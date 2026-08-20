@@ -17,7 +17,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
-from dac_her.prior_art_matching import (
+from pipeline_core.discovery.prior_art_matching import (
     ClaimPriorArtCompiler,
     ClaimReviewBackend,
     PriorArtRanker,

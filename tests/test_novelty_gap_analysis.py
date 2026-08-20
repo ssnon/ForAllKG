@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 from domains.registry import get_domain_profile
-from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
+from pipeline_core.discovery.novelty_gap_analysis import NoveltyGapAnalyzer
 
 
 def _review(status, claim_id, text, importance="core", abstracts=3):

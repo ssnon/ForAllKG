@@ -13,7 +13,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     QueryExecution,
     RankedPriorArtWork,
 )
-from dac_her.prior_art_matching import ClaimPriorArtCompiler
+from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler
 
 
 def _plan(claim_id: str = "c1") -> LiteratureQueryPlan:

@@ -32,7 +32,7 @@ from pipeline_core.discovery.novelty_claim_decomposition import (
     LiteratureQueryPlanner,
     NoveltyClaimDecomposer,
 )
-from dac_her.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
+from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
 )

@@ -51,7 +51,7 @@ def test_sers_au_ag_profile_id_and_aliases_remain_registered() -> None:
 
 
 def test_prior_art_matching_requires_explicit_domain_profile_binding() -> None:
-    tree = _parse("dac_her/prior_art_matching.py")
+    tree = _parse("pipeline_core/discovery/prior_art_matching.py")
 
     # Core scientific matching must not resolve a hidden domain default.
     registry_calls: list[str] = []

@@ -1,4 +1,4 @@
-from dac_her.novelty_gap_analysis import (
+from pipeline_core.discovery.novelty_gap_analysis import (
     _query_has_incomplete_tail,
     _query_terms,
 )
