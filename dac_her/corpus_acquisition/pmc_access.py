@@ -60,6 +60,51 @@ def _normalize_doi(value: str | None) -> str:
     return text.strip()
 
 
+def _numeric_pmcid_from_official_url(
+    value: str | None,
+) -> str | None:
+    """Normalize numeric PMC article URLs into canonical PMCIDs.
+
+    Only official NCBI/PMC article URL shapes are accepted. Arbitrary
+    numeric paths and non-PMC hosts are deliberately ignored.
+    """
+
+    parsed = urlparse(
+        str(value or "").strip()
+    )
+
+    host = (
+        parsed.hostname
+        or ""
+    ).lower()
+
+    path = parsed.path
+
+    match = None
+
+    if host in {
+        "www.ncbi.nlm.nih.gov",
+        "ncbi.nlm.nih.gov",
+    }:
+        match = re.match(
+            r"^/pmc/articles/([0-9]+)(?:/|$)",
+            path,
+            flags=re.IGNORECASE,
+        )
+
+    elif host == "pmc.ncbi.nlm.nih.gov":
+        match = re.match(
+            r"^/articles/([0-9]+)(?:/|$)",
+            path,
+            flags=re.IGNORECASE,
+        )
+
+    if match is None:
+        return None
+
+    return "PMC" + match.group(1)
+
+
 def extract_pmcids(
     locations: list[AccessLocation],
 ) -> list[str]:
@@ -82,6 +127,15 @@ def extract_pmcids(
                 rows.add(
                     match.group(1).upper()
                 )
+
+            normalized = (
+                _numeric_pmcid_from_official_url(
+                    text
+                )
+            )
+
+            if normalized is not None:
+                rows.add(normalized)
 
     return sorted(rows)
 

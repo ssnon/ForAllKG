@@ -177,3 +177,88 @@ def test_pmc_aws_policy_is_opt_in_by_default():
     )
 
     assert policy.use_pmc_aws is False
+
+
+def test_numeric_ncbi_pmc_url_is_normalized():
+    location = AccessLocation(
+        location_id="legacy-ncbi",
+        resolver="openalex",
+        url=(
+            "https://www.ncbi.nlm.nih.gov/"
+            "pmc/articles/7377325"
+        ),
+        is_oa=True,
+        automatic_download_eligible=False,
+    )
+
+    assert extract_pmcids(
+        [location]
+    ) == ["PMC7377325"]
+
+
+def test_numeric_current_pmc_url_is_normalized():
+    location = AccessLocation(
+        location_id="current-pmc",
+        resolver="openalex",
+        url=(
+            "https://pmc.ncbi.nlm.nih.gov/"
+            "articles/9268529/"
+        ),
+        is_oa=True,
+        automatic_download_eligible=False,
+    )
+
+    assert extract_pmcids(
+        [location]
+    ) == ["PMC9268529"]
+
+
+def test_prefixed_pmcid_behavior_is_preserved():
+    location = AccessLocation(
+        location_id="prefixed-pmc",
+        resolver="openalex",
+        url=(
+            "https://pmc.ncbi.nlm.nih.gov/"
+            "articles/PMC10254201/"
+        ),
+        is_oa=True,
+        automatic_download_eligible=False,
+    )
+
+    assert extract_pmcids(
+        [location]
+    ) == ["PMC10254201"]
+
+
+def test_numeric_path_on_unrelated_host_is_rejected():
+    location = AccessLocation(
+        location_id="unrelated",
+        resolver="openalex",
+        url=(
+            "https://example.org/"
+            "pmc/articles/7377325"
+        ),
+        is_oa=True,
+        automatic_download_eligible=False,
+    )
+
+    assert extract_pmcids(
+        [location]
+    ) == []
+
+
+def test_unrelated_ncbi_numeric_path_is_rejected():
+    location = AccessLocation(
+        location_id="unrelated-ncbi",
+        resolver="openalex",
+        url=(
+            "https://www.ncbi.nlm.nih.gov/"
+            "books/7377325"
+        ),
+        is_oa=True,
+        automatic_download_eligible=False,
+    )
+
+    assert extract_pmcids(
+        [location]
+    ) == []

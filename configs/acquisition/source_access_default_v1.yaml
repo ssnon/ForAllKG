@@ -1,5 +1,5 @@
 schema_version: source-acquisition-policy-v1
-policy_id: generic_oa_source_acquisition_v1
+policy_id: generic_oa_source_acquisition_v2
 
 unpaywall_email_env: UNPAYWALL_EMAIL
 fallback_email_env: CROSSREF_MAILTO
