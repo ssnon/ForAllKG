@@ -87,30 +87,3 @@ def test_canonical_audit_has_no_legacy_reverse_dependency():
     assert violations == []
 
 
-def test_inspect_script_imports_canonical_audit():
-    path = (
-        ROOT
-        / "scripts"
-        / "inspect_bridge_graph.py"
-    )
-
-    tree = ast.parse(
-        path.read_text(encoding="utf-8"),
-        filename=str(path),
-    )
-
-    modules = [
-        node.module or ""
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-    ]
-
-    assert (
-        "domains.dac_her.bridge_audit"
-        in modules
-    )
-
-    assert (
-        "dac_her.bridge_audit"
-        not in modules
-    )

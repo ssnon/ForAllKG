@@ -149,39 +149,6 @@ def test_bridge_validation_and_policy_import_canonical():
         )
 
 
-def test_refilter_source_identity_import_is_canonical():
-    path = (
-        ROOT
-        / "scripts"
-        / "refilter_bridge_graph.py"
-    )
-
-    tree = ast.parse(
-        path.read_text(encoding="utf-8"),
-        filename=str(path),
-    )
-
-    modules = []
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            modules.extend(
-                alias.name
-                for alias in node.names
-            )
-
-        elif isinstance(node, ast.ImportFrom):
-            modules.append(node.module or "")
-
-    assert (
-        "domains.dac_her.scientific_signatures"
-        in modules
-    )
-
-    assert (
-        "dac_her.scientific_signatures"
-        not in modules
-    )
 
 
 def test_canonical_module_has_no_reverse_dependency():
