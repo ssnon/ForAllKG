@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.evidence_family_decomposition import (
+from pipeline_core.discovery.evidence_family_decomposition import (
     _child_statement,
 )
 from pipeline_core.discovery.evidence_family_diagnostics import (

@@ -26,7 +26,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 )
 from dac_her.hypothesis_llm import HypothesisDraftBackend
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
-from dac_her.internal_novelty import InternalNoveltyAssessor
+from pipeline_core.discovery.internal_novelty import InternalNoveltyAssessor
 from pipeline_core.discovery.novelty_claim_decomposition import LiteratureQueryPlanner
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from pipeline_core.discovery.novelty_refinement_contracts import (

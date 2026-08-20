@@ -29,7 +29,7 @@ from pipeline_core.discovery.node_mapping import (
     NodeMapper,
     QueryConcept,
 )
-from dac_her.traversal_engine import (
+from pipeline_core.discovery.traversal_engine import (
     TraversalConstraints,
     TraversalEngine,
 )

@@ -29,7 +29,7 @@ from dac_her.hypothesis_llm import HypothesisDraftBackend
 from dac_her.hypothesis_prompt import HypothesisPrompt
 from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
-from dac_her.internal_novelty import (
+from pipeline_core.discovery.internal_novelty import (
     InternalNoveltyAssessor,
     InternalNoveltyCard,
     InternalNoveltyReport,

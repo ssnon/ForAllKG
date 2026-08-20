@@ -16,7 +16,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisRouteContext,
     PredictedObservation,
 )
-from dac_her.internal_novelty import InternalNoveltyAssessor
+from pipeline_core.discovery.internal_novelty import InternalNoveltyAssessor
 
 
 @dataclass

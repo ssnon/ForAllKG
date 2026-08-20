@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.hypothesis_benchmark_evaluator import HypothesisBenchmarkEvaluator
+from pipeline_core.discovery.hypothesis_benchmark_evaluator import HypothesisBenchmarkEvaluator
 from pipeline_core.discovery.hypothesis_benchmark_contracts import HypothesisEvaluationReport
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from pipeline_core.discovery.hypothesis_semantic_contracts import (
