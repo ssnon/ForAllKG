@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import networkx as nx
 import pytest
 
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 from domains.graph_registry import (
     available_graph_adapters,
     get_graph_adapter,

@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from dac_her.strict_recovery import (
     _domain_gate_recovery_response_model,

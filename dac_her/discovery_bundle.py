@@ -28,7 +28,7 @@ from pipeline_core.domain_profile import (
     ScientificDomainProfile,
 )
 from domains.registry import get_domain_profile
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 
 
 _ALIGNMENT_CLASSES = {"registry_alignment", "pattern_alignment"}

@@ -47,7 +47,7 @@ definition/trend stack.
 | Domain profile | Yes | [dac_her/domains/dac_her.py](../../dac_her/domains/dac_her.py) | [dac_her/domains/sers_au_ag.py](../../dac_her/domains/sers_au_ag.py) | Symmetric domain declarations |
 | Extraction adapter | Yes | [dac_her/domains/dac_her_extraction.py](../../dac_her/domains/dac_her_extraction.py) | [dac_her/domains/sers_au_ag_extraction.py](../../dac_her/domains/sers_au_ag_extraction.py) | Symmetric; good core/domain split already |
 | Graph adapter | Yes | [dac_her/domains/dac_her_graph.py](../../dac_her/domains/dac_her_graph.py) | [dac_her/domains/sers_au_ag_graph.py](../../dac_her/domains/sers_au_ag_graph.py) | Symmetric adapter surface; domain semantics differ |
-| Bridge adapter | Yes | [dac_her/domains/dac_her_bridge.py](../../dac_her/domains/dac_her_bridge.py) | [dac_her/domains/sers_au_ag_bridge.py](../../dac_her/domains/sers_au_ag_bridge.py) | Symmetric adapter surface; strong candidate for core + domain packages |
+| Bridge adapter | Yes | [domains/dac_her/bridge.py](../../domains/dac_her/bridge.py) | [dac_her/domains/sers_au_ag_bridge.py](../../dac_her/domains/sers_au_ag_bridge.py) | Symmetric adapter surface; strong candidate for core + domain packages |
 | Feasibility adapter | Yes | [dac_her/domains/dac_her_feasibility.py](../../domains/dac_her/feasibility.py) | None registered | HER owns older validated feasibility stack |
 | Comparison adapter | Yes | None registered | [dac_her/domains/sers_au_ag_comparison.py](../../dac_her/domains/sers_au_ag_comparison.py) | SERS owns newer comparison layer; likely future general pattern |
 | Reproducibility adapter | Yes | None registered | [dac_her/domains/sers_au_ag_reproducibility.py](../../dac_her/domains/sers_au_ag_reproducibility.py) | SERS owns newer reproducibility layer; likely generalizable |
@@ -64,9 +64,9 @@ The current registries make the asymmetry explicit.
 Shared and populated by both HER and SERS:
 
 - [dac_her/domains/registry.py](../../dac_her/domains/registry.py)
-- [dac_her/domains/extraction_registry.py](../../dac_her/domains/extraction_registry.py)
+- [domains/extraction_registry.py](../../domains/extraction_registry.py)
 - [dac_her/domains/graph_registry.py](../../domains/graph_registry.py)
-- [dac_her/domains/bridge_registry.py](../../dac_her/domains/bridge_registry.py)
+- [domains/bridge_registry.py](../../domains/bridge_registry.py)
 
 HER-populated, SERS absent:
 

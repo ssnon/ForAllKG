@@ -2,7 +2,7 @@ from pathlib import Path
 
 from domains.dac_her.bridge_policy import BRIDGE_POLICY_VERSION, partition_bridge_result
 from domains.dac_her.bridge_validation import bridge_validation_issues, validate_bridge_chunk
-from dac_her.domains.bridge_registry import get_bridge_adapter
+from domains.bridge_registry import get_bridge_adapter
 from domains.dac_her.scientific_signatures import (
     strict_node_catalog,
     strong_anchor_context_issues,
@@ -26,13 +26,13 @@ def test_alpha4b2a_her_capability_facade_preserves_legacy_callbacks():
 def test_alpha4b2a_her_domain_owned_fingerprint_files_preserve_legacy_set():
     adapter = get_bridge_adapter("dac_her")
     assert _names(adapter.implementation_files.extraction) == {
-        "dac_her_bridge.py",
+        "bridge.py",
         "bridge_prompts.py",
         "bridge_validation.py",
         "scientific_signatures.py",
     }
     assert _names(adapter.implementation_files.policy) == {
-        "dac_her_bridge.py",
+        "bridge.py",
         "bridge_policy.py",
         "scientific_signatures.py",
     }

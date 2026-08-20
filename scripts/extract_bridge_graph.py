@@ -16,10 +16,8 @@ from dotenv import load_dotenv
 
 import pipeline_core.bridge_domain \
     as bridge_domain_module
-import dac_her.domains.bridge_registry \
-    as bridge_registry_module
-import dac_her.domains.dac_her_bridge \
-    as dac_her_bridge_module
+import domains.bridge_registry as bridge_registry_module
+import domains.dac_her.bridge as dac_her_bridge_module
 import dac_her.bridge_extraction \
     as bridge_extraction_module
 import pipeline_core.bridge_filtering \
@@ -52,8 +50,8 @@ import pipeline_core.bridge_source_reconciliation \
 from dac_her.bridge_extraction import (
     extract_bridge_raw_chunk,
 )
-from dac_her.domains.bridge_registry import resolve_bridge_adapter
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.bridge_registry import resolve_bridge_adapter
+from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
 from pipeline_core.corpus.extraction_quality import (

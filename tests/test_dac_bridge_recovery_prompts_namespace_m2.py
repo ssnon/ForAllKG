@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.bridge_recovery_prompts as canonical
 
-import dac_her.domains.dac_her_bridge as bridge_adapter_module
+import domains.dac_her.bridge as bridge_adapter_module
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,9 +53,9 @@ def test_adapter_uses_canonical_recovery_semantics():
 def test_adapter_source_imports_canonical_recovery_module():
     path = (
         ROOT
-        / "dac_her"
         / "domains"
-        / "dac_her_bridge.py"
+        / "dac_her"
+        / "bridge.py"
     )
 
     tree = ast.parse(

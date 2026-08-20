@@ -39,7 +39,7 @@ def _resolve_bridge_adapter(
     if bridge_adapter is not None:
         return bridge_adapter
 
-    from dac_her.domains.bridge_registry import (
+    from domains.bridge_registry import (
         get_bridge_adapter,
     )
 

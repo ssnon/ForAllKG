@@ -8,7 +8,7 @@ from pathlib import Path
 import networkx as nx
 
 from domains.registry import get_domain_profile
-from dac_her.domains.extraction_registry import (
+from domains.extraction_registry import (
     get_extraction_adapter,
 )
 from dac_her.direct_concept import (

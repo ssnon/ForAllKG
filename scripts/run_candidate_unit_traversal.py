@@ -15,7 +15,7 @@ from dac_her.candidate_unit_selection import (
     endpoint_pair_payload,
 )
 from domains.registry import get_domain_profile
-from dac_her.domains.extraction_registry import (
+from domains.extraction_registry import (
     get_extraction_adapter,
 )
 from pipeline_core.discovery.candidate_units import (

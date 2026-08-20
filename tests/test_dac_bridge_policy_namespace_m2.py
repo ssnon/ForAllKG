@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.domains.dac_her_bridge as adapter_module
+import domains.dac_her.bridge as adapter_module
 import domains.dac_her.bridge_policy as canonical
 import pipeline_core.bridge_schemas as bridge_schemas
 

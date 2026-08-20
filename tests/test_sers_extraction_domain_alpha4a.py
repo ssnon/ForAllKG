@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from dac_her.domains.extraction_registry import (
+from domains.extraction_registry import (
     available_extraction_adapters,
     get_extraction_adapter,
 )

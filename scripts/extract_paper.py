@@ -50,7 +50,7 @@ from pipeline_core.document_package import (
     select_document_sources,
 )
 from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existing_result
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
 from pipeline_core.llm_telemetry import append_extraction_artifact_resolutions

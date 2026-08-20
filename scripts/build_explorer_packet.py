@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from domains.registry import get_domain_profile
-from dac_her.domains.extraction_registry import (
+from domains.extraction_registry import (
     get_extraction_adapter,
 )
 from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder, write_packet

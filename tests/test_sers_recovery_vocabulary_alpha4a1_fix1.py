@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 
 
 def _draft(*relations: str):

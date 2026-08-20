@@ -5,7 +5,7 @@ import inspect
 from pathlib import Path
 
 import domains.dac_her.bridge_validation as legacy
-import dac_her.domains.dac_her_bridge as dac_adapter_module
+import domains.dac_her.bridge as dac_adapter_module
 import domains.sers.bridge as sers_adapter_module
 import domains.dac_her.scientific_signatures as dac_signatures
 import pipeline_core.bridge_schemas as bridge_schemas

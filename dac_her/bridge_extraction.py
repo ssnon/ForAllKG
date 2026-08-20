@@ -44,7 +44,7 @@ def _resolve_bridge_adapter(
 
     # Backward-compatible direct Python callers retain the frozen HER
     # semantics. Domain-aware CLIs resolve explicitly and fail closed.
-    from dac_her.domains.bridge_registry import get_bridge_adapter
+    from domains.bridge_registry import get_bridge_adapter
 
     return get_bridge_adapter("dac_her")
 

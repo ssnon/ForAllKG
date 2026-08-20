@@ -11,7 +11,7 @@ from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.corpus.domain_gate_replay import build_domain_gate_replay_fixture
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.extraction_policy import ExtractionPolicy
-from dac_her.domains.extraction_registry import get_extraction_adapter
+from domains.extraction_registry import get_extraction_adapter
 from pipeline_core.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
 from domains.dac_her.prompts import build_extraction_prompt

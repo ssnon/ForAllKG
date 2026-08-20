@@ -81,7 +81,6 @@ def test_canonical_module_has_no_legacy_dac_import():
 def test_registry_imports_canonical_dac_adapter():
     path = (
         ROOT
-        / "dac_her"
         / "domains"
         / "extraction_registry.py"
     )

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.scientific_signatures as canonical
 
-import dac_her.domains.dac_her_bridge as adapter_module
+import domains.dac_her.bridge as adapter_module
 
 
 ROOT = Path(__file__).resolve().parents[1]

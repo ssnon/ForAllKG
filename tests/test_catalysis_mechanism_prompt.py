@@ -33,7 +33,7 @@ def test_registry_source_wires_broad_profile_and_adapter():
         root / "domains" / "registry.py"
     ).read_text(encoding="utf-8")
     extraction_registry = (
-        root / "dac_her" / "domains" / "extraction_registry.py"
+        root / "domains" / "extraction_registry.py"
     ).read_text(encoding="utf-8")
 
     assert "CATALYSIS_MECHANISM_PROFILE" in profile_registry

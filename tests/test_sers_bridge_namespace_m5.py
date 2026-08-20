@@ -9,7 +9,7 @@ from domains.sers.bridge import (
     SERS_AU_AG_BRIDGE_ADAPTER,
 )
 
-from dac_her.domains.bridge_registry import (
+from domains.bridge_registry import (
     get_bridge_adapter,
 )
 
@@ -54,7 +54,6 @@ def test_registry_returns_canonical_bridge_adapter() -> None:
 def test_registry_imports_canonical_bridge() -> None:
     path = (
         ROOT
-        / "dac_her"
         / "domains"
         / "bridge_registry.py"
     )
