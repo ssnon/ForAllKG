@@ -4,8 +4,8 @@ from pipeline_core.discovery.candidate_decision import CandidateDecisionEngine
 from dac_her.experimental_runtime import ExperimentalRealizabilityRuntime
 from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
 from dac_her.physics_runtime import PhysicsFeasibilityRuntime
-from dac_her.scope_compiler import HypothesisScopeCompiler
-from dac_her.validation_specification import ValidationSpecificationCompiler
+from pipeline_core.scope_compiler import HypothesisScopeCompiler
+from pipeline_core.validation_specification import ValidationSpecificationCompiler
 
 
 def make_intake(statement: str, hypothesis_type: str) -> FeasibilityIntake:

@@ -10,11 +10,11 @@ from pipeline_core.physics_contracts import (
     PhysicsCheckResult,
     PhysicsFeasibilityReport,
 )
-from dac_her.physics_rules import PhysicsCheckPlanner
-from dac_her.scope_compiler import HypothesisScopeCompiler
+from pipeline_core.physics_rules import PhysicsCheckPlanner
+from pipeline_core.scope_compiler import HypothesisScopeCompiler
 from pipeline_core.scope_contracts import ScientificScope
 from pipeline_core.validation_contracts import ValidationSpecification
-from dac_her.validation_specification import ValidationSpecificationCompiler
+from pipeline_core.validation_specification import ValidationSpecificationCompiler
 
 
 class PhysicsTool(Protocol):

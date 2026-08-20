@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
-from dac_her.scope_compiler import HypothesisScopeCompiler
-from dac_her.validation_specification import ValidationSpecificationCompiler
+from pipeline_core.scope_compiler import HypothesisScopeCompiler
+from pipeline_core.validation_specification import ValidationSpecificationCompiler
 
 
 def _intake(*hypotheses: FeasibilityHypothesis) -> FeasibilityIntake:

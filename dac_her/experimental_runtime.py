@@ -11,13 +11,13 @@ from pipeline_core.experimental_contracts import (
     ExperimentalRealizabilityReport,
     ExperimentalRequirement,
 )
-from dac_her.experimental_rules import GenericExperimentalRequirementPlanner
+from pipeline_core.experimental_rules import GenericExperimentalRequirementPlanner
 from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
 from pipeline_core.physics_contracts import PhysicsFeasibilityReport
-from dac_her.scope_compiler import HypothesisScopeCompiler
+from pipeline_core.scope_compiler import HypothesisScopeCompiler
 from pipeline_core.scope_contracts import ScientificScope
 from pipeline_core.validation_contracts import ValidationSpecification
-from dac_her.validation_specification import ValidationSpecificationCompiler
+from pipeline_core.validation_specification import ValidationSpecificationCompiler
 
 
 def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
