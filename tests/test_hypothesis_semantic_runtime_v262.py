@@ -16,7 +16,7 @@ from pipeline_core.discovery.hypothesis_semantic_contracts import (
     SEMANTIC_DIMENSIONS,
 )
 from pipeline_core.discovery.hypothesis_semantic_llm import HypothesisSemanticGeneration
-from dac_her.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime
+from pipeline_core.discovery.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime
 
 
 class FakeBackend:

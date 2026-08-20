@@ -9,7 +9,7 @@ from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, Hypo
 from pipeline_core.discovery.hypothesis_semantic_llm import (
     InstructorOpenAICompatibleSemanticCriticBackend,
 )
-from dac_her.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime
+from pipeline_core.discovery.hypothesis_semantic_runtime import HypothesisSemanticCriticRuntime
 
 
 def _header(value: str) -> tuple[str, str]:

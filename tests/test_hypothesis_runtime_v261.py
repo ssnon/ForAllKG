@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolioDraft
 from pipeline_core.discovery.hypothesis_llm import HypothesisDraftGeneration
-from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
+from pipeline_core.discovery.hypothesis_runtime import HypothesisMakerAgentRuntime
 
 from _hypothesis_v261_fixtures import (
     make_bad_novelty_draft,

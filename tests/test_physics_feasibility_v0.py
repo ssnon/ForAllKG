@@ -6,7 +6,7 @@ from pipeline_core.feasibility_contracts import (
     FeasibilityPremise,
     FeasibilityPrediction,
 )
-from dac_her.physics_runtime import PhysicsFeasibilityRuntime
+from pipeline_core.physics_runtime import PhysicsFeasibilityRuntime
 from pipeline_core.scope_compiler import HypothesisScopeCompiler
 from pipeline_core.validation_specification import ValidationSpecificationCompiler
 

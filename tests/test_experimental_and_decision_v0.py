@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from pipeline_core.discovery.candidate_decision import CandidateDecisionEngine
-from dac_her.experimental_runtime import ExperimentalRealizabilityRuntime
+from pipeline_core.experimental_runtime import ExperimentalRealizabilityRuntime
 from pipeline_core.feasibility_contracts import FeasibilityHypothesis, FeasibilityIntake
-from dac_her.physics_runtime import PhysicsFeasibilityRuntime
+from pipeline_core.physics_runtime import PhysicsFeasibilityRuntime
 from pipeline_core.scope_compiler import HypothesisScopeCompiler
 from pipeline_core.validation_specification import ValidationSpecificationCompiler
 

@@ -27,7 +27,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 )
 from pipeline_core.discovery.hypothesis_llm import HypothesisDraftBackend
 from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt
-from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
+from pipeline_core.discovery.hypothesis_runtime import HypothesisMakerAgentRuntime
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from pipeline_core.discovery.internal_novelty import (
     InternalNoveltyAssessor,
