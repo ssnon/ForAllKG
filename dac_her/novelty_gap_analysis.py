@@ -5,7 +5,6 @@ import json
 import re
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
@@ -274,11 +273,11 @@ class NoveltyGapAnalyzer:
         *,
         max_target_claims: int = 2,
         queries_per_gap: int = 3,
-        domain_profile: ScientificDomainProfile | None = None,
+        domain_profile: ScientificDomainProfile,
     ) -> None:
         self.max_target_claims = max(1, int(max_target_claims))
         self.queries_per_gap = max(1, int(queries_per_gap))
-        self.domain_profile = domain_profile or get_domain_profile("dac_her")
+        self.domain_profile = domain_profile
 
     def _action(self, card: ExternalNoveltyCard) -> str:
         try:

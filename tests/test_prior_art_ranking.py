@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQuery,
     LiteratureQueryPlan,
@@ -67,7 +68,7 @@ def test_token_coverage_and_reaction_domain_break_semantic_ties() -> None:
         searched_at_utc="2026-08-10T00:00:00+00:00",
         works=[orr, her],
     )
-    ranked = PriorArtRanker(FlatEncoder()).rank(claim, packet, plan).ranked_works
+    ranked = PriorArtRanker(FlatEncoder(), domain_profile=get_domain_profile("dac_her")).rank(claim, packet, plan).ranked_works
     assert ranked[0].work_id == "her"
     assert ranked[0].lexical_coverage > 0.0
     assert ranked[0].reaction_domain_relevance > ranked[1].reaction_domain_relevance

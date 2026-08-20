@@ -53,28 +53,13 @@ class ExternalNoveltyAssessor:
         ranker: PriorArtRanker,
         review_backend: ClaimReviewBackend,
         policy: ExternalNoveltyPolicy | None = None,
-        compiler: ClaimPriorArtCompiler | None = None,
+        compiler: ClaimPriorArtCompiler,
     ) -> None:
         self.decomposer = decomposer
         self.ranker = ranker
         self.review_backend = review_backend
         self.policy = policy or ExternalNoveltyPolicy()
-        self.compiler = compiler or ClaimPriorArtCompiler(
-            min_match_confidence=self.policy.min_match_confidence,
-            direct_match_confidence=self.policy.direct_match_confidence,
-            require_abstract_for_strong_match=(
-                self.policy.require_abstract_for_strong_match
-            ),
-            require_abstract_for_partial_match=(
-                self.policy.require_abstract_for_partial_match
-            ),
-            min_reaction_domain_for_conflict=(
-                self.policy.min_reaction_domain_for_conflict
-            ),
-            min_catalyst_scope_for_conflict=(
-                self.policy.min_catalyst_scope_for_conflict
-            ),
-        )
+        self.compiler = compiler
 
     def decompose_portfolio(self, portfolio: HypothesisPortfolio) -> list[Any]:
         return [self.decomposer.decompose(row) for row in portfolio.hypotheses]

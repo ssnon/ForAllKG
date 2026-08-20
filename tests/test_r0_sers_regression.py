@@ -50,10 +50,11 @@ def test_sers_au_ag_profile_id_and_aliases_remain_registered() -> None:
     assert aliases["sers-au-ag"] == "sers_au_ag"
 
 
-def test_prior_art_matching_default_is_not_sers_so_runner_must_bind_profile() -> None:
+def test_prior_art_matching_requires_explicit_domain_profile_binding() -> None:
     tree = _parse("dac_her/prior_art_matching.py")
-    default_profile_calls: list[str] = []
-    fallback_to_default = False
+
+    # Core scientific matching must not resolve a hidden domain default.
+    registry_calls: list[str] = []
     for node in ast.walk(tree):
         if (
             isinstance(node, ast.Call)
@@ -63,17 +64,73 @@ def test_prior_art_matching_default_is_not_sers_so_runner_must_bind_profile() ->
             and isinstance(node.args[0], ast.Constant)
             and isinstance(node.args[0].value, str)
         ):
-            default_profile_calls.append(node.args[0].value)
-        if isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
-            names = {
-                child.id
-                for child in node.values
-                if isinstance(child, ast.Name)
-            }
-            if "domain_profile" in names and "_DEFAULT_DOMAIN_PROFILE" in names:
-                fallback_to_default = True
+            registry_calls.append(node.args[0].value)
 
-    assert "dac_her" in default_profile_calls
-    assert fallback_to_default is True
+    assert registry_calls == []
+
+    # Both low-level scientific components require an explicit profile.
+    for class_name in ("PriorArtRanker", "ClaimPriorArtCompiler"):
+        cls = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and node.name == class_name
+        )
+        init = next(
+            node
+            for node in cls.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "__init__"
+        )
+
+        kwonly_names = [
+            arg.arg
+            for arg in init.args.kwonlyargs
+        ]
+        assert "domain_profile" in kwonly_names
+
+        index = kwonly_names.index("domain_profile")
+        assert init.args.kw_defaults[index] is None
+
+    # Application composition must bind the selected domain explicitly.
+    for runner_path in (
+        "scripts/run_external_novelty.py",
+        "scripts/run_novelty_refinement.py",
+    ):
+        runner = _parse(runner_path)
+
+        seen = {
+            "PriorArtRanker": 0,
+            "ClaimPriorArtCompiler": 0,
+        }
+
+        for node in ast.walk(runner):
+            if not isinstance(node, ast.Call):
+                continue
+
+            if isinstance(node.func, ast.Name):
+                name = node.func.id
+            elif isinstance(node.func, ast.Attribute):
+                name = node.func.attr
+            else:
+                continue
+
+            if name not in seen:
+                continue
+
+            seen[name] += 1
+
+            assert any(
+                keyword.arg == "domain_profile"
+                for keyword in node.keywords
+            ), (
+                f"{runner_path}: {name} must bind "
+                "domain_profile explicitly"
+            )
+
+        assert seen == {
+            "PriorArtRanker": 1,
+            "ClaimPriorArtCompiler": 1,
+        }
 
 

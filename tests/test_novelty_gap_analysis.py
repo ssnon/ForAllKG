@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+from domains.registry import get_domain_profile
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 
 
@@ -44,7 +45,8 @@ def test_insufficient_prioritizes_unresolved_claim():
         queries=[],
     )
     plan = NoveltyGapAnalyzer(
-        max_target_claims=1, queries_per_gap=2
+        max_target_claims=1, queries_per_gap=2,
+        domain_profile=get_domain_profile("dac_her"),
     ).build(portfolio, external, query_plan)
     assert plan.gaps[0].action == "targeted_search_then_refine"
     assert plan.gaps[0].target_claim_ids == ["c2"]

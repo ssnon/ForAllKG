@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReviewDraft,
@@ -99,7 +100,7 @@ def test_direct_and_partial_title_only_matches_are_not_substantive_prior_art() -
             ],
             interpretation="fixture",
         )
-        compiled = ClaimPriorArtCompiler().compile(
+        compiled = ClaimPriorArtCompiler(domain_profile=get_domain_profile("dac_her")).compile(
             claim, _candidates(work, abstract=False), draft, _packet(work), _plan()
         )
         assert compiled.matches[0].relationship == "TITLE_ONLY_NEIGHBOR"
@@ -143,7 +144,7 @@ def test_out_of_scope_d_band_counterexample_is_contextual_not_direct_conflict() 
         ],
         interpretation="fixture",
     )
-    compiled = ClaimPriorArtCompiler().compile(
+    compiled = ClaimPriorArtCompiler(domain_profile=get_domain_profile("dac_her")).compile(
         claim, _candidates(work, abstract=True), draft, _packet(work), _plan()
     )
     assert compiled.matches[0].relationship == "CONTEXTUAL_CONFLICT"
@@ -189,7 +190,7 @@ def test_scope_matched_nitrogen_coordination_conflict_survives() -> None:
         ],
         interpretation="fixture",
     )
-    compiled = ClaimPriorArtCompiler().compile(
+    compiled = ClaimPriorArtCompiler(domain_profile=get_domain_profile("dac_her")).compile(
         claim, _candidates(work, abstract=True), draft, _packet(work), _plan()
     )
     assert compiled.matches[0].relationship == "CONFLICTING_PRIOR_ART"

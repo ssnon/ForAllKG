@@ -6,7 +6,6 @@ from typing import Any, Protocol
 import numpy as np
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReview,
@@ -70,47 +69,18 @@ def _lexical_coverage(claim: NoveltyClaim, document: str) -> float:
     return len(concept_tokens & haystack) / len(concept_tokens)
 
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_REACTION_PATTERNS = _DEFAULT_DOMAIN_PROFILE.novelty.compiled_domain_patterns()
 
 
-def _reaction_domains(text: str) -> set[str]:
-    return {
-        name
-        for name, patterns in _REACTION_PATTERNS.items()
-        if any(pattern.search(text) for pattern in patterns)
-    }
 
 
-def _reaction_domain_relevance(claim_text: str, document: str) -> float:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.domain_relevance(claim_text, document)
 
 
-_SCOPE_PATTERNS = _DEFAULT_DOMAIN_PROFILE.novelty.compiled_scope_patterns()
 
 
-def _scope_features(text: str) -> set[str]:
-    return {
-        name
-        for name, patterns in _SCOPE_PATTERNS.items()
-        if any(pattern.search(text) for pattern in patterns)
-    }
 
 
-def _catalyst_scope_relevance(claim_text: str, document: str) -> float:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.scope_relevance(claim_text, document)
 
 
-def _strong_scope_compatibility(
-    claim_text: str,
-    document: str,
-    *,
-    min_reaction: float,
-    min_scope: float,
-) -> tuple[bool, float, float, list[str]]:
-    return _DEFAULT_DOMAIN_PROFILE.novelty.strong_scope_compatibility(
-        claim_text, document, min_domain=min_reaction, min_scope=min_scope
-    )
 
 
 class EncoderProtocol(Protocol):
@@ -132,11 +102,11 @@ class PriorArtRanker:
         encoder: EncoderProtocol,
         *,
         max_ranked_works_per_claim: int = 8,
-        domain_profile: ScientificDomainProfile | None = None,
+        domain_profile: ScientificDomainProfile,
     ) -> None:
         self.encoder = encoder
         self.max_ranked = int(max_ranked_works_per_claim)
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
+        self.domain_profile = domain_profile
 
     def rank(
         self,
@@ -227,10 +197,10 @@ class ClaimPriorArtCompiler:
         require_abstract_for_partial_match: bool = True,
         min_reaction_domain_for_conflict: float = 0.75,
         min_catalyst_scope_for_conflict: float = 0.75,
-        domain_profile: ScientificDomainProfile | None = None,
+        domain_profile: ScientificDomainProfile,
     ) -> None:
         self.min_match_confidence = float(min_match_confidence)
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
+        self.domain_profile = domain_profile
         self.direct_match_confidence = float(direct_match_confidence)
         self.require_abstract = bool(require_abstract_for_strong_match)
         self.require_abstract_for_partial = bool(require_abstract_for_partial_match)

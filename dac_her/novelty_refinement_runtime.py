@@ -129,7 +129,7 @@ class TargetedNoveltyRefinementRuntime:
         mapper: Any,
         compiler: HypothesisCompiler | None = None,
         validator: HypothesisValidator | None = None,
-        gap_analyzer: NoveltyGapAnalyzer | None = None,
+        gap_analyzer: NoveltyGapAnalyzer,
         fidelity_critic: DiscoveryAxisFidelityCritic | None = None,
         internal_assessor: InternalNoveltyAssessor | None = None,
     ) -> None:
@@ -139,7 +139,7 @@ class TargetedNoveltyRefinementRuntime:
         self.mapper = mapper
         self.compiler = compiler or HypothesisCompiler()
         self.validator = validator or HypothesisValidator()
-        self.gap_analyzer = gap_analyzer or NoveltyGapAnalyzer()
+        self.gap_analyzer = gap_analyzer
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
         self.internal_assessor = internal_assessor or InternalNoveltyAssessor()
 

@@ -1,3 +1,4 @@
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReviewDraft,
@@ -102,7 +103,7 @@ def test_unknown_reviewer_work_id_is_dropped_and_audited():
         ],
         interpretation="bounded review",
     )
-    review = ClaimPriorArtCompiler().compile(
+    review = ClaimPriorArtCompiler(domain_profile=get_domain_profile("dac_her")).compile(
         claim, candidates, draft, packet, plan
     )
     assert review.reviewer_unknown_work_ids == ["prior_art_work:hallucinated"]
@@ -124,7 +125,7 @@ def test_only_unknown_ids_becomes_insufficient_not_no_match():
         ],
         interpretation="bounded review",
     )
-    review = ClaimPriorArtCompiler().compile(
+    review = ClaimPriorArtCompiler(domain_profile=get_domain_profile("dac_her")).compile(
         claim, candidates, draft, packet, plan
     )
     assert review.status == "INSUFFICIENT_METADATA"

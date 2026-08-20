@@ -41,6 +41,7 @@ def assessor() -> ExternalNoveltyAssessor:
         ranker=Dummy(),
         review_backend=Dummy(),
         policy=ExternalNoveltyPolicy(),
+        compiler=Dummy(),
     )
 
 
