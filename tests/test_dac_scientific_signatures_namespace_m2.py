@@ -119,7 +119,7 @@ def test_adapter_provenance_uses_canonical_source():
 
 def test_bridge_validation_and_policy_import_canonical():
     for path in (
-        ROOT / "dac_her" / "bridge_validation.py",
+        ROOT / "domains" / "dac_her" / "bridge_validation.py",
         ROOT / "domains" / "dac_her" / "bridge_policy.py",
     ):
         tree = ast.parse(

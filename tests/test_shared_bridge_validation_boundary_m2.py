@@ -4,7 +4,7 @@ import ast
 import inspect
 from pathlib import Path
 
-import dac_her.bridge_validation as legacy
+import domains.dac_her.bridge_validation as legacy
 import dac_her.domains.dac_her_bridge as dac_adapter_module
 import domains.sers.bridge as sers_adapter_module
 import domains.dac_her.scientific_signatures as dac_signatures
@@ -25,7 +25,7 @@ def test_core_requires_explicit_domain_hook():
     assert parameter.default is inspect.Parameter.empty
 
 
-def test_legacy_preserves_dac_default_hook():
+def test_dac_binding_preserves_default_hook():
     parameter = inspect.signature(
         legacy.bridge_validation_issues
     ).parameters[
@@ -38,24 +38,24 @@ def test_legacy_preserves_dac_default_hook():
     )
 
 
-def test_legacy_public_function_ownership_is_preserved():
+def test_dac_binding_public_function_ownership_is_canonical():
     assert (
         legacy.bridge_validation_issues.__module__
-        == "dac_her.bridge_validation"
+        == "domains.dac_her.bridge_validation"
     )
 
     assert (
         legacy.validate_bridge_chunk.__module__
-        == "dac_her.bridge_validation"
+        == "domains.dac_her.bridge_validation"
     )
 
     assert (
         legacy.bind_bridge_validation.__module__
-        == "dac_her.bridge_validation"
+        == "domains.dac_her.bridge_validation"
     )
 
 
-def test_legacy_binder_preserves_nested_function_module():
+def test_dac_binding_binder_preserves_nested_function_module():
     def hook(**kwargs):
         del kwargs
         return []
@@ -66,16 +66,16 @@ def test_legacy_binder_preserves_nested_function_module():
 
     assert (
         issues.__module__
-        == "dac_her.bridge_validation"
+        == "domains.dac_her.bridge_validation"
     )
 
     assert (
         validate.__module__
-        == "dac_her.bridge_validation"
+        == "domains.dac_her.bridge_validation"
     )
 
 
-def test_dac_adapter_preserves_legacy_callbacks_and_tracks_core():
+def test_dac_adapter_uses_canonical_callbacks_and_tracks_core():
     adapter = (
         dac_adapter_module.DAC_HER_BRIDGE_ADAPTER
     )

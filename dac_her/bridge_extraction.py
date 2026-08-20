@@ -30,7 +30,7 @@ from pipeline_core.bridge_schemas import BridgeChunkGraph
 from pipeline_core.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
 )
-from dac_her.bridge_validation import validate_bridge_chunk
+from domains.dac_her.bridge_validation import validate_bridge_chunk
 from pipeline_core.graph_io import knowledge_graph_to_networkx
 from domains.dac_her.scientific_signatures import strict_node_catalog
 from pipeline_core.corpus.schemas import KnowledgeGraph

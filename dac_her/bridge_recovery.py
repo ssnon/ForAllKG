@@ -19,7 +19,7 @@ from pipeline_core.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
     reconcile_concept_payload,
 )
-from dac_her.bridge_validation import (
+from domains.dac_her.bridge_validation import (
     bridge_validation_issues,
     validate_bridge_chunk,
 )

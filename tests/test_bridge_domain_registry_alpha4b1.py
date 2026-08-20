@@ -13,7 +13,7 @@ from domains.dac_her.bridge_recovery_prompts import (
     BRIDGE_RECOVERY_SYSTEM_PROMPT,
     build_bridge_candidate_repair_prompt,
 )
-from dac_her.bridge_validation import (
+from domains.dac_her.bridge_validation import (
     bridge_validation_issues,
     validate_bridge_chunk,
 )

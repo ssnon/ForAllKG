@@ -34,7 +34,7 @@ import pipeline_core.corpus.bridge_relation_repairs \
     as bridge_relation_repairs_module
 import pipeline_core.bridge_schemas \
     as bridge_schemas_module
-import dac_her.bridge_validation \
+import domains.dac_her.bridge_validation \
     as bridge_validation_module
 import pipeline_core.openrouter_llm \
     as llm_openrouter_module
@@ -64,7 +64,7 @@ from pipeline_core.corpus.extraction_quality import (
 from dac_her.bridge_policy_run import (
     materialize_bridge_policy_run,
 )
-from dac_her.bridge_run_state import (
+from domains.dac_her.bridge_run_state import (
     bridge_extraction_directory,
     compute_bridge_extraction_metadata,
 )

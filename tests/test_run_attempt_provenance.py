@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from dac_her.bridge_run_state import compute_bridge_extraction_metadata
+from domains.dac_her.bridge_run_state import compute_bridge_extraction_metadata
 from dac_her.run_state import (
     attempt_directory,
     resolve_run_directory,

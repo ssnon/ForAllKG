@@ -4,7 +4,7 @@ from pathlib import Path
 
 from domains.dac_her.bridge_policy import BRIDGE_POLICY_VERSION
 from domains.dac_her.bridge_prompts import BRIDGE_PROMPT_VERSION
-from dac_her.bridge_run_state import (
+from domains.dac_her.bridge_run_state import (
     compute_bridge_extraction_metadata,
     compute_bridge_policy_run_metadata,
 )
