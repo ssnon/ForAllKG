@@ -1,1 +1,0 @@
-"""Historical SERS bridge snapshots."""
