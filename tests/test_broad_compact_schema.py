@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from dac_her.broad_compact_schema import BroadMechanismGraphDraft
+from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from dac_her.llm_telemetry import estimate_tokens, normalize_stage_name
 

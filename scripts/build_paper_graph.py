@@ -26,7 +26,7 @@ from pipeline_core.corpus.extraction_quality import (
     quality_from_active_payload,
 )
 from pipeline_core.locator_index import load_locator_index
-from dac_her.measurement_merge_invariants import (
+from pipeline_core.corpus.measurement_merge_invariants import (
     MEASUREMENT_MERGE_INVARIANT_ID,
     assert_measurement_value_xor,
     measurement_mentions_conflict,

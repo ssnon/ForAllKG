@@ -4,7 +4,7 @@ from typing import Iterable
 
 import networkx as nx
 
-from dac_her.metric_normalization_policy import (
+from pipeline_core.corpus.metric_normalization_policy import (
     refine_distance_metric_id,
     refine_semantic_metric_id,
 )

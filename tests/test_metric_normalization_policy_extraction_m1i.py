@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 
 import dac_her.graph_normalization as normalization
-import dac_her.metric_normalization_policy as policy
+import pipeline_core.corpus.metric_normalization_policy as policy
 
 
 def test_graph_normalization_reexports_policy_functions():

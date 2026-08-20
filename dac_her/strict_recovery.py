@@ -17,7 +17,7 @@ from pipeline_core.corpus.lossless_normalization import normalize_knowledge_grap
 from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
 from pipeline_core.corpus.schemas import KnowledgeGraph
-from dac_her.semantic_patch import PatchRejected, apply_semantic_patch
+from pipeline_core.corpus.semantic_patch import PatchRejected, apply_semantic_patch
 from domains.dac_her.semantic_patch_prompts import (
     PATCH_SYSTEM_PROMPT,
     build_patch_rejection_feedback,

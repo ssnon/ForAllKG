@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.measurement_merge_invariants import (
+from pipeline_core.corpus.measurement_merge_invariants import (
     MEASUREMENT_MERGE_INVARIANT_ID,
     assert_measurement_value_xor,
     measurement_mentions_conflict,
