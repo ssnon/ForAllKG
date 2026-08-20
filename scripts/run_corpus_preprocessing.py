@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-from dac_her.corpus_acquisition.knowledge_backfill import (
+from scripts.knowledge_backfill_runtime import (
     write_dynamic_target_profile,
 )
 

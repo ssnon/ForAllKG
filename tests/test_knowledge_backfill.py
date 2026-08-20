@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.knowledge_backfill import (
+from scripts.knowledge_backfill_runtime import (
     KnowledgeAwareBackfillCoordinator,
     KnowledgeBackfillOptions,
     KnowledgeBackfillPaths,

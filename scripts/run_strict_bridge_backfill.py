@@ -8,7 +8,7 @@ from dac_her.corpus_publication import (
     CorpusPublicationOptions,
     StrictBridgeCorpusPublisher,
 )
-from dac_her.corpus_acquisition.knowledge_backfill import (
+from scripts.knowledge_backfill_runtime import (
     KnowledgeAwareBackfillCoordinator,
     KnowledgeBackfillOptions,
     KnowledgeBackfillPaths,
