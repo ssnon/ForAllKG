@@ -86,7 +86,7 @@ def main() -> None:
         else packet_path.with_suffix("").with_name(packet_path.stem.replace(".packet", "") + ".explorer_v251")
     )
 
-    from dac_her.explorer_prompt import ExplorerPromptAssembler
+    from pipeline_core.discovery.explorer_prompt import ExplorerPromptAssembler
 
     assembler = ExplorerPromptAssembler()
     prompt = assembler.build(packet)

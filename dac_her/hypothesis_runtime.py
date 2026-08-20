@@ -17,7 +17,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisPortfolioDraft,
 )
 from dac_her.hypothesis_llm import HypothesisDraftBackend, HypothesisDraftGeneration
-from dac_her.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
+from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
 from pipeline_core.discovery.hypothesis_run_record import HypothesisMakerRunRecord
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidationResult, HypothesisValidator
 

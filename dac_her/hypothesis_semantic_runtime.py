@@ -18,7 +18,7 @@ from dac_her.hypothesis_semantic_llm import (
     HypothesisSemanticBackend,
     HypothesisSemanticGeneration,
 )
-from dac_her.hypothesis_semantic_prompt import (
+from pipeline_core.discovery.hypothesis_semantic_prompt import (
     HypothesisSemanticPrompt,
     HypothesisSemanticPromptAssembler,
 )

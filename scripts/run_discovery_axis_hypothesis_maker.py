@@ -11,7 +11,7 @@ from dac_her.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
 from pipeline_core.discovery.evidence_family_decomposition import (
     EvidenceFamilyDecompositionReport,
 )
-from dac_her.evidence_family_selection import (
+from pipeline_core.discovery.evidence_family_selection import (
     EvidenceFamilyHierarchy,
     audit_family_premise_selection,
 )

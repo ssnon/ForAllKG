@@ -9,8 +9,8 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolioDraft,
 )
-from dac_her.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
-from dac_her.evidence_family_selection import (
+from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
+from pipeline_core.discovery.evidence_family_selection import (
     EvidenceFamilyHierarchy,
     render_family_hierarchy_guidance,
 )

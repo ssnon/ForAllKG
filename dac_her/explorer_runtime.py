@@ -18,7 +18,7 @@ from dac_her.explorer_normalization import (
     ExplorerDraftNormalizer,
     ExplorerNormalizationAudit,
 )
-from dac_her.explorer_prompt import ExplorerPrompt, ExplorerPromptAssembler
+from pipeline_core.discovery.explorer_prompt import ExplorerPrompt, ExplorerPromptAssembler
 from pipeline_core.discovery.explorer_run_record import GraphExplorerRunRecord
 from dac_her.explorer_validation import ExplorationReportValidator, ExplorationValidationResult
 

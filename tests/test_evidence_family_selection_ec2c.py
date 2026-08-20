@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.evidence_family_selection import (
+from pipeline_core.discovery.evidence_family_selection import (
     EvidenceFamilyHierarchy,
     FamilyHierarchyChild,
     FamilyHierarchyGroup,

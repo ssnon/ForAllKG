@@ -1,5 +1,5 @@
 from pipeline_core.discovery.hypothesis_compiler import HypothesisCompileIssue
-from dac_her.hypothesis_prompt import HypothesisPromptAssembler, PROMPT_VERSION
+from pipeline_core.discovery.hypothesis_prompt import HypothesisPromptAssembler, PROMPT_VERSION
 
 from _hypothesis_v261_fixtures import make_context, make_valid_draft
 

@@ -14,7 +14,7 @@ from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryHypothesisLineage,
 )
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
-from dac_her.evidence_family_selection import EvidenceFamilyHierarchy
+from pipeline_core.discovery.evidence_family_selection import EvidenceFamilyHierarchy
 from dac_her.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
@@ -26,7 +26,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     PredictedObservationDraft,
 )
 from dac_her.hypothesis_llm import HypothesisDraftBackend
-from dac_her.hypothesis_prompt import HypothesisPrompt
+from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt
 from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
 from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from pipeline_core.discovery.internal_novelty import (

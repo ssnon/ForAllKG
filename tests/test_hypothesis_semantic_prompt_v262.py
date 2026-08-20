@@ -11,7 +11,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     PredictedObservationDraft,
 )
 from pipeline_core.discovery.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
-from dac_her.hypothesis_semantic_prompt import HypothesisSemanticPromptAssembler
+from pipeline_core.discovery.hypothesis_semantic_prompt import HypothesisSemanticPromptAssembler
 
 
 def fixture():

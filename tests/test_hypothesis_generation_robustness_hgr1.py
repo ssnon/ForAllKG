@@ -6,7 +6,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisEvidenceStatement,
 )
-from dac_her.hypothesis_prompt import HypothesisPromptAssembler
+from pipeline_core.discovery.hypothesis_prompt import HypothesisPromptAssembler
 from scripts import run_discovery_axis_hypothesis_maker as axis_runner
 from scripts import run_dac_discovery_e2e as e2e_runner
 

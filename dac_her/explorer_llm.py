@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Mapping, Protocol, runtime_checkable
 
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
-from dac_her.explorer_prompt import ExplorerPrompt
+from pipeline_core.discovery.explorer_prompt import ExplorerPrompt
 from pipeline_core.llm_telemetry import run_instructor_structured_call
 
 
