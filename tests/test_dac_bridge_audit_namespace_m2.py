@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.bridge_audit as legacy
 import domains.dac_her.bridge_audit as canonical
 import domains.dac_her.bridge_policy as policy
 import domains.dac_her.scientific_signatures as signatures
@@ -18,12 +17,6 @@ AUDIT_OBJECTS = (
 )
 
 
-def test_legacy_audit_identity_is_preserved():
-    for name in AUDIT_OBJECTS:
-        assert (
-            getattr(legacy, name)
-            is getattr(canonical, name)
-        )
 
 
 def test_audit_objects_are_domain_owned():

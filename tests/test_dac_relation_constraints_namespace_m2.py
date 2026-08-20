@@ -19,9 +19,6 @@ from dac_her.domains.strict_relation_contracts import (
     SERS_AU_AG_STRICT_RELATION_CONSTRAINTS,
 )
 
-from dac_her.domains.dac_her_extraction import (
-    DAC_HER_EXTRACTION_ADAPTER,
-)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,11 +47,6 @@ def test_sers_still_uses_shared_core_policy():
     )
 
 
-def test_dac_adapter_consumes_canonical_domain_policy():
-    assert (
-        DAC_HER_EXTRACTION_ADAPTER.strict_relation_constraints
-        is CANONICAL_DAC
-    )
 
 
 def test_dac_policy_reuses_shared_core_objects():

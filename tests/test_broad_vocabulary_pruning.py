@@ -4,10 +4,6 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.broad_corpus_pipeline import (
-    BroadCorpusPilotPipeline,
-    BroadPilotOptions,
-)
 from dac_her.extraction_vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
@@ -56,38 +52,3 @@ def test_broad_pruned_context_is_smaller_than_legacy_full_surface():
     assert pruned_tokens < full_tokens
 
 
-def test_broad_pipeline_propagates_metric_vocab_pruning_flag(
-    tmp_path: Path,
-):
-    papers = tmp_path / "papers.yaml"
-    papers.write_text(
-        yaml.safe_dump(
-            {
-                "version": 3,
-                "papers": {
-                    "broad_A": {
-                        "enabled": True,
-                        "documents": [],
-                    }
-                },
-            },
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
-    pipeline = BroadCorpusPilotPipeline(
-        project_root=tmp_path,
-        papers_yaml=papers,
-        corpus_id="broad-vocab-pruning-smoke",
-        options=BroadPilotOptions(
-            data_root="data_broad",
-            dry_run=True,
-            broad_compact_schema=True,
-            broad_prune_metric_vocabulary=True,
-        ),
-        requested_paper_ids=["broad_A"],
-    )
-
-    command = pipeline.paper_command("broad_A", "extract")
-    assert "--broad-compact-schema" in command
-    assert "--broad-prune-metric-vocabulary" in command

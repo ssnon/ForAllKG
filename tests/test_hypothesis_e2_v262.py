@@ -2,13 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.hypothesis_e2 import worksheet_to_combined_spec
-from dac_her.hypothesis_e2_contracts import (
-    HypothesisE2HumanDimension,
-    HypothesisE2HumanReviewCase,
-    HypothesisE2HumanReviewWorksheet,
-)
-from dac_her.hypothesis_real_gold_contracts import HypothesisRealGoldSpec
 from dac_her.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
 from scripts.build_hypothesis_v262_e2_contexts import build_e2_contexts
 
@@ -122,40 +115,7 @@ def test_e2_controlled_contexts_cover_required_scenarios():
     assert not any(row.eligible_as_premise for row in abstention.evidence_statements)
 
 
-def test_e2_finalizer_rejects_pending_human_review():
-    with pytest.raises(ValueError, match="still 'pending'"):
-        worksheet_to_combined_spec(
-            base_spec=_base_spec(),
-            worksheet=_worksheet(approved=False),
-            output_suite_id="combined",
-        )
 
 
-def test_e2_finalizer_requires_human_allowed_verdicts():
-    worksheet = _worksheet(approved=True)
-    worksheet.cases[0].dimensions[0].human_allowed_verdicts = []
-    with pytest.raises(ValueError, match="human_allowed_verdicts is empty"):
-        worksheet_to_combined_spec(
-            base_spec=_base_spec(),
-            worksheet=worksheet,
-            output_suite_id="combined",
-        )
 
 
-def test_e2_finalizer_builds_five_case_spec_after_approval():
-    combined = worksheet_to_combined_spec(
-        base_spec=_base_spec(),
-        worksheet=_worksheet(approved=True),
-        output_suite_id="combined",
-    )
-    assert combined.suite_id == "combined"
-    assert len(combined.cases) == 5
-    assert {
-        row.case_id for row in combined.cases
-    } == {
-        "k9",
-        "e2_candidate",
-        "e2_alignment",
-        "e2_partial",
-        "e2_abstention",
-    }

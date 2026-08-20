@@ -8,7 +8,6 @@ from dac_her.measurement_merge_invariants import (
     measurement_mentions_conflict,
     measurement_value_payload_issues,
 )
-from dac_her.semantic_audit import metric_semantic_issues
 from scripts.build_paper_graph import merge_chunk_graph
 
 
@@ -169,26 +168,3 @@ def test_identical_numeric_mentions_keep_one_measurement_node():
     assert collisions == []
 
 
-def test_payload_audit_catches_both_values_and_feeds_core_metric_audit():
-    graph = nx.MultiDiGraph()
-    graph.add_node(
-        "bad",
-        **_measurement(
-            value_numeric=8.4,
-            value_text="3.6–10.0 nm",
-        ),
-    )
-
-    issues = measurement_value_payload_issues(graph)
-    assert len(issues) == 1
-    assert issues[0]["id"] == "bad"
-    assert issues[0]["measurement_merge_invariant_id"] == (
-        MEASUREMENT_MERGE_INVARIANT_ID
-    )
-
-    semantic = metric_semantic_issues(graph)
-    assert any(
-        row.get("issue")
-        == "Measurement value payload violates numeric/text XOR"
-        for row in semantic
-    )

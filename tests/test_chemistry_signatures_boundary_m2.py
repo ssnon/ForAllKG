@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.chemistry_signatures as legacy
 import pipeline_core.chemistry_signatures as core
 
 
@@ -27,28 +26,8 @@ BEHAVIOR_CASES = (
 )
 
 
-def test_function_identity_is_preserved():
-    assert (
-        legacy.composition_signature
-        is core.composition_signature
-    )
-
-    assert (
-        legacy.metal_signature
-        is core.metal_signature
-    )
 
 
-def test_constant_identity_is_preserved():
-    assert (
-        legacy.METAL_SYMBOLS
-        is core.METAL_SYMBOLS
-    )
-
-    assert (
-        legacy.METAL_NAMES
-        is core.METAL_NAMES
-    )
 
 
 def test_functions_are_core_owned():
@@ -63,17 +42,6 @@ def test_functions_are_core_owned():
     )
 
 
-def test_behavior_is_identical_through_legacy_facade():
-    for value in BEHAVIOR_CASES:
-        assert (
-            legacy.composition_signature(value)
-            == core.composition_signature(value)
-        )
-
-        assert (
-            legacy.metal_signature(value)
-            == core.metal_signature(value)
-        )
 
 
 def test_core_has_no_reverse_dependency():

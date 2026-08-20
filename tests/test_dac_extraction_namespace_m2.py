@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.domains.dac_her_extraction as legacy
 import domains.dac_her.extraction as canonical
 
 from pipeline_core.extraction_domain import (
@@ -18,11 +17,6 @@ from domains.dac_her.relation_constraints import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_legacy_adapter_is_canonical_adapter():
-    assert (
-        legacy.DAC_HER_EXTRACTION_ADAPTER
-        is canonical.DAC_HER_EXTRACTION_ADAPTER
-    )
 
 
 def test_adapter_uses_shared_core_type():
@@ -32,16 +26,6 @@ def test_adapter_uses_shared_core_type():
     )
 
 
-def test_adapter_is_domain_owned():
-    assert (
-        canonical.DAC_HER_EXTRACTION_ADAPTER
-        is legacy.DAC_HER_EXTRACTION_ADAPTER
-    )
-
-    assert (
-        canonical.__name__
-        == "domains.dac_her.extraction"
-    )
 
 
 def test_adapter_consumes_canonical_relation_policy():

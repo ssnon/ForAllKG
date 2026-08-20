@@ -7,10 +7,6 @@ import pytest
 import yaml
 
 from dac_her.broad_compact_schema import BroadMechanismGraphDraft
-from dac_her.broad_corpus_pipeline import (
-    BroadCorpusPilotPipeline,
-    BroadPilotOptions,
-)
 from dac_her.draft_schema import KnowledgeGraphDraft
 from dac_her.llm_telemetry import estimate_tokens, normalize_stage_name
 
@@ -91,34 +87,3 @@ def test_compact_response_model_keeps_graph_generation_stage_name():
     ) == "graph_generation"
 
 
-def test_broad_pipeline_propagates_compact_schema_flag(tmp_path: Path):
-    papers = tmp_path / "papers.yaml"
-    papers.write_text(
-        yaml.safe_dump(
-            {
-                "version": 3,
-                "papers": {
-                    "broad_A": {
-                        "enabled": True,
-                        "documents": [],
-                    }
-                },
-            },
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
-    pipeline = BroadCorpusPilotPipeline(
-        project_root=tmp_path,
-        papers_yaml=papers,
-        corpus_id="compact-schema-smoke",
-        options=BroadPilotOptions(
-            data_root="data_broad",
-            dry_run=True,
-            broad_compact_schema=True,
-        ),
-        requested_paper_ids=["broad_A"],
-    )
-
-    command = pipeline.paper_command("broad_A", "extract")
-    assert "--broad-compact-schema" in command

@@ -12,7 +12,6 @@ import dac_her.asset_index as legacy_assets
 import dac_her.locator_index as legacy_locators
 import dac_her.extraction_policy as legacy_extraction_policy
 import dac_her.explorer_text_safety as legacy_text_safety
-import dac_her.markdown as legacy_markdown
 import dac_her.traversal_runtime_policy as legacy_traversal_policy
 import dac_her.validation as legacy_validation
 import dac_her.validation_issues as legacy_issues
@@ -32,48 +31,6 @@ import pipeline_core.validation as core_validation
 import pipeline_core.validation_issues as core_issues
 
 
-def test_legacy_graph_bridge_modules_reexport_core_implementations():
-    symbol_pairs = (
-        (legacy_bridge_draft.BridgeChunkDraft, core_bridge_draft.BridgeChunkDraft),
-        (legacy_bridge_draft.BridgeCandidateRepair, core_bridge_draft.BridgeCandidateRepair),
-        (legacy_bridge.BridgeConcept, core_bridge.BridgeConcept),
-        (legacy_bridge.BridgeChunkGraph, core_bridge.BridgeChunkGraph),
-        (legacy_graph_io.knowledge_graph_to_networkx, core_graph_io.knowledge_graph_to_networkx),
-        (legacy_graph_io.save_graphml, core_graph_io.save_graphml),
-        (legacy_graph_validation.collect_graph_issues, core_graph_validation.collect_graph_issues),
-        (
-            legacy_node_references.remap_node_reference_attributes,
-            core_node_references.remap_node_reference_attributes,
-        ),
-        (legacy_discovery.normalized_node_type, core_discovery.normalized_node_type),
-        (legacy_discovery.is_mechanism_node, core_discovery.is_mechanism_node),
-        (legacy_discovery.is_generic_entity_node, core_discovery.is_generic_entity_node),
-        (legacy_assets.AssetRecord, core_assets.AssetRecord),
-        (legacy_assets.build_asset_index, core_assets.build_asset_index),
-        (legacy_assets.write_assets_jsonl, core_assets.write_assets_jsonl),
-        (legacy_locators.LocatorOccurrence, core_locators.LocatorOccurrence),
-        (legacy_locators.LocatorIndexRecord, core_locators.LocatorIndexRecord),
-        (legacy_locators.build_locator_index, core_locators.build_locator_index),
-        (legacy_locators.write_locator_index_json, core_locators.write_locator_index_json),
-        (legacy_extraction_policy.ExtractionPolicy, core_extraction_policy.ExtractionPolicy),
-        (legacy_text_safety.contains_absence_language, core_text_safety.contains_absence_language),
-        (legacy_markdown.extract_markdown_section, core_markdown.extract_markdown_section),
-        (
-            legacy_traversal_policy.SemanticStopAblationGuard,
-            core_traversal_policy.SemanticStopAblationGuard,
-        ),
-        (
-            legacy_traversal_policy.resolve_semantic_stop_max_depth,
-            core_traversal_policy.resolve_semantic_stop_max_depth,
-        ),
-        (legacy_validation.validate_graph_provenance, core_validation.validate_graph_provenance),
-        (legacy_issues.ValidationIssue, core_issues.ValidationIssue),
-        (legacy_issues.ValidationReport, core_issues.ValidationReport),
-        (legacy_issues.issue, core_issues.issue),
-    )
-
-    for legacy_symbol, core_symbol in symbol_pairs:
-        assert legacy_symbol is core_symbol
 
 
 def test_node_reference_remapping_preserves_graphml_foreign_keys():

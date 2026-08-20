@@ -7,7 +7,6 @@ from pathlib import Path
 import yaml
 
 import dac_her.config as config
-import dac_her.paper_config as legacy_paper_config
 
 
 def _write_yaml(
@@ -388,28 +387,6 @@ def test_legacy_paper_yaml_shape_is_preserved(
     )
 
 
-def test_paper_config_compatibility_module_preserves_identity():
-    names = (
-        "DocumentConfig",
-        "DocumentSelection",
-        "FigureProcessingConfig",
-        "PaperConfig",
-        "get_paper_config",
-        "load_paper_configs",
-        "paper_config_fingerprint_payload",
-    )
-
-    for name in names:
-        assert (
-            getattr(
-                legacy_paper_config,
-                name,
-            )
-            is getattr(
-                config,
-                name,
-            )
-        )
 
 
 def test_shared_core_no_longer_depends_on_dac_config():

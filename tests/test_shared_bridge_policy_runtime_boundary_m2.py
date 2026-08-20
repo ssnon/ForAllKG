@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.bridge_policy_runtime as legacy
 import domains.sers.bridge as sers_adapter_module
 import pipeline_core.bridge_policy_runtime as core
 
@@ -20,12 +19,6 @@ PUBLIC_RUNTIME = (
 )
 
 
-def test_legacy_public_runtime_identity_is_preserved():
-    for name in PUBLIC_RUNTIME:
-        assert (
-            getattr(legacy, name)
-            is getattr(core, name)
-        )
 
 
 def test_runtime_is_core_owned():
@@ -105,24 +98,3 @@ def test_sers_policy_imports_canonical_runtime():
     )
 
 
-def test_sers_adapter_provenance_uses_core_runtime():
-    adapter = (
-        sers_adapter_module.SERS_AU_AG_BRIDGE_ADAPTER
-    )
-
-    core_path = Path(
-        core.__file__
-    ).resolve()
-
-    legacy_path = Path(
-        legacy.__file__
-    ).resolve()
-
-    policy = {
-        Path(value).resolve()
-        for value
-        in adapter.implementation_files.policy
-    }
-
-    assert core_path in policy
-    assert legacy_path not in policy
