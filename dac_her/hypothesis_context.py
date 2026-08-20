@@ -4,9 +4,9 @@ import hashlib
 import json
 from typing import Any
 
-from dac_her.explorer_contracts import ExplorationReport, GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from dac_her.explorer_validation import ExplorationReportValidator
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisDesignLeverContext,
     HypothesisEvidenceStatement,

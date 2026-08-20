@@ -7,11 +7,11 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
     GraphExplorerPacket,
 )
-from dac_her.hypothesis_contracts import HypothesisContext
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
 
 
 class StrictModel(BaseModel):

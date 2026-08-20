@@ -9,14 +9,14 @@ from dac_her.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSyn
 from dac_her.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.external_novelty import ExternalNoveltyAssessor
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyCard,
     ExternalNoveltyReport,
     LiteratureQueryPlan,
     PriorArtPacket,
 )
 from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisCard,
     HypothesisPortfolio,

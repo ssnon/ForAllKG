@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from dac_her.domains.registry import get_domain_profile
 from dac_her.external_novelty import ExternalNoveltyAssessor
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ClaimSearchCoverage,
     ExternalNoveltyPolicy,
@@ -15,7 +15,7 @@ from dac_her.external_novelty_contracts import (
     NoveltyClaim,
     PriorArtPacket,
 )
-from dac_her.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from dac_her.novelty_gap_analysis import NoveltyGapAnalyzer
 from dac_her.novelty_refinement_contracts import NoveltyGap, TargetedGapQuery
 from dac_her.targeted_novelty_retrieval import build_augmented_query_plan

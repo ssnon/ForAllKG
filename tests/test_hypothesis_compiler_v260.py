@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisPortfolioDraft,
     HypothesisProposalDraft,
@@ -75,7 +75,7 @@ def test_compiler_allows_explicit_abstention():
 
 
 def test_compiler_rejects_alignment_dependent_positive_premise():
-    from dac_her.hypothesis_contracts import HypothesisEvidenceStatement
+    from pipeline_core.discovery.hypothesis_contracts import HypothesisEvidenceStatement
 
     context = make_context()
     alignment_statement = HypothesisEvidenceStatement(

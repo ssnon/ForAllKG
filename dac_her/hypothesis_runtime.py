@@ -11,14 +11,14 @@ from dac_her.hypothesis_compiler import (
     HypothesisCompileIssue,
     HypothesisCompiler,
 )
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolio,
     HypothesisPortfolioDraft,
 )
 from dac_her.hypothesis_llm import HypothesisDraftBackend, HypothesisDraftGeneration
 from dac_her.hypothesis_prompt import HypothesisPrompt, HypothesisPromptAssembler
-from dac_her.hypothesis_run_record import HypothesisMakerRunRecord
+from pipeline_core.discovery.hypothesis_run_record import HypothesisMakerRunRecord
 from dac_her.hypothesis_validation import HypothesisValidationResult, HypothesisValidator
 
 

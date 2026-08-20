@@ -5,14 +5,14 @@ import json
 import re
 from typing import Protocol
 
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     HypothesisNoveltyClaims,
     LiteratureQuery,
     LiteratureQueryPlan,
     NoveltyClaim,
     NoveltyClaimDecompositionDraft,
 )
-from dac_her.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 
 
 def _canonical_json(value: object) -> str:

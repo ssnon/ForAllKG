@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
+from pipeline_core.discovery.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
 from scripts.build_hypothesis_v262_e2_contexts import build_e2_contexts
 
 

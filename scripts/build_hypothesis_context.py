@@ -14,7 +14,7 @@ from dac_her.path_lineage_diagnostics import (
 from dac_her.path_lineage_propagation import (
     MinimalPathLineagePropagator,
 )
-from dac_her.explorer_contracts import ExplorationReport, GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from dac_her.hypothesis_context import HypothesisContextBuilder
 
 

@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolio,
 )

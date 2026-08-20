@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Any, Iterable
 
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     AlignmentContext,
     CorpusScope,
     EdgeEvidence,

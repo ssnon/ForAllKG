@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.hypothesis_contracts import HypothesisPortfolioDraft
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolioDraft
 from dac_her.hypothesis_llm import HypothesisDraftGeneration
 from dac_her.hypothesis_runtime import HypothesisMakerAgentRuntime
 

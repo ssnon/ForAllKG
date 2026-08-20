@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 
 
 class StrictModel(BaseModel):

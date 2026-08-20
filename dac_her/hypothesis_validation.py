@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 
 
 class HypothesisValidationIssue(BaseModel):

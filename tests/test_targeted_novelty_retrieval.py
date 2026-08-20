@@ -1,4 +1,4 @@
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
     NoveltyClaim,
     HypothesisNoveltyClaims,

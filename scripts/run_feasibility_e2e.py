@@ -8,8 +8,8 @@ from dac_her.candidate_decision import CandidateDecisionEngine
 from dac_her.domains.feasibility_registry import get_feasibility_adapter
 from dac_her.domains.registry import get_domain_profile
 from dac_her.feasibility_intake import FeasibilityIntakeBuilder
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
-from dac_her.hypothesis_semantic_contracts import HypothesisSemanticReview
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_semantic_contracts import HypothesisSemanticReview
 
 
 def _load(path: Path, model):

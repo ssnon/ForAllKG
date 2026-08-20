@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
     HypothesisCard,
     HypothesisContext,

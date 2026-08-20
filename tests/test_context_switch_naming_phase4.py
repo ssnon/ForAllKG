@@ -9,7 +9,7 @@ from dac_her.candidate_unit_selection import (
 )
 from dac_her.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
-from dac_her.discovery_contracts import DiscoveryScoreBreakdown
+from pipeline_core.discovery.discovery_contracts import DiscoveryScoreBreakdown
 from dac_her.domains import get_domain_profile
 
 

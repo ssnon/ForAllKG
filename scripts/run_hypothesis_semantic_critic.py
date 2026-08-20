@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from dac_her.hypothesis_semantic_llm import (
     InstructorOpenAICompatibleSemanticCriticBackend,
 )

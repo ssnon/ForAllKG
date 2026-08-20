@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 
-from dac_her.candidate_contracts import CandidateDecisionCard, CandidateDecisionPortfolio
+from pipeline_core.discovery.candidate_contracts import CandidateDecisionCard, CandidateDecisionPortfolio
 from pipeline_core.experimental_contracts import ExperimentalRealizabilityReport
 from pipeline_core.feasibility_contracts import FeasibilityIntake
 from pipeline_core.physics_contracts import PhysicsFeasibilityReport

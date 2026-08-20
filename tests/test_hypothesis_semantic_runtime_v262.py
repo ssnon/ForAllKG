@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.hypothesis_compiler import HypothesisCompiler
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisContext,
     HypothesisEvidenceProfile,
@@ -10,7 +10,7 @@ from dac_her.hypothesis_contracts import (
     HypothesisProposalDraft,
     PredictedObservationDraft,
 )
-from dac_her.hypothesis_semantic_contracts import (
+from pipeline_core.discovery.hypothesis_semantic_contracts import (
     HypothesisSemanticDimensionDraft,
     HypothesisSemanticReviewDraft,
     SEMANTIC_DIMENSIONS,

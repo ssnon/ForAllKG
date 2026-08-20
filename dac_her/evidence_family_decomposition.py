@@ -10,8 +10,8 @@ from dac_her.evidence_family_diagnostics import (
     EvidenceFamilyDiagnosticReport,
     EvidenceFamilyProfile,
 )
-from dac_her.explorer_contracts import GraphExplorerPacket
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisEvidenceStatement,
 )

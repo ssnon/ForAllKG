@@ -4,9 +4,9 @@ import hashlib
 import json
 from dataclasses import dataclass
 
-from dac_her.hypothesis_benchmark_contracts import HypothesisEvaluationReport
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
-from dac_her.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
+from pipeline_core.discovery.hypothesis_benchmark_contracts import HypothesisEvaluationReport
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_semantic_contracts import SEMANTIC_DIMENSIONS
 
 
 CRITIC_PROMPT_VERSION = "hypothesis-semantic-critic-prompt-v2.6.2-b3"

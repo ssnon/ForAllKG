@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.discovery_contracts import DiscoveryBundle
+from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from dac_her.dual_hypothesis_context import DualHypothesisContext
-from dac_her.hypothesis_contracts import HypothesisContext
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
 
 
 def main() -> int:

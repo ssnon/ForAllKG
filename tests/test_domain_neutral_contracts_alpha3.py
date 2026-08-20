@@ -1,4 +1,4 @@
-from dac_her.candidate_contracts import CandidateDecisionCard
+from pipeline_core.discovery.candidate_contracts import CandidateDecisionCard
 from pipeline_core.experimental_contracts import (
     ExperimentalCheckResult,
     ExperimentalRealizabilityReport,

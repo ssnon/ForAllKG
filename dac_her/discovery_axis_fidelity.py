@@ -8,7 +8,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from dac_her.discovery_axis_contracts import AxisFidelityReview, DiscoveryAxis
-from dac_her.hypothesis_contracts import HypothesisCard
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard
 
 
 class EncoderProtocol(Protocol):

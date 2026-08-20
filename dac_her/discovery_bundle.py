@@ -12,7 +12,7 @@ from typing import Any, Iterable, Mapping
 import networkx as nx
 import numpy as np
 
-from dac_her.discovery_contracts import (
+from pipeline_core.discovery.discovery_contracts import (
     DiscoveryBundle,
     DiscoveryInspiration,
     DiscoveryScoreBreakdown,

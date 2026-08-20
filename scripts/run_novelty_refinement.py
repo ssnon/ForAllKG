@@ -9,14 +9,14 @@ from dac_her.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSyn
 from dac_her.domains.registry import get_domain_profile
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.external_novelty import ExternalNoveltyAssessor
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
     ExternalNoveltyReport,
     LiteratureQueryPlan,
     PriorArtPacket,
 )
 from dac_her.external_novelty_llm import InstructorOpenAICompatibleExternalNoveltyBackend
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from dac_her.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
 from dac_her.literature_retrieval import LiteratureRetriever
 from dac_her.literature_provider_plan import (

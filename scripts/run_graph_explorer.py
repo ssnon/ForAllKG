@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from dac_her.explorer_contracts import GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_llm import InstructorOpenAICompatibleDraftBackend
 from dac_her.explorer_runtime import GraphExplorerAgentRuntime
 

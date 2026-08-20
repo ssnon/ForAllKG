@@ -11,7 +11,7 @@ from dac_her.explorer_compiler import (
     ExplorationCompileError,
     ExplorationReportCompiler,
 )
-from dac_her.explorer_contracts import ExplorationReport, GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_llm import DraftGeneration, ExplorationDraftBackend
 from dac_her.explorer_normalization import (
@@ -19,7 +19,7 @@ from dac_her.explorer_normalization import (
     ExplorerNormalizationAudit,
 )
 from dac_her.explorer_prompt import ExplorerPrompt, ExplorerPromptAssembler
-from dac_her.explorer_run_record import GraphExplorerRunRecord
+from pipeline_core.discovery.explorer_run_record import GraphExplorerRunRecord
 from dac_her.explorer_validation import ExplorationReportValidator, ExplorationValidationResult
 
 

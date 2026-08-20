@@ -31,7 +31,7 @@ def test_context_hash_is_deterministic():
     assert a.context_sha256 == b.context_sha256
 
 def test_scope_limit_synthesis_is_not_positive_premise():
-    from dac_her.explorer_contracts import ExplorerStatement
+    from pipeline_core.discovery.explorer_contracts import ExplorerStatement
     from dac_her.hypothesis_context import HypothesisContextBuilder
 
     packet, report = make_packet_and_report()

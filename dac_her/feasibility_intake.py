@@ -11,8 +11,8 @@ from pipeline_core.feasibility_contracts import (
     FeasibilityPrediction,
     FeasibilityPremise,
 )
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
-from dac_her.hypothesis_semantic_contracts import HypothesisSemanticReview
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_semantic_contracts import HypothesisSemanticReview
 
 
 CRITICAL_SEMANTIC_DIMENSIONS = {

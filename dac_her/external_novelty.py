@@ -6,7 +6,7 @@ from collections import Counter
 from typing import Any, Iterable
 
 from dac_her.discovery_axis_contracts import DiscoveryAxisSynthesisReport
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
     ExternalNoveltyPolicy,
@@ -15,7 +15,7 @@ from dac_her.external_novelty_contracts import (
     LiteratureQueryPlan,
     PriorArtPacket,
 )
-from dac_her.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from dac_her.novelty_claim_decomposition import NoveltyClaimDecomposer
 from dac_her.prior_art_matching import (
     ClaimPriorArtCompiler,

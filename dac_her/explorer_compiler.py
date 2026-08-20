@@ -7,7 +7,7 @@ from typing import Any, Iterable, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     CrossPaperConnection,
     EvidenceTension,
     ExplorationReport,

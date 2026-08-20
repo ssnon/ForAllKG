@@ -8,7 +8,7 @@ from pathlib import Path
 from dac_her.discovery_axis_contracts import DiscoveryAxisSynthesisReport
 from dac_her.domains import get_domain_profile
 from dac_her.external_novelty import ExternalNoveltyAssessor
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
     LiteratureQueryPlan,
     PriorArtPacket,
@@ -16,7 +16,7 @@ from dac_her.external_novelty_contracts import (
 from dac_her.external_novelty_llm import (
     InstructorOpenAICompatibleExternalNoveltyBackend,
 )
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from dac_her.literature_retrieval import (
     LiteratureRetriever,
     canonicalize_prior_art_packet,

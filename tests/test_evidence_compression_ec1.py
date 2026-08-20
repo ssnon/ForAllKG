@@ -5,7 +5,7 @@ import pytest
 from dac_her.evidence_compression import (
     EvidenceCompressionAssessor,
 )
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
     GraphExplorerPacket,
 )

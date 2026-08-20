@@ -8,9 +8,9 @@ from typing import Any, Literal, Protocol
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.discovery_contracts import DiscoveryBundle
+from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from dac_her.dual_hypothesis_context import DualHypothesisContext
-from dac_her.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
 from dac_her.node_mapping import QueryConcept
 
 

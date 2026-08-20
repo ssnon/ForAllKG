@@ -13,7 +13,7 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_node,
 )
 from dac_her.domains import get_domain_profile
-from dac_her.explorer_contracts import GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 from pipeline_core.explorer_text_safety import contains_absence_language
 

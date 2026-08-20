@@ -4,8 +4,8 @@ import re
 import unicodedata
 from itertools import combinations
 
-from dac_her.hypothesis_benchmark_contracts import HypothesisBenchmarkIssue
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_benchmark_contracts import HypothesisBenchmarkIssue
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 
 
 _ASSERTIVE_EVIDENCE_RE = re.compile(

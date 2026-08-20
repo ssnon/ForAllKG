@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.explorer_contracts import ClaimKind, EpistemicRole
+from pipeline_core.discovery.explorer_contracts import ClaimKind, EpistemicRole
 
 
 class StrictDraftModel(BaseModel):

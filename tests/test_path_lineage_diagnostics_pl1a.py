@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.explorer_contracts import GraphExplorerPacket
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisEvidenceStatement,
 )

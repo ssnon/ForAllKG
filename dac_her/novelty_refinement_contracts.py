@@ -4,8 +4,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from dac_her.external_novelty_contracts import ExternalNoveltyStatus
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyStatus
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 
 
 class StrictModel(BaseModel):

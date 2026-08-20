@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass
 from typing import Iterable
 
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolioDraft
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolioDraft
 
 
 PROMPT_VERSION = "hypothesis-maker-prompt-v2.6.1.1"

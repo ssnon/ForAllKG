@@ -6,8 +6,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from dac_her.discovery_contracts import DiscoveryBundle
-from dac_her.hypothesis_contracts import HypothesisContext
+from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
 
 
 class StrictModel(BaseModel):

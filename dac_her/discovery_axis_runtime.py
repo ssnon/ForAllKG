@@ -18,7 +18,7 @@ from dac_her.evidence_family_selection import EvidenceFamilyHierarchy
 from dac_her.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
 from dac_her.dual_hypothesis_context import DualHypothesisContext
 from dac_her.hypothesis_compiler import HypothesisCompileError, HypothesisCompiler
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisPortfolio,
     HypothesisPortfolioDraft,

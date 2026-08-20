@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dac_her.hypothesis_semantic_contracts import (
+from pipeline_core.discovery.hypothesis_semantic_contracts import (
     HypothesisSemanticReviewDraft,
 )
 

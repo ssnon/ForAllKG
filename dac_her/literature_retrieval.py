@@ -19,7 +19,7 @@ from dac_her.provider_resilience import (
     resilient_request_json,
 )
 
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQuery,
     LiteratureQueryPlan,
     PriorArtPacket,

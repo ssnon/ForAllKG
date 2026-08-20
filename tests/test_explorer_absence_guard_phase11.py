@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dac_her.explorer_compiler import ExplorationReportCompiler
-from dac_her.explorer_contracts import GraphExplorerPacket
+from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from dac_her.explorer_draft import ExplorationDraft
 from dac_her.explorer_normalization import ExplorerDraftNormalizer
 from dac_her.explorer_validation import ExplorationReportValidator

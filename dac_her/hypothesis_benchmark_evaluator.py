@@ -4,11 +4,11 @@ import hashlib
 import json
 from typing import Any
 
-from dac_her.hypothesis_benchmark_contracts import (
+from pipeline_core.discovery.hypothesis_benchmark_contracts import (
     HypothesisBenchmarkIssue,
     HypothesisEvaluationReport,
 )
-from dac_her.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from dac_her.hypothesis_semantic_checks import semantic_diagnostics
 from dac_her.hypothesis_validation import HypothesisValidator
 

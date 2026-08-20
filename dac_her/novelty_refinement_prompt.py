@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
-from dac_her.external_novelty_contracts import ExternalNoveltyCard
-from dac_her.hypothesis_contracts import HypothesisCard, HypothesisContext, HypothesisPortfolioDraft
+from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyCard
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisContext, HypothesisPortfolioDraft
 from dac_her.hypothesis_prompt import HypothesisPrompt
 from dac_her.novelty_refinement_contracts import NoveltyGap
 

@@ -6,13 +6,13 @@ import re
 
 from pipeline_core.domain_profile import ScientificDomainProfile
 from dac_her.domains.registry import get_domain_profile
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
     ExternalNoveltyReport,
     LiteratureQueryPlan,
 )
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from dac_her.novelty_refinement_contracts import (
     NoveltyGap,
     NoveltyGapPlan,

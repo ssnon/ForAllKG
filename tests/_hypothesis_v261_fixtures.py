@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterionDraft,
     HypothesisContext,
     HypothesisEvidenceStatement,

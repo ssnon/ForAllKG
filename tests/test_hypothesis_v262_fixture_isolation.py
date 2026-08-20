@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from scripts.build_hypothesis_v262_fixtures import build_cases
 
 

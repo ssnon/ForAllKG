@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from dac_her.evidence_family_decomposition import (
     EvidenceFamilyDecompositionReport,
 )
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisPortfolio,
 )

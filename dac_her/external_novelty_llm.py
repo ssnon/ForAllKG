@@ -6,12 +6,12 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReviewDraft,
     NoveltyClaim,
     NoveltyClaimDecompositionDraft,
 )
-from dac_her.hypothesis_contracts import HypothesisCard
+from pipeline_core.discovery.hypothesis_contracts import HypothesisCard
 from pipeline_core.llm_telemetry import run_instructor_structured_call
 from dac_her.prior_art_review_audit import (
     record_prior_art_review_call,

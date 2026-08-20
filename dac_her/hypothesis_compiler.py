@@ -5,7 +5,7 @@ from typing import Iterable
 
 from pydantic import BaseModel, ConfigDict
 
-from dac_her.hypothesis_contracts import (
+from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
     HypothesisCard,
     HypothesisContext,

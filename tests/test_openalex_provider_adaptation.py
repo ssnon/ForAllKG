@@ -6,7 +6,7 @@ from urllib.error import HTTPError
 import pytest
 
 import dac_her.literature_retrieval as lr
-from dac_her.external_novelty_contracts import (
+from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQuery,
 )
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     CorpusScope,
     EvidenceCatalog,
     ExplorationReport,

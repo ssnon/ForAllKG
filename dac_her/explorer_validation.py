@@ -18,7 +18,7 @@ from pipeline_core.discovery_semantics import (
 from pipeline_core.domain_profile import DiscoverySemantics
 from dac_her.domains import get_domain_profile
 from pipeline_core.explorer_text_safety import contains_absence_language
-from dac_her.explorer_contracts import (
+from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
     ExplorerStatement,
     GraphExplorerPacket,
