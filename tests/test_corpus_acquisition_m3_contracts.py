@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     SourceAcquisitionPolicy,
     SourceArtifact,
 )

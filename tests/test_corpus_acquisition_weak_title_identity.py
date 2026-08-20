@@ -1,4 +1,4 @@
-from dac_her.corpus_acquisition.catalog_expansion import (
+from pipeline_core.literature.acquisition.catalog_expansion import (
     _identity_keys,
 )
 from pipeline_core.literature.catalog import (

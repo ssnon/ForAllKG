@@ -8,18 +8,9 @@ from pathlib import Path
 from typing import Any
 
 from dac_her.config import load_paper_configs
-from dac_her.corpus_acquisition.access_contracts import (
-    CorpusSourceAcquisitionReport,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.contracts import (
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.materialization_contracts import (
-    CorpusMaterializationReport,
-    PaperMaterializationRecord,
-)
+from pipeline_core.literature.acquisition.access_contracts import CorpusSourceAcquisitionReport, SourceArtifact
+from pipeline_core.literature.acquisition.contracts import CorpusSelectionReport, SelectedCorpusWork
+from pipeline_core.literature.acquisition.materialization_contracts import CorpusMaterializationReport, PaperMaterializationRecord
 from dac_her.corpus_acquisition.materialization_package import (
     generated_paper_config_entry,
     materialize_artifact,
@@ -27,24 +18,10 @@ from dac_her.corpus_acquisition.materialization_package import (
     write_extraction_plan,
     write_generated_config,
 )
-from dac_her.corpus_acquisition.materialization_policy import (
-    load_materialization_policy,
-)
-from dac_her.corpus_acquisition.materialization_state import (
-    atomic_write_json,
-    load_state,
-    state_matches_sources,
-    state_path,
-    write_jsonl,
-    write_state,
-)
-from dac_her.corpus_acquisition.progress import (
-    compact_text,
-    progress_prefix,
-)
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryAcquisitionReport,
-)
+from pipeline_core.literature.acquisition.materialization_policy import load_materialization_policy
+from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, load_state, state_matches_sources, state_path, write_jsonl, write_state
+from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryAcquisitionReport
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     AccessLocation,
     SourceAcquisitionPolicy,
 )
-from dac_her.corpus_acquisition.access_priority import (
+from pipeline_core.literature.acquisition.access_priority import (
     access_location_priority,
 )
-from dac_her.corpus_acquisition.openalex_access import (
+from pipeline_core.literature.acquisition.openalex_access import (
     OpenAlexAccessResolver,
     _locations_from_openalex_work,
 )
@@ -142,9 +142,9 @@ def test_openalex_direct_pdf_precedes_catalog_fallback():
 
 
 def test_openaccessresolver_integrates_openalex_before_catalog(monkeypatch):
-    from dac_her.corpus_acquisition import oa_resolution as oa_module
-    from dac_her.corpus_acquisition.access_contracts import ResolverAttempt
-    from dac_her.corpus_acquisition.openalex_access import OpenAlexAccessProbe
+    from pipeline_core.literature.acquisition import oa_resolution as oa_module
+    from pipeline_core.literature.acquisition.access_contracts import ResolverAttempt
+    from pipeline_core.literature.acquisition.openalex_access import OpenAlexAccessProbe
 
     openalex_location = AccessLocation(
         location_id="oa-best",

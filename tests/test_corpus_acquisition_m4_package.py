@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 
-from dac_her.corpus_acquisition.access_contracts import SourceArtifact
-from dac_her.corpus_acquisition.materialization_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
+from pipeline_core.literature.acquisition.materialization_contracts import (
     MaterializationPolicy,
 )
 from dac_her.corpus_acquisition.materialization_package import (

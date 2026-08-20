@@ -5,17 +5,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.candidate_selection import (
-    assess_catalog,
-    select_candidates,
-)
-from dac_her.corpus_acquisition.profile import (
-    load_acquisition_profile,
-)
-from dac_her.corpus_acquisition.progress import (
-    compact_text,
-    progress_prefix,
-)
+from pipeline_core.literature.acquisition.candidate_selection import assess_catalog, select_candidates
+from pipeline_core.literature.acquisition.profile import load_acquisition_profile
+from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
 from pipeline_core.literature.catalog_contracts import (
     LiteratureCatalogPacket,
 )

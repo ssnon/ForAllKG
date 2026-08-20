@@ -4,20 +4,9 @@ from collections import Counter
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-    CorpusSourceAcquisitionReport,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.backfill_contracts import (
-    AcquisitionAwareSelectedWork,
-)
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionProfile,
-    CandidateAssessment,
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution, CorpusSourceAcquisitionReport, SourceArtifact
+from pipeline_core.literature.acquisition.backfill_contracts import AcquisitionAwareSelectedWork
+from pipeline_core.literature.acquisition.contracts import AcquisitionProfile, CandidateAssessment, CorpusSelectionReport, SelectedCorpusWork
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

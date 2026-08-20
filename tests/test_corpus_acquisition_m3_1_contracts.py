@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryDiscovery,
-    SupplementaryDiscoveryPolicy,
-)
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryDiscovery, SupplementaryDiscoveryPolicy
 
 
 def test_policy_is_conservative_by_default():

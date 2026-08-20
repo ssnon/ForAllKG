@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     AccessResolution,
     CorpusSourceAcquisitionReport,
     SourceArtifact,
 )
-from dac_her.corpus_acquisition.contracts import (
+from pipeline_core.literature.acquisition.contracts import (
     AcquisitionAxis,
     AcquisitionProfile,
     CandidateAssessment,
@@ -14,9 +14,9 @@ from dac_her.corpus_acquisition.contracts import (
     SelectionPolicy,
     SelectedCorpusWork,
 )
-from dac_her.corpus_acquisition.m3_rebase import rebase_downloaded_m3_snapshot
-from dac_her.corpus_acquisition.quality_contracts import CorpusQualityAssessment
-from dac_her.corpus_acquisition.source_state import atomic_write_json, write_jsonl
+from pipeline_core.literature.acquisition.m3_rebase import rebase_downloaded_m3_snapshot
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityAssessment
+from pipeline_core.literature.acquisition.source_state import atomic_write_json, write_jsonl
 from pipeline_core.literature.catalog_contracts import CatalogWork, LiteratureCatalogPacket
 
 

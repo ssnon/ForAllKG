@@ -8,11 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 from urllib.parse import urlparse
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessLocation,
-    ResolverAttempt,
-    SourceAcquisitionPolicy,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessLocation, ResolverAttempt, SourceAcquisitionPolicy
 from pipeline_core.literature.catalog_contracts import CatalogWork
 from pipeline_core.literature.discovery.providers.openalex import (
     OpenAlexHTTPError,

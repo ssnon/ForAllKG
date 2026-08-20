@@ -8,26 +8,15 @@ from typing import Any
 import yaml
 
 from dac_her.config import load_paper_configs
-from dac_her.corpus_acquisition.contracts import SelectedCorpusWork
-from dac_her.corpus_acquisition.materialization_contracts import (
-    CorpusMaterializationReport,
-    MaterializedDocument,
-    PaperMaterializationRecord,
-)
+from pipeline_core.literature.acquisition.contracts import SelectedCorpusWork
+from pipeline_core.literature.acquisition.materialization_contracts import CorpusMaterializationReport, MaterializedDocument, PaperMaterializationRecord
 from dac_her.corpus_acquisition.materialization_package import (
     write_extraction_plan,
     write_generated_config,
 )
-from dac_her.corpus_acquisition.materialization_state import (
-    atomic_write_json,
-    write_jsonl,
-)
-from dac_her.corpus_acquisition.pre_extraction_gate import (
-    assess_pre_extraction_gate,
-    build_pre_extraction_gate_report,
-    load_pre_extraction_gate_policy,
-)
-from dac_her.corpus_acquisition.profile import load_acquisition_profile
+from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, write_jsonl
+from pipeline_core.literature.acquisition.pre_extraction_gate import assess_pre_extraction_gate, build_pre_extraction_gate_report, load_pre_extraction_gate_policy
+from pipeline_core.literature.acquisition.profile import load_acquisition_profile
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

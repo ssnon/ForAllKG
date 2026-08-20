@@ -3,13 +3,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionAxis,
-    AcquisitionProfile,
-    CandidateAssessment,
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
+from pipeline_core.literature.acquisition.contracts import AcquisitionAxis, AcquisitionProfile, CandidateAssessment, CorpusSelectionReport, SelectedCorpusWork
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

@@ -2,13 +2,8 @@ from __future__ import annotations
 
 import json
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-)
-from dac_her.corpus_acquisition.supplementary_state import (
-    access_resolution_sha256,
-    state_matches_main_access,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution
+from pipeline_core.literature.acquisition.supplementary_state import access_resolution_sha256, state_matches_main_access
 
 
 def test_access_resolution_hash_changes_when_locations_change(tmp_path):

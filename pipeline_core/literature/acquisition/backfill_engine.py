@@ -5,23 +5,10 @@ from collections import Counter
 from pathlib import Path
 from typing import Callable
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.backfill_contracts import (
-    AcquisitionAwareBackfillPolicy,
-    AcquisitionAwareSelectedWork,
-    BackfillAttempt,
-)
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionProfile,
-    CandidateAssessment,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.quality_contracts import (
-    CorpusQualityAssessment,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution, SourceArtifact
+from pipeline_core.literature.acquisition.backfill_contracts import AcquisitionAwareBackfillPolicy, AcquisitionAwareSelectedWork, BackfillAttempt
+from pipeline_core.literature.acquisition.contracts import AcquisitionProfile, CandidateAssessment, SelectedCorpusWork
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityAssessment
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
 )

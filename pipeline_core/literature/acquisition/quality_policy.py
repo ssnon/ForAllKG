@@ -4,9 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.quality_contracts import (
-    CorpusQualityPolicy,
-)
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityPolicy
 
 
 def load_corpus_quality_policy(

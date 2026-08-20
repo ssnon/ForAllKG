@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.contracts import (
+from pipeline_core.literature.acquisition.contracts import (
     AcquisitionAxis,
     AcquisitionProfile,
     CandidateAssessment,
     SelectionPolicy,
 )
-from dac_her.corpus_acquisition.corpus_quality import (
+from pipeline_core.literature.acquisition.corpus_quality import (
     assess_corpus_quality,
 )
-from dac_her.corpus_acquisition.quality_contracts import (
+from pipeline_core.literature.acquisition.quality_contracts import (
     CorpusQualityPolicy,
 )
 from pipeline_core.literature.catalog_contracts import CatalogWork

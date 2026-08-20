@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.backfill_contracts import (
+from pipeline_core.literature.acquisition.backfill_contracts import (
     AcquisitionAwareBackfillPolicy,
 )
 

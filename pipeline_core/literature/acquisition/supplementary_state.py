@@ -6,10 +6,8 @@ import re
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.access_contracts import SourceArtifact
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryDiscovery,
-)
+from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryDiscovery
 
 
 def access_resolution_sha256(resolution) -> str:

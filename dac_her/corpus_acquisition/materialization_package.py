@@ -9,16 +9,9 @@ from typing import Any
 
 import yaml
 
-from dac_her.corpus_acquisition.access_contracts import SourceArtifact
-from dac_her.corpus_acquisition.materialization_contracts import (
-    MaterializationPolicy,
-    MaterializedDocument,
-)
-from dac_her.corpus_acquisition.materializers import (
-    copy_materializer_assets,
-    materializer_for,
-    sha256_file,
-)
+from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
+from pipeline_core.literature.acquisition.materialization_contracts import MaterializationPolicy, MaterializedDocument
+from pipeline_core.literature.acquisition.materializers import copy_materializer_assets, materializer_for, sha256_file
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

@@ -6,24 +6,10 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-    CorpusSourceAcquisitionReport,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionProfile,
-    CandidateAssessment,
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.quality_contracts import CorpusQualityAssessment
-from dac_her.corpus_acquisition.source_state import (
-    atomic_write_json,
-    safe_state_name,
-    write_jsonl,
-    write_work_state,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution, CorpusSourceAcquisitionReport, SourceArtifact
+from pipeline_core.literature.acquisition.contracts import AcquisitionProfile, CandidateAssessment, CorpusSelectionReport, SelectedCorpusWork
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityAssessment
+from pipeline_core.literature.acquisition.source_state import atomic_write_json, safe_state_name, write_jsonl, write_work_state
 from pipeline_core.literature.catalog_contracts import LiteratureCatalogPacket
 
 

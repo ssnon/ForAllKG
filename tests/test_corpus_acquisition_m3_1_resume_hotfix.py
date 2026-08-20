@@ -3,11 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 
-from dac_her.corpus_acquisition.access_contracts import SourceArtifact
-from dac_her.corpus_acquisition.supplementary_acquisition import (
+from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
+from pipeline_core.literature.acquisition.supplementary_acquisition import (
     SupplementaryArtifactDownloader,
 )
-from dac_her.corpus_acquisition.supplementary_contracts import (
+from pipeline_core.literature.acquisition.supplementary_contracts import (
     SupplementaryCandidate,
     SupplementaryDiscoveryPolicy,
 )
@@ -29,7 +29,7 @@ def test_existing_supplement_marker_resumes_without_duplicate_keyword(tmp_path):
     )
     downloader = SupplementaryArtifactDownloader(policy)
 
-    import dac_her.corpus_acquisition.supplementary_acquisition as module
+    import pipeline_core.literature.acquisition.supplementary_acquisition as module
 
     work_dir = (
         tmp_path

@@ -5,11 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.access_recovery import (
-    build_resolver_capability_context,
-    prepare_access_recovery,
-    suppressed_download_urls,
-)
+from pipeline_core.literature.acquisition.access_recovery import build_resolver_capability_context, prepare_access_recovery, suppressed_download_urls
 
 
 def _write_json(path: Path, payload) -> None:

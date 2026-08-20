@@ -10,11 +10,8 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
-from dac_her.corpus_acquisition.access_contracts import SourceArtifact
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryCandidate,
-    SupplementaryDiscoveryPolicy,
-)
+from pipeline_core.literature.acquisition.access_contracts import SourceArtifact
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryCandidate, SupplementaryDiscoveryPolicy
 
 
 _ALLOWED_MIME = {

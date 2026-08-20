@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from dac_her.corpus_acquisition.access_recovery import prepare_access_recovery
+from pipeline_core.literature.acquisition.access_recovery import prepare_access_recovery
 
 
 def parse_args() -> argparse.Namespace:

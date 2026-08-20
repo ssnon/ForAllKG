@@ -4,9 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.materialization_contracts import (
-    MaterializedDocument,
-)
+from pipeline_core.literature.acquisition.materialization_contracts import MaterializedDocument
 
 
 def atomic_write_json(

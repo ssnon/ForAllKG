@@ -13,9 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from dac_her.corpus_acquisition.materialization_contracts import (
-    MaterializationPolicy,
-)
+from pipeline_core.literature.acquisition.materialization_contracts import MaterializationPolicy
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.progress import (
+from pipeline_core.literature.acquisition.progress import (
     progress_prefix,
 )
 

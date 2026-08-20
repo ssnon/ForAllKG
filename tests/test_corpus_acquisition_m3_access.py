@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     SourceAcquisitionPolicy,
 )
-from dac_her.corpus_acquisition.oa_resolution import (
+from pipeline_core.literature.acquisition.oa_resolution import (
     OpenAccessResolver,
     _catalog_location,
     _location_from_unpaywall,

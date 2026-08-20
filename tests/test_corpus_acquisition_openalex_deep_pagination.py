@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from dac_her.corpus_acquisition.openalex_catalog_adapter import (
+from pipeline_core.literature.acquisition.openalex_catalog_adapter import (
     OpenAlexCatalogProvider,
 )
 from scripts.expand_literature_catalog import (

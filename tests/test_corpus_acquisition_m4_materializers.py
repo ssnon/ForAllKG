@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.corpus_acquisition.materialization_contracts import (
+from pipeline_core.literature.acquisition.materialization_contracts import (
     MaterializationPolicy,
 )
-from dac_her.corpus_acquisition.materializers import (
+from pipeline_core.literature.acquisition.materializers import (
     CsvMaterializer,
     TextMaterializer,
     materializer_for,

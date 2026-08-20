@@ -3,10 +3,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.corpus_acquisition.contracts import CandidateAssessment
-from dac_her.corpus_acquisition.m3_rebase import rebase_downloaded_m3_snapshot
-from dac_her.corpus_acquisition.profile import load_acquisition_profile
-from dac_her.corpus_acquisition.quality_contracts import CorpusQualityAssessment
+from pipeline_core.literature.acquisition.contracts import CandidateAssessment
+from pipeline_core.literature.acquisition.m3_rebase import rebase_downloaded_m3_snapshot
+from pipeline_core.literature.acquisition.profile import load_acquisition_profile
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityAssessment
 from pipeline_core.literature.catalog_contracts import LiteratureCatalogPacket
 
 

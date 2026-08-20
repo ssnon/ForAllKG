@@ -11,11 +11,7 @@ from urllib.parse import urlencode, urlparse, urlunparse
 from urllib.request import Request, urlopen
 from xml.etree import ElementTree
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessLocation,
-    ResolverAttempt,
-    SourceAcquisitionPolicy,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessLocation, ResolverAttempt, SourceAcquisitionPolicy
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

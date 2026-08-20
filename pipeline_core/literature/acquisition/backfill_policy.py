@@ -4,9 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.backfill_contracts import (
-    AcquisitionAwareBackfillPolicy,
-)
+from pipeline_core.literature.acquisition.backfill_contracts import AcquisitionAwareBackfillPolicy
 
 
 def load_acquisition_backfill_policy(

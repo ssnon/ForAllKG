@@ -4,9 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.access_contracts import (
-    SourceAcquisitionPolicy,
-)
+from pipeline_core.literature.acquisition.access_contracts import SourceAcquisitionPolicy
 
 
 def load_source_acquisition_policy(

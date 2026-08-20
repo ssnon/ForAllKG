@@ -5,24 +5,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.contracts import (
-    CandidateAssessment,
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.corpus_quality import (
-    apply_quality_gate_and_reselect,
-)
-from dac_her.corpus_acquisition.profile import (
-    load_acquisition_profile,
-)
-from dac_her.corpus_acquisition.progress import (
-    compact_text,
-    progress_prefix,
-)
-from dac_her.corpus_acquisition.quality_policy import (
-    load_corpus_quality_policy,
-)
+from pipeline_core.literature.acquisition.contracts import CandidateAssessment, CorpusSelectionReport, SelectedCorpusWork
+from pipeline_core.literature.acquisition.corpus_quality import apply_quality_gate_and_reselect
+from pipeline_core.literature.acquisition.profile import load_acquisition_profile
+from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
+from pipeline_core.literature.acquisition.quality_policy import load_corpus_quality_policy
 from pipeline_core.literature.catalog_contracts import (
     LiteratureCatalogPacket,
 )

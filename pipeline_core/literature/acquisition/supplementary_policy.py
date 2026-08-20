@@ -4,9 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryDiscoveryPolicy,
-)
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryDiscoveryPolicy
 
 
 def load_supplementary_discovery_policy(

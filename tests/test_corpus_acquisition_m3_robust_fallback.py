@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import dac_her.corpus_acquisition.artifact_acquisition as module
-from dac_her.corpus_acquisition.access_contracts import (
+import pipeline_core.literature.acquisition.artifact_acquisition as module
+from pipeline_core.literature.acquisition.access_contracts import (
     AccessLocation,
     AccessResolution,
     SourceAcquisitionPolicy,
 )
-from dac_her.corpus_acquisition.artifact_acquisition import (
+from pipeline_core.literature.acquisition.artifact_acquisition import (
     MainArtifactDownloader,
     ordered_download_locations,
 )

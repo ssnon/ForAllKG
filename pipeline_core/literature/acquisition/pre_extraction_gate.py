@@ -8,10 +8,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionProfile,
-    SelectedCorpusWork,
-)
+from pipeline_core.literature.acquisition.contracts import AcquisitionProfile, SelectedCorpusWork
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

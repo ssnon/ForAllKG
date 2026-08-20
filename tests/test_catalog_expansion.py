@@ -1,4 +1,4 @@
-from dac_her.corpus_acquisition.catalog_expansion import append_catalog_expansion
+from pipeline_core.literature.acquisition.catalog_expansion import append_catalog_expansion
 from pipeline_core.literature.catalog_contracts import (
     CatalogQuery,
     CatalogQueryExecution,

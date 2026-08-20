@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.supplementary_resolution import (
-    _AnchorParser,
-    _anchor_candidate,
-    _crossref_candidates,
-    _deduplicate_candidates,
-)
+from pipeline_core.literature.acquisition.supplementary_resolution import _AnchorParser, _anchor_candidate, _crossref_candidates, _deduplicate_candidates
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

@@ -6,40 +6,14 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-    CorpusSourceAcquisitionReport,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.contracts import (
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.progress import (
-    compact_text,
-    progress_prefix,
-)
-from dac_her.corpus_acquisition.supplementary_acquisition import (
-    SupplementaryArtifactDownloader,
-)
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryAcquisitionReport,
-)
-from dac_her.corpus_acquisition.supplementary_policy import (
-    load_supplementary_discovery_policy,
-)
-from dac_her.corpus_acquisition.supplementary_resolution import (
-    SupplementaryArtifactResolver,
-)
-from dac_her.corpus_acquisition.supplementary_state import (
-    access_resolution_sha256,
-    atomic_write_json,
-    load_state,
-    safe_state_name,
-    state_matches_main_access,
-    write_jsonl,
-    write_state,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution, CorpusSourceAcquisitionReport, SourceArtifact
+from pipeline_core.literature.acquisition.contracts import CorpusSelectionReport, SelectedCorpusWork
+from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
+from pipeline_core.literature.acquisition.supplementary_acquisition import SupplementaryArtifactDownloader
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryAcquisitionReport
+from pipeline_core.literature.acquisition.supplementary_policy import load_supplementary_discovery_policy
+from pipeline_core.literature.acquisition.supplementary_resolution import SupplementaryArtifactResolver
+from pipeline_core.literature.acquisition.supplementary_state import access_resolution_sha256, atomic_write_json, load_state, safe_state_name, state_matches_main_access, write_jsonl, write_state
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

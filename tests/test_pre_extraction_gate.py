@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.contracts import (
+from pipeline_core.literature.acquisition.contracts import (
     AcquisitionAxis,
     AcquisitionProfile,
     ScopePolicy,
@@ -8,7 +8,7 @@ from dac_her.corpus_acquisition.contracts import (
     SelectionPolicy,
     SelectedCorpusWork,
 )
-from dac_her.corpus_acquisition.pre_extraction_gate import (
+from pipeline_core.literature.acquisition.pre_extraction_gate import (
     IdentityGatePolicy,
     PreExtractionGatePolicy,
     SuitabilityGatePolicy,
@@ -213,7 +213,7 @@ def test_gate_report_tracks_blocked_papers_without_promoting_evidence():
 
 def test_repository_sers_gate_policy_loads():
     from pathlib import Path
-    from dac_her.corpus_acquisition.pre_extraction_gate import (
+    from pipeline_core.literature.acquisition.pre_extraction_gate import (
         load_pre_extraction_gate_policy,
     )
 

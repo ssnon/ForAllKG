@@ -2,27 +2,27 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     AccessLocation,
     AccessResolution,
     SourceArtifact,
 )
-from dac_her.corpus_acquisition.backfill_contracts import (
+from pipeline_core.literature.acquisition.backfill_contracts import (
     AcquisitionAwareBackfillPolicy,
 )
-from dac_her.corpus_acquisition.backfill_engine import (
+from pipeline_core.literature.acquisition.backfill_engine import (
     candidate_rank_key,
     choose_most_constrained_axis,
     run_acquisition_aware_backfill,
 )
-from dac_her.corpus_acquisition.contracts import (
+from pipeline_core.literature.acquisition.contracts import (
     AcquisitionAxis,
     AcquisitionProfile,
     CandidateAssessment,
     SelectionPolicy,
     SelectedCorpusWork,
 )
-from dac_her.corpus_acquisition.quality_contracts import (
+from pipeline_core.literature.acquisition.quality_contracts import (
     CorpusQualityAssessment,
 )
 from pipeline_core.literature.catalog_contracts import CatalogWork

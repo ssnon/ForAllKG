@@ -4,9 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from dac_her.corpus_acquisition.materialization_contracts import (
-    MaterializationPolicy,
-)
+from pipeline_core.literature.acquisition.materialization_contracts import MaterializationPolicy
 
 
 def load_materialization_policy(

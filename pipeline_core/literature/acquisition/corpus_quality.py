@@ -3,20 +3,9 @@ from __future__ import annotations
 import re
 from collections import Counter
 
-from dac_her.corpus_acquisition.candidate_selection import (
-    select_candidates,
-)
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionProfile,
-    CandidateAssessment,
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
-from dac_her.corpus_acquisition.quality_contracts import (
-    CorpusQualityAssessment,
-    CorpusQualityGateReport,
-    CorpusQualityPolicy,
-)
+from pipeline_core.literature.acquisition.candidate_selection import select_candidates
+from pipeline_core.literature.acquisition.contracts import AcquisitionProfile, CandidateAssessment, CorpusSelectionReport, SelectedCorpusWork
+from pipeline_core.literature.acquisition.quality_contracts import CorpusQualityAssessment, CorpusQualityGateReport, CorpusQualityPolicy
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

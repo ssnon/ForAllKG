@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.corpus_acquisition.artifact_acquisition import (
+from pipeline_core.literature.acquisition.artifact_acquisition import (
     _pdf_magic,
     _safe_work_dir,
 )

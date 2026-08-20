@@ -5,10 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-    SourceArtifact,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution, SourceArtifact
 
 
 def safe_state_name(work_id: str) -> str:

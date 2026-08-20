@@ -6,34 +6,13 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from dac_her.corpus_acquisition.access_contracts import (
-    CorpusSourceAcquisitionReport,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.artifact_acquisition import (
-    MainArtifactDownloader,
-)
-from dac_her.corpus_acquisition.oa_resolution import (
-    OpenAccessResolver,
-)
-from dac_her.corpus_acquisition.progress import (
-    compact_text,
-    progress_prefix,
-)
-from dac_her.corpus_acquisition.source_policy import (
-    load_source_acquisition_policy,
-)
-from dac_her.corpus_acquisition.source_state import (
-    atomic_write_json,
-    load_work_state,
-    safe_state_name,
-    write_jsonl,
-    write_work_state,
-)
-from dac_her.corpus_acquisition.contracts import (
-    CorpusSelectionReport,
-    SelectedCorpusWork,
-)
+from pipeline_core.literature.acquisition.access_contracts import CorpusSourceAcquisitionReport, SourceArtifact
+from pipeline_core.literature.acquisition.artifact_acquisition import MainArtifactDownloader
+from pipeline_core.literature.acquisition.oa_resolution import OpenAccessResolver
+from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix
+from pipeline_core.literature.acquisition.source_policy import load_source_acquisition_policy
+from pipeline_core.literature.acquisition.source_state import atomic_write_json, load_work_state, safe_state_name, write_jsonl, write_work_state
+from pipeline_core.literature.acquisition.contracts import CorpusSelectionReport, SelectedCorpusWork
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

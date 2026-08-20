@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import json
 
-from dac_her.corpus_acquisition.access_contracts import (
+from pipeline_core.literature.acquisition.access_contracts import (
     AccessLocation,
     SourceAcquisitionPolicy,
 )
-from dac_her.corpus_acquisition.access_priority import (
+from pipeline_core.literature.acquisition.access_priority import (
     access_location_priority,
 )
-from dac_her.corpus_acquisition.pmc_access import (
+from pipeline_core.literature.acquisition.pmc_access import (
     PmcAwsAccessResolver,
     extract_pmcids,
 )

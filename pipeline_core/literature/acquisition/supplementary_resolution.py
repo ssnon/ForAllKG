@@ -14,15 +14,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urljoin, urlparse
 from urllib.request import Request, urlopen
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessResolution,
-)
-from dac_her.corpus_acquisition.supplementary_contracts import (
-    SupplementaryCandidate,
-    SupplementaryDiscovery,
-    SupplementaryDiscoveryPolicy,
-    SupplementaryResolverAttempt,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessResolution
+from pipeline_core.literature.acquisition.supplementary_contracts import SupplementaryCandidate, SupplementaryDiscovery, SupplementaryDiscoveryPolicy, SupplementaryResolverAttempt
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

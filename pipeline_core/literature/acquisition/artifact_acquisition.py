@@ -11,19 +11,9 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessLocation,
-    AccessResolution,
-    ArtifactDownloadAttempt,
-    SourceAcquisitionPolicy,
-    SourceArtifact,
-)
-from dac_her.corpus_acquisition.access_priority import (
-    access_location_priority,
-)
-from dac_her.corpus_acquisition.access_recovery import (
-    suppressed_download_urls,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessLocation, AccessResolution, ArtifactDownloadAttempt, SourceAcquisitionPolicy, SourceArtifact
+from pipeline_core.literature.acquisition.access_priority import access_location_priority
+from pipeline_core.literature.acquisition.access_recovery import suppressed_download_urls
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

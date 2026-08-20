@@ -1,19 +1,7 @@
 from __future__ import annotations
 
-from dac_her.corpus_acquisition.candidate_selection import (
-    assess_catalog,
-    assess_candidate,
-    select_candidates,
-)
-from dac_her.corpus_acquisition.contracts import (
-    AcquisitionAxis,
-    AcquisitionProfile,
-    DiscoveryPolicy,
-    ScopePolicy,
-    ScorePolicy,
-    SelectionPolicy,
-    SignalRule,
-)
+from pipeline_core.literature.acquisition.candidate_selection import assess_catalog, assess_candidate, select_candidates
+from pipeline_core.literature.acquisition.contracts import AcquisitionAxis, AcquisitionProfile, DiscoveryPolicy, ScopePolicy, ScorePolicy, SelectionPolicy, SignalRule
 from pipeline_core.literature.catalog_contracts import (
     CatalogWork,
     LiteratureCatalogPacket,

@@ -3,11 +3,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import dac_her.corpus_acquisition.materializers as module
-from dac_her.corpus_acquisition.materialization_contracts import (
+import pipeline_core.literature.acquisition.materializers as module
+from pipeline_core.literature.acquisition.materialization_contracts import (
     MaterializationPolicy,
 )
-from dac_her.corpus_acquisition.materializers import MarkerPdfMaterializer
+from pipeline_core.literature.acquisition.materializers import MarkerPdfMaterializer
 
 
 class _Completed:

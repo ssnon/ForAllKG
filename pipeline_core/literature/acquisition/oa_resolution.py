@@ -12,21 +12,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
-from dac_her.corpus_acquisition.access_contracts import (
-    AccessLocation,
-    AccessResolution,
-    ResolverAttempt,
-    SourceAcquisitionPolicy,
-)
-from dac_her.corpus_acquisition.access_priority import (
-    access_location_priority,
-)
-from dac_her.corpus_acquisition.openalex_access import (
-    OpenAlexAccessResolver,
-)
-from dac_her.corpus_acquisition.pmc_access import (
-    PmcAwsAccessResolver,
-)
+from pipeline_core.literature.acquisition.access_contracts import AccessLocation, AccessResolution, ResolverAttempt, SourceAcquisitionPolicy
+from pipeline_core.literature.acquisition.access_priority import access_location_priority
+from pipeline_core.literature.acquisition.openalex_access import OpenAlexAccessResolver
+from pipeline_core.literature.acquisition.pmc_access import PmcAwsAccessResolver
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
 

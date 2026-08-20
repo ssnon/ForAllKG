@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.corpus_acquisition.supplementary_acquisition import (
-    _detect_magic,
-    _validated_extension,
-)
+from pipeline_core.literature.acquisition.supplementary_acquisition import _detect_magic, _validated_extension
 
 
 def test_detect_pdf_and_zip_magic():
