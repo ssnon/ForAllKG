@@ -13,10 +13,10 @@ from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.llm_openrouter import OpenRouterLLM
-from dac_her.lossless_normalization import normalize_knowledge_graph_payload
+from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
 from domains.dac_her.prompts import build_extraction_prompt
-from dac_her.recovery_policy import RecoveryAction, decide_recovery
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
+from pipeline_core.corpus.schemas import KnowledgeGraph
 from dac_her.semantic_patch import PatchRejected, apply_semantic_patch
 from domains.dac_her.semantic_patch_prompts import (
     PATCH_SYSTEM_PROMPT,
@@ -31,7 +31,7 @@ from dac_her.strict_validation import (
 )
 from pipeline_core.validation import validate_graph_provenance
 from pipeline_core.validation_issues import ValidationReport
-from dac_her.vocab_registry import VocabularyRegistry
+from pipeline_core.corpus.vocab_registry import VocabularyRegistry
 from domains.dac_her.micro_reextract_prompts import (
     MICRO_REEXTRACT_SYSTEM_PROMPT,
     build_domain_gate_recovery_prompt,

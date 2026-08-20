@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import dac_her.schemas as legacy
+import pipeline_core.corpus.schemas as legacy
 import pipeline_core.experiment_schema as core
 
 

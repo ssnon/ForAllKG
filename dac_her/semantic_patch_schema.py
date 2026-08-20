@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from dac_her.schemas import EntityType, KGEdge
+from pipeline_core.corpus.schemas import EntityType, KGEdge
 
 
 PatchOperationType = Literal[

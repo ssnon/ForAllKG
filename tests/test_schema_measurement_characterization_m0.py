@@ -6,7 +6,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from dac_her.schemas import (
+from pipeline_core.corpus.schemas import (
     CalculationNode,
     Condition,
     EntityNode,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import networkx as nx
 
 from dac_her.domains.graph_registry import get_graph_adapter
-from dac_her.graph_semantics import (
+from pipeline_core.corpus.graph_semantics import (
     integration_component_diagnostics,
     relation_contract_triage,
     relation_direction_diagnostics,

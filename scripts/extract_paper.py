@@ -14,23 +14,23 @@ from typing import Any
 from dotenv import load_dotenv
 
 import pipeline_core.chunking as chunking_module
-import dac_her.schemas as schemas_module
+import pipeline_core.corpus.schemas as schemas_module
 import dac_her.extraction as extraction_module
 import dac_her.graph_normalization as graph_normalization_module
 import dac_her.metric_normalization_policy as metric_normalization_policy_module
 import pipeline_core.graph_normalization_runtime as graph_normalization_runtime_module
 import dac_her.llm_openrouter as llm_openrouter_module
 import dac_her.measurement_scalarization as measurement_scalarization_module
-import dac_her.structural_repair as structural_repair_module
+import pipeline_core.corpus.structural_repair as structural_repair_module
 import dac_her.extraction_vocabulary_context as extraction_vocabulary_context_module
 import pipeline_core.validation as validation_module
-import dac_her.chunking_recovery as chunking_recovery_module
+import pipeline_core.corpus.chunking_recovery as chunking_recovery_module
 import pipeline_core.draft_schema as draft_schema_module
 import dac_her.broad_compact_schema as broad_compact_schema_module
 import pipeline_core.graph_validation as graph_validation_module
-import dac_her.extraction_quality as extraction_quality_module
-import dac_her.lossless_normalization as lossless_normalization_module
-import dac_her.recovery_policy as recovery_policy_module
+import pipeline_core.corpus.extraction_quality as extraction_quality_module
+import pipeline_core.corpus.lossless_normalization as lossless_normalization_module
+import pipeline_core.corpus.recovery_policy as recovery_policy_module
 import dac_her.semantic_patch as semantic_patch_module
 import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import dac_her.semantic_patch_schema as semantic_patch_schema_module
@@ -41,7 +41,7 @@ import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 
 from pipeline_core.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from pipeline_core.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
-from dac_her.chunking_recovery import split_chunk_structurally
+from pipeline_core.corpus.chunking_recovery import split_chunk_structurally
 from pipeline_core.document_config import DocumentConfig, get_paper_config
 from pipeline_core.document_package import (
     DocumentPackage,
@@ -54,11 +54,11 @@ from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.llm_telemetry import append_extraction_artifact_resolutions
-from dac_her.broad_extraction_policy import (
+from pipeline_core.corpus.broad_extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,
 )
-from dac_her.extraction_quality import (
+from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     annotate_quarantined_records,
@@ -85,7 +85,7 @@ from dac_her.run_state import (
     write_latest_attempt_pointer,
     write_latest_run_pointer,
 )
-from dac_her.vocab_registry import load_default_registries
+from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
 load_dotenv()

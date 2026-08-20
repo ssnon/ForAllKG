@@ -17,7 +17,7 @@ from dac_her.measurement_scalarization import (
     format_scalarization_errors,
     measurement_scalarization_issues,
 )
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 from pipeline_core.validation import validate_graph_provenance
 from pipeline_core.validation_issues import (
     IssueCode,
@@ -25,7 +25,7 @@ from pipeline_core.validation_issues import (
     ValidationReport,
     issue,
 )
-from dac_her.vocab_registry import VocabularyRegistry
+from pipeline_core.corpus.vocab_registry import VocabularyRegistry
 
 
 @dataclass(frozen=True)

@@ -4,7 +4,7 @@ from dac_her.broad_compact_schema import BroadMechanismGraphDraft
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.graph_validation import collect_graph_issues
-from dac_her.schemas import EntityNode, KGEdge
+from pipeline_core.corpus.schemas import EntityNode, KGEdge
 
 
 def _draft_with_edge(

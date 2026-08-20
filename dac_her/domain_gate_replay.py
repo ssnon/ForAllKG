@@ -16,7 +16,7 @@ from dac_her.strict_validation import (
     finalize_draft,
     validate_draft,
 )
-from dac_her.vocab_registry import VocabularyRegistry
+from pipeline_core.corpus.vocab_registry import VocabularyRegistry
 
 
 REPLAY_FIXTURE_SCHEMA_VERSION = "domain-gate-recovery-replay-fixture-v1"

@@ -9,7 +9,7 @@ from dac_her.extraction_vocabulary_context import (
     build_broad_experiment_methods_vocabulary_context,
 )
 from dac_her.llm_telemetry import estimate_tokens
-from dac_her.vocab_registry import load_default_registries
+from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

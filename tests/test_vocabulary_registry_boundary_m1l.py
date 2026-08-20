@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from dac_her.vocab_registry import (
+from pipeline_core.corpus.vocab_registry import (
     ParameterizedVocabularyMatch,
     VocabularyEntry,
     VocabularyRegistry,
@@ -477,32 +477,32 @@ def test_default_loader_policy_is_legacy_owned(
     ]
 
 
-def test_generic_engine_is_shared_and_default_policy_remains_legacy():
-    import dac_her.vocab_registry as legacy
+def test_generic_engine_is_shared_and_default_policy_is_corpus_owned():
+    import pipeline_core.corpus.vocab_registry as corpus
     import pipeline_core.vocabulary_registry as core
 
     assert (
-        legacy.normalize_vocab_text
+        corpus.normalize_vocab_text
         is core.normalize_vocab_text
     )
 
     assert (
-        legacy.slugify
+        corpus.slugify
         is core.slugify
     )
 
     assert (
-        legacy.VocabularyEntry
+        corpus.VocabularyEntry
         is core.VocabularyEntry
     )
 
     assert (
-        legacy.ParameterizedVocabularyMatch
+        corpus.ParameterizedVocabularyMatch
         is core.ParameterizedVocabularyMatch
     )
 
     assert (
-        legacy.VocabularyRegistry
+        corpus.VocabularyRegistry
         is core.VocabularyRegistry
     )
 
@@ -537,23 +537,23 @@ def test_generic_engine_is_shared_and_default_policy_remains_legacy():
     )
 
     assert (
-        legacy.load_default_registries.__module__
-        == "dac_her.vocab_registry"
+        corpus.load_default_registries.__module__
+        == "pipeline_core.corpus.vocab_registry"
     )
 
-    legacy_path = Path(
-        "dac_her/vocab_registry.py"
+    corpus_path = Path(
+        "pipeline_core/corpus/vocab_registry.py"
     )
 
-    legacy_tree = ast.parse(
-        legacy_path.read_text(
+    corpus_tree = ast.parse(
+        corpus_path.read_text(
             encoding="utf-8"
         )
     )
 
-    legacy_owned = {
+    corpus_owned = {
         node.name
-        for node in legacy_tree.body
+        for node in corpus_tree.body
         if isinstance(
             node,
             (
@@ -563,7 +563,7 @@ def test_generic_engine_is_shared_and_default_policy_remains_legacy():
         )
     }
 
-    assert legacy_owned == {
+    assert corpus_owned == {
         "load_default_registries"
     }
 

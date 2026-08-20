@@ -30,7 +30,7 @@ from dac_her.bridge_graph import (
     save_bridge_graph,
     write_bridge_tables,
 )
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 
 
 def _resolve_bridge_adapter(

@@ -4,7 +4,7 @@ from domains.dac_her.micro_reextract_prompts import (
     build_domain_gate_recovery_prompt,
     build_micro_reextract_prompt,
 )
-from dac_her.recovery_policy import (
+from pipeline_core.corpus.recovery_policy import (
     RecoveryAction,
     decide_recovery,
     has_common_undefined_endpoint_cluster,

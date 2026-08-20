@@ -10,7 +10,7 @@ import networkx as nx
 
 from pipeline_core.bridge_schemas import BridgeChunkGraph
 from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 
 
 def _stable_id(*parts: object) -> str:

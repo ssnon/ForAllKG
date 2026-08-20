@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import dac_her.schemas as legacy_schemas
+import pipeline_core.corpus.schemas as legacy_schemas
 
 from pipeline_core.knowledge_graph_schema import (
     KnowledgeGraph,

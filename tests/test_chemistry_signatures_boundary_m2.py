@@ -90,7 +90,7 @@ def test_production_consumers_use_core():
     paths = (
         ROOT / "dac_her" / "resolution_candidates.py",
         ROOT / "domains" / "dac_her" / "scientific_signatures.py",
-        ROOT / "dac_her" / "semantic_repairs.py",
+        ROOT / "pipeline_core" / "corpus" / "semantic_repairs.py",
         ROOT / "domains" / "sers" / "bridge_signatures.py",
     )
 

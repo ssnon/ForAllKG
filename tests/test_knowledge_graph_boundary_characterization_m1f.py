@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.schemas import (
+from pipeline_core.corpus.schemas import (
     EntityNode,
     ExperimentNode,
     EvidencePointer,

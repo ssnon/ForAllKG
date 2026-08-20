@@ -3,13 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from dac_her.bridge_relation_repairs import (
+from pipeline_core.corpus.bridge_relation_repairs import (
     apply_deterministic_relation_repairs,
 )
 from pipeline_core.graph_io import (
     knowledge_graph_to_networkx,
 )
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 from pipeline_core.bridge_domain import (
     BridgeDomainAdapter,
 )

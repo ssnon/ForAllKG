@@ -30,7 +30,7 @@ import domains.dac_her.bridge_policy \
     as bridge_policy_module
 import domains.dac_her.bridge_prompts \
     as bridge_prompts_module
-import dac_her.bridge_relation_repairs \
+import pipeline_core.corpus.bridge_relation_repairs \
     as bridge_relation_repairs_module
 import pipeline_core.bridge_schemas \
     as bridge_schemas_module
@@ -38,7 +38,7 @@ import dac_her.bridge_validation \
     as bridge_validation_module
 import dac_her.llm_openrouter \
     as llm_openrouter_module
-import dac_her.schemas \
+import pipeline_core.corpus.schemas \
     as schemas_module
 import domains.dac_her.scientific_signatures \
     as scientific_signatures_module
@@ -56,7 +56,7 @@ from dac_her.domains.bridge_registry import resolve_bridge_adapter
 from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
-from dac_her.extraction_quality import (
+from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     quality_from_active_payload,
@@ -74,7 +74,7 @@ from dac_her.run_state import (
     resolve_run_directory,
     write_json,
 )
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 
 
 load_dotenv()

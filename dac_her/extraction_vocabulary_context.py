@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dac_her.vocab_registry import VocabularyRegistry
+from pipeline_core.corpus.vocab_registry import VocabularyRegistry
 
 
 BROAD_METHODS_ONLY_CONTEXT_ID = "broad-experiment-methods-only-v1"

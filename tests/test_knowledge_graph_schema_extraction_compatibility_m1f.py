@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import dac_her.schemas as legacy
+import pipeline_core.corpus.schemas as legacy
 import pipeline_core.knowledge_graph_schema as core
 
 

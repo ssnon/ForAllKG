@@ -3,14 +3,14 @@ from __future__ import annotations
 import networkx as nx
 from pathlib import Path
 
-from dac_her.graph_semantics import evidence_topology_diagnostics
+from pipeline_core.corpus.graph_semantics import evidence_topology_diagnostics
 from domains.sers.prompts import (
     SERS_MICRO_REEXTRACT_SYSTEM_PROMPT,
     SERS_PATCH_SYSTEM_PROMPT,
     SERS_PROMPT_VERSION,
     SERS_SYSTEM_PROMPT,
 )
-from dac_her.vocab_registry import load_default_registries
+from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
 def test_sers_prompt_version_alpha4a3():

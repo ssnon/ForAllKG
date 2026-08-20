@@ -14,12 +14,12 @@ from dac_her.domains.extraction_registry import get_extraction_adapter
 from dac_her.domains.graph_registry import get_graph_adapter
 from dac_her.domains.registry import get_domain_profile
 from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
-from dac_her.graph_semantics import (
+from pipeline_core.corpus.graph_semantics import (
     apply_graph_domain_canonicalization,
     write_graph_semantics_report,
 )
 from pipeline_core.extraction_policy import ExtractionPolicy
-from dac_her.extraction_quality import (
+from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     graph_quality_attributes,
@@ -35,7 +35,7 @@ from dac_her.provenance_backfill import (
     backfill_edge_asset_provenance,
     refresh_run_asset_manifest,
 )
-from dac_her.semantic_repairs import repair_model_of_targets
+from pipeline_core.corpus.semantic_repairs import repair_model_of_targets
 from dac_her.graph_normalization import normalize_networkx_metric_vocabularies
 from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.paper_graph_postprocess import (
@@ -58,9 +58,9 @@ from dac_her.run_state import (
     resolve_run_directory,
     write_json,
 )
-from dac_her.schemas import KnowledgeGraph
+from pipeline_core.corpus.schemas import KnowledgeGraph
 from pipeline_core.validation import validate_graph_provenance
-from dac_her.vocab_registry import load_default_registries
+from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

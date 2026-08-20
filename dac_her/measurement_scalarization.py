@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Iterable
 
-from dac_her.schemas import KnowledgeGraph, MeasurementNode
+from pipeline_core.corpus.schemas import KnowledgeGraph, MeasurementNode
 
 
 _NUMBER_RE = re.compile(r"(?<![A-Za-z])[-+−]?\d+(?:\.\d+)?")

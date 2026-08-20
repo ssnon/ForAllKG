@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.graph_semantics import (
+from pipeline_core.corpus.graph_semantics import (
     SERS_GRAPH_DIAGNOSTICS_VERSION,
     node_role_diagnostics,
 )

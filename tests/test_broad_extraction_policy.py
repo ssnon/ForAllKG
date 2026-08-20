@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dac_her.broad_extraction_policy import (
+from pipeline_core.corpus.broad_extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,
 )

@@ -11,7 +11,7 @@ from dac_her.domains.registry import (
     available_domain_profiles,
     get_domain_profile,
 )
-from dac_her.schemas import EntityNode
+from pipeline_core.corpus.schemas import EntityNode
 from scripts.ingest_local_corpus import discover_local_papers
 
 

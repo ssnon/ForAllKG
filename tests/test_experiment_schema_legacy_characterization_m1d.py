@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from dac_her.schemas import ExperimentNode
+from pipeline_core.corpus.schemas import ExperimentNode
 
 
 @pytest.mark.parametrize(

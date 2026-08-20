@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from domains.sers.prompts import SERS_PROMPT_VERSION, SERS_SYSTEM_PROMPT
-from dac_her.vocab_registry import load_default_registries
+from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
 def test_prompt_version_alpha4a3_3():

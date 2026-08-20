@@ -8,10 +8,10 @@ from dac_her.metric_normalization_policy import (
     refine_distance_metric_id,
     refine_semantic_metric_id,
 )
-from dac_her.schemas import (
+from pipeline_core.corpus.schemas import (
     KnowledgeGraph,
 )
-from dac_her.vocab_registry import (
+from pipeline_core.corpus.vocab_registry import (
     VocabularyRegistry,
 )
 
