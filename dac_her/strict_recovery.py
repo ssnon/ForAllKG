@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from pipeline_core.chunking import ChunkSpec, count_tokens
 from pipeline_core.draft_schema import KnowledgeGraphDraft
-from dac_her.domain_gate_replay import build_domain_gate_replay_fixture
+from pipeline_core.corpus.domain_gate_replay import build_domain_gate_replay_fixture
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.extraction_policy import ExtractionPolicy
 from dac_her.domains.extraction_registry import get_extraction_adapter

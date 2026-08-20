@@ -13,7 +13,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
     PriorArtPacket,
 )
-from dac_her.external_novelty_llm import (
+from pipeline_core.discovery.external_novelty_llm import (
     InstructorOpenAICompatibleExternalNoveltyBackend,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio

@@ -68,7 +68,7 @@ from pipeline_core.corpus.extraction_vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
 )
-from dac_her.figure_extraction import (
+from pipeline_core.corpus.figure_extraction import (
     FigureAnalysis,
     analyze_figure,
     format_asset_context,

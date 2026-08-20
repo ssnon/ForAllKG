@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.chunking import ChunkSpec
-from dac_her.domain_gate_replay import (
+from pipeline_core.corpus.domain_gate_replay import (
     build_domain_gate_replay_fixture,
     build_zero_loss_summary,
     verify_fixture_contract,

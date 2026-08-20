@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
-from dac_her.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
+from pipeline_core.discovery.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
 from pipeline_core.discovery.evidence_family_decomposition import (
     EvidenceFamilyDecompositionReport,
 )
