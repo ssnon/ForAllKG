@@ -59,3 +59,56 @@ def test_policy_module_owns_chemistry_refinement_payload():
 
     for token in required:
         assert token in source
+
+
+def test_extraction_provenance_tracks_runtime_and_policy_files():
+    source = Path(
+        "scripts/extract_paper.py"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    tree = ast.parse(source)
+
+    main = next(
+        node
+        for node in tree.body
+        if (
+            isinstance(node, ast.FunctionDef)
+            and node.name == "main"
+        )
+    )
+
+    calls = [
+        node
+        for node in ast.walk(main)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id
+            == "compute_run_metadata"
+        )
+    ]
+
+    assert len(calls) == 1
+
+    keyword = next(
+        item
+        for item in calls[0].keywords
+        if item.arg
+        == "implementation_paths"
+    )
+
+    rendered = ast.unparse(
+        keyword.value
+    )
+
+    assert (
+        "graph_normalization_module.__file__"
+        in rendered
+    )
+
+    assert (
+        "metric_normalization_policy_module.__file__"
+        in rendered
+    )

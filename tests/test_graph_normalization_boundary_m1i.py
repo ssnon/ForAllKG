@@ -183,6 +183,54 @@ def test_networkx_normalizer_uses_same_metric_refinement_seam():
     )
 
 
+def test_extraction_run_fingerprint_tracks_graph_normalization_source():
+    source = Path(
+        "scripts/extract_paper.py"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    tree = ast.parse(source)
+
+    main = next(
+        node
+        for node in tree.body
+        if (
+            isinstance(node, ast.FunctionDef)
+            and node.name == "main"
+        )
+    )
+
+    compute_calls = [
+        node
+        for node in ast.walk(main)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id
+            == "compute_run_metadata"
+        )
+    ]
+
+    assert len(compute_calls) == 1
+
+    call = compute_calls[0]
+
+    implementation_keyword = next(
+        keyword
+        for keyword in call.keywords
+        if keyword.arg
+        == "implementation_paths"
+    )
+
+    rendered = ast.unparse(
+        implementation_keyword.value
+    )
+
+    assert (
+        "graph_normalization_module.__file__"
+        in rendered
+    )
 
 
 def test_run_metadata_hashes_each_implementation_file():

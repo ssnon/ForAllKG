@@ -10,17 +10,28 @@ ROOT = Path(__file__).resolve().parents[1]
 ENTRY_MODULE = "scripts.run_dac_discovery_e2e"
 
 EXPECTED_DYNAMIC_STAGES = {
-    'scripts.build_dual_hypothesis_context',
-    'scripts.run_external_novelty',
-    'scripts.run_feasibility_e2e',
-    'scripts.run_novelty_refinement',
+    "scripts.build_demo_viewer",
+    "scripts.build_discovery_bundle",
+    "scripts.build_dual_hypothesis_context",
+    "scripts.build_explorer_packet",
+    "scripts.build_hypothesis_context",
+    "scripts.run_candidate_unit_traversal",
+    "scripts.run_discovery_axis_hypothesis_maker",
+    "scripts.run_external_novelty",
+    "scripts.run_feasibility_e2e",
+    "scripts.run_graph_explorer",
+    "scripts.run_graph_traversal",
+    "scripts.run_hypothesis_semantic_critic",
+    "scripts.run_novelty_refinement",
 }
 
 EXPECTED_DOMAIN_SURFACE = {
-    'dac_her.domains.feasibility_registry',
-    'dac_her.domains.registry',
-    'pipeline_core.domain_profile',
-    'pipeline_core.feasibility_domain',
+    "pipeline_core.domain_profile",
+    "pipeline_core.feasibility_domain",
+    "dac_her.domains.registry",
+    "dac_her.domains.extraction_registry",
+    "dac_her.domains.feasibility_registry",
+    "dac_her.domains.strict_relation_contracts",
 }
 
 CAMPAIGN_MODULE_PATTERN = re.compile(
