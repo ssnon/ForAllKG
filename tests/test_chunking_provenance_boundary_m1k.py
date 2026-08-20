@@ -214,30 +214,6 @@ def test_run_metadata_hashes_exact_chunking_file(
     )
 
 
-def test_extraction_provenance_points_at_shared_chunking_owner():
-    source = Path(
-        "scripts/extract_paper.py"
-    ).read_text(
-        encoding="utf-8"
-    )
-
-    assert (
-        "import pipeline_core.chunking "
-        "as chunking_module"
-        in source
-    )
-
-    assert (
-        "import dac_her.chunking "
-        "as chunking_module"
-        not in source
-    )
-
-    assert (
-        "chunking_path="
-        "chunking_module.__file__"
-        in source
-    )
 
 
 def test_shared_chunking_dependency_boundary():

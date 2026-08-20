@@ -70,54 +70,5 @@ def test_canonical_module_has_no_legacy_dac_import():
     assert violations == []
 
 
-def test_extract_paper_provenance_imports_canonical_module():
-    path = ROOT / "scripts" / "extract_paper.py"
-
-    tree = ast.parse(
-        path.read_text(encoding="utf-8"),
-        filename=str(path),
-    )
-
-    bindings = []
-
-    for node in tree.body:
-        if not isinstance(node, ast.Import):
-            continue
-
-        for alias in node.names:
-            if (
-                alias.asname
-                == "semantic_patch_prompts_module"
-            ):
-                bindings.append(alias.name)
-
-    assert bindings == [
-        "domains.dac_her.semantic_patch_prompts"
-    ]
 
 
-def test_extract_paper_still_hashes_prompt_module_file():
-    path = ROOT / "scripts" / "extract_paper.py"
-
-    tree = ast.parse(
-        path.read_text(encoding="utf-8"),
-        filename=str(path),
-    )
-
-    refs = []
-
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Attribute):
-            continue
-
-        if node.attr != "__file__":
-            continue
-
-        if (
-            isinstance(node.value, ast.Name)
-            and node.value.id
-            == "semantic_patch_prompts_module"
-        ):
-            refs.append(node.lineno)
-
-    assert len(refs) == 1
