@@ -11,7 +11,7 @@ from dac_her.domains.feasibility_registry import (
     get_feasibility_adapter,
     resolve_feasibility_adapter,
 )
-from dac_her.domains.dac_her_feasibility import DacHerFeasibilityAdapter
+from domains.dac_her.feasibility import DacHerFeasibilityAdapter
 
 
 def _minimal_profile(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from dac_her.domains.dac_her_feasibility import DAC_HER_FEASIBILITY_ADAPTER
+from domains.dac_her.feasibility import DAC_HER_FEASIBILITY_ADAPTER
 from domains.registry import get_domain_profile
 from pipeline_core.feasibility_domain import FeasibilityDomainAdapter
 

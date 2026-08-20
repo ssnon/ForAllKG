@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.domains.catalysis_mechanism_graph import (
+from domains.catalysis_mechanism.graph import (
     BROAD_DIRECT_MECHANISM_RELATIONS,
     BROAD_MECHANISM_NODE_TYPES,
     CATALYSIS_MECHANISM_GRAPH_ADAPTER,
