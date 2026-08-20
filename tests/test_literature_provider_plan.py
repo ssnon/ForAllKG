@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from dac_her.literature_provider_plan import (
+from pipeline_core.discovery.prior_art_provider_plan import (
     build_literature_providers,
     require_standard_or_full_auto_plan,
     resolve_literature_provider_plan,

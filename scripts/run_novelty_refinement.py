@@ -19,7 +19,7 @@ from pipeline_core.discovery.external_novelty_llm import InstructorOpenAICompati
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.hypothesis_llm import InstructorOpenAICompatibleHypothesisBackend
 from pipeline_core.discovery.prior_art_retrieval import LiteratureRetriever
-from dac_her.literature_provider_plan import (
+from pipeline_core.discovery.prior_art_provider_plan import (
     build_literature_providers,
     load_literature_provider_plan,
     require_standard_or_full_auto_plan,
