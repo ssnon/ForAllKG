@@ -31,7 +31,7 @@ from pipeline_core.corpus.measurement_merge_invariants import (
     assert_measurement_value_xor,
     measurement_mentions_conflict,
 )
-from dac_her.provenance_backfill import (
+from pipeline_core.corpus.provenance_backfill import (
     backfill_edge_asset_provenance,
     refresh_run_asset_manifest,
 )
