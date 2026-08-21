@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from dac_her.corpus_publication import (
+from scripts.corpus_publication_runtime import (
     CorpusPublicationOptions,
     StrictBridgeCorpusPublisher,
 )
