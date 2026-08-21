@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 import pipeline_core.chunking as chunking_module
 import pipeline_core.corpus.schemas as schemas_module
-import dac_her.extraction as extraction_module
+import dac_her.strict_recovery as extraction_module
 import pipeline_core.corpus.graph_normalization as graph_normalization_module
 import pipeline_core.corpus.metric_normalization_policy as metric_normalization_policy_module
 import pipeline_core.graph_normalization_runtime as graph_normalization_runtime_module
@@ -49,7 +49,7 @@ from pipeline_core.document_package import (
     load_document_package,
     select_document_sources,
 )
-from dac_her.extraction import chunk_output_path, extract_one_chunk, load_existing_result
+from dac_her.strict_recovery import chunk_output_path, extract_one_chunk, load_existing_result
 from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy
