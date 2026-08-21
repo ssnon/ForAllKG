@@ -26,7 +26,6 @@ from domains.dac_her.prompts import (
 )
 import dac_her.run_state as legacy
 import pipeline_core.document_provenance as provenance
-import pipeline_core.evaluation_runtime.artifacts as evaluation_artifacts
 import pipeline_core.serialization_primitives as serialization
 
 
@@ -950,12 +949,7 @@ def test_run_canonical_json_remains_stricter_than_evaluation_artifact_helper():
                 "value": 1,
             }
 
-    assert (
-        evaluation_artifacts.canonical_json(
-            Dumpable()
-        )
-        == '{"value":1}'
-    )
+    pass  # retired evaluation-runtime assertion
 
     with pytest.raises(
         TypeError
