@@ -59,9 +59,6 @@ from pipeline_core.corpus.extraction_quality import (
     QUALITY_REJECTED,
     quality_from_active_payload,
 )
-from dac_her.bridge_policy_run import (
-    materialize_bridge_policy_run,
-)
 from domains.dac_her.bridge_run_state import (
     bridge_extraction_directory,
     compute_bridge_extraction_metadata,
@@ -73,6 +70,23 @@ from dac_her.run_state import (
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
+from pipeline_core.graph_io import (
+    knowledge_graph_to_networkx,
+)
+from pipeline_core.bridge_filtering import (
+    filter_bridge_raw_chunk as core_filter_bridge_raw_chunk,
+)
+from pipeline_core.corpus.bridge_relation_repairs import (
+    apply_deterministic_relation_repairs,
+)
+from pipeline_core.corpus.bridge_graph import (
+    build_bridge_graph,
+    save_bridge_graph,
+    write_bridge_tables,
+)
+from pipeline_core.bridge_policy_run import (
+    materialize_bridge_policy_run as core_materialize_bridge_policy_run,
+)
 
 
 load_dotenv()
@@ -267,6 +281,100 @@ def _seed_raw_cache(
         copied += 1
 
     return copied
+
+
+
+def _filter_bridge_policy_chunk(
+    *,
+    raw_result,
+    strict_result,
+    source_payload,
+    output_dir,
+    bridge_adapter,
+):
+    strict_nodes = (
+        bridge_adapter
+        .strict_node_catalog_builder(
+            knowledge_graph_to_networkx(
+                strict_result
+            )
+        )
+    )
+
+    return core_filter_bridge_raw_chunk(
+        raw_result=raw_result,
+        strict_nodes=strict_nodes,
+        chunk_id=strict_result.chunk_id,
+        source_payload=source_payload,
+        output_dir=output_dir,
+        bridge_adapter=bridge_adapter,
+        relation_repairer=(
+            apply_deterministic_relation_repairs
+        ),
+    )
+
+
+def _include_domain_identity(
+    bridge_adapter,
+) -> bool:
+    return not (
+        bridge_adapter.domain_profile_id == "dac_her"
+        and bridge_adapter.adapter_id == "dac_her"
+    )
+
+
+def _materialize_bridge_policy_run(
+    *,
+    project_root,
+    paper_id,
+    strict_run_dir,
+    active_payload,
+    extraction_dir,
+    canonical_path,
+    strict_results,
+    source_payloads,
+    policy_implementation_paths,
+    bridge_adapter,
+    data_root,
+):
+    return core_materialize_bridge_policy_run(
+        project_root=project_root,
+        paper_id=paper_id,
+        strict_run_dir=strict_run_dir,
+        active_payload=active_payload,
+        extraction_dir=extraction_dir,
+        canonical_path=canonical_path,
+        strict_results=strict_results,
+        source_payloads=source_payloads,
+        policy_implementation_paths=(
+            policy_implementation_paths
+        ),
+        bridge_adapter=bridge_adapter,
+        data_root=data_root,
+        bridge_raw_output_path_fn=(
+            bridge_extraction_module
+            .bridge_raw_output_path
+        ),
+        filter_bridge_raw_chunk_fn=(
+            _filter_bridge_policy_chunk
+        ),
+        build_bridge_graph_fn=(
+            build_bridge_graph
+        ),
+        save_bridge_graph_fn=(
+            save_bridge_graph
+        ),
+        write_bridge_tables_fn=(
+            write_bridge_tables
+        ),
+        include_domain_identity_in_fingerprint=(
+            _include_domain_identity(
+                bridge_adapter
+            )
+        ),
+        publish_legacy_aliases=True,
+    )
+
 
 
 def main() -> None:
@@ -762,7 +870,7 @@ def main() -> None:
     )
 
     policy_summary = (
-        materialize_bridge_policy_run(
+        _materialize_bridge_policy_run(
             project_root=PROJECT_ROOT,
             paper_id=args.paper_id,
             strict_run_dir=(
