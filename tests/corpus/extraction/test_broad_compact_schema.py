@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
+from domains.catalysis_mechanism.compact_schema import BroadMechanismGraphDraft
 from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
 from pipeline_core.llm.llm_telemetry import estimate_tokens, normalize_stage_name
 

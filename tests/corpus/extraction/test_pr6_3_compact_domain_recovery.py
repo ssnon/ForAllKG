@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
+from domains.catalysis_mechanism.compact_schema import BroadMechanismGraphDraft
 from domains.extraction_registry import get_extraction_adapter
 from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
 from scripts.corpus.strict_extraction_runtime import (

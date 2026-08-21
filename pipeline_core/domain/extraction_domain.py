@@ -35,6 +35,8 @@ class ExtractionDomainAdapter:
     compact_domain_gate_recovery_response_model: (
         type[BaseModel] | None
     ) = None
+    compact_generation_schema_id: str | None = None
+    compact_domain_gate_recovery_schema_id: str | None = None
     strict_semantic_contract_id: str | None = None
     strict_semantic_contract_rules: tuple[str, ...] = ()
     strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
@@ -67,6 +69,36 @@ class ExtractionDomainAdapter:
                 paths.append(source_path)
 
         return tuple(paths)
+
+    def compact_response_model_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return deterministic source files for active compact response models."""
+
+        models = (
+            self.compact_generation_response_model,
+            self.compact_domain_gate_recovery_response_model,
+        )
+
+        paths: list[str] = []
+
+        for model in models:
+            if model is None:
+                continue
+
+            source_path = inspect.getsourcefile(model)
+
+            if source_path is None:
+                raise RuntimeError(
+                    "Could not resolve compact response-model "
+                    f"implementation source for {model!r}"
+                )
+
+            if source_path not in paths:
+                paths.append(source_path)
+
+        return tuple(paths)
+
 
     def strict_relation_contract_payload(
         self,

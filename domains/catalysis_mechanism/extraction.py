@@ -14,7 +14,10 @@ from domains.catalysis_mechanism.prompt_builders import (
     build_patch_rejection_feedback,
     build_semantic_patch_prompt,
 )
-from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
+from domains.catalysis_mechanism.compact_schema import (
+    BROAD_COMPACT_SCHEMA_ID,
+    BroadMechanismGraphDraft,
+)
 from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
 
 
@@ -40,6 +43,8 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     compact_domain_gate_recovery_response_model=(
         BroadMechanismGraphDraft
     ),
+    compact_generation_schema_id=BROAD_COMPACT_SCHEMA_ID,
+    compact_domain_gate_recovery_schema_id=BROAD_COMPACT_SCHEMA_ID,
     allowed_entity_types=frozenset({
         "Paper",
         "Catalyst",

@@ -27,7 +27,6 @@ import pipeline_core.corpus.extraction_vocabulary_context as extraction_vocabula
 import pipeline_core.runtime.validation as validation_module
 import pipeline_core.corpus.chunking_recovery as chunking_recovery_module
 import pipeline_core.corpus.extraction.draft_schema as draft_schema_module
-import pipeline_core.corpus.broad_compact_schema as broad_compact_schema_module
 import pipeline_core.corpus.graph.graph_validation as graph_validation_module
 import pipeline_core.corpus.extraction_quality as extraction_quality_module
 import pipeline_core.corpus.lossless_normalization as lossless_normalization_module
@@ -332,12 +331,12 @@ def main() -> None:
             "--broad-compact-schema"
         )
     generation_response_schema_id = (
-        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
+        extraction_adapter.compact_generation_schema_id
         if args.broad_compact_schema
         else "knowledge-graph-draft-full"
     )
     domain_gate_recovery_response_schema_id = (
-        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
+        extraction_adapter.compact_domain_gate_recovery_schema_id
         if args.broad_compact_domain_recovery
         else "knowledge-graph-draft-full"
     )
@@ -453,7 +452,7 @@ def main() -> None:
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
             *(
-                (broad_compact_schema_module.__file__,)
+                (extraction_adapter.compact_response_model_implementation_paths()[0],)
                 if args.broad_compact_schema
                 else ()
             ),
