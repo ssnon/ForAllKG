@@ -4,6 +4,7 @@ import ast
 from pathlib import Path
 
 import domains.dac_her.micro_reextract_prompts as canonical
+from domains.extraction_registry import get_extraction_adapter
 
 from pipeline_core.runtime.validation_issues import (
     IssueCode,
@@ -71,54 +72,44 @@ def test_canonical_module_has_no_legacy_dac_import():
     assert violations == []
 
 
-def test_extract_paper_imports_canonical_prompt_module():
-    path = ROOT / "scripts" / "corpus/extract_paper.py"
+
+def test_extract_paper_routes_prompt_provenance_through_adapter():
+    path = ROOT / "scripts" / "corpus" / "extract_paper.py"
 
     tree = ast.parse(
         path.read_text(encoding="utf-8"),
         filename=str(path),
     )
 
-    bindings = []
-
-    for node in tree.body:
-        if not isinstance(node, ast.Import):
-            continue
-
-        for alias in node.names:
-            if (
-                alias.asname
-                == "micro_reextract_prompts_module"
-            ):
-                bindings.append(alias.name)
-
-    assert bindings == [
-        "domains.dac_her.micro_reextract_prompts"
-    ]
-
-
-def test_extract_paper_still_hashes_canonical_prompt_file():
-    path = ROOT / "scripts" / "corpus/extract_paper.py"
-
-    tree = ast.parse(
-        path.read_text(encoding="utf-8"),
-        filename=str(path),
-    )
-
-    refs = []
+    calls = []
 
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Attribute):
+        if not isinstance(node, ast.Call):
             continue
 
-        if node.attr != "__file__":
+        if not isinstance(node.func, ast.Attribute):
             continue
 
         if (
-            isinstance(node.value, ast.Name)
-            and node.value.id
-            == "micro_reextract_prompts_module"
+            node.func.attr
+            == "prompt_builder_implementation_paths"
         ):
-            refs.append(node.lineno)
+            calls.append(node.lineno)
 
-    assert len(refs) == 1
+    assert len(calls) == 1
+
+
+
+def test_dac_adapter_provenance_includes_micro_prompt_file():
+    adapter = get_extraction_adapter("dac_her")
+
+    paths = {
+        Path(path).resolve()
+        for path
+        in adapter.prompt_builder_implementation_paths()
+    }
+
+    assert (
+        Path(canonical.__file__).resolve()
+        in paths
+    )

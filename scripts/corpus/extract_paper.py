@@ -33,12 +33,10 @@ import pipeline_core.corpus.extraction_quality as extraction_quality_module
 import pipeline_core.corpus.lossless_normalization as lossless_normalization_module
 import pipeline_core.corpus.recovery_policy as recovery_policy_module
 import pipeline_core.corpus.semantic_patch as semantic_patch_module
-import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import pipeline_core.corpus.semantic_patch_schema as semantic_patch_schema_module
 import scripts.corpus.strict_extraction_runtime as strict_recovery_module
 import pipeline_core.corpus.strict_validation as strict_validation_module
 import pipeline_core.runtime.validation_issues as validation_issues_module
-import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 
 from pipeline_core.corpus.extraction.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from pipeline_core.corpus.extraction.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
@@ -469,12 +467,11 @@ def main() -> None:
             lossless_normalization_module.__file__,
             recovery_policy_module.__file__,
             semantic_patch_module.__file__,
-            semantic_patch_prompts_module.__file__,
+            *extraction_adapter.prompt_builder_implementation_paths(),
             semantic_patch_schema_module.__file__,
             strict_recovery_module.__file__,
             strict_validation_module.__file__,
             validation_issues_module.__file__,
-            micro_reextract_prompts_module.__file__,
             *(
                 (semantic_collector_impl_path,)
                 if semantic_collector_impl_path

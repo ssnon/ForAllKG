@@ -13,18 +13,12 @@ from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.llm.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
-from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
 from pipeline_core.corpus.schemas import KnowledgeGraph
 from pipeline_core.corpus.graph.strict_chunk_loading import (
     load_strict_validated_chunk_graph,
 )
 from pipeline_core.corpus.semantic_patch import PatchRejected, apply_semantic_patch
-from domains.dac_her.semantic_patch_prompts import (
-    PATCH_SYSTEM_PROMPT,
-    build_patch_rejection_feedback,
-    build_semantic_patch_prompt,
-)
 from pipeline_core.corpus.semantic_patch_schema import KnowledgeGraphPatch
 from pipeline_core.corpus.strict_validation import (
     ValidationContext,
@@ -34,11 +28,6 @@ from pipeline_core.corpus.strict_validation import (
 from pipeline_core.runtime.validation import validate_graph_provenance
 from pipeline_core.runtime.validation_issues import ValidationReport
 from pipeline_core.corpus.vocab_registry import VocabularyRegistry
-from domains.dac_her.micro_reextract_prompts import (
-    MICRO_REEXTRACT_SYSTEM_PROMPT,
-    build_domain_gate_recovery_prompt,
-    build_micro_reextract_prompt,
-)
 
 def chunk_output_path(chunk: ChunkSpec, chunk_output_dir: str | Path) -> Path:
     safe_chunk_id = chunk.chunk_id.replace(":", "__")
@@ -379,7 +368,7 @@ def extract_one_chunk(
         try:
             generated_draft = llm.generate_structured(
                 system_prompt=extraction_adapter.system_prompt,
-                prompt=build_extraction_prompt(
+                prompt=extraction_adapter.generation_prompt_builder(
                     paper_id=chunk.paper_id,
                     chunk_id=chunk.chunk_id,
                     document_id=chunk.document_id,
@@ -491,7 +480,7 @@ def extract_one_chunk(
                     debug_dir
                     / f"{safe_chunk_id}__domain_gate_recovery_0.json"
                 )
-                domain_recovery_prompt = build_domain_gate_recovery_prompt(
+                domain_recovery_prompt = extraction_adapter.domain_gate_recovery_prompt_builder(
                     paper_id=chunk.paper_id,
                     chunk_id=chunk.chunk_id,
                     document_id=chunk.document_id,
@@ -814,7 +803,7 @@ def extract_one_chunk(
             try:
                 patch = llm.generate_structured(
                     system_prompt=extraction_adapter.patch_system_prompt,
-                    prompt=build_semantic_patch_prompt(
+                    prompt=extraction_adapter.semantic_patch_prompt_builder(
                         paper_id=chunk.paper_id,
                         chunk_id=chunk.chunk_id,
                         document_id=chunk.document_id,
@@ -1028,7 +1017,7 @@ def extract_one_chunk(
                 else:
                     patch_attempts += 1
 
-                patch_feedback = build_patch_rejection_feedback(
+                patch_feedback = extraction_adapter.patch_rejection_feedback_builder(
                     error
                 )
                 continue
@@ -1061,7 +1050,7 @@ def extract_one_chunk(
                     system_prompt=(
                         extraction_adapter.micro_reextract_system_prompt
                     ),
-                    prompt=build_micro_reextract_prompt(
+                    prompt=extraction_adapter.micro_reextract_prompt_builder(
                         paper_id=chunk.paper_id,
                         chunk_id=chunk.chunk_id,
                         document_id=chunk.document_id,

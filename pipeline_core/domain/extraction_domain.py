@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import inspect
+
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -19,6 +21,11 @@ class ExtractionDomainAdapter:
     system_prompt: str
     patch_system_prompt: str
     micro_reextract_system_prompt: str
+    generation_prompt_builder: Callable[..., str]
+    semantic_patch_prompt_builder: Callable[..., str]
+    patch_rejection_feedback_builder: Callable[[Exception], str]
+    micro_reextract_prompt_builder: Callable[..., str]
+    domain_gate_recovery_prompt_builder: Callable[..., str]
     default_data_root: str
     allowed_entity_types: frozenset[str]
     allowed_relation_types: frozenset[str]
@@ -31,6 +38,35 @@ class ExtractionDomainAdapter:
     strict_semantic_contract_id: str | None = None
     strict_semantic_contract_rules: tuple[str, ...] = ()
     strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
+
+    def prompt_builder_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return deterministic source files for active user-prompt builders."""
+
+        builders = (
+            self.generation_prompt_builder,
+            self.semantic_patch_prompt_builder,
+            self.patch_rejection_feedback_builder,
+            self.micro_reextract_prompt_builder,
+            self.domain_gate_recovery_prompt_builder,
+        )
+
+        paths: list[str] = []
+
+        for builder in builders:
+            source_path = inspect.getsourcefile(builder)
+
+            if source_path is None:
+                raise RuntimeError(
+                    "Could not resolve prompt-builder implementation "
+                    f"source for {builder!r}"
+                )
+
+            if source_path not in paths:
+                paths.append(source_path)
+
+        return tuple(paths)
 
     def strict_relation_contract_payload(
         self,
