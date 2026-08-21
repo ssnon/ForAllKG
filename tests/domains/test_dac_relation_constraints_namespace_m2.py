@@ -12,8 +12,10 @@ from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS,
 )
 
+from domains.catalysis_mechanism.relation_constraints import (
+    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
+)
 from domains.dac_her.relation_constraints import (
-    DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as LEGACY_DAC,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as LEGACY_LEGACY,
 )
@@ -33,11 +35,36 @@ def test_legacy_named_policy_identity_is_preserved():
     assert CANONICAL_DAC is CANONICAL_LEGACY
 
 
-def test_catalysis_historical_alias_identity_is_preserved():
+def test_catalysis_contract_is_independent_but_semantically_equal():
     assert (
         CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
-        is CANONICAL_LEGACY
+        is not CANONICAL_LEGACY
     )
+
+    broad_shape = tuple(
+        (
+            item.relation,
+            item.source_types,
+            item.target_types,
+            item.severity,
+        )
+        for item
+        in CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
+    )
+
+    legacy_shape = tuple(
+        (
+            item.relation,
+            item.source_types,
+            item.target_types,
+            item.severity,
+        )
+        for item
+        in CANONICAL_LEGACY
+    )
+
+    assert broad_shape == legacy_shape
+
 
 
 def test_sers_still_uses_shared_core_policy():

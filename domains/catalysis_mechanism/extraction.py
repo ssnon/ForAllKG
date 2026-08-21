@@ -26,7 +26,9 @@ from domains.catalysis_mechanism.vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
 )
-from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
+from domains.catalysis_mechanism.relation_constraints import (
+    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
+)
 
 
 CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
