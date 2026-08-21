@@ -5,6 +5,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
+from domains.extraction_registry import get_extraction_adapter
 from pipeline_core.corpus.schemas import KnowledgeGraph
 from pipeline_core.corpus.extraction.chunking import ChunkSpec
 from scripts.corpus.strict_extraction_runtime import load_existing_result
@@ -40,6 +41,7 @@ def _edge(
 def _payload(
     *,
     target_id: str = "material",
+    target_type: str = "Material",
 ) -> dict:
     return {
         "paper_id": "sers-context-regression",
@@ -58,7 +60,7 @@ def _payload(
             },
             {
                 "id": "material",
-                "type": "Material",
+                "type": target_type,
                 "label": "HAuCl4 solution",
                 "description": None,
             },
@@ -136,7 +138,11 @@ def test_cached_strict_result_uses_shared_validated_loader(
 ):
     path = tmp_path / "chunk.json"
     path.write_text(
-        json.dumps(_payload()),
+        json.dumps(
+            _payload(
+                target_type="Precursor",
+            )
+        ),
         encoding="utf-8",
     )
 
@@ -154,9 +160,19 @@ def test_cached_strict_result_uses_shared_validated_loader(
         asset_ids=(),
     )
 
+    adapter = get_extraction_adapter(
+        "sers_au_ag"
+    )
+
     result = load_existing_result(
         chunk=chunk,
         output_path=path,
+        relation_constraints=(
+            adapter.strict_relation_constraints
+        ),
+        semantic_issue_collector=(
+            adapter.strict_semantic_issue_collector
+        ),
     )
 
     assert result is not None

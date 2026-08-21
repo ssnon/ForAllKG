@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import shutil
@@ -218,7 +219,9 @@ def write_source_chunk(
         "page_ids": list(chunk.page_ids),
         "asset_ids": list(chunk.asset_ids),
         "asset_paths": list(chunk.asset_paths),
+        "asset_pages": list(chunk.asset_pages),
         "asset_locators": list(chunk.asset_locators),
+        "asset_context": chunk.asset_context,
         "left_context": chunk.left_context,
         "core_text": chunk.core_text,
         "right_context": chunk.right_context,
@@ -388,6 +391,17 @@ def main() -> None:
         policy = broad_abstract_extraction_policy(policy)
         extraction_policy_id = BROAD_ABSTRACT_RECOVERY_POLICY_ID
 
+    semantic_collector_impl_path = None
+    if extraction_adapter.strict_semantic_issue_collector is not None:
+        semantic_collector_impl_path = inspect.getsourcefile(
+            extraction_adapter.strict_semantic_issue_collector
+        )
+        if semantic_collector_impl_path is None:
+            raise RuntimeError(
+                "Could not resolve strict semantic collector "
+                "implementation path for run provenance."
+            )
+
     run_metadata = compute_run_metadata(
         project_root=PROJECT_ROOT,
         paper=paper,
@@ -402,6 +416,14 @@ def main() -> None:
             "vision_model_override": args.vision_model,
             "domain_profile_id": domain_profile.profile_id,
             "extraction_adapter_id": extraction_adapter.adapter_id,
+            "strict_relation_contract": (
+                extraction_adapter
+                .strict_relation_contract_payload()
+            ),
+            "strict_semantic_contract": (
+                extraction_adapter
+                .strict_semantic_contract_payload()
+            ),
             "extraction_policy_id": extraction_policy_id,
             "generation_response_schema_id": generation_response_schema_id,
             "domain_gate_recovery_response_schema_id": (
@@ -453,6 +475,11 @@ def main() -> None:
             strict_validation_module.__file__,
             validation_issues_module.__file__,
             micro_reextract_prompts_module.__file__,
+            *(
+                (semantic_collector_impl_path,)
+                if semantic_collector_impl_path
+                else ()
+            ),
         ),
     )
     run_id = str(run_metadata["run_id"])
@@ -711,7 +738,16 @@ def main() -> None:
                 current_path = chunk_output_path(chunk, chunk_output_dir)
                 if current_path.exists() or not legacy_path.exists():
                     continue
-                if load_existing_result(chunk=chunk, output_path=legacy_path) is None:
+                if load_existing_result(
+                    chunk=chunk,
+                    output_path=legacy_path,
+                    relation_constraints=(
+                        extraction_adapter.strict_relation_constraints
+                    ),
+                    semantic_issue_collector=(
+                        extraction_adapter.strict_semantic_issue_collector
+                    ),
+                ) is None:
                     print("[LEGACY CACHE REJECTED]", legacy_path, flush=True)
                     continue
                 shutil.copy2(legacy_path, current_path)

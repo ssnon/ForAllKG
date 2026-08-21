@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import BaseModel
 
@@ -28,6 +28,46 @@ class ExtractionDomainAdapter:
     compact_domain_gate_recovery_response_model: (
         type[BaseModel] | None
     ) = None
+    strict_semantic_contract_id: str | None = None
+    strict_semantic_contract_rules: tuple[str, ...] = ()
+    strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
+
+    def strict_relation_contract_payload(
+        self,
+    ) -> list[dict[str, Any]]:
+        """Return deterministic strict-validation semantics for run provenance."""
+        return [
+            {
+                "relation": constraint.relation,
+                "source_types": sorted(
+                    constraint.source_types
+                ),
+                "target_types": sorted(
+                    constraint.target_types
+                ),
+                "severity": constraint.severity,
+            }
+            for constraint
+            in self.strict_relation_constraints
+        ]
+
+    def strict_semantic_contract_payload(self) -> dict[str, Any] | None:
+        """Return deterministic domain-semantic validation provenance."""
+        collector = self.strict_semantic_issue_collector
+        if collector is None:
+            return None
+        if not self.strict_semantic_contract_id:
+            raise ValueError(
+                "strict semantic collector requires "
+                "strict_semantic_contract_id"
+            )
+        return {
+            "contract_id": self.strict_semantic_contract_id,
+            "rules": list(self.strict_semantic_contract_rules),
+            "collector": (
+                f"{collector.__module__}.{collector.__qualname__}"
+            ),
+        }
 
     def canonical_relation(self, relation: str) -> str:
         aliases = dict(self.relation_aliases)

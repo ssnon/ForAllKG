@@ -264,6 +264,9 @@ def evaluate_replay_draft(
     report = validate_draft(
         canonical,
         relation_constraints=extraction_adapter.strict_relation_constraints,
+        semantic_issue_collector=(
+            extraction_adapter.strict_semantic_issue_collector
+        ),
     )
     issue_counts = _issue_counts(report)
 
@@ -288,6 +291,9 @@ def evaluate_replay_draft(
             experiment_registry=experiment_registry,
             metric_registry=metric_registry,
             relation_constraints=extraction_adapter.strict_relation_constraints,
+            semantic_issue_collector=(
+                extraction_adapter.strict_semantic_issue_collector
+            ),
         )
         finalization_success = finalized.graph is not None
         finalization_issue_counts = _issue_counts(finalized.report)

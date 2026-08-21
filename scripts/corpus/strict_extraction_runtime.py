@@ -66,12 +66,42 @@ def load_existing_result(
     *,
     chunk: ChunkSpec,
     output_path: str | Path,
+    relation_constraints: tuple[Any, ...],
+    semantic_issue_collector: Any | None,
 ) -> KnowledgeGraph | None:
+    """Admit a cached chunk only under the CURRENT strict contract.
+
+    The shared strict-chunk loader preserves historical artifact semantics and
+    intentionally does not replay present-day domain relation policy. Cache
+    admission is different: a graph entering the current extraction run must
+    still satisfy the active strict validation contract.
+    """
     path = Path(output_path)
     if not path.exists():
         return None
+
     try:
         result = load_strict_validated_chunk_graph(path)
+
+        # Replay the same current cross-graph validator used during normal
+        # extraction/finalization. This includes the active domain-owned
+        # relation constraints without reviving legacy DAC compatibility
+        # validation inside KnowledgeGraph itself.
+        draft = KnowledgeGraphDraft.model_validate(
+            result.model_dump()
+        )
+
+        report = validate_draft(
+            draft,
+            relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
+        )
+
+        if not report.valid:
+            return None
+
         validate_graph_provenance(
             result,
             paper_id=chunk.paper_id,
@@ -82,7 +112,9 @@ def load_existing_result(
             page_ids=chunk.page_ids,
             asset_ids=chunk.asset_ids,
         )
+
         return result
+
     except Exception:
         return None
 
@@ -228,6 +260,7 @@ def _finalize_and_save(
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
     relation_constraints: tuple[Any, ...],
+    semantic_issue_collector: Any | None,
 ) -> tuple[KnowledgeGraph | None, list[Any], ValidationReport]:
     finalized = finalize_draft(
         draft=draft,
@@ -235,6 +268,9 @@ def _finalize_and_save(
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     if finalized.graph is not None:
         _write_json(output_path, finalized.graph.model_dump())
@@ -277,6 +313,9 @@ def extract_one_chunk(
         )
     )
     relation_constraints = extraction_adapter.strict_relation_constraints
+    semantic_issue_collector = (
+        extraction_adapter.strict_semantic_issue_collector
+    )
     output_path = chunk_output_path(chunk, chunk_output_dir)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -300,7 +339,14 @@ def extract_one_chunk(
         directory.mkdir(parents=True, exist_ok=True)
 
     if not force:
-        existing = load_existing_result(chunk=chunk, output_path=output_path)
+        existing = load_existing_result(
+            chunk=chunk,
+            output_path=output_path,
+            relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
+        )
         if existing is not None:
             return {
                 "status": "skipped",
@@ -586,6 +632,9 @@ def extract_one_chunk(
     report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     _write_report(validation_dir / f"{safe_chunk_id}__raw.json", report)
 
@@ -596,6 +645,9 @@ def extract_one_chunk(
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     if graph is not None:
         return _success_record(
@@ -638,6 +690,9 @@ def extract_one_chunk(
         report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
         _write_report(validation_dir / f"{safe_chunk_id}__normalized.json", report)
         graph, vocabulary_issues, final_report = _finalize_and_save(
@@ -647,6 +702,9 @@ def extract_one_chunk(
             experiment_registry=experiment_registry,
             metric_registry=metric_registry,
             relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
         )
         if graph is not None:
             return _success_record(
@@ -846,6 +904,9 @@ def extract_one_chunk(
                 report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
 
                 validation_suffix = (
@@ -876,6 +937,9 @@ def extract_one_chunk(
                     ),
                     metric_registry=metric_registry,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 if is_post_micro_patch:
@@ -1057,6 +1121,9 @@ def extract_one_chunk(
                 micro_report = validate_draft(
                     micro_draft,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 micro_normalization = (
@@ -1087,6 +1154,9 @@ def extract_one_chunk(
                 report = validate_draft(
                     micro_draft,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 _write_report(
@@ -1109,6 +1179,9 @@ def extract_one_chunk(
                         ),
                         metric_registry=metric_registry,
                         relation_constraints=relation_constraints,
+                        semantic_issue_collector=(
+                            semantic_issue_collector
+                        ),
                     )
                 )
 

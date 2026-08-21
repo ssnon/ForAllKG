@@ -25,7 +25,7 @@ def _issues(graph: nx.MultiDiGraph):
 
 
 def test_prompt_version_alpha4a4():
-    assert SERS_PROMPT_VERSION == "sers-au-ag-extraction-v1-alpha4a4"
+    assert SERS_PROMPT_VERSION == "sers-au-ag-extraction-v1-alpha4a5"
 
 
 def test_synthesis_method_can_use_optical_condition():
