@@ -20,7 +20,7 @@ from dac_her.explorer_normalization import (
 )
 from pipeline_core.discovery.explorer_prompt import ExplorerPrompt, ExplorerPromptAssembler
 from pipeline_core.discovery.explorer_run_record import GraphExplorerRunRecord
-from dac_her.explorer_validation import ExplorationReportValidator, ExplorationValidationResult
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator, ExplorationValidationResult
 
 
 def _canonical_json(value: Any) -> str:
@@ -85,7 +85,7 @@ class GraphExplorerAgentRuntime:
         *,
         prompt_assembler: ExplorerPromptAssembler | None = None,
         compiler: ExplorationReportCompiler | None = None,
-        validator: ExplorationReportValidator | None = None,
+        validator: ExplorationReportValidator,
         normalizer: ExplorerDraftNormalizer | None = None,
         max_repairs: int = 1,
     ) -> None:
@@ -94,7 +94,7 @@ class GraphExplorerAgentRuntime:
         self.draft_backend = draft_backend
         self.prompt_assembler = prompt_assembler or ExplorerPromptAssembler()
         self.compiler = compiler or ExplorationReportCompiler()
-        self.validator = validator or ExplorationReportValidator()
+        self.validator = validator
         self.normalizer = normalizer or ExplorerDraftNormalizer()
         self.max_repairs = int(max_repairs)
 

@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.evidence_compression import EvidenceCompressionAssessor
 from pipeline_core.discovery.evidence_family_diagnostics import (
     EvidenceFamilyCandidateAssessor,
@@ -15,6 +16,7 @@ from pipeline_core.discovery.path_lineage_propagation import (
     MinimalPathLineagePropagator,
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from dac_her.hypothesis_context import HypothesisContextBuilder
 
 
@@ -78,7 +80,14 @@ def main() -> int:
 
     packet = GraphExplorerPacket.model_validate(_load(args.packet))
     report = ExplorationReport.model_validate(_load(args.report))
-    context = HypothesisContextBuilder().build(
+    validator = ExplorationReportValidator(
+        semantics=get_domain_profile(
+            packet.domain_profile_id
+        ).discovery,
+    )
+    context = HypothesisContextBuilder(
+        validator=validator,
+    ).build(
         packet,
         report,
         require_valid_report=not args.allow_invalid_source_report,

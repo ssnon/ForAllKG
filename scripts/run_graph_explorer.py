@@ -5,8 +5,10 @@ import json
 import os
 from pathlib import Path
 
+from domains.registry import get_domain_profile
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_llm import InstructorOpenAICompatibleDraftBackend
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from dac_her.explorer_runtime import GraphExplorerAgentRuntime
 
 
@@ -116,9 +118,15 @@ def main() -> None:
         timeout=args.timeout,
         extra_headers=dict(args.header),
     )
+    validator = ExplorationReportValidator(
+        semantics=get_domain_profile(
+            packet.domain_profile_id
+        ).discovery,
+    )
     runtime = GraphExplorerAgentRuntime(
         backend,
         prompt_assembler=assembler,
+        validator=validator,
         max_repairs=args.max_repairs,
     )
     outcome = runtime.run(packet)

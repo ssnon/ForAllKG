@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from domains.registry import get_domain_profile
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from pipeline_core.discovery.explorer_contracts import (
     CorpusScope,
     EvidenceCatalog,
@@ -155,4 +157,11 @@ def make_packet_and_report():
 
 def make_context():
     packet, report = make_packet_and_report()
-    return HypothesisContextBuilder().build(packet, report)
+    validator = ExplorationReportValidator(
+        semantics=get_domain_profile(
+            packet.domain_profile_id
+        ).discovery,
+    )
+    return HypothesisContextBuilder(
+        validator=validator,
+    ).build(packet, report)

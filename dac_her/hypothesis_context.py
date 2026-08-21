@@ -5,7 +5,7 @@ import json
 from typing import Any
 
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
-from dac_her.explorer_validation import ExplorationReportValidator
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
     HypothesisDesignLeverContext,
@@ -82,10 +82,10 @@ class HypothesisContextBuilder:
     def __init__(
         self,
         *,
-        validator: ExplorationReportValidator | None = None,
+        validator: ExplorationReportValidator,
         policy: HypothesisPolicy | None = None,
     ) -> None:
-        self.validator = validator or ExplorationReportValidator()
+        self.validator = validator
         self.policy = policy or HypothesisPolicy()
 
     def build(

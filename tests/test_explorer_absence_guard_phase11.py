@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from domains.registry import get_domain_profile
 from dac_her.explorer_compiler import ExplorationReportCompiler
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from dac_her.explorer_normalization import ExplorerDraftNormalizer
-from dac_her.explorer_validation import ExplorationReportValidator
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from pipeline_core.explorer_text_safety import contains_absence_language
 
 
@@ -155,7 +156,11 @@ def test_normalized_draft_compiles_and_validates_without_absence_error():
     packet = _packet(absence_allowed=False)
     normalized = ExplorerDraftNormalizer().normalize(packet, _draft()).draft
     report = ExplorationReportCompiler().compile(packet, normalized)
-    validation = ExplorationReportValidator().validate(packet, report)
+    validation = ExplorationReportValidator(
+        semantics=get_domain_profile(
+            packet.domain_profile_id
+        ).discovery,
+    ).validate(packet, report)
     assert validation.passes is True, [
         (row.code, row.location, row.message)
         for row in validation.issues

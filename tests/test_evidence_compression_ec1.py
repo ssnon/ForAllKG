@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from domains.registry import get_domain_profile
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from pipeline_core.discovery.evidence_compression import (
     EvidenceCompressionAssessor,
 )
@@ -186,7 +188,14 @@ def _report() -> ExplorationReport:
 
 
 def _context(packet, report):
-    return HypothesisContextBuilder().build(
+    validator = ExplorationReportValidator(
+        semantics=get_domain_profile(
+            packet.domain_profile_id
+        ).discovery,
+    )
+    return HypothesisContextBuilder(
+        validator=validator,
+    ).build(
         packet,
         report,
         require_valid_report=False,

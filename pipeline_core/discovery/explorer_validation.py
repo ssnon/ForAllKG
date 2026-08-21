@@ -16,7 +16,6 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_node,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
-from domains.registry import get_domain_profile
 from pipeline_core.explorer_text_safety import contains_absence_language
 from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
@@ -107,15 +106,16 @@ def _label_has_grounded_causal_support(
 
 
 class ExplorationReportValidator:
+    def __init__(self, semantics: DiscoverySemantics) -> None:
+        self.semantics = semantics
+
     def validate(
         self,
         packet: GraphExplorerPacket,
         report: ExplorationReport,
     ) -> ExplorationValidationResult:
         issues: list[ValidationIssue] = []
-        semantics = get_domain_profile(
-            packet.domain_profile_id
-        ).discovery
+        semantics = self.semantics
 
         def error(code: str, location: str, message: str) -> None:
             issues.append(ValidationIssue(severity="error", code=code, location=location, message=message))

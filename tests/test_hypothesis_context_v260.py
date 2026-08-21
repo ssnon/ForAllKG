@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from domains.registry import get_domain_profile
+from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from tests._hypothesis_v260_fixtures import make_context, make_packet_and_report
 
 
@@ -26,7 +28,13 @@ def test_context_hash_is_deterministic():
     a = make_context()
     from dac_her.hypothesis_context import HypothesisContextBuilder
 
-    b = HypothesisContextBuilder().build(packet, report)
+    b = HypothesisContextBuilder(
+        validator=ExplorationReportValidator(
+            semantics=get_domain_profile(
+                packet.domain_profile_id
+            ).discovery,
+        ),
+    ).build(packet, report)
     assert a.context_id == b.context_id
     assert a.context_sha256 == b.context_sha256
 
@@ -54,7 +62,13 @@ def test_scope_limit_synthesis_is_not_positive_premise():
         }
     )
 
-    context = HypothesisContextBuilder().build(
+    context = HypothesisContextBuilder(
+        validator=ExplorationReportValidator(
+            semantics=get_domain_profile(
+                packet.domain_profile_id
+            ).discovery,
+        ),
+    ).build(
         packet,
         modified_report,
     )
