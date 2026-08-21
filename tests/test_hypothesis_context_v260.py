@@ -26,7 +26,7 @@ def test_context_builder_separates_positive_premises_and_gaps():
 def test_context_hash_is_deterministic():
     packet, report = make_packet_and_report()
     a = make_context()
-    from dac_her.hypothesis_context import HypothesisContextBuilder
+    from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
     b = HypothesisContextBuilder(
         validator=ExplorationReportValidator(
@@ -40,7 +40,7 @@ def test_context_hash_is_deterministic():
 
 def test_scope_limit_synthesis_is_not_positive_premise():
     from pipeline_core.discovery.explorer_contracts import ExplorerStatement
-    from dac_her.hypothesis_context import HypothesisContextBuilder
+    from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
     packet, report = make_packet_and_report()
 

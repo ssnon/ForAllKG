@@ -11,7 +11,7 @@ from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
     GraphExplorerPacket,
 )
-from dac_her.hypothesis_context import HypothesisContextBuilder
+from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
 
 def _packet() -> GraphExplorerPacket:

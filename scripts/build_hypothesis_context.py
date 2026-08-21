@@ -17,7 +17,7 @@ from pipeline_core.discovery.path_lineage_propagation import (
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
-from dac_her.hypothesis_context import HypothesisContextBuilder
+from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
 
 def _load(path: Path) -> dict:

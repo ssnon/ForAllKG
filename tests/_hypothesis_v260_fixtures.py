@@ -15,7 +15,7 @@ from pipeline_core.discovery.explorer_contracts import (
     RetrievalSummary,
     UnresolvedConnection,
 )
-from dac_her.hypothesis_context import HypothesisContextBuilder
+from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
 
 def make_packet_and_report():
