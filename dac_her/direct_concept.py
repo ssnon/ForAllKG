@@ -8,7 +8,6 @@ import networkx as nx
 
 from pipeline_core.discovery_semantics import is_mechanism_node
 from pipeline_core.domain_profile import DiscoverySemantics
-from domains.registry import get_domain_profile
 from pipeline_core.discovery.waypoint_selection import match_tier
 
 
@@ -105,16 +104,13 @@ class DirectConceptHitSelector:
         graph: nx.DiGraph,
         *,
         min_similarity: float = 0.60,
-        discovery_semantics: DiscoverySemantics | None = None,
+        discovery_semantics: DiscoverySemantics,
     ) -> None:
         self.graph = graph
         self.min_similarity = float(
             min_similarity
         )
-        self.discovery_semantics = (
-            discovery_semantics
-            or get_domain_profile("dac_her").discovery
-        )
+        self.discovery_semantics = discovery_semantics
 
     def _similarity(
         self,

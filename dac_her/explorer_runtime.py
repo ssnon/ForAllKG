@@ -13,6 +13,9 @@ from dac_her.explorer_compiler import (
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
+from pipeline_core.domain_profile import (
+    ScientificDomainProfile,
+)
 from pipeline_core.discovery.explorer_llm import DraftGeneration, ExplorationDraftBackend
 from dac_her.explorer_normalization import (
     ExplorerDraftNormalizer,
@@ -65,12 +68,18 @@ class CompiledGraphExplorerBackend:
         self,
         draft_backend: ExplorationDraftBackend,
         *,
+        domain_profile: ScientificDomainProfile,
         prompt_assembler: ExplorerPromptAssembler | None = None,
         compiler: ExplorationReportCompiler | None = None,
     ) -> None:
         self.draft_backend = draft_backend
         self.prompt_assembler = prompt_assembler or ExplorerPromptAssembler()
-        self.compiler = compiler or ExplorationReportCompiler()
+        self.compiler = (
+            compiler
+            or ExplorationReportCompiler(
+                domain_profile=domain_profile,
+            )
+        )
 
     def explore(self, packet: GraphExplorerPacket) -> ExplorationReport:
         prompt = self.prompt_assembler.build(packet)
@@ -83,6 +92,7 @@ class GraphExplorerAgentRuntime:
         self,
         draft_backend: ExplorationDraftBackend,
         *,
+        domain_profile: ScientificDomainProfile,
         prompt_assembler: ExplorerPromptAssembler | None = None,
         compiler: ExplorationReportCompiler | None = None,
         validator: ExplorationReportValidator,
@@ -93,9 +103,19 @@ class GraphExplorerAgentRuntime:
             raise ValueError("Graph Explorer v2.5.1 supports max_repairs of 0 or 1 only.")
         self.draft_backend = draft_backend
         self.prompt_assembler = prompt_assembler or ExplorerPromptAssembler()
-        self.compiler = compiler or ExplorationReportCompiler()
+        self.compiler = (
+            compiler
+            or ExplorationReportCompiler(
+                domain_profile=domain_profile,
+            )
+        )
         self.validator = validator
-        self.normalizer = normalizer or ExplorerDraftNormalizer()
+        self.normalizer = (
+            normalizer
+            or ExplorerDraftNormalizer(
+                domain_profile=domain_profile,
+            )
+        )
         self.max_repairs = int(max_repairs)
 
     def run(self, packet: GraphExplorerPacket) -> GraphExplorerRunOutcome:

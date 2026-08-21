@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
+from domains.dac_her.profile import DAC_HER_PROFILE
 from dac_her.explorer_normalization import ExplorerDraftNormalizer
 
 
@@ -123,7 +124,7 @@ def test_strong_causal_unsupported_mechanism_is_dropped_with_cascade():
         }
     )
 
-    result = ExplorerDraftNormalizer().normalize(_packet(), draft)
+    result = ExplorerDraftNormalizer(domain_profile=DAC_HER_PROFILE).normalize(_packet(), draft)
     normalized = result.draft
 
     assert [row.local_id for row in normalized.statements] == ["s_keep"]

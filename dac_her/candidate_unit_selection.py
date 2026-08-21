@@ -9,7 +9,6 @@ from typing import Any, Iterable, Mapping
 import networkx as nx
 
 from pipeline_core.domain_profile import ScientificDomainProfile
-from domains.registry import get_domain_profile
 from pipeline_core.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,
@@ -30,7 +29,6 @@ from pipeline_core.discovery.candidate_units import (
 )
 
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
 
 
 def _clip01(value: float) -> float:
@@ -235,12 +233,12 @@ class CandidateUnitSelector:
         policy: CandidateUnitSelectionPolicy | None = None,
         unit_relevance: Mapping[str, float] | None = None,
         unit_vectors: Mapping[str, Any] | None = None,
-        domain_profile: ScientificDomainProfile | None = None,
+        domain_profile: ScientificDomainProfile,
     ) -> None:
         self.graph = graph
         self.confirmed_graph = confirmed_graph
         self.policy = policy or CandidateUnitSelectionPolicy()
-        self.domain_profile = domain_profile or _DEFAULT_DOMAIN_PROFILE
+        self.domain_profile = domain_profile
         self.discovery_semantics = self.domain_profile.discovery
         self.unit_relevance = {str(k): _clip01(float(v)) for k, v in dict(unit_relevance or {}).items()}
         self.unit_vectors = dict(unit_vectors or {})

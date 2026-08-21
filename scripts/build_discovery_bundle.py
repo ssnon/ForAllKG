@@ -6,6 +6,8 @@ from pathlib import Path
 from dac_her.discovery_bundle import (
     DiscoveryBundleBuilder,
     DiscoveryPolicy,
+)
+from scripts.discovery_bundle_runtime import (
     load_semantic_index_for_traversal,
     load_traversal_with_graph,
 )

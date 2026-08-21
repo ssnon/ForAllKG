@@ -2,6 +2,15 @@ from __future__ import annotations
 
 import networkx as nx
 
+from domains.dac_her.profile import DAC_HER_PROFILE
+
+
+def _dac_builder(policy=None):
+    return DiscoveryBundleBuilder(
+        policy,
+        domain_profile=DAC_HER_PROFILE,
+    )
+
 from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 
 
@@ -91,7 +100,7 @@ def test_discovery_bundle_reserves_cross_paper_mechanistic_path() -> None:
         "paths": [generic],
         "candidate_paths": [generic, cross],
     }
-    bundle = DiscoveryBundleBuilder(
+    bundle = _dac_builder(
         DiscoveryPolicy(top_k=1, cross_paper_mechanistic_reserve=1)
     ).build([("traversal.json", payload, graph)])
     assert bundle.selected_count == 1
@@ -109,7 +118,7 @@ def test_discovery_bundle_warns_when_candidate_pool_missing() -> None:
         "target_query": "y",
         "paths": [],
     }
-    bundle = DiscoveryBundleBuilder().build([("old.json", payload, graph)])
+    bundle = _dac_builder().build([("old.json", payload, graph)])
     assert bundle.used_candidate_pool is False
     assert bundle.warnings
 
@@ -219,7 +228,7 @@ def test_alpha2_prefers_mechanistic_continuity_over_one_sided_entity_hop() -> No
         "paths": [],
         "candidate_paths": [weak_path, true_path],
     }
-    bundle = DiscoveryBundleBuilder(
+    bundle = _dac_builder(
         DiscoveryPolicy(
             top_k=2,
             cross_paper_mechanistic_reserve=1,
@@ -279,7 +288,7 @@ def test_alpha2_semantic_diversity_removes_near_duplicate_routes() -> None:
             [0.0, 1.0], [0.02, 0.98],
         ],
     )
-    bundle = DiscoveryBundleBuilder(
+    bundle = _dac_builder(
         DiscoveryPolicy(
             top_k=2,
             cross_paper_mechanistic_reserve=0,

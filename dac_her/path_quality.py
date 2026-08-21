@@ -15,7 +15,6 @@ from pipeline_core.discovery_semantics import (
     normalized_node_type,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
-from domains.registry import get_domain_profile
 
 
 PATH_TYPE_CANDIDATE = "CANDIDATE_EXPLORATION"
@@ -78,12 +77,9 @@ def _band(
 
 def relation_role(
     step: dict[str, Any],
-    discovery_semantics: DiscoverySemantics | None = None,
+    discovery_semantics: DiscoverySemantics,
 ) -> str:
-    semantics = (
-        discovery_semantics
-        or get_domain_profile("dac_her").discovery
-    )
+    semantics = discovery_semantics
     if is_alignment_edge(step):
         return "alignment"
     if is_scaffold_edge(step, semantics):
@@ -118,13 +114,12 @@ def _is_mechanism_node(
     node_id: str,
     attrs: dict[str, Any],
     *,
-    semantics: DiscoverySemantics | None = None,
+    semantics: DiscoverySemantics,
 ) -> bool:
     return is_mechanism_node(
         node_id,
         attrs,
-        semantics
-        or get_domain_profile("dac_her").discovery,
+        semantics,
     )
 
 
@@ -200,13 +195,10 @@ class PathQualityScorer:
         self,
         graph: nx.DiGraph,
         *,
-        discovery_semantics: DiscoverySemantics | None = None,
+        discovery_semantics: DiscoverySemantics,
     ) -> None:
         self.graph = graph
-        self.discovery_semantics = (
-            discovery_semantics
-            or get_domain_profile("dac_her").discovery
-        )
+        self.discovery_semantics = discovery_semantics
 
     def _shared_entity_bridge(
         self,

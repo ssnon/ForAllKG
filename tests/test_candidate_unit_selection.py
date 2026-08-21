@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import networkx as nx
 
+from domains.dac_her.profile import DAC_HER_PROFILE
+
 from dac_her.candidate_unit_selection import CandidateUnitSelectionPolicy, CandidateUnitSelector
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 
@@ -92,6 +94,7 @@ def test_selector_requires_distinct_anchors_and_penalizes_reaction_switch() -> N
     selector = CandidateUnitSelector(
         g,
         confirmed_navigation_graph(g),
+        domain_profile=DAC_HER_PROFILE,
         policy=CandidateUnitSelectionPolicy(max_depth=8, top_k=10, max_routes_per_unit=1),
         unit_relevance={"C": 0.8, "D": 0.8},
     )
@@ -116,6 +119,7 @@ def test_selected_route_uses_one_unit_but_two_candidate_edges_semantically() -> 
     selector = CandidateUnitSelector(
         g,
         confirmed_navigation_graph(g),
+        domain_profile=DAC_HER_PROFILE,
         policy=CandidateUnitSelectionPolicy(max_depth=8, top_k=2),
         unit_relevance={"C": 0.9, "D": 0.2},
     )

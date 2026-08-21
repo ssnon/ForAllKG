@@ -118,13 +118,17 @@ def main() -> None:
         timeout=args.timeout,
         extra_headers=dict(args.header),
     )
-    validator = ExplorationReportValidator(
-        semantics=get_domain_profile(
-            packet.domain_profile_id
-        ).discovery,
+    domain_profile = get_domain_profile(
+        packet.domain_profile_id
     )
+
+    validator = ExplorationReportValidator(
+        semantics=domain_profile.discovery,
+    )
+
     runtime = GraphExplorerAgentRuntime(
         backend,
+        domain_profile=domain_profile,
         prompt_assembler=assembler,
         validator=validator,
         max_repairs=args.max_repairs,

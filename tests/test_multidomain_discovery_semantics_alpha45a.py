@@ -13,6 +13,7 @@ from pipeline_core.discovery_semantics import (
     is_shared_entity_node,
 )
 from pipeline_core.domain_profile import DiscoverySemantics
+from domains.sers.profile import SERS_AU_AG_PROFILE
 from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder
 from dac_her.path_quality import PathQualityScorer
 
@@ -181,6 +182,7 @@ def test_candidate_unit_right_branch_keeps_selected_semantics(monkeypatch):
     selector = CandidateUnitSelector(
         graph,
         graph.copy(),
+        domain_profile=SERS_AU_AG_PROFILE,
     )
     selector.discovery_semantics = semantics
 

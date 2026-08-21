@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+from domains.sers.profile import SERS_AU_AG_PROFILE
 from pipeline_core.discovery.explorer_draft import (
     ExplorationDraft,
     ExplorerStatementDraft,
@@ -45,7 +46,7 @@ def test_explorer_normalizer_only_weakens_noncausal_unsupported_mechanism():
         ],
         recurring_mechanistic_motifs=[],
     )
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=SERS_AU_AG_PROFILE).normalize(
         _packet(),
         draft,
     )
@@ -75,7 +76,7 @@ def test_explorer_normalizer_drops_unsupported_strong_causal_statement():
         ],
         recurring_mechanistic_motifs=[],
     )
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=SERS_AU_AG_PROFILE).normalize(
         _packet(),
         draft,
     )
@@ -107,7 +108,7 @@ def test_explorer_normalizer_drops_unsupported_mechanistic_motif():
             )
         ],
     )
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=SERS_AU_AG_PROFILE).normalize(
         _packet(),
         draft,
     )

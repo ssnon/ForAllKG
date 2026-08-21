@@ -103,7 +103,7 @@ def test_shared_absence_detector_matches_validator_policy_language():
 
 
 def test_partial_paper_absence_statement_is_dropped_and_cascade_pruned():
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=get_domain_profile("dac_her")).normalize(
         _packet(absence_allowed=False),
         _draft(),
     )
@@ -120,7 +120,7 @@ def test_partial_paper_absence_statement_is_dropped_and_cascade_pruned():
 
 
 def test_absence_allowed_paper_keeps_statement():
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=get_domain_profile("dac_her")).normalize(
         _packet(absence_allowed=True),
         _draft(),
     )
@@ -145,7 +145,7 @@ def test_nonabsence_statement_on_partial_paper_is_not_dropped():
             ]
         }
     )
-    result = ExplorerDraftNormalizer().normalize(
+    result = ExplorerDraftNormalizer(domain_profile=get_domain_profile("dac_her")).normalize(
         _packet(absence_allowed=False),
         draft,
     )
@@ -154,8 +154,8 @@ def test_nonabsence_statement_on_partial_paper_is_not_dropped():
 
 def test_normalized_draft_compiles_and_validates_without_absence_error():
     packet = _packet(absence_allowed=False)
-    normalized = ExplorerDraftNormalizer().normalize(packet, _draft()).draft
-    report = ExplorationReportCompiler().compile(packet, normalized)
+    normalized = ExplorerDraftNormalizer(domain_profile=get_domain_profile("dac_her")).normalize(packet, _draft()).draft
+    report = ExplorationReportCompiler(domain_profile=get_domain_profile("dac_her")).compile(packet, normalized)
     validation = ExplorationReportValidator(
         semantics=get_domain_profile(
             packet.domain_profile_id

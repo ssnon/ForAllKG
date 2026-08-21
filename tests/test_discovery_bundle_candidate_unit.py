@@ -5,6 +5,15 @@ from dataclasses import dataclass
 import networkx as nx
 import numpy as np
 
+from domains.dac_her.profile import DAC_HER_PROFILE
+
+
+def _dac_builder(policy=None):
+    return DiscoveryBundleBuilder(
+        policy,
+        domain_profile=DAC_HER_PROFILE,
+    )
+
 from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 
 
@@ -115,7 +124,7 @@ def test_candidate_unit_core_semantics_can_survive_grounding_overlap_gate() -> N
             dtype=np.float32,
         ),
     )
-    bundle = DiscoveryBundleBuilder(
+    bundle = _dac_builder(
         DiscoveryPolicy(top_k=2, max_grounding_semantic_similarity=0.95, min_exploration_score=0.0)
     ).build(
         [

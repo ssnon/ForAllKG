@@ -12,7 +12,9 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_edge,
     is_mechanism_node,
 )
-from domains.registry import get_domain_profile
+from pipeline_core.domain_profile import (
+    ScientificDomainProfile,
+)
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from pipeline_core.explorer_text_safety import contains_absence_language
@@ -71,6 +73,13 @@ class ExplorerDraftNormalizer:
     unsupported higher-order construct. Scientific text and evidence references
     are never rewritten, invented, fuzzily matched, or redirected.
     """
+
+    def __init__(
+        self,
+        *,
+        domain_profile: ScientificDomainProfile,
+    ) -> None:
+        self.domain_profile = domain_profile
 
     def _statement_has_mechanism_support(
         self,
@@ -270,10 +279,17 @@ class ExplorerDraftNormalizer:
         packet: GraphExplorerPacket,
         draft: ExplorationDraft,
     ) -> ExplorerNormalizationResult:
-        profile = get_domain_profile(
+        if (
             packet.domain_profile_id
-        )
-        semantics = profile.discovery
+            != self.domain_profile.profile_id
+        ):
+            raise ValueError(
+                "Graph Explorer normalizer domain profile mismatch: "
+                f"packet={packet.domain_profile_id!r}, "
+                f"normalizer={self.domain_profile.profile_id!r}"
+            )
+
+        semantics = self.domain_profile.discovery
         actions: list[ExplorerNormalizationAction] = []
 
         normalized_statements = []
@@ -623,7 +639,7 @@ class ExplorerDraftNormalizer:
             }
         )
         audit = ExplorerNormalizationAudit(
-            domain_profile_id=profile.profile_id,
+            domain_profile_id=self.domain_profile.profile_id,
             applied=bool(applied_actions),
             action_count=len(applied_actions),
             blocked_count=len(blocked_actions),
