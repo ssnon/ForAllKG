@@ -31,9 +31,11 @@ class FigureAnalysis(BaseModel):
     confidence: Literal["high", "medium", "low"]
 
 
-FIGURE_SYSTEM_PROMPT = """
+FIGURE_SYSTEM_PROMPT_TEMPLATE = """
 You analyze a scientific figure for a provenance-preserving literature
-knowledge graph about dual-atom electrocatalysts and HER.
+knowledge graph in the following research domain:
+
+{domain_context}
 
 Rules:
 1. Use only information visible in the supplied image and the supplied
@@ -45,6 +47,15 @@ Rules:
 5. State limitations when labels, axes, resolution, or panels are unclear.
 6. Keep the output concise and source-grounded.
 """.strip()
+
+
+def build_figure_system_prompt(domain_context: str) -> str:
+    normalized = " ".join(str(domain_context).split())
+    if not normalized:
+        raise ValueError("domain_context must not be empty.")
+    return FIGURE_SYSTEM_PROMPT_TEMPLATE.format(
+        domain_context=normalized,
+    )
 
 
 def _matches_requested(asset: AssetRecord, requested: tuple[str, ...]) -> bool:
@@ -97,6 +108,7 @@ def analyze_figure(
     model: str,
     provider: str | None,
     output_dir: str | Path,
+    domain_context: str,
     force: bool = False,
 ) -> FigureAnalysis:
     path = analysis_path(output_dir, asset.asset_id)
@@ -108,8 +120,11 @@ def analyze_figure(
         provider=provider,
         reproducible=False,
         zdr=True,
-        application_title="GraphAgents DAC-HER",
-        default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+        application_title="GraphAgents Figure Extraction",
+        default_debug_path=(
+            Path(output_dir)
+            / "last_invalid_structured_response.json"
+        ),
     )
     prompt = f"""
 ASSET_ID:
@@ -129,7 +144,9 @@ MARKER_ALT_TEXT (potentially noisy; never sole evidence):
 """.strip()
 
     result = llm.generate_structured_with_images(
-        system_prompt=FIGURE_SYSTEM_PROMPT,
+        system_prompt=build_figure_system_prompt(
+            domain_context
+        ),
         prompt=prompt,
         image_paths=[asset.absolute_path],
         response_model=FigureAnalysis,

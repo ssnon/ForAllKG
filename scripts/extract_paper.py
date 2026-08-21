@@ -684,6 +684,7 @@ def main() -> None:
             model=vision_model,
             provider=args.provider,
             output_dir=documents_dir / asset.document_id / "vision",
+            domain_context=domain_profile.description,
             force=args.force_vision,
         )
         analyses[asset_id] = analysis
