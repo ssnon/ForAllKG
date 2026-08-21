@@ -1,4 +1,4 @@
-from scripts.run_dac_discovery_e2e import _alpha6_empty_is_degraded
+from scripts.discovery.run_dac_discovery_e2e import _alpha6_empty_is_degraded
 
 
 def test_empty_alpha6_all_compile_failures_is_degraded():

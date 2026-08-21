@@ -218,7 +218,7 @@ def test_run_metadata_hashes_exact_chunking_file(
 
 def test_extraction_provenance_points_at_shared_chunking_owner():
     source = Path(
-        "scripts/extract_paper.py"
+        "scripts/corpus/extract_paper.py"
     ).read_text(
         encoding="utf-8"
     )

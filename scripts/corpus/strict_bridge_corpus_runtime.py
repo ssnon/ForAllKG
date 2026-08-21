@@ -61,11 +61,11 @@ def _sha256_source_tree(root: Path) -> str:
     digest = hashlib.sha256()
 
     script_candidates = (
-        root / "scripts" / "extract_paper.py",
-        root / "scripts" / "build_paper_graph.py",
-        root / "scripts" / "extract_bridge_graph.py",
-        root / "scripts" / "build_graphagents_projection.py",
-        root / "scripts" / "build_corpus_graph.py",
+        root / "scripts" / "corpus/extract_paper.py",
+        root / "scripts" / "corpus/build_paper_graph.py",
+        root / "scripts" / "corpus/extract_bridge_graph.py",
+        root / "scripts" / "corpus/build_graphagents_projection.py",
+        root / "scripts" / "corpus/build_corpus_graph.py",
     )
 
     candidates = {
@@ -613,7 +613,7 @@ class StrictBridgeCorpusPipeline:
             command = [
                 py,
                 "-m",
-                "scripts.extract_paper",
+                "scripts.corpus.extract_paper",
                 *common,
                 "--concurrency",
                 str(self.options.extract_concurrency),
@@ -624,7 +624,7 @@ class StrictBridgeCorpusPipeline:
                 command.append("--allow-partial")
             return command
         if stage == "paper_graph":
-            command = [py, "-m", "scripts.build_paper_graph", *common]
+            command = [py, "-m", "scripts.corpus.build_paper_graph", *common]
             if self.options.allow_partial:
                 command.append("--allow-incomplete")
             return command
@@ -632,7 +632,7 @@ class StrictBridgeCorpusPipeline:
             command = [
                 py,
                 "-m",
-                "scripts.extract_bridge_graph",
+                "scripts.corpus.extract_bridge_graph",
                 *common,
                 "--concurrency",
                 str(self.options.bridge_concurrency),
@@ -646,7 +646,7 @@ class StrictBridgeCorpusPipeline:
             return [
                 py,
                 "-m",
-                "scripts.build_graphagents_projection",
+                "scripts.corpus.build_graphagents_projection",
                 "--paper-id",
                 paper_id,
                 "--domain-profile",
@@ -664,7 +664,7 @@ class StrictBridgeCorpusPipeline:
         command = [
             sys.executable,
             "-m",
-            "scripts.build_corpus_graph",
+            "scripts.corpus.build_corpus_graph",
             "--corpus-id",
             self.corpus_id,
             "--domain-profile",

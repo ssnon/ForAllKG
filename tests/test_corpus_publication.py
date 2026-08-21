@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.corpus_publication_runtime import (
+from scripts.literature.corpus_publication_runtime import (
     CorpusPublicationError,
     CorpusPublicationOptions,
     StrictBridgeCorpusPublisher,

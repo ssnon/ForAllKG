@@ -4,11 +4,11 @@ import argparse
 import json
 from pathlib import Path
 
-from scripts.corpus_publication_runtime import (
+from scripts.literature.corpus_publication_runtime import (
     CorpusPublicationOptions,
     StrictBridgeCorpusPublisher,
 )
-from scripts.knowledge_backfill_runtime import (
+from scripts.literature.knowledge_backfill_runtime import (
     KnowledgeAwareBackfillCoordinator,
     KnowledgeBackfillOptions,
     KnowledgeBackfillPaths,

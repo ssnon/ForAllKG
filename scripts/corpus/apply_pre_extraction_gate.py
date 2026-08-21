@@ -14,7 +14,7 @@ from pipeline_core.literature.acquisition.materialization_package import (
     write_extraction_plan,
     write_generated_config,
 )
-from scripts.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
+from scripts.literature.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
 from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, write_jsonl
 from pipeline_core.literature.acquisition.pre_extraction_gate import assess_pre_extraction_gate, build_pre_extraction_gate_report, load_pre_extraction_gate_policy
 from pipeline_core.literature.acquisition.profile import load_acquisition_profile

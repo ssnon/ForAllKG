@@ -3,9 +3,9 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-from scripts import run_novelty_refinement as novelty_refinement_runner
+from scripts.discovery import run_novelty_refinement as novelty_refinement_runner
 
-from scripts.run_dac_discovery_e2e import (
+from scripts.discovery.run_dac_discovery_e2e import (
     _data_root_args,
     _mechanism_index_args,
     _returned_path_count,
@@ -95,14 +95,14 @@ def test_e2e_forwards_data_root_to_all_traversal_lanes():
 
     assert (
         source.count(
-            '"scripts.run_graph_traversal"'
+            '"scripts.discovery.run_graph_traversal"'
         )
         == 2
     )
 
     assert (
         source.count(
-            '"scripts.run_candidate_unit_traversal"'
+            '"scripts.discovery.run_candidate_unit_traversal"'
         )
         == 1
     )

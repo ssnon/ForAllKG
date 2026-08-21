@@ -54,7 +54,7 @@ def test_facade_owns_historical_scientific_bindings():
 
 def test_extraction_provenance_tracks_facade_core_and_policy():
     source = Path(
-        "scripts/extract_paper.py"
+        "scripts/corpus/extract_paper.py"
     ).read_text(
         encoding="utf-8"
     )

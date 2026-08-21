@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-from scripts.knowledge_backfill_runtime import (
+from scripts.literature.knowledge_backfill_runtime import (
     write_dynamic_target_profile,
 )
 
@@ -211,7 +211,7 @@ def main() -> int:
         command = [
             sys.executable,
             "-m",
-            "scripts.prepare_access_recovery",
+            "scripts.literature.prepare_access_recovery",
             "--source-policy",
             str(args.source_policy.resolve()),
             "--source-m3-dir",
@@ -240,7 +240,7 @@ def main() -> int:
     command = [
         sys.executable,
         "-m",
-        "scripts.backfill_acquisition_ready_corpus",
+        "scripts.literature.backfill_acquisition_ready_corpus",
         "--profile",
         str(dynamic_profile),
         "--backfill-policy",
@@ -288,7 +288,7 @@ def main() -> int:
         command = [
             sys.executable,
             "-m",
-            "scripts.discover_supplementary_artifacts",
+            "scripts.literature.discover_supplementary_artifacts",
             "--profile-id",
             profile_id,
             "--catalog",
@@ -325,7 +325,7 @@ def main() -> int:
     command = [
         sys.executable,
         "-m",
-        "scripts.materialize_corpus_documents_incremental",
+        "scripts.literature.materialize_corpus_documents_incremental",
         "--profile-id",
         profile_id,
         "--domain-profile-id",

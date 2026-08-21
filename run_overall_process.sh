@@ -4,7 +4,7 @@ set +a
 
 CORPUS=dac_her_expanded_v2
 
-python -m scripts.run_dac_discovery_e2e \
+python -m scripts.discovery.run_dac_discovery_e2e \
   --corpus-id "$CORPUS" \
   --domain-profile "$DOMAIN" \
   --run-dir "runs/e2e/v290_integrated_her_002" \
@@ -26,7 +26,7 @@ python -m scripts.run_dac_discovery_e2e \
   --discovery-top-k 8 \
   --max-axes 5
 
-python -m scripts.run_dac_discovery_e2e \
+python -m scripts.discovery.run_dac_discovery_e2e \
   --corpus-id "$CORPUS" \
   --domain-profile "$DOMAIN" \
   --run-dir "runs/e2e/v290_charge_transfer_her_002" \
@@ -48,7 +48,7 @@ python -m scripts.run_dac_discovery_e2e \
   --discovery-top-k 8 \
   --max-axes 5
 
-python -m scripts.run_dac_discovery_e2e \
+python -m scripts.discovery.run_dac_discovery_e2e \
   --corpus-id "$CORPUS" \
   --domain-profile "$DOMAIN" \
   --run-dir "runs/e2e/v290_ndoped_mm_distance_002" \
@@ -70,7 +70,7 @@ python -m scripts.run_dac_discovery_e2e \
   --discovery-top-k 8 \
   --max-axes 5
 
-python -m scripts.run_dac_discovery_e2e \
+python -m scripts.discovery.run_dac_discovery_e2e \
   --corpus-id "$CORPUS" \
   --domain-profile "$DOMAIN" \
   --run-dir "runs/e2e/v290_low_overpotential_002" \

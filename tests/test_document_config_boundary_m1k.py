@@ -391,7 +391,7 @@ def test_legacy_paper_yaml_shape_is_preserved(
 
 def test_strict_bridge_runtime_uses_shared_document_config():
     path = Path(
-        'scripts/strict_bridge_corpus_runtime.py'
+        'scripts/corpus/strict_bridge_corpus_runtime.py'
     )
 
     tree = ast.parse(

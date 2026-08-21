@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import scripts.expand_literature_catalog as module
+import scripts.literature.expand_literature_catalog as module
 from pipeline_core.literature.catalog_contracts import (
     LiteratureCatalogPacket,
 )

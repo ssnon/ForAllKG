@@ -9,7 +9,7 @@ import pytest
 from domains.feasibility_registry import (
     get_feasibility_adapter,
 )
-import scripts.run_feasibility_e2e as feasibility_runner
+import scripts.discovery.run_feasibility_e2e as feasibility_runner
 
 
 def test_feasibility_registry_requires_explicit_profile_argument():
@@ -61,7 +61,7 @@ def test_generic_feasibility_cli_requires_domain_profile(
 
 def test_generic_feasibility_runner_has_no_dac_domain_default():
     source = Path(
-        "scripts/run_feasibility_e2e.py"
+        "scripts/discovery/run_feasibility_e2e.py"
     ).read_text(encoding="utf-8")
 
     assert 'default="dac_her"' not in source

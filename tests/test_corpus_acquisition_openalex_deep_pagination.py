@@ -5,7 +5,7 @@ import pytest
 from pipeline_core.literature.acquisition.openalex_catalog_adapter import (
     OpenAlexCatalogProvider,
 )
-from scripts.expand_literature_catalog import (
+from scripts.literature.expand_literature_catalog import (
     MAX_RESULTS_PER_QUERY,
     _validate_results_per_query,
 )

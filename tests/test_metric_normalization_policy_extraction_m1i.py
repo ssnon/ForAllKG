@@ -63,7 +63,7 @@ def test_policy_module_owns_chemistry_refinement_payload():
 
 def test_extraction_provenance_tracks_runtime_and_policy_files():
     source = Path(
-        "scripts/extract_paper.py"
+        "scripts/corpus/extract_paper.py"
     ).read_text(
         encoding="utf-8"
     )

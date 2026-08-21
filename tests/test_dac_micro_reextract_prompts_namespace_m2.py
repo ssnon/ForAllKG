@@ -72,7 +72,7 @@ def test_canonical_module_has_no_legacy_dac_import():
 
 
 def test_extract_paper_imports_canonical_prompt_module():
-    path = ROOT / "scripts" / "extract_paper.py"
+    path = ROOT / "scripts" / "corpus/extract_paper.py"
 
     tree = ast.parse(
         path.read_text(encoding="utf-8"),
@@ -98,7 +98,7 @@ def test_extract_paper_imports_canonical_prompt_module():
 
 
 def test_extract_paper_still_hashes_canonical_prompt_file():
-    path = ROOT / "scripts" / "extract_paper.py"
+    path = ROOT / "scripts" / "corpus/extract_paper.py"
 
     tree = ast.parse(
         path.read_text(encoding="utf-8"),

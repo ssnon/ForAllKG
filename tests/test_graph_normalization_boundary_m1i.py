@@ -185,7 +185,7 @@ def test_networkx_normalizer_uses_same_metric_refinement_seam():
 
 def test_extraction_run_fingerprint_tracks_graph_normalization_source():
     source = Path(
-        "scripts/extract_paper.py"
+        "scripts/corpus/extract_paper.py"
     ).read_text(
         encoding="utf-8"
     )

@@ -8,7 +8,7 @@ from pipeline_core.corpus.measurement_merge_invariants import (
     measurement_mentions_conflict,
     measurement_value_payload_issues,
 )
-from scripts.build_paper_graph import merge_chunk_graph
+from scripts.corpus.build_paper_graph import merge_chunk_graph
 
 
 def _measurement(

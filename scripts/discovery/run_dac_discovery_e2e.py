@@ -275,10 +275,10 @@ def _mechanism_index_args(
 
 def _check_alpha6_available() -> None:
     try:
-        __import__("scripts.run_novelty_refinement")
+        __import__("scripts.discovery.run_novelty_refinement")
     except Exception as exc:
         raise RuntimeError(
-            "scripts.run_novelty_refinement is unavailable. Apply the alpha6 targeted "
+            "scripts.discovery.run_novelty_refinement is unavailable. Apply the alpha6 targeted "
             "novelty-refinement bundle before using this full E2E runner."
         ) from exc
 
@@ -355,7 +355,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     if use_semantic:
         runner.run_stage(
             "[1a/13] Grounding traversal: semantic_stop attempt",
-            "scripts.run_graph_traversal",
+            "scripts.discovery.run_graph_traversal",
             [
                 "--corpus-id", args.corpus_id,
                 "--domain-profile", domain_profile.profile_id,
@@ -396,7 +396,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     if not final_traversal.exists():
         runner.run_stage(
             "[1b/13] Grounding traversal: top_n fallback",
-            "scripts.run_graph_traversal",
+            "scripts.discovery.run_graph_traversal",
             [
                 "--corpus-id", args.corpus_id,
                 "--domain-profile", domain_profile.profile_id,
@@ -430,7 +430,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     packet = run / "explorer.packet.json"
     runner.run_stage(
         "[2/13] Build GraphExplorerPacket",
-        "scripts.build_explorer_packet",
+        "scripts.discovery.build_explorer_packet",
         [
             "--traversal-result", str(final_traversal),
             "--domain-profile", domain_profile.profile_id,
@@ -445,7 +445,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     explorer_report = run / "explorer.report.json"
     runner.run_stage(
         "[3/13] Graph Explorer",
-        "scripts.run_graph_explorer",
+        "scripts.discovery.run_graph_explorer",
         [
             "--packet", str(packet),
             *_base_model_args(args),
@@ -470,7 +470,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
     runner.run_stage(
         "[4/13] Build grounded HypothesisContext",
-        "scripts.build_hypothesis_context",
+        "scripts.discovery.build_hypothesis_context",
         [
             "--packet", str(packet),
             "--report", str(explorer_report),
@@ -640,7 +640,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     candidate_traversal = run / "candidate_unit.traversal.a3.json"
     runner.run_stage(
         "[5/13] Candidate-unit discovery",
-        "scripts.run_candidate_unit_traversal",
+        "scripts.discovery.run_candidate_unit_traversal",
         [
             "--corpus-id", args.corpus_id,
             "--domain-profile", domain_profile.profile_id,
@@ -659,7 +659,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     bundle = run / "discovery.bundle.a3.json"
     runner.run_stage(
         "[6/13] DiscoveryBundle",
-        "scripts.build_discovery_bundle",
+        "scripts.discovery.build_discovery_bundle",
         [
             "--traversal", str(final_traversal),
             "--traversal", str(candidate_traversal),
@@ -679,7 +679,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     dual_context = run / "hypothesis.dual_context.a3.json"
     runner.run_stage(
         "[7/13] Dual hypothesis context",
-        "scripts.build_dual_hypothesis_context",
+        "scripts.discovery.build_dual_hypothesis_context",
         [
             "--context", str(context),
             "--discovery-bundle", str(bundle),
@@ -700,7 +700,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
     runner.run_stage(
         "[8/13] Discovery-axis hypothesis synthesis",
-        "scripts.run_discovery_axis_hypothesis_maker",
+        "scripts.discovery.run_discovery_axis_hypothesis_maker",
         [
             "--dual-context", str(dual_context),
             *_base_model_args(args),
@@ -764,7 +764,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     semantic_a4_review = run / "semantic_axis_a4.review.json"
     runner.run_stage(
         "[9/13] Semantic critic: alpha4 portfolio",
-        "scripts.run_hypothesis_semantic_critic",
+        "scripts.discovery.run_hypothesis_semantic_critic",
         [
             "--context", str(context),
             "--portfolio", str(axis_portfolio),
@@ -785,7 +785,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     external_prior = run / "external_novelty_a52.prior_art.json"
     runner.run_stage(
         "[10/13] External novelty alpha5.2",
-        "scripts.run_external_novelty",
+        "scripts.discovery.run_external_novelty",
         [
             "--portfolio", str(axis_portfolio),
             "--domain-profile", domain_profile.profile_id,
@@ -814,7 +814,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     refined_report = run / "novelty_refinement_a6.report.json"
     runner.run_stage(
         "[11/13] Targeted novelty refinement alpha6",
-        "scripts.run_novelty_refinement",
+        "scripts.discovery.run_novelty_refinement",
         [
             "--dual-context", str(dual_context),
             "--domain-profile", domain_profile.profile_id,
@@ -860,7 +860,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     semantic_final_review = run / "semantic_final.review.json"
     runner.run_stage(
         "[12/13] Final semantic critic",
-        "scripts.run_hypothesis_semantic_critic",
+        "scripts.discovery.run_hypothesis_semantic_critic",
         [
             "--context", str(context),
             "--portfolio", str(refined_portfolio),
@@ -878,7 +878,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         feasibility_manifest = feasibility_dir / "manifest.json"
         runner.run_stage(
             "[13a/13] Feasibility",
-            "scripts.run_feasibility_e2e",
+            "scripts.discovery.run_feasibility_e2e",
             [
                 "--context", str(context),
                 "--domain-profile", domain_profile.profile_id,
@@ -909,7 +909,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     runner.run_stage(
         "[13b/13] Demo viewer",
-        "scripts.build_demo_viewer",
+        "scripts.utilities.build_demo_viewer",
         viewer_args,
         expected=[viewer],
     )

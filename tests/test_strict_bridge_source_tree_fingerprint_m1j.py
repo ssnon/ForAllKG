@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.strict_bridge_corpus_runtime import (
+from scripts.corpus.strict_bridge_corpus_runtime import (
     _sha256_source_tree,
 )
 
@@ -41,7 +41,7 @@ def _minimal_source_tree(
 
     _write(
         root,
-        "scripts/extract_paper.py",
+        "scripts/corpus/extract_paper.py",
         "VALUE = 'script-v1'\n",
     )
 
@@ -79,7 +79,7 @@ def test_current_source_tree_hash_tracks_selected_script_changes(
 
     _write(
         tmp_path,
-        "scripts/extract_paper.py",
+        "scripts/corpus/extract_paper.py",
         "VALUE = 'script-v2'\n",
     )
 
@@ -159,7 +159,7 @@ def test_source_tree_hash_is_independent_of_file_creation_order(
             "VALUE = 'nested'\n",
         ),
         (
-            "scripts/extract_paper.py",
+            "scripts/corpus/extract_paper.py",
             "VALUE = 'script'\n",
         ),
     )

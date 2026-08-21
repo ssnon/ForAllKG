@@ -3,7 +3,7 @@ import json
 import pytest
 from pydantic import BaseModel
 
-from scripts.apply_corpus_quality_gate import (
+from scripts.corpus.apply_corpus_quality_gate import (
     _read_jsonl,
 )
 

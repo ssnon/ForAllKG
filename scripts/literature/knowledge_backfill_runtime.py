@@ -489,7 +489,7 @@ class KnowledgeAwareBackfillCoordinator:
         command = [
             sys.executable,
             "-m",
-            "scripts.prepare_access_recovery",
+            "scripts.literature.prepare_access_recovery",
             "--source-policy",
             str(self.paths.source_policy),
             "--source-m3-dir",
@@ -515,7 +515,7 @@ class KnowledgeAwareBackfillCoordinator:
         command = [
             sys.executable,
             "-m",
-            "scripts.backfill_acquisition_ready_corpus",
+            "scripts.literature.backfill_acquisition_ready_corpus",
             "--profile",
             str(dynamic_profile),
             "--backfill-policy",
@@ -552,7 +552,7 @@ class KnowledgeAwareBackfillCoordinator:
         command = [
             sys.executable,
             "-m",
-            "scripts.discover_supplementary_artifacts",
+            "scripts.literature.discover_supplementary_artifacts",
             "--profile-id",
             self.profile_id,
             "--catalog",
@@ -579,7 +579,7 @@ class KnowledgeAwareBackfillCoordinator:
         command = [
             sys.executable,
             "-m",
-            "scripts.materialize_corpus_documents",
+            "scripts.literature.materialize_corpus_documents",
             "--profile-id",
             self.profile_id,
             "--domain-profile-id",
@@ -616,7 +616,7 @@ class KnowledgeAwareBackfillCoordinator:
         return [
             sys.executable,
             "-m",
-            "scripts.apply_pre_extraction_gate",
+            "scripts.corpus.apply_pre_extraction_gate",
             "--acquisition-profile",
             str(self.paths.acquisition_profile),
             "--gate-policy",
@@ -643,7 +643,7 @@ class KnowledgeAwareBackfillCoordinator:
         return [
             sys.executable,
             "-m",
-            "scripts.run_strict_bridge_corpus",
+            "scripts.corpus.run_strict_bridge_corpus",
             "--config",
             str(self.paths.strict_config),
             "--source-manifest",

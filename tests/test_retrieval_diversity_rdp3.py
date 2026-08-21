@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.run_graph_traversal import _path_sort_key
+from scripts.discovery.run_graph_traversal import _path_sort_key
 
 
 def _row(

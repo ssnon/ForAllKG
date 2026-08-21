@@ -224,7 +224,7 @@ def test_document_source_fingerprints_preserve_document_and_package_semantics(
 
 def test_strict_bridge_runtime_uses_shared_document_provenance():
     path = Path(
-        'scripts/strict_bridge_corpus_runtime.py'
+        'scripts/corpus/strict_bridge_corpus_runtime.py'
     )
 
     tree = ast.parse(

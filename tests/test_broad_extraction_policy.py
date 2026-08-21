@@ -25,7 +25,7 @@ def test_broad_abstract_policy_limits_recovery_without_relaxing_acceptance():
 
 def test_extract_paper_source_applies_policy_only_to_broad_domain():
     root = Path(__file__).resolve().parents[1]
-    source = (root / "scripts" / "extract_paper.py").read_text(encoding="utf-8")
+    source = (root / "scripts" / "corpus/extract_paper.py").read_text(encoding="utf-8")
     assert "broad_abstract_extraction_policy" in source
     assert 'domain_profile.profile_id == "catalysis_mechanism"' in source
     assert "BROAD_ABSTRACT_RECOVERY_POLICY_ID" in source

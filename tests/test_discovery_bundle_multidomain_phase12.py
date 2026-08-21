@@ -10,7 +10,7 @@ from pipeline_core.discovery.discovery_bundle import (
     DiscoveryBundleBuilder,
     DiscoveryPolicy,
 )
-from scripts.discovery_bundle_runtime import (
+from scripts.discovery.discovery_bundle_runtime import (
     load_traversal_with_graph,
 )
 from domains.registry import get_domain_profile

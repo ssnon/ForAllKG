@@ -724,7 +724,7 @@ class StrictBridgeCorpusPublisher:
         return [
             sys.executable,
             "-m",
-            "scripts.build_navigation_graph",
+            "scripts.discovery.build_navigation_graph",
             "--corpus-id",
             self.corpus_id,
             "--mode",
@@ -737,7 +737,7 @@ class StrictBridgeCorpusPublisher:
         command = [
             sys.executable,
             "-m",
-            "scripts.build_node_index",
+            "scripts.discovery.build_node_index",
             "--corpus-id",
             self.corpus_id,
             "--mode",

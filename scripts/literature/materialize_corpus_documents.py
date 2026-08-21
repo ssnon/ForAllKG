@@ -18,7 +18,7 @@ from pipeline_core.literature.acquisition.materialization_package import (
     write_extraction_plan,
     write_generated_config,
 )
-from scripts.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
+from scripts.literature.materialization_plan_runtime import EXTRACT_PAPER_COMMAND_PREFIX
 from pipeline_core.literature.acquisition.materialization_policy import load_materialization_policy
 from pipeline_core.literature.acquisition.materialization_state import atomic_write_json, load_state, state_matches_sources, state_path, write_jsonl, write_state
 from pipeline_core.literature.acquisition.progress import compact_text, progress_prefix

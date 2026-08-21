@@ -4,7 +4,7 @@ import hashlib
 import json
 from types import SimpleNamespace
 
-from scripts.materialize_corpus_documents_incremental import (
+from scripts.literature.materialize_corpus_documents_incremental import (
     _assign_si_document_ids,
     _can_reuse_document,
 )

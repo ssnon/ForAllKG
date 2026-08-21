@@ -18,7 +18,7 @@ import pipeline_core.corpus.bridge.bridge_domain \
     as bridge_domain_module
 import domains.bridge_registry as bridge_registry_module
 import domains.dac_her.bridge as dac_her_bridge_module
-import scripts.bridge_extraction_runtime \
+import scripts.corpus.bridge_extraction_runtime \
     as bridge_extraction_module
 import pipeline_core.corpus.bridge.bridge_filtering \
     as bridge_filtering_module
@@ -47,7 +47,7 @@ import domains.dac_her.bridge_recovery \
 import pipeline_core.corpus.bridge.bridge_source_reconciliation \
     as bridge_source_reconciliation_module
 
-from scripts.bridge_extraction_runtime import (
+from scripts.corpus.bridge_extraction_runtime import (
     extract_bridge_raw_chunk,
 )
 from domains.bridge_registry import resolve_bridge_adapter

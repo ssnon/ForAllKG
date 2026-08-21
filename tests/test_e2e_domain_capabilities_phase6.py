@@ -5,7 +5,7 @@ from dataclasses import replace
 import pytest
 
 from domains.registry import get_domain_profile
-from scripts.run_dac_discovery_e2e import _resolve_feasibility_capability
+from scripts.discovery.run_dac_discovery_e2e import _resolve_feasibility_capability
 
 
 def test_dac_her_declares_and_resolves_feasibility_capability():

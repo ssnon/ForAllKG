@@ -6,7 +6,7 @@ from pathlib import Path
 import networkx as nx
 import yaml
 
-from scripts.strict_bridge_corpus_runtime import (
+from scripts.corpus.strict_bridge_corpus_runtime import (
     StrictBridgeCorpusPipeline,
     StrictBridgePipelineOptions,
     _sha256_file,

@@ -94,8 +94,8 @@ def test_prior_art_matching_requires_explicit_domain_profile_binding() -> None:
 
     # Application composition must bind the selected domain explicitly.
     for runner_path in (
-        "scripts/run_external_novelty.py",
-        "scripts/run_novelty_refinement.py",
+        "scripts/discovery/run_external_novelty.py",
+        "scripts/discovery/run_novelty_refinement.py",
     ):
         runner = _parse(runner_path)
 

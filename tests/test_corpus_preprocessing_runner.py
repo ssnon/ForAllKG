@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.run_corpus_preprocessing import (
+from scripts.literature.run_corpus_preprocessing import (
     _infer_materialization_id,
     _latest_m3_from_manifest,
     _next_round_dir,

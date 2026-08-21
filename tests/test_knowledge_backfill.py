@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.knowledge_backfill_runtime import (
+from scripts.literature.knowledge_backfill_runtime import (
     KnowledgeAwareBackfillCoordinator,
     KnowledgeBackfillOptions,
     KnowledgeBackfillPaths,
@@ -266,7 +266,7 @@ def test_dry_run_requests_only_knowledge_deficit_and_preserves_m3_authority(tmp_
     assert len(calls) == 2
     recovery_label, recovery_command = calls[0]
     assert recovery_label.endswith("access_recovery")
-    assert "scripts.prepare_access_recovery" in recovery_command
+    assert "scripts.literature.prepare_access_recovery" in recovery_command
     label, command = calls[1]
     assert label.endswith("m3_2_backfill")
     dynamic_profile = Path(command[command.index("--profile") + 1])
@@ -274,7 +274,7 @@ def test_dry_run_requests_only_knowledge_deficit_and_preserves_m3_authority(tmp_
     # 2 currently selected + 1 missing BRIDGE_USEFUL target.
     assert profile["selection"]["target_total"] == 3
     assert sum(axis["target_selected"] for axis in profile["axes"]) <= 3
-    assert "scripts.backfill_acquisition_ready_corpus" in command
+    assert "scripts.literature.backfill_acquisition_ready_corpus" in command
 
 
 def test_oversample_factor_and_budget_are_applied_to_next_round(tmp_path: Path):

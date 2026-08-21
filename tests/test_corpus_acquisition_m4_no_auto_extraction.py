@@ -4,15 +4,15 @@ import ast
 import inspect
 
 import pipeline_core.literature.acquisition.materialization_package as package_module
-import scripts.materialize_corpus_documents as materialize_script
-import scripts.materialization_plan_runtime as plan_runtime
+import scripts.literature.materialize_corpus_documents as materialize_script
+import scripts.literature.materialization_plan_runtime as plan_runtime
 
 
 def _extract_paper_subprocess_calls(source: str) -> list[int]:
     tree = ast.parse(source)
     targets = {
-        "scripts.extract_paper",
-        "scripts/extract_paper.py",
+        "scripts.corpus.extract_paper",
+        "scripts/corpus/extract_paper.py",
         "extract_paper.py",
     }
     subprocess_calls = {"run", "call", "check_call", "check_output", "Popen"}
@@ -51,11 +51,11 @@ def _extract_paper_subprocess_calls(source: str) -> list[int]:
 
 
 def test_extract_paper_handoff_is_application_owned():
-    assert '"scripts.extract_paper"' not in inspect.getsource(package_module)
+    assert '"scripts.corpus.extract_paper"' not in inspect.getsource(package_module)
     assert plan_runtime.EXTRACT_PAPER_COMMAND_PREFIX == (
         "python",
         "-m",
-        "scripts.extract_paper",
+        "scripts.corpus.extract_paper",
     )
 
 

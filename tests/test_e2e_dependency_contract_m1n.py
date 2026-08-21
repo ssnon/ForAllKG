@@ -7,22 +7,22 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
-ENTRY_MODULE = "scripts.run_dac_discovery_e2e"
+ENTRY_MODULE = "scripts.discovery.run_dac_discovery_e2e"
 
 EXPECTED_DYNAMIC_STAGES = {
-    "scripts.build_demo_viewer",
-    "scripts.build_discovery_bundle",
-    "scripts.build_dual_hypothesis_context",
-    "scripts.build_explorer_packet",
-    "scripts.build_hypothesis_context",
-    "scripts.run_candidate_unit_traversal",
-    "scripts.run_discovery_axis_hypothesis_maker",
-    "scripts.run_external_novelty",
-    "scripts.run_feasibility_e2e",
-    "scripts.run_graph_explorer",
-    "scripts.run_graph_traversal",
-    "scripts.run_hypothesis_semantic_critic",
-    "scripts.run_novelty_refinement",
+    "scripts.utilities.build_demo_viewer",
+    "scripts.discovery.build_discovery_bundle",
+    "scripts.discovery.build_dual_hypothesis_context",
+    "scripts.discovery.build_explorer_packet",
+    "scripts.discovery.build_hypothesis_context",
+    "scripts.discovery.run_candidate_unit_traversal",
+    "scripts.discovery.run_discovery_axis_hypothesis_maker",
+    "scripts.discovery.run_external_novelty",
+    "scripts.discovery.run_feasibility_e2e",
+    "scripts.discovery.run_graph_explorer",
+    "scripts.discovery.run_graph_traversal",
+    "scripts.discovery.run_hypothesis_semantic_critic",
+    "scripts.discovery.run_novelty_refinement",
 }
 
 EXPECTED_DOMAIN_SURFACE = {
