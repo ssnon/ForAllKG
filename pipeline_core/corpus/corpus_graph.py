@@ -150,7 +150,7 @@ def load_projection_bundle(
     project_root: str | Path,
     paper_id: str,
     mode: ProjectionMode = "exploratory",
-    data_root: str | Path = "data_dac",
+    data_root: str | Path,
 ) -> ProjectionBundle:
     project_root = Path(project_root)
     data_root_path = Path(data_root)
