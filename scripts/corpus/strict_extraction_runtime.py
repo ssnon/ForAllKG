@@ -16,6 +16,9 @@ from pipeline_core.corpus.lossless_normalization import normalize_knowledge_grap
 from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
 from pipeline_core.corpus.schemas import KnowledgeGraph
+from pipeline_core.corpus.graph.strict_chunk_loading import (
+    load_strict_validated_chunk_graph,
+)
 from pipeline_core.corpus.semantic_patch import PatchRejected, apply_semantic_patch
 from domains.dac_her.semantic_patch_prompts import (
     PATCH_SYSTEM_PROMPT,
@@ -68,7 +71,7 @@ def load_existing_result(
     if not path.exists():
         return None
     try:
-        result = KnowledgeGraph.model_validate_json(path.read_text(encoding="utf-8"))
+        result = load_strict_validated_chunk_graph(path)
         validate_graph_provenance(
             result,
             paper_id=chunk.paper_id,

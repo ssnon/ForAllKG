@@ -91,7 +91,7 @@ from pipeline_core.runtime.serialization_primitives import (
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "papers.yaml"
 ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 

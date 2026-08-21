@@ -15,7 +15,7 @@ from domains.registry import get_domain_profile
 from pipeline_core.corpus.graph.graph_io import save_graphml
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def parse_args() -> argparse.Namespace:

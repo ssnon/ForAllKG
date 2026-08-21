@@ -17,7 +17,7 @@ from scripts.literature.knowledge_backfill_runtime import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _REPORT_SCHEMA = "corpus-preprocess-run-v1"
 
 

@@ -72,6 +72,9 @@ from pipeline_core.runtime.serialization_primitives import (
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
+from pipeline_core.corpus.graph.strict_chunk_loading import (
+    load_strict_validated_chunk_graph,
+)
 from pipeline_core.corpus.graph.graph_io import (
     knowledge_graph_to_networkx,
 )
@@ -92,7 +95,7 @@ from pipeline_core.corpus.bridge.bridge_policy_run import (
 
 
 PROJECT_ROOT = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[2]
 )
 DEFAULT_CONFIG = (
     PROJECT_ROOT
@@ -537,11 +540,8 @@ def main() -> None:
         )
 
         strict_result = (
-            KnowledgeGraph
-            .model_validate_json(
-                strict_path.read_text(
-                    encoding="utf-8"
-                )
+            load_strict_validated_chunk_graph(
+                strict_path
             )
         )
 

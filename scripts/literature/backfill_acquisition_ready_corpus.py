@@ -26,7 +26,7 @@ from pipeline_core.literature.catalog_contracts import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _read_jsonl(path: Path, model) -> list[Any]:

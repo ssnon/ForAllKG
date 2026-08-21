@@ -10,7 +10,7 @@ from domains.extraction_registry import (
 from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder, write_packet
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def parse_args() -> argparse.Namespace:
