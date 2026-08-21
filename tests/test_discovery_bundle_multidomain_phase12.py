@@ -6,7 +6,7 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from dac_her.discovery_bundle import (
+from pipeline_core.discovery.discovery_bundle import (
     DiscoveryBundleBuilder,
     DiscoveryPolicy,
 )

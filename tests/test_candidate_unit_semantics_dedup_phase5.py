@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import networkx as nx
 
-from dac_her.candidate_unit_selection import (
+from pipeline_core.discovery.candidate_unit_selection import (
     CandidateUnitSelectionPolicy,
     CandidateUnitSelector,
 )
@@ -146,7 +146,7 @@ def test_legacy_mechanism_prefix_is_profile_owned_not_hardcoded():
 
 
 def test_candidate_unit_module_no_longer_defines_private_semantic_classifiers():
-    import dac_her.candidate_unit_selection as module
+    import pipeline_core.discovery.candidate_unit_selection as module
 
     for name in (
         "_normalized_type",

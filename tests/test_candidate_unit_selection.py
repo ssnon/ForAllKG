@@ -4,7 +4,7 @@ import networkx as nx
 
 from domains.dac_her.profile import DAC_HER_PROFILE
 
-from dac_her.candidate_unit_selection import CandidateUnitSelectionPolicy, CandidateUnitSelector
+from pipeline_core.discovery.candidate_unit_selection import CandidateUnitSelectionPolicy, CandidateUnitSelector
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
 
 

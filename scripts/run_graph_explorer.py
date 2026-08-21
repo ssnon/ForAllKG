@@ -9,7 +9,7 @@ from domains.registry import get_domain_profile
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_llm import InstructorOpenAICompatibleDraftBackend
 from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
-from dac_her.explorer_runtime import GraphExplorerAgentRuntime
+from pipeline_core.discovery.explorer_runtime import GraphExplorerAgentRuntime
 
 
 def _header(value: str) -> tuple[str, str]:

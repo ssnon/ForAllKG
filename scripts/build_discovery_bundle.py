@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dac_her.discovery_bundle import (
+from pipeline_core.discovery.discovery_bundle import (
     DiscoveryBundleBuilder,
     DiscoveryPolicy,
 )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import networkx as nx
 import pytest
 
-from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
+from pipeline_core.discovery.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from domains.registry import get_domain_profile
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext

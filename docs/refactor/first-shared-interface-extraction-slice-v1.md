@@ -136,7 +136,7 @@ The following files are important but should not be first-move targets:
 - [dac_her/corpus_pipeline.py](../../dac_her/corpus_pipeline.py)
 - [dac_her/strict_bridge_corpus_pipeline.py](../../dac_her/strict_bridge_corpus_pipeline.py)
 - [dac_her/hypothesis_runtime.py](../../dac_her/hypothesis_runtime.py)
-- [dac_her/explorer_runtime.py](../../dac_her/explorer_runtime.py)
+- [pipeline_core/discovery/explorer_runtime.py](../../pipeline_core/discovery/explorer_runtime.py)
 
 Reasons:
 

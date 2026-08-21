@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.candidate_unit_selection import (
+from pipeline_core.discovery.candidate_unit_selection import (
     CandidateUnitSelectionPolicy,
     CandidateUnitSelector,
 )

@@ -6,7 +6,7 @@ from pipeline_core.discovery.explorer_draft import (
     ExplorerStatementDraft,
     MechanisticMotifDraft,
 )
-from dac_her.explorer_normalization import (
+from pipeline_core.discovery.explorer_normalization import (
     ExplorerDraftNormalizer,
 )
 from pipeline_core.discovery.hypothesis_semantic_contracts import (

@@ -11,7 +11,7 @@ from domains.registry import get_domain_profile
 from domains.extraction_registry import (
     get_extraction_adapter,
 )
-from dac_her.direct_concept import (
+from pipeline_core.discovery.direct_concept import (
     DirectConceptHitSelector,
 )
 from pipeline_core.discovery.endpoint_selection import (
@@ -22,7 +22,7 @@ from pipeline_core.discovery.path_bundle import (
     PathBundleSelector,
     render_step_safe,
 )
-from dac_her.path_quality import (
+from pipeline_core.discovery.path_quality import (
     PathQualityScorer,
 )
 from pipeline_core.discovery.node_mapping import (

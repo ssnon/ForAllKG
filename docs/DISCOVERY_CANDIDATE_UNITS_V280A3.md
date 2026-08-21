@@ -81,7 +81,7 @@ but **C -> B is not interpreted as a causal/scientific direction**. The candidat
 New:
 
 - `dac_her/candidate_units.py`
-- `dac_her/candidate_unit_selection.py`
+- `pipeline_core/discovery/candidate_unit_selection.py`
 - `scripts/run_candidate_unit_traversal.py`
 - `tests/test_candidate_units.py`
 - `tests/test_candidate_unit_selection.py`
@@ -90,7 +90,7 @@ New:
 Modified:
 
 - `dac_her/discovery_contracts.py`
-- `dac_her/discovery_bundle.py`
+- `pipeline_core/discovery/discovery_bundle.py`
 - `dac_her/discovery_hypothesis_prompt.py`
 - `scripts/build_discovery_bundle.py`
 

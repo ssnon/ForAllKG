@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from dac_her.explorer_compiler import (
+from pipeline_core.discovery.explorer_compiler import (
     CompileIssue,
     ExplorationCompileError,
     ExplorationReportCompiler,
@@ -17,7 +17,7 @@ from pipeline_core.domain_profile import (
     ScientificDomainProfile,
 )
 from pipeline_core.discovery.explorer_llm import DraftGeneration, ExplorationDraftBackend
-from dac_her.explorer_normalization import (
+from pipeline_core.discovery.explorer_normalization import (
     ExplorerDraftNormalizer,
     ExplorerNormalizationAudit,
 )

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import networkx as nx
 
-from dac_her.candidate_unit_selection import (
+from pipeline_core.discovery.candidate_unit_selection import (
     CandidateUnitScore,
     CandidateUnitSelectionPolicy,
     CandidateUnitSelector,
 )
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
-from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
+from pipeline_core.discovery.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 from pipeline_core.discovery.discovery_contracts import DiscoveryScoreBreakdown
 from domains.registry import get_domain_profile
 

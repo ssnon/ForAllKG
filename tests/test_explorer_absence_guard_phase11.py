@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from domains.registry import get_domain_profile
-from dac_her.explorer_compiler import ExplorationReportCompiler
+from pipeline_core.discovery.explorer_compiler import ExplorationReportCompiler
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
-from dac_her.explorer_normalization import ExplorerDraftNormalizer
+from pipeline_core.discovery.explorer_normalization import ExplorerDraftNormalizer
 from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
 from pipeline_core.explorer_text_safety import contains_absence_language
 

@@ -1,8 +1,8 @@
 import networkx as nx
 import pytest
 
-import dac_her.candidate_unit_selection as candidate_unit_selection_module
-from dac_her.candidate_unit_selection import CandidateUnitSelector
+import pipeline_core.discovery.candidate_unit_selection as candidate_unit_selection_module
+from pipeline_core.discovery.candidate_unit_selection import CandidateUnitSelector
 
 from pipeline_core.discovery_semantics import (
     is_alignment_edge,
@@ -15,7 +15,7 @@ from pipeline_core.discovery_semantics import (
 from pipeline_core.domain_profile import DiscoverySemantics
 from domains.sers.profile import SERS_AU_AG_PROFILE
 from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder
-from dac_her.path_quality import PathQualityScorer
+from pipeline_core.discovery.path_quality import PathQualityScorer
 
 
 def _sers_like_semantics() -> DiscoverySemantics:

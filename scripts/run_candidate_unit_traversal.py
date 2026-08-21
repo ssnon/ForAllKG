@@ -9,7 +9,7 @@ from typing import Any
 import networkx as nx
 import numpy as np
 
-from dac_her.candidate_unit_selection import (
+from pipeline_core.discovery.candidate_unit_selection import (
     CandidateUnitSelectionPolicy,
     CandidateUnitSelector,
     endpoint_pair_payload,
@@ -29,7 +29,7 @@ from pipeline_core.discovery.candidate_units import (
     paper_ids_from_node,
 )
 from pipeline_core.discovery.node_mapping import NodeMapper, QueryConcept, load_node_embedding_index
-from dac_her.path_quality import PathQualityScorer
+from pipeline_core.discovery.path_quality import PathQualityScorer
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

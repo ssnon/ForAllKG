@@ -11,7 +11,7 @@ def _dac_builder(policy=None):
         domain_profile=DAC_HER_PROFILE,
     )
 
-from dac_her.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
+from pipeline_core.discovery.discovery_bundle import DiscoveryBundleBuilder, DiscoveryPolicy
 
 
 def _graph() -> nx.DiGraph:

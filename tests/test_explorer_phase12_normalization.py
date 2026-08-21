@@ -3,7 +3,7 @@ from __future__ import annotations
 from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from domains.dac_her.profile import DAC_HER_PROFILE
-from dac_her.explorer_normalization import ExplorerDraftNormalizer
+from pipeline_core.discovery.explorer_normalization import ExplorerDraftNormalizer
 
 
 def _packet() -> GraphExplorerPacket:
