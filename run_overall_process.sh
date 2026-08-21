@@ -17,7 +17,7 @@ python -m scripts.discovery.run_dac_discovery_e2e \
   --model "$OPENROUTER_AGENT_MODEL" \
   --critic-model "$OPENROUTER_CRITIC_MODEL" \
   --base-url "$BASE_URL" \
-  --api-key-env "OPENROUTER_API_KEY"
+  --api-key-env "OPENROUTER_API_KEY" \
   --node-map-k 20 \
   --waypoint-k 12 \
   --endpoint-pair-k 12 \
@@ -39,7 +39,7 @@ python -m scripts.discovery.run_dac_discovery_e2e \
   --model "$OPENROUTER_AGENT_MODEL" \
   --critic-model "$OPENROUTER_CRITIC_MODEL" \
   --base-url "$BASE_URL" \
-  --api-key-env "OPENROUTER_API_KEY"
+  --api-key-env "OPENROUTER_API_KEY" \
   --node-map-k 20 \
   --waypoint-k 12 \
   --endpoint-pair-k 12 \
@@ -61,7 +61,7 @@ python -m scripts.discovery.run_dac_discovery_e2e \
   --model "$OPENROUTER_AGENT_MODEL" \
   --critic-model "$OPENROUTER_CRITIC_MODEL" \
   --base-url "$BASE_URL" \
-  --api-key-env "OPENROUTER_API_KEY"
+  --api-key-env "OPENROUTER_API_KEY" \
   --node-map-k 20 \
   --waypoint-k 12 \
   --endpoint-pair-k 12 \
@@ -83,7 +83,7 @@ python -m scripts.discovery.run_dac_discovery_e2e \
   --model "$OPENROUTER_AGENT_MODEL" \
   --critic-model "$OPENROUTER_CRITIC_MODEL" \
   --base-url "$BASE_URL" \
-  --api-key-env "OPENROUTER_API_KEY"
+  --api-key-env "OPENROUTER_API_KEY" \
   --node-map-k 20 \
   --waypoint-k 12 \
   --endpoint-pair-k 12 \
