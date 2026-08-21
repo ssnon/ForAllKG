@@ -91,8 +91,6 @@ from pipeline_core.bridge_policy_run import (
 )
 
 
-load_dotenv()
-
 PROJECT_ROOT = (
     Path(__file__).resolve().parents[1]
 )
@@ -110,6 +108,8 @@ def _now_utc() -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    load_dotenv()
+
     parser = argparse.ArgumentParser(
         description=(
             "Extract frozen raw Bridge candidates "

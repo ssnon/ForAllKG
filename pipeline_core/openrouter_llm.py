@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, TypeVar
 
-from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
@@ -20,7 +19,6 @@ from pipeline_core.llm_telemetry import (
 )
 
 
-load_dotenv()
 T = TypeVar("T", bound=BaseModel)
 
 

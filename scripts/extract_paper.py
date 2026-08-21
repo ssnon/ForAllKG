@@ -91,13 +91,14 @@ from pipeline_core.serialization_primitives import (
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
-load_dotenv()
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "papers.yaml"
 ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 
 
 def parse_args() -> argparse.Namespace:
+    load_dotenv()
+
     parser = argparse.ArgumentParser(
         description=(
             "Extract configured main/SI documents, preserving Marker assets "
