@@ -9,7 +9,7 @@ from pipeline_core.corpus.recovery_policy import (
     decide_recovery,
     has_common_undefined_endpoint_cluster,
 )
-from dac_her.strict_recovery import _is_reserved_collection_domain_violation
+from scripts.strict_extraction_runtime import _is_reserved_collection_domain_violation
 from pipeline_core.validation_issues import (
     IssueCode,
     IssueStage,

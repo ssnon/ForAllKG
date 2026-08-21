@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 import pipeline_core.chunking as chunking_module
 import pipeline_core.corpus.schemas as schemas_module
-import dac_her.strict_recovery as extraction_module
+import scripts.strict_extraction_runtime as extraction_module
 import pipeline_core.corpus.graph_normalization as graph_normalization_module
 import pipeline_core.corpus.metric_normalization_policy as metric_normalization_policy_module
 import pipeline_core.graph_normalization_runtime as graph_normalization_runtime_module
@@ -34,7 +34,7 @@ import pipeline_core.corpus.recovery_policy as recovery_policy_module
 import pipeline_core.corpus.semantic_patch as semantic_patch_module
 import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import pipeline_core.corpus.semantic_patch_schema as semantic_patch_schema_module
-import dac_her.strict_recovery as strict_recovery_module
+import scripts.strict_extraction_runtime as strict_recovery_module
 import pipeline_core.corpus.strict_validation as strict_validation_module
 import pipeline_core.validation_issues as validation_issues_module
 import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
@@ -49,7 +49,7 @@ from pipeline_core.document_package import (
     load_document_package,
     select_document_sources,
 )
-from dac_her.strict_recovery import chunk_output_path, extract_one_chunk, load_existing_result
+from scripts.strict_extraction_runtime import chunk_output_path, extract_one_chunk, load_existing_result
 from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.extraction_policy import ExtractionPolicy

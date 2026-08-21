@@ -15,7 +15,7 @@ from domains.registry import get_domain_profile
 from domains.dac_her.profile import DAC_HER_PROFILE
 from pipeline_core.corpus.paper_graph_postprocess import load_resolution_plan
 from pipeline_core.corpus.resolution_candidates import generate_resolution_candidates
-from dac_her.strict_recovery import _domain_gate
+from scripts.strict_extraction_runtime import _domain_gate
 
 
 def _role_graph() -> nx.MultiDiGraph:

@@ -11,7 +11,6 @@ from pipeline_core.draft_schema import KnowledgeGraphDraft
 from pipeline_core.corpus.domain_gate_replay import build_domain_gate_replay_fixture
 from pipeline_core.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.extraction_policy import ExtractionPolicy
-from domains.extraction_registry import get_extraction_adapter
 from pipeline_core.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
 from domains.dac_her.prompts import build_extraction_prompt
@@ -261,11 +260,10 @@ def extract_one_chunk(
     metric_registry: VocabularyRegistry,
     vocabulary_context: str,
     force: bool = False,
-    extraction_adapter: ExtractionDomainAdapter | None = None,
+    extraction_adapter: ExtractionDomainAdapter,
     compact_generation_schema: bool = False,
     compact_domain_gate_recovery: bool = False,
 ) -> dict[str, Any]:
-    extraction_adapter = extraction_adapter or get_extraction_adapter("dac_her")
     generation_response_model = extraction_adapter.generation_response_model(
         compact=compact_generation_schema,
     )
