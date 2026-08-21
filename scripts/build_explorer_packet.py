@@ -53,18 +53,17 @@ def main() -> None:
         raise ValueError("Traversal result must contain corpus_id and mode.")
 
     traversal_domain = str(
-        traversal.get("domain_profile_id")
-        or "dac_her"
-    )
-    requested_domain = (
-        str(args.domain_profile)
-        if args.domain_profile
-        else traversal_domain
-    )
-    if (
-        traversal.get("domain_profile_id")
-        and requested_domain != traversal_domain
-    ):
+        traversal.get("domain_profile_id") or ""
+    ).strip()
+    requested_domain = str(
+        args.domain_profile or traversal_domain
+    ).strip()
+    if not requested_domain:
+        raise ValueError(
+            "domain_profile_id is required via --domain-profile "
+            "or the traversal artifact."
+        )
+    if traversal_domain and requested_domain != traversal_domain:
         raise ValueError(
             "Requested domain profile does not match traversal artifact: "
             f"requested={requested_domain!r}, "

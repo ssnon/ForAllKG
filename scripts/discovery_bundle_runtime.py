@@ -31,8 +31,13 @@ def _resolve_traversal_data_root(
     requested_domain = str(
         domain_profile_id
         or traversal_domain
-        or "dac_her"
+        or ""
     ).strip()
+
+    if not requested_domain:
+        raise ValueError(
+            "domain_profile_id is required via the caller or traversal artifact."
+        )
 
     if (
         traversal_domain

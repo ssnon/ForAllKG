@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--domain-profile",
-        default="dac_her",
+        required=True,
     )
     parser.add_argument(
         "--data-root",

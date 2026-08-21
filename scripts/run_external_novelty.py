@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--portfolio", required=True)
-    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--domain-profile", required=True)
     parser.add_argument("--lineage", default=None)
     parser.add_argument("--model", required=True)
     parser.add_argument("--base-url", default=None)
@@ -106,6 +106,12 @@ def main() -> None:
     portfolio = HypothesisPortfolio.model_validate_json(
         Path(args.portfolio).read_text(encoding="utf-8")
     )
+    if portfolio.domain_profile_id != domain_profile.profile_id:
+        raise ValueError(
+            "Portfolio/domain profile mismatch: "
+            f"portfolio={portfolio.domain_profile_id!r}, "
+            f"requested={domain_profile.profile_id!r}"
+        )
     lineage = (
         DiscoveryAxisSynthesisReport.model_validate_json(
             Path(args.lineage).read_text(encoding="utf-8")

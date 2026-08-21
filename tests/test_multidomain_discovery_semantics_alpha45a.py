@@ -209,3 +209,22 @@ def test_candidate_unit_right_branch_keeps_selected_semantics(monkeypatch):
     assert continuity == 1.0
     assert seen
     assert all(item is semantics for item in seen)
+
+
+def test_explorer_packet_rejects_missing_domain_lineage():
+    with pytest.raises(ValueError, match="Missing domain_profile_id"):
+        GraphExplorerPacketBuilder().build(
+            traversal_payload={
+                "corpus_id": "x",
+                "mode": "mechanism",
+                "algorithm": "top_n",
+                "paths": [],
+            },
+            node_rows=[],
+            edge_rows=[],
+            corpus_manifest={
+                "corpus_id": "x",
+                "mode": "mechanism",
+                "papers": [],
+            },
+        )

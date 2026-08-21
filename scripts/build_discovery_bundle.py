@@ -89,8 +89,8 @@ def main() -> int:
         "--domain-profile",
         default=None,
         help=(
-            "Scientific domain profile. If omitted, infer from traversal "
-            "artifacts and fall back to dac_her for legacy artifacts."
+            "Scientific domain profile. If omitted, infer from explicit "
+            "domain_profile_id values in traversal artifacts."
         ),
     )
     parser.add_argument(
@@ -138,10 +138,13 @@ def main() -> int:
                 "traversal artifacts contain multiple domain profiles: "
                 f"{sorted(explicit_domains)}"
             )
+        if not explicit_domains:
+            raise ValueError(
+                "domain_profile_id is required via --domain-profile "
+                "or traversal artifacts."
+            )
         domain_profile = get_domain_profile(
             next(iter(explicit_domains))
-            if explicit_domains
-            else "dac_her"
         )
 
     semantic_indexes = {}

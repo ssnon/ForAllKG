@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--corpus-id", required=True)
-    parser.add_argument("--domain-profile", default="dac_her")
+    parser.add_argument("--domain-profile", required=True)
     parser.add_argument("--data-root", default=None)
 
     source = parser.add_mutually_exclusive_group(required=True)

@@ -134,9 +134,8 @@ class DiscoveryBundle(StrictModel):
     bundle_id: str
     bundle_sha256: str
     corpus_id: str
-    # Legacy bundles without this field are interpreted as DAC-HER only.
-    # New multidomain builders always write the explicit profile.
-    domain_profile_id: str = "dac_her"
+    # Domain identity is required for canonical discovery artifact lineage.
+    domain_profile_id: str
     query_signature: str
     inspirations: list[DiscoveryInspiration] = Field(default_factory=list)
     source_traversal_files: list[str] = Field(default_factory=list)

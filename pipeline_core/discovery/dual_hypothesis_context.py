@@ -40,7 +40,7 @@ class DualHypothesisContext(StrictModel):
     schema_version: Literal["dual-hypothesis-context-v1"] = "dual-hypothesis-context-v1"
     dual_context_id: str
     dual_context_sha256: str
-    domain_profile_id: str = "dac_her"
+    domain_profile_id: str
     grounded_context: HypothesisContext
     discovery_bundle: DiscoveryBundle
 

@@ -15,6 +15,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 
 def make_context(rows, *, routes=None):
     return HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx",
         context_sha256="csha",
         source_packet_id="packet",

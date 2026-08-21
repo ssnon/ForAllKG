@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dual-context", required=True, type=Path)
     p.add_argument(
         "--domain-profile",
-        default="dac_her",
+        required=True,
         help="Scientific domain profile for all targeted/final prior-art checks.",
     )
     p.add_argument("--axis-plan", required=True, type=Path)
@@ -121,6 +121,18 @@ def main() -> int:
     portfolio = HypothesisPortfolio.model_validate_json(
         args.portfolio.read_text(encoding="utf-8")
     )
+    if dual.domain_profile_id != domain_profile.profile_id:
+        raise ValueError(
+            "Dual-context/domain profile mismatch: "
+            f"dual={dual.domain_profile_id!r}, "
+            f"requested={domain_profile.profile_id!r}"
+        )
+    if portfolio.domain_profile_id != domain_profile.profile_id:
+        raise ValueError(
+            "Portfolio/domain profile mismatch: "
+            f"portfolio={portfolio.domain_profile_id!r}, "
+            f"requested={domain_profile.profile_id!r}"
+        )
     lineage = DiscoveryAxisSynthesisReport.model_validate_json(
         args.lineage.read_text(encoding="utf-8")
     )

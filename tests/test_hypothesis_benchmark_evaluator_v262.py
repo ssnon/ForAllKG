@@ -28,6 +28,7 @@ def context(*, candidate=False, alignment=False):
         eligible_as_premise=True,
     )
     return HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx",
         context_sha256="csha",
         source_packet_id="packet",
@@ -118,6 +119,7 @@ def test_zero_premise_final_card_is_hard_failure():
 
 def test_empty_context_abstention_passes():
     c = HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx0",
         context_sha256="csha0",
         source_packet_id="packet0",
@@ -130,6 +132,7 @@ def test_empty_context_abstention_passes():
         evidence_statements=[],
     )
     p = HypothesisPortfolio(
+        domain_profile_id="dac_her",
         portfolio_id="p0",
         source_context_id=c.context_id,
         source_context_sha256=c.context_sha256,

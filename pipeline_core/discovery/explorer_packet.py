@@ -430,8 +430,12 @@ class GraphExplorerPacketBuilder:
         domain_profile_id = str(
             traversal_domain
             or manifest_domain
-            or "dac_her"
+            or ""
         ).strip()
+        if not domain_profile_id:
+            raise ValueError(
+                "Missing domain_profile_id in traversal payload/corpus manifest."
+            )
 
         papers, paper_by_id = _paper_scope(corpus_manifest)
         node_index = {

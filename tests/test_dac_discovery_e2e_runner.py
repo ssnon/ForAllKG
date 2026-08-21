@@ -158,6 +158,7 @@ def test_novelty_refinement_parser_accepts_explicit_index_dir(
         [
             "run_novelty_refinement",
             "--dual-context", "dual.json",
+            "--domain-profile", "sers_au_ag",
             "--axis-plan", "axis.json",
             "--portfolio", "portfolio.json",
             "--lineage", "lineage.json",

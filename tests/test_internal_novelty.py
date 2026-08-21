@@ -48,6 +48,7 @@ class FakeMapper:
 
 def _dual() -> DualHypothesisContext:
     context = HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx",
         context_sha256="ctxsha",
         source_packet_id="p",
@@ -90,6 +91,7 @@ def _dual() -> DualHypothesisContext:
         total=1,
     )
     bundle = DiscoveryBundle(
+        domain_profile_id="dac_her",
         bundle_id="b",
         bundle_sha256="bsha",
         corpus_id="c1",
@@ -116,6 +118,7 @@ def _dual() -> DualHypothesisContext:
 
 def _portfolio(statement: str = "A premise causes an effect") -> HypothesisPortfolio:
     card = HypothesisCard(
+        domain_profile_id="dac_her",
         hypothesis_id="h1",
         source_context_id="ctx",
         source_context_sha256="ctxsha",
@@ -152,6 +155,7 @@ def _portfolio(statement: str = "A premise causes an effect") -> HypothesisPortf
         ),
     )
     return HypothesisPortfolio(
+        domain_profile_id="dac_her",
         portfolio_id="portfolio",
         source_context_id="ctx",
         source_context_sha256="ctxsha",

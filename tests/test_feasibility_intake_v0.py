@@ -32,6 +32,7 @@ def _sha(value) -> str:
 
 def make_context() -> HypothesisContext:
     return HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx",
         context_sha256="ctxsha",
         source_packet_id="packet",

@@ -108,9 +108,8 @@ class HypothesisContext(StrictModel):
     task_id: str
     question: str
     corpus_id: str
-    # Backward-compatible default lets pre-v2.9 DAC-HER artifacts load, while
-    # all new builders must write the explicit selected domain profile.
-    domain_profile_id: str = "dac_her"
+    # Domain identity is required for canonical discovery artifact lineage.
+    domain_profile_id: str
     evidence_statements: list[HypothesisEvidenceStatement]
     mechanism_routes: list[HypothesisRouteContext] = Field(default_factory=list)
     mechanistic_motifs: list[HypothesisMotifContext] = Field(default_factory=list)
@@ -197,7 +196,7 @@ class HypothesisEvidenceProfile(StrictModel):
 class HypothesisCard(StrictModel):
     schema_version: Literal["hypothesis-card-v1"] = "hypothesis-card-v1"
     hypothesis_id: str
-    domain_profile_id: str = "dac_her"
+    domain_profile_id: str
     source_context_id: str
     source_context_sha256: str
     source_report_id: str
@@ -223,7 +222,7 @@ class HypothesisCard(StrictModel):
 class HypothesisPortfolio(StrictModel):
     schema_version: Literal["hypothesis-portfolio-v1"] = "hypothesis-portfolio-v1"
     portfolio_id: str
-    domain_profile_id: str = "dac_her"
+    domain_profile_id: str
     source_context_id: str
     source_context_sha256: str
     source_report_id: str

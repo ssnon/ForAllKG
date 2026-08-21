@@ -20,6 +20,7 @@ from pipeline_core.discovery.hypothesis_context import HypothesisContextBuilder
 
 def make_packet_and_report():
     packet = GraphExplorerPacket(
+        domain_profile_id="dac_her",
         packet_id="packet:test-v260",
         packet_sha256="packet-sha-v260",
         task=ExplorerTask(

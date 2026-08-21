@@ -164,11 +164,14 @@ def test_hypothesis_compiler_propagates_domain_and_ids_are_domain_sensitive():
     assert dac.hypotheses[0].hypothesis_id != sers.hypotheses[0].hypothesis_id
 
 
-def test_legacy_contracts_default_to_dac_her_only():
+def test_missing_domain_identity_is_rejected_by_discovery_contracts():
     context_payload = _context("dac_her").model_dump(mode="json")
     bundle_payload = _bundle("dac_her").model_dump(mode="json")
     context_payload.pop("domain_profile_id")
     bundle_payload.pop("domain_profile_id")
 
-    assert HypothesisContext.model_validate(context_payload).domain_profile_id == "dac_her"
-    assert DiscoveryBundle.model_validate(bundle_payload).domain_profile_id == "dac_her"
+    with pytest.raises(ValueError, match="domain_profile_id"):
+        HypothesisContext.model_validate(context_payload)
+
+    with pytest.raises(ValueError, match="domain_profile_id"):
+        DiscoveryBundle.model_validate(bundle_payload)

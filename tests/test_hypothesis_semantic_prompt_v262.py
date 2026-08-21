@@ -16,6 +16,7 @@ from pipeline_core.discovery.hypothesis_semantic_prompt import HypothesisSemanti
 
 def fixture():
     context = HypothesisContext(
+        domain_profile_id="dac_her",
         context_id="ctx",
         context_sha256="csha",
         source_packet_id="packet",
