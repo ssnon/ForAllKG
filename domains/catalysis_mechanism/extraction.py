@@ -7,12 +7,12 @@ from domains.catalysis_mechanism.prompts import (
     CATALYSIS_MECHANISM_SYSTEM_PROMPT,
 )
 from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
-from domains.extraction_prompt_compat import (
-    LEGACY_DOMAIN_GATE_RECOVERY_PROMPT_BUILDER,
-    LEGACY_GENERATION_PROMPT_BUILDER,
-    LEGACY_MICRO_REEXTRACT_PROMPT_BUILDER,
-    LEGACY_PATCH_REJECTION_FEEDBACK_BUILDER,
-    LEGACY_SEMANTIC_PATCH_PROMPT_BUILDER,
+from domains.catalysis_mechanism.prompt_builders import (
+    build_domain_gate_recovery_prompt,
+    build_extraction_prompt,
+    build_micro_reextract_prompt,
+    build_patch_rejection_feedback,
+    build_semantic_patch_prompt,
 )
 from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
 from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
@@ -27,11 +27,11 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     micro_reextract_system_prompt=(
         CATALYSIS_MECHANISM_MICRO_REEXTRACT_SYSTEM_PROMPT
     ),
-    generation_prompt_builder=LEGACY_GENERATION_PROMPT_BUILDER,
-    semantic_patch_prompt_builder=LEGACY_SEMANTIC_PATCH_PROMPT_BUILDER,
-    patch_rejection_feedback_builder=LEGACY_PATCH_REJECTION_FEEDBACK_BUILDER,
-    micro_reextract_prompt_builder=LEGACY_MICRO_REEXTRACT_PROMPT_BUILDER,
-    domain_gate_recovery_prompt_builder=LEGACY_DOMAIN_GATE_RECOVERY_PROMPT_BUILDER,
+    generation_prompt_builder=build_extraction_prompt,
+    semantic_patch_prompt_builder=build_semantic_patch_prompt,
+    patch_rejection_feedback_builder=build_patch_rejection_feedback,
+    micro_reextract_prompt_builder=build_micro_reextract_prompt,
+    domain_gate_recovery_prompt_builder=build_domain_gate_recovery_prompt,
     default_data_root="data_broad",
     strict_relation_constraints=(
         CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS

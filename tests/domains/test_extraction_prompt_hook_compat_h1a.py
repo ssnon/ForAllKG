@@ -14,52 +14,44 @@ from domains.dac_her.semantic_patch_prompts import (
 from domains.extraction_registry import get_extraction_adapter
 
 
-LEGACY_PROFILE_IDS = (
-    "dac_her",
-    "catalysis_mechanism",
-)
+def test_dac_adapter_preserves_native_prompt_builder_callables() -> None:
+    adapter = get_extraction_adapter("dac_her")
+
+    assert (
+        adapter.generation_prompt_builder
+        is build_extraction_prompt
+    )
+    assert (
+        adapter.semantic_patch_prompt_builder
+        is build_semantic_patch_prompt
+    )
+    assert (
+        adapter.patch_rejection_feedback_builder
+        is build_patch_rejection_feedback
+    )
+    assert (
+        adapter.micro_reextract_prompt_builder
+        is build_micro_reextract_prompt
+    )
+    assert (
+        adapter.domain_gate_recovery_prompt_builder
+        is build_domain_gate_recovery_prompt
+    )
 
 
-def test_h1a_remaining_legacy_profiles_preserve_exact_callables() -> None:
-    for profile_id in LEGACY_PROFILE_IDS:
-        adapter = get_extraction_adapter(profile_id)
+def test_dac_prompt_builder_provenance_tracks_native_source_files() -> None:
+    adapter = get_extraction_adapter("dac_her")
 
-        assert (
-            adapter.generation_prompt_builder
-            is build_extraction_prompt
-        )
-        assert (
-            adapter.semantic_patch_prompt_builder
-            is build_semantic_patch_prompt
-        )
-        assert (
-            adapter.patch_rejection_feedback_builder
-            is build_patch_rejection_feedback
-        )
-        assert (
-            adapter.micro_reextract_prompt_builder
-            is build_micro_reextract_prompt
-        )
-        assert (
-            adapter.domain_gate_recovery_prompt_builder
-            is build_domain_gate_recovery_prompt
-        )
-
-
-def test_h1a_remaining_legacy_prompt_provenance_tracks_source_files() -> None:
     expected = {
         Path(build_extraction_prompt.__code__.co_filename).resolve(),
         Path(build_semantic_patch_prompt.__code__.co_filename).resolve(),
         Path(build_micro_reextract_prompt.__code__.co_filename).resolve(),
     }
 
-    for profile_id in LEGACY_PROFILE_IDS:
-        adapter = get_extraction_adapter(profile_id)
+    actual = {
+        Path(path).resolve()
+        for path
+        in adapter.prompt_builder_implementation_paths()
+    }
 
-        actual = {
-            Path(path).resolve()
-            for path
-            in adapter.prompt_builder_implementation_paths()
-        }
-
-        assert actual == expected
+    assert actual == expected
