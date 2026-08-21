@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import pipeline_core.graphagents_adapter as adapter
+import pipeline_core.corpus.graph.graphagents_adapter as adapter
 
-from pipeline_core.legacy_dac_projection_policy import (
+from pipeline_core.corpus.graph.legacy_dac_projection_policy import (
     LEGACY_DAC_HER_PROJECTION_SEMANTICS,
 )
 

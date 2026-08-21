@@ -3,10 +3,10 @@ from __future__ import annotations
 import domains.dac_her.bridge_policy as bridge_policy_module
 import domains.dac_her.bridge_prompts as bridge_prompts_module
 import domains.dac_her.bridge_validation as bridge_validation_module
-import pipeline_core.bridge_validation as bridge_validation_core_module
+import pipeline_core.corpus.bridge.bridge_validation as bridge_validation_core_module
 import domains.dac_her.scientific_signatures as scientific_signatures_module
 
-from pipeline_core.bridge_domain import (
+from pipeline_core.corpus.bridge.bridge_domain import (
     BridgeDomainAdapter,
     BridgeImplementationFiles,
 )

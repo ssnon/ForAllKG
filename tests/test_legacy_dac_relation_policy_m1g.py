@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as DAC_HER_STRICT_RELATION_CONSTRAINTS
-from pipeline_core.legacy_dac_relation_policy import (
+from pipeline_core.corpus.graph.legacy_dac_relation_policy import (
     LEGACY_DAC_RELATION_ENDPOINT_POLICY,
     LEGACY_DAC_RELATION_ENDPOINT_POLICY_BY_RELATION,
 )

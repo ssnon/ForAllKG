@@ -18,7 +18,7 @@ if "dotenv" not in sys.modules:
     dotenv_stub.load_dotenv = lambda: None
     sys.modules["dotenv"] = dotenv_stub
 
-import pipeline_core.openrouter_llm as llm_module
+import pipeline_core.llm.openrouter_llm as llm_module
 
 
 class TinyDraft(BaseModel):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

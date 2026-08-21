@@ -9,7 +9,7 @@ from pydantic import (
     model_validator,
 )
 
-from pipeline_core.evidence_schema import (
+from pipeline_core.corpus.extraction.evidence_schema import (
     ConfidenceLevel,
     DocumentRole,
     EvidencePointer,
@@ -19,20 +19,20 @@ from pipeline_core.evidence_schema import (
     RelationType,
 )
 
-from pipeline_core.experiment_schema import (
+from pipeline_core.corpus.extraction.experiment_schema import (
     ExperimentFamily,
     ExperimentNode,
     ExperimentType,
 )
 
-from pipeline_core.measurement_schema import (
+from pipeline_core.corpus.extraction.measurement_schema import (
     Condition,
     MeasurementGroupNode,
     MeasurementGroupType,
     MeasurementNode,
 )
 
-from pipeline_core.scientific_node_schema import (
+from pipeline_core.corpus.extraction.scientific_node_schema import (
     CalculationNode,
     CalculationType,
     EntityNode,
@@ -44,7 +44,7 @@ from pipeline_core.scientific_node_schema import (
     ObservationClaimType,
 )
 
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
 
 
 # ============================================================

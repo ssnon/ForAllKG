@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.extraction as canonical
 
-from pipeline_core.extraction_domain import (
+from pipeline_core.domain.extraction_domain import (
     ExtractionDomainAdapter,
 )
 

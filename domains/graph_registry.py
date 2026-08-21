@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from pipeline_core.domain_profile import ScientificDomainProfile
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from domains.catalysis_mechanism.graph import (
     CATALYSIS_MECHANISM_GRAPH_ADAPTER,
 )
 from domains.dac_her.graph import DAC_HER_GRAPH_ADAPTER
 from domains.registry import get_domain_profile
 from domains.sers.graph import SERS_AU_AG_GRAPH_ADAPTER
-from pipeline_core.graph_domain import GraphDomainAdapter
+from pipeline_core.corpus.graph.graph_domain import GraphDomainAdapter
 
 
 _ADAPTERS: dict[str, GraphDomainAdapter] = {

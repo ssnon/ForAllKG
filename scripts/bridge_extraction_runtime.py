@@ -6,9 +6,9 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from pipeline_core.bridge_domain import BridgeDomainAdapter
+from pipeline_core.corpus.bridge.bridge_domain import BridgeDomainAdapter
 
-from pipeline_core.bridge_draft_schema import (
+from pipeline_core.corpus.bridge.bridge_draft_schema import (
     BridgeCandidateRepair,
     BridgeChunkDraft,
 )
@@ -26,12 +26,12 @@ from domains.dac_her.bridge_recovery_prompts import (
     BRIDGE_RECOVERY_SYSTEM_PROMPT,
     build_bridge_candidate_repair_prompt,
 )
-from pipeline_core.bridge_schemas import BridgeChunkGraph
-from pipeline_core.bridge_source_reconciliation import (
+from pipeline_core.corpus.bridge.bridge_schemas import BridgeChunkGraph
+from pipeline_core.corpus.bridge.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
 )
 from domains.dac_her.bridge_validation import validate_bridge_chunk
-from pipeline_core.graph_io import knowledge_graph_to_networkx
+from pipeline_core.corpus.graph.graph_io import knowledge_graph_to_networkx
 from domains.dac_her.scientific_signatures import strict_node_catalog
 from pipeline_core.corpus.schemas import KnowledgeGraph
 
@@ -296,7 +296,7 @@ def extract_bridge_raw_chunk(
             }
 
     # Import provider client only on a cache miss.
-    from pipeline_core.openrouter_llm import OpenRouterLLM
+    from pipeline_core.llm.openrouter_llm import OpenRouterLLM
 
     nodes = _catalog(strict_result, bridge_adapter)
     validation_feedback: str | None = None

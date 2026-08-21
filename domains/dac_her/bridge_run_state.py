@@ -9,7 +9,7 @@ from domains.dac_her.bridge_policy import (
 from domains.dac_her.bridge_prompts import (
     BRIDGE_PROMPT_VERSION,
 )
-from pipeline_core.bridge_run_state import (
+from pipeline_core.corpus.bridge.bridge_run_state import (
     bridge_extraction_directory,
     bridge_policy_run_directory,
     bridge_run_directory,

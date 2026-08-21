@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pipeline_core.knowledge_graph_legacy_relation_compat as compat
-from pipeline_core.legacy_dac_relation_policy import (
+import pipeline_core.corpus.graph.knowledge_graph_legacy_relation_compat as compat
+from pipeline_core.corpus.graph.legacy_dac_relation_policy import (
     LEGACY_DAC_RELATION_ENDPOINT_POLICY_BY_RELATION,
     LegacyRelationEndpointPolicy,
 )

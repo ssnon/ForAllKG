@@ -58,7 +58,7 @@ def test_shared_chemistry_dependency_is_core_owned():
             )
 
     assert (
-        "pipeline_core.chemistry_signatures"
+        "pipeline_core.corpus.extraction.chemistry_signatures"
         in modules
     )
 

@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 import re
 from typing import Any
 
-from pipeline_core.bridge_schemas import (
+from pipeline_core.corpus.bridge.bridge_schemas import (
     BridgeChunkGraph,
     BridgeConcept,
 )

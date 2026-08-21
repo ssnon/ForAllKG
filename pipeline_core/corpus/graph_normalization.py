@@ -15,7 +15,7 @@ from pipeline_core.corpus.vocab_registry import (
     VocabularyRegistry,
 )
 
-from pipeline_core.graph_normalization_runtime import (
+from pipeline_core.corpus.graph.graph_normalization_runtime import (
     VocabularyIssue,
     normalize_graph_vocabularies as _normalize_graph_vocabularies,
     normalize_networkx_metric_vocabularies as _normalize_networkx_metric_vocabularies,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pipeline_core.chunking as core
+import pipeline_core.corpus.extraction.chunking as core
 
 
 

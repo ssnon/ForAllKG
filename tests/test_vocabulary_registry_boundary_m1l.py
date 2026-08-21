@@ -479,7 +479,7 @@ def test_default_loader_policy_is_legacy_owned(
 
 def test_generic_engine_is_shared_and_default_policy_is_corpus_owned():
     import pipeline_core.corpus.vocab_registry as corpus
-    import pipeline_core.vocabulary_registry as core
+    import pipeline_core.corpus.extraction.vocabulary_registry as core
 
     assert (
         corpus.normalize_vocab_text
@@ -508,27 +508,27 @@ def test_generic_engine_is_shared_and_default_policy_is_corpus_owned():
 
     assert (
         core.normalize_vocab_text.__module__
-        == "pipeline_core.vocabulary_registry"
+        == "pipeline_core.corpus.extraction.vocabulary_registry"
     )
 
     assert (
         core.slugify.__module__
-        == "pipeline_core.vocabulary_registry"
+        == "pipeline_core.corpus.extraction.vocabulary_registry"
     )
 
     assert (
         core.VocabularyEntry.__module__
-        == "pipeline_core.vocabulary_registry"
+        == "pipeline_core.corpus.extraction.vocabulary_registry"
     )
 
     assert (
         core.ParameterizedVocabularyMatch.__module__
-        == "pipeline_core.vocabulary_registry"
+        == "pipeline_core.corpus.extraction.vocabulary_registry"
     )
 
     assert (
         core.VocabularyRegistry.__module__
-        == "pipeline_core.vocabulary_registry"
+        == "pipeline_core.corpus.extraction.vocabulary_registry"
     )
 
     assert not hasattr(
@@ -569,7 +569,7 @@ def test_generic_engine_is_shared_and_default_policy_is_corpus_owned():
 
     core_path = Path(
         "pipeline_core/"
-        "vocabulary_registry.py"
+        "corpus/extraction/vocabulary_registry.py"
     )
 
     assert core_path.is_file()

@@ -4,20 +4,20 @@ import ast
 import inspect
 from pathlib import Path
 
-from pipeline_core.document_config import (
+from pipeline_core.corpus.extraction.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,
     PaperConfig,
 )
-from pipeline_core.extraction_policy import (
+from pipeline_core.corpus.extraction.extraction_policy import (
     ExtractionPolicy,
 )
-from pipeline_core.serialization_primitives import (
+from pipeline_core.runtime.serialization_primitives import (
     canonical_json,
     sha256_text,
 )
-import pipeline_core.run_metadata as runtime
+import pipeline_core.runtime.run_metadata as runtime
 
 
 def _paper(
@@ -62,7 +62,7 @@ def _paper(
 
 def test_run_metadata_boundary_has_no_reverse_dependency():
     path = Path(
-        "pipeline_core/run_metadata.py"
+        "pipeline_core/runtime/run_metadata.py"
     )
 
     tree = ast.parse(

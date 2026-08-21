@@ -14,11 +14,11 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import networkx as nx
 
-from pipeline_core.chemistry_signatures import (
+from pipeline_core.corpus.extraction.chemistry_signatures import (
     METAL_NAMES,
     metal_signature,
 )
-from pipeline_core.domain_profile import ScientificDomainProfile
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 
 _ACTIVE_DOMAIN_PROFILE: ContextVar[ScientificDomainProfile | None] = ContextVar(
     "resolution_domain_profile",

@@ -9,7 +9,7 @@ from pipeline_core.discovery.candidate_unit_selection import (
     CandidateUnitSelector,
 )
 from pipeline_core.discovery.candidate_units import CandidateUnitBuilder, confirmed_navigation_graph
-from pipeline_core.discovery_semantics import (
+from pipeline_core.discovery.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,
     is_mechanism_edge,

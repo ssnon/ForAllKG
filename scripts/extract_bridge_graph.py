@@ -14,13 +14,13 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-import pipeline_core.bridge_domain \
+import pipeline_core.corpus.bridge.bridge_domain \
     as bridge_domain_module
 import domains.bridge_registry as bridge_registry_module
 import domains.dac_her.bridge as dac_her_bridge_module
 import scripts.bridge_extraction_runtime \
     as bridge_extraction_module
-import pipeline_core.bridge_filtering \
+import pipeline_core.corpus.bridge.bridge_filtering \
     as bridge_filtering_module
 import pipeline_core.corpus.bridge_graph \
     as bridge_graph_module
@@ -30,21 +30,21 @@ import domains.dac_her.bridge_prompts \
     as bridge_prompts_module
 import pipeline_core.corpus.bridge_relation_repairs \
     as bridge_relation_repairs_module
-import pipeline_core.bridge_schemas \
+import pipeline_core.corpus.bridge.bridge_schemas \
     as bridge_schemas_module
 import domains.dac_her.bridge_validation \
     as bridge_validation_module
-import pipeline_core.openrouter_llm \
+import pipeline_core.llm.openrouter_llm \
     as llm_openrouter_module
 import pipeline_core.corpus.schemas \
     as schemas_module
 import domains.dac_her.scientific_signatures \
     as scientific_signatures_module
-import pipeline_core.bridge_policy_run \
+import pipeline_core.corpus.bridge.bridge_policy_run \
     as bridge_policy_run_module
 import domains.dac_her.bridge_recovery \
     as bridge_recovery_module
-import pipeline_core.bridge_source_reconciliation \
+import pipeline_core.corpus.bridge.bridge_source_reconciliation \
     as bridge_source_reconciliation_module
 
 from scripts.bridge_extraction_runtime import (
@@ -53,7 +53,7 @@ from scripts.bridge_extraction_runtime import (
 from domains.bridge_registry import resolve_bridge_adapter
 from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
-from pipeline_core.extraction_policy import ExtractionPolicy
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
@@ -63,19 +63,19 @@ from domains.dac_her.bridge_run_state import (
     bridge_extraction_directory,
     compute_bridge_extraction_metadata,
 )
-from pipeline_core.run_lifecycle import (
+from pipeline_core.runtime.run_lifecycle import (
     paper_output_root,
     resolve_run_directory,
 )
-from pipeline_core.serialization_primitives import (
+from pipeline_core.runtime.serialization_primitives import (
     read_json,
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
-from pipeline_core.graph_io import (
+from pipeline_core.corpus.graph.graph_io import (
     knowledge_graph_to_networkx,
 )
-from pipeline_core.bridge_filtering import (
+from pipeline_core.corpus.bridge.bridge_filtering import (
     filter_bridge_raw_chunk as core_filter_bridge_raw_chunk,
 )
 from pipeline_core.corpus.bridge_relation_repairs import (
@@ -86,7 +86,7 @@ from pipeline_core.corpus.bridge_graph import (
     save_bridge_graph,
     write_bridge_tables,
 )
-from pipeline_core.bridge_policy_run import (
+from pipeline_core.corpus.bridge.bridge_policy_run import (
     materialize_bridge_policy_run as core_materialize_bridge_policy_run,
 )
 

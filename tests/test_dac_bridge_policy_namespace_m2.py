@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.bridge as adapter_module
 import domains.dac_her.bridge_policy as canonical
-import pipeline_core.bridge_schemas as bridge_schemas
+import pipeline_core.corpus.bridge.bridge_schemas as bridge_schemas
 
 
 ROOT = Path(__file__).resolve().parents[1]

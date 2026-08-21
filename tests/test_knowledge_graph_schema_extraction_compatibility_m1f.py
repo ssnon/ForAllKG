@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pipeline_core.corpus.schemas as legacy
-import pipeline_core.knowledge_graph_schema as core
+import pipeline_core.corpus.graph.knowledge_graph_schema as core
 
 
 def test_legacy_knowledge_graph_is_core_object():
@@ -10,7 +10,7 @@ def test_legacy_knowledge_graph_is_core_object():
 
 def test_knowledge_graph_is_owned_by_pipeline_core():
     assert core.KnowledgeGraph.__module__ == (
-        "pipeline_core.knowledge_graph_schema"
+        "pipeline_core.corpus.graph.knowledge_graph_schema"
     )
 
 

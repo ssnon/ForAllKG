@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pipeline_core.knowledge_graph_schema as schema
-from pipeline_core.knowledge_graph_compat_validation import (
+import pipeline_core.corpus.graph.knowledge_graph_schema as schema
+from pipeline_core.corpus.graph.knowledge_graph_compat_validation import (
     validate_graph_integrity_compat,
 )
 

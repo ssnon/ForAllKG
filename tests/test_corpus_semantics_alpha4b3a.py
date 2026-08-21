@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline_core.domain_profile import CorpusSemantics
+from pipeline_core.domain.domain_profile import CorpusSemantics
 from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
 from domains.dac_her.profile import DAC_HER_PROFILE
 from domains.sers.profile import SERS_AU_AG_PROFILE

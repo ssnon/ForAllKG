@@ -6,7 +6,7 @@ from pathlib import Path
 
 import yaml
 
-import pipeline_core.document_config as config
+import pipeline_core.corpus.extraction.document_config as config
 
 
 def _write_yaml(
@@ -415,6 +415,6 @@ def test_strict_bridge_runtime_uses_shared_document_config():
     )
 
     assert (
-        "pipeline_core.document_config"
+        "pipeline_core.corpus.extraction.document_config"
         in imported_modules
     )

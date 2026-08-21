@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from pipeline_core.document_config import (
+from pipeline_core.corpus.extraction.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,
 )
-from pipeline_core.document_package import (
+from pipeline_core.corpus.extraction.document_package import (
     DocumentPackage,
     SelectedSource,
     extract_supplementary_references,
@@ -491,7 +491,7 @@ def test_select_referenced_blocks_and_fallback_contract(
 
 def test_shared_document_package_dependency_boundary():
     path = Path(
-        "pipeline_core/document_package.py"
+        "pipeline_core/corpus/extraction/document_package.py"
     )
 
     tree = ast.parse(
@@ -523,9 +523,9 @@ def test_shared_document_package_dependency_boundary():
     assert dac_modules == set()
 
     assert {
-        "pipeline_core.asset_index",
-        "pipeline_core.document_config",
-        "pipeline_core.markdown",
+        "pipeline_core.corpus.extraction.asset_index",
+        "pipeline_core.corpus.extraction.document_config",
+        "pipeline_core.corpus.extraction.markdown",
     }.issubset(
         imported_modules
     )

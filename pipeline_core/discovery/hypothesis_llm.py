@@ -7,7 +7,7 @@ from typing import Any, Mapping, Protocol, runtime_checkable
 
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolioDraft
 from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt
-from pipeline_core.llm_telemetry import run_instructor_structured_call
+from pipeline_core.llm.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)

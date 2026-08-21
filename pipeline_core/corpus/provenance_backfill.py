@@ -8,10 +8,10 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from pipeline_core.asset_index import AssetRecord, write_assets_jsonl
-from pipeline_core.document_config import PaperConfig
-from pipeline_core.document_package import load_document_package
-from pipeline_core.locator_index import (
+from pipeline_core.corpus.extraction.asset_index import AssetRecord, write_assets_jsonl
+from pipeline_core.corpus.extraction.document_config import PaperConfig
+from pipeline_core.corpus.extraction.document_package import load_document_package
+from pipeline_core.corpus.extraction.locator_index import (
     LocatorIndexRecord,
     build_locator_index,
     locator_index_lookup,
@@ -19,7 +19,7 @@ from pipeline_core.locator_index import (
     write_locator_index_csv,
     write_locator_index_json,
 )
-from pipeline_core.serialization_primitives import write_json
+from pipeline_core.runtime.serialization_primitives import write_json
 
 
 _VISUAL_LOCATOR_RE = re.compile(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pipeline_core.graph_domain import GraphDomainAdapter
+from pipeline_core.corpus.graph.graph_domain import GraphDomainAdapter
 from domains.dac_her.semantic_roles import normalize_measurement_subject_roles
 
 

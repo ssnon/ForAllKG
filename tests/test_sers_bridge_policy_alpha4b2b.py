@@ -1,4 +1,4 @@
-from pipeline_core.bridge_schemas import BridgeConcept
+from pipeline_core.corpus.bridge.bridge_schemas import BridgeConcept
 from domains.sers.bridge_policy import concept_policy_issues
 
 

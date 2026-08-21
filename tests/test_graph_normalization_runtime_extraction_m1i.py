@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 
 import pipeline_core.corpus.graph_normalization as facade
-import pipeline_core.graph_normalization_runtime as runtime
+import pipeline_core.corpus.graph.graph_normalization_runtime as runtime
 
 
 def test_vocabulary_issue_is_reexported_from_core_runtime():

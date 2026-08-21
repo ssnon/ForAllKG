@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pipeline_core.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
 from domains.dac_her.relation_constraints import (
     DAC_HER_STRICT_RELATION_CONSTRAINTS,
 )

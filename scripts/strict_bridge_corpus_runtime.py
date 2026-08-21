@@ -406,11 +406,11 @@ class StrictBridgeCorpusPipeline:
             return False
         try:
             run_meta = json.loads(run_meta_path.read_text(encoding="utf-8"))
-            from pipeline_core.document_config import (
+            from pipeline_core.corpus.extraction.document_config import (
                 get_paper_config,
                 paper_config_fingerprint_payload,
             )
-            from pipeline_core.document_provenance import document_source_fingerprints
+            from pipeline_core.corpus.extraction.document_provenance import document_source_fingerprints
 
             paper = get_paper_config(
                 self.config,

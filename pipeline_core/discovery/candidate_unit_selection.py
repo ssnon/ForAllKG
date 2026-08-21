@@ -8,8 +8,8 @@ from typing import Any, Iterable, Mapping
 
 import networkx as nx
 
-from pipeline_core.domain_profile import ScientificDomainProfile
-from pipeline_core.discovery_semantics import (
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
+from pipeline_core.discovery.discovery_semantics import (
     is_alignment_node,
     is_generic_entity_node,
     is_mechanism_edge,

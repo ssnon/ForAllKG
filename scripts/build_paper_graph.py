@@ -9,23 +9,23 @@ from pathlib import Path
 
 import networkx as nx
 
-from pipeline_core.document_config import get_paper_config
+from pipeline_core.corpus.extraction.document_config import get_paper_config
 from domains.extraction_registry import get_extraction_adapter
 from domains.graph_registry import get_graph_adapter
 from domains.registry import get_domain_profile
-from pipeline_core.graph_io import knowledge_graph_to_networkx, save_graphml
+from pipeline_core.corpus.graph.graph_io import knowledge_graph_to_networkx, save_graphml
 from pipeline_core.corpus.graph_semantics import (
     apply_graph_domain_canonicalization,
     write_graph_semantics_report,
 )
-from pipeline_core.extraction_policy import ExtractionPolicy
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     graph_quality_attributes,
     quality_from_active_payload,
 )
-from pipeline_core.locator_index import load_locator_index
+from pipeline_core.corpus.extraction.locator_index import load_locator_index
 from pipeline_core.corpus.measurement_merge_invariants import (
     MEASUREMENT_MERGE_INVARIANT_ID,
     assert_measurement_value_xor,
@@ -37,7 +37,7 @@ from pipeline_core.corpus.provenance_backfill import (
 )
 from pipeline_core.corpus.semantic_repairs import repair_model_of_targets
 from pipeline_core.corpus.graph_normalization import normalize_networkx_metric_vocabularies
-from pipeline_core.node_references import remap_node_reference_attributes
+from pipeline_core.corpus.extraction.node_references import remap_node_reference_attributes
 from pipeline_core.corpus.paper_graph_postprocess import (
     canonicalize_paper_graph,
     load_resolution_plan,
@@ -52,16 +52,16 @@ from pipeline_core.corpus.resolution_candidates import (
 )
 from domains.dac_her.claim_overlap import write_claim_overlap_audit
 from domains.dac_her.semantic_roles import SemanticRoleAdjustment
-from pipeline_core.run_lifecycle import (
+from pipeline_core.runtime.run_lifecycle import (
     paper_output_root,
     resolve_run_directory,
 )
-from pipeline_core.serialization_primitives import (
+from pipeline_core.runtime.serialization_primitives import (
     read_json,
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
-from pipeline_core.validation import validate_graph_provenance
+from pipeline_core.runtime.validation import validate_graph_provenance
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 

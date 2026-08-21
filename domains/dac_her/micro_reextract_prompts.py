@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from typing import Any
 
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     IssueCode,
     ValidationReport,
 )

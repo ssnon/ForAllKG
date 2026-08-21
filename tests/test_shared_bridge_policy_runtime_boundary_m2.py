@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 
 import domains.sers.bridge as sers_adapter_module
-import pipeline_core.bridge_policy_runtime as core
+import pipeline_core.corpus.bridge.bridge_policy_runtime as core
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ def test_runtime_is_core_owned():
     for name in PUBLIC_RUNTIME:
         assert (
             getattr(core, name).__module__
-            == "pipeline_core.bridge_policy_runtime"
+            == "pipeline_core.corpus.bridge.bridge_policy_runtime"
         )
 
 
@@ -33,7 +33,7 @@ def test_core_has_no_reverse_dependency():
     path = (
         ROOT
         / "pipeline_core"
-        / "bridge_policy_runtime.py"
+        / "corpus/bridge/bridge_policy_runtime.py"
     )
 
     tree = ast.parse(
@@ -88,7 +88,7 @@ def test_sers_policy_imports_canonical_runtime():
     ]
 
     assert (
-        "pipeline_core.bridge_policy_runtime"
+        "pipeline_core.corpus.bridge.bridge_policy_runtime"
         in modules
     )
 

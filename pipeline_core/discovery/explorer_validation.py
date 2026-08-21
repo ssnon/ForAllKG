@@ -7,7 +7,7 @@ from typing import Any, Iterable, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from pipeline_core.discovery_semantics import (
+from pipeline_core.discovery.discovery_semantics import (
     contains_strong_causal_language,
     edge_has_strong_causal_semantics,
     is_alignment_edge,
@@ -15,8 +15,8 @@ from pipeline_core.discovery_semantics import (
     is_mechanism_edge,
     is_mechanism_node,
 )
-from pipeline_core.domain_profile import DiscoverySemantics
-from pipeline_core.explorer_text_safety import contains_absence_language
+from pipeline_core.domain.domain_profile import DiscoverySemantics
+from pipeline_core.discovery.explorer_text_safety import contains_absence_language
 from pipeline_core.discovery.explorer_contracts import (
     ExplorationReport,
     ExplorerStatement,

@@ -12,7 +12,7 @@ from pipeline_core.corpus.recovery_policy import (
 from domains.dac_her.semantic_patch_prompts import (
     build_patch_rejection_feedback,
 )
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

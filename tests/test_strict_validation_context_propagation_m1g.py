@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline_core.draft_schema import KnowledgeGraphDraft
-from pipeline_core.graph_domain import RelationConstraint
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.graph.graph_domain import RelationConstraint
 from pipeline_core.corpus.graph_normalization import (
     normalize_graph_vocabularies,
 )
@@ -11,8 +11,8 @@ from pipeline_core.corpus.strict_validation import (
     ValidationContext,
     finalize_draft,
 )
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
-from pipeline_core.knowledge_graph_validation_context import (
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.corpus.graph.knowledge_graph_validation_context import (
     RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY,
 )
 

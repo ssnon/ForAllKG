@@ -17,7 +17,7 @@ from pipeline_core.corpus.schemas import (
     MeasurementGroupNode,
     MeasurementNode,
 )
-from pipeline_core.draft_schema import (
+from pipeline_core.corpus.extraction.draft_schema import (
     KnowledgeGraphDraft,
     MeasurementGroupDraft,
 )

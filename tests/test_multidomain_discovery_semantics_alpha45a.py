@@ -4,7 +4,7 @@ import pytest
 import pipeline_core.discovery.candidate_unit_selection as candidate_unit_selection_module
 from pipeline_core.discovery.candidate_unit_selection import CandidateUnitSelector
 
-from pipeline_core.discovery_semantics import (
+from pipeline_core.discovery.discovery_semantics import (
     is_alignment_edge,
     is_alignment_node,
     is_mechanism_edge,
@@ -12,7 +12,7 @@ from pipeline_core.discovery_semantics import (
     is_scaffold_edge,
     is_shared_entity_node,
 )
-from pipeline_core.domain_profile import DiscoverySemantics
+from pipeline_core.domain.domain_profile import DiscoverySemantics
 from domains.sers.profile import SERS_AU_AG_PROFILE
 from pipeline_core.discovery.explorer_packet import GraphExplorerPacketBuilder
 from pipeline_core.discovery.path_quality import PathQualityScorer

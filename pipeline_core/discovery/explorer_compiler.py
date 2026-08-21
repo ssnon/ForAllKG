@@ -18,13 +18,13 @@ from pipeline_core.discovery.explorer_contracts import (
     ReportedDesignLever,
     UnresolvedConnection,
 )
-from pipeline_core.discovery_semantics import (
+from pipeline_core.discovery.discovery_semantics import (
     is_alignment_edge,
     is_alignment_node,
     is_mechanism_edge,
     is_mechanism_node,
 )
-from pipeline_core.domain_profile import (
+from pipeline_core.domain.domain_profile import (
     ScientificDomainProfile,
 )
 from pipeline_core.discovery.explorer_draft import ExplorationDraft

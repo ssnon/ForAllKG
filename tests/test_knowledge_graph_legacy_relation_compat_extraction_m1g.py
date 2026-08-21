@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline_core.knowledge_graph_legacy_relation_compat import (
+from pipeline_core.corpus.graph.knowledge_graph_legacy_relation_compat import (
     validate_legacy_relation_semantics_compat,
 )
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
 
 
 def _pointer():

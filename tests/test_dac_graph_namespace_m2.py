@@ -43,7 +43,7 @@ def test_adapter_uses_shared_contract_type():
         type(
             canonical.DAC_HER_GRAPH_ADAPTER
         ).__module__
-        == "pipeline_core.graph_domain"
+        == "pipeline_core.corpus.graph.graph_domain"
     )
 
 

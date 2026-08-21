@@ -1,6 +1,6 @@
 import pytest
 
-from pipeline_core.domain_profile import (
+from pipeline_core.domain.domain_profile import (
     DiscoverySemantics,
     NoveltySemantics,
     ResolutionSemantics,

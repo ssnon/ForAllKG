@@ -1,12 +1,12 @@
 from pipeline_core.discovery.candidate_contracts import CandidateDecisionCard
-from pipeline_core.experimental_contracts import (
+from pipeline_core.discovery.feasibility.experimental_contracts import (
     ExperimentalCheckResult,
     ExperimentalRealizabilityReport,
     ExperimentalRequirement,
 )
-from pipeline_core.physics_contracts import PhysicsCheckRequest
-from pipeline_core.scope_contracts import ScientificScope
-from pipeline_core.validation_contracts import ValidationSpecification
+from pipeline_core.discovery.feasibility.physics_contracts import PhysicsCheckRequest
+from pipeline_core.discovery.feasibility.scope_contracts import ScientificScope
+from pipeline_core.runtime.validation_contracts import ValidationSpecification
 
 
 def test_legacy_v02_scope_populates_generic_mirrors():

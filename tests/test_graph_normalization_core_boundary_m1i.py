@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pipeline_core.corpus.schemas as legacy_schemas
 
-from pipeline_core.knowledge_graph_schema import (
+from pipeline_core.corpus.graph.knowledge_graph_schema import (
     KnowledgeGraph,
 )
-from pipeline_core.measurement_schema import (
+from pipeline_core.corpus.extraction.measurement_schema import (
     Condition,
 )
 
@@ -21,7 +21,7 @@ _RUNTIME_FUNCTIONS = {
 
 def _runtime_ast():
     source = Path(
-        "pipeline_core/graph_normalization_runtime.py"
+        "pipeline_core/corpus/graph/graph_normalization_runtime.py"
     ).read_text(
         encoding="utf-8"
     )

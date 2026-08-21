@@ -6,8 +6,8 @@ from typing import Any, Iterable
 
 import networkx as nx
 
-from pipeline_core.discovery_semantics import is_mechanism_node
-from pipeline_core.domain_profile import DiscoverySemantics
+from pipeline_core.discovery.discovery_semantics import is_mechanism_node
+from pipeline_core.domain.domain_profile import DiscoverySemantics
 from pipeline_core.discovery.waypoint_selection import match_tier
 
 

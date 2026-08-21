@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pipeline_core.experiment_legacy_compat import (
+from pipeline_core.corpus.extraction.experiment_legacy_compat import (
     LEGACY_EXPERIMENT_FAMILY_BY_METHOD_ID,
     backfill_legacy_experiment_registry_fields,
 )
-from pipeline_core.experiment_schema import ExperimentNode
+from pipeline_core.corpus.extraction.experiment_schema import ExperimentNode
 
 
 def test_legacy_mapping_is_explicitly_isolated():

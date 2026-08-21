@@ -8,8 +8,8 @@ import domains.dac_her.bridge_validation as legacy
 import domains.dac_her.bridge as dac_adapter_module
 import domains.sers.bridge as sers_adapter_module
 import domains.dac_her.scientific_signatures as dac_signatures
-import pipeline_core.bridge_schemas as bridge_schemas
-import pipeline_core.bridge_validation as core
+import pipeline_core.corpus.bridge.bridge_schemas as bridge_schemas
+import pipeline_core.corpus.bridge.bridge_validation as core
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,12 +112,12 @@ def test_sers_adapter_binds_directly_to_core():
 
     assert (
         adapter.validation_issues.__module__
-        == "pipeline_core.bridge_validation"
+        == "pipeline_core.corpus.bridge.bridge_validation"
     )
 
     assert (
         adapter.validate_chunk.__module__
-        == "pipeline_core.bridge_validation"
+        == "pipeline_core.corpus.bridge.bridge_validation"
     )
 
     paths = {
@@ -146,7 +146,7 @@ def test_core_has_no_reverse_domain_dependency():
     path = (
         ROOT
         / "pipeline_core"
-        / "bridge_validation.py"
+        / "corpus/bridge/bridge_validation.py"
     )
 
     tree = ast.parse(

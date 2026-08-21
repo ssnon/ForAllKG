@@ -26,8 +26,8 @@ EXPECTED_DYNAMIC_STAGES = {
 }
 
 EXPECTED_DOMAIN_SURFACE = {
-    "pipeline_core.domain_profile",
-    "pipeline_core.feasibility_domain",
+    "pipeline_core.domain.domain_profile",
+    "pipeline_core.domain.feasibility_domain",
     'domains.registry',
     'domains.extraction_registry',
     'domains.feasibility_registry',

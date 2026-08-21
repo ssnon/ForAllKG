@@ -5,7 +5,7 @@ from pathlib import Path
 
 import domains.dac_her.semantic_patch_prompts as canonical
 
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     ValidationReport,
 )
 

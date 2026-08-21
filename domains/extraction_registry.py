@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from pipeline_core.domain_profile import ScientificDomainProfile
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from domains.catalysis_mechanism.extraction import (
     CATALYSIS_MECHANISM_EXTRACTION_ADAPTER,
 )
 from domains.dac_her.extraction import DAC_HER_EXTRACTION_ADAPTER
 from domains.sers.extraction import SERS_AU_AG_EXTRACTION_ADAPTER
 from domains.registry import get_domain_profile
-from pipeline_core.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
 
 
 _ADAPTERS: dict[str, ExtractionDomainAdapter] = {

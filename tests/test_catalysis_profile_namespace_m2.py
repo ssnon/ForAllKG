@@ -145,7 +145,7 @@ def test_profile_still_uses_shared_contract_type():
         type(
             canonical.CATALYSIS_MECHANISM_PROFILE
         ).__module__
-        == "pipeline_core.domain_profile"
+        == "pipeline_core.domain.domain_profile"
     )
 
 

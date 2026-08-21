@@ -7,7 +7,7 @@ from pipeline_core.corpus.recovery_policy import (
     has_coupled_claim_subgraph_residual,
     has_dominant_undefined_endpoint_cluster,
 )
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

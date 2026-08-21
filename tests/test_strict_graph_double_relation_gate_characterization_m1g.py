@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline_core.draft_schema import KnowledgeGraphDraft
-from pipeline_core.graph_validation import collect_graph_issues
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.graph.graph_validation import collect_graph_issues
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
 
 
 def _pointer():

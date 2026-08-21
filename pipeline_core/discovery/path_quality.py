@@ -5,7 +5,7 @@ from typing import Any
 
 import networkx as nx
 
-from pipeline_core.discovery_semantics import (
+from pipeline_core.discovery.discovery_semantics import (
     is_alignment_edge,
     is_alignment_node,
     is_mechanism_edge,
@@ -14,7 +14,7 @@ from pipeline_core.discovery_semantics import (
     is_shared_entity_node,
     normalized_node_type,
 )
-from pipeline_core.domain_profile import DiscoverySemantics
+from pipeline_core.domain.domain_profile import DiscoverySemantics
 
 
 PATH_TYPE_CANDIDATE = "CANDIDATE_EXPLORATION"

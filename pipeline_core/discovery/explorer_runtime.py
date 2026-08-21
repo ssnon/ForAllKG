@@ -13,7 +13,7 @@ from pipeline_core.discovery.explorer_compiler import (
 )
 from pipeline_core.discovery.explorer_contracts import ExplorationReport, GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
-from pipeline_core.domain_profile import (
+from pipeline_core.domain.domain_profile import (
     ScientificDomainProfile,
 )
 from pipeline_core.discovery.explorer_llm import DraftGeneration, ExplorationDraftBackend

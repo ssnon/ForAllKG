@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pipeline_core.domain_profile import (
+from pipeline_core.domain.domain_profile import (
     CorpusSemantics,
     DEFAULT_STRONG_CAUSAL_TEXT_PATTERNS,
     DiscoverySemantics,

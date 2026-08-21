@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import pipeline_core.run_lifecycle as runtime
-from pipeline_core.serialization_primitives import (
+import pipeline_core.runtime.run_lifecycle as runtime
+from pipeline_core.runtime.serialization_primitives import (
     read_json,
     write_json,
 )

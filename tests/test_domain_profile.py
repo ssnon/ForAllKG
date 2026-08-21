@@ -1,4 +1,4 @@
-from pipeline_core.domain_profile import NoveltySemantics
+from pipeline_core.domain.domain_profile import NoveltySemantics
 from domains.registry import available_domain_profiles, get_domain_profile
 
 

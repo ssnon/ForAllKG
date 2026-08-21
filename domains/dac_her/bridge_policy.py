@@ -4,7 +4,7 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Mapping
 
-from pipeline_core.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
+from pipeline_core.corpus.bridge.bridge_schemas import BridgeChunkGraph, BridgeConcept, BridgeLink
 from domains.dac_her.scientific_signatures import normalize_scientific_text
 
 

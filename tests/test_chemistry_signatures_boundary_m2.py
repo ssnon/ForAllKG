@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import pipeline_core.chemistry_signatures as core
+import pipeline_core.corpus.extraction.chemistry_signatures as core
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,12 +33,12 @@ BEHAVIOR_CASES = (
 def test_functions_are_core_owned():
     assert (
         core.composition_signature.__module__
-        == "pipeline_core.chemistry_signatures"
+        == "pipeline_core.corpus.extraction.chemistry_signatures"
     )
 
     assert (
         core.metal_signature.__module__
-        == "pipeline_core.chemistry_signatures"
+        == "pipeline_core.corpus.extraction.chemistry_signatures"
     )
 
 
@@ -48,7 +48,7 @@ def test_core_has_no_reverse_dependency():
     path = (
         ROOT
         / "pipeline_core"
-        / "chemistry_signatures.py"
+        / "corpus/extraction/chemistry_signatures.py"
     )
 
     tree = ast.parse(
@@ -113,7 +113,7 @@ def test_production_consumers_use_core():
                 )
 
         assert (
-            "pipeline_core.chemistry_signatures"
+            "pipeline_core.corpus.extraction.chemistry_signatures"
             in modules
         )
 

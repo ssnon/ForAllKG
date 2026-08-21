@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from pipeline_core.knowledge_graph_compat_validation import (
+from pipeline_core.corpus.graph.knowledge_graph_compat_validation import (
     validate_graph_integrity_compat,
 )
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
-from pipeline_core.knowledge_graph_validation_context import (
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.corpus.graph.knowledge_graph_validation_context import (
     RELATION_SEMANTICS_ALREADY_VALIDATED_CONTEXT_KEY,
 )
 

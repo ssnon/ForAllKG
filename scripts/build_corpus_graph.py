@@ -12,7 +12,7 @@ from pipeline_core.corpus.corpus_graph import (
 )
 from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
-from pipeline_core.graph_io import save_graphml
+from pipeline_core.corpus.graph.graph_io import save_graphml
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

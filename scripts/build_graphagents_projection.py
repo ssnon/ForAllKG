@@ -9,9 +9,9 @@ from collections import Counter
 
 from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
-from pipeline_core.graph_io import save_graphml
+from pipeline_core.corpus.graph.graph_io import save_graphml
 from pipeline_core.corpus.extraction_quality import projection_quality_summary
-from pipeline_core.graphagents_adapter import (
+from pipeline_core.corpus.graph.graphagents_adapter import (
     build_graphagents_projection,
     write_jsonl,
 )

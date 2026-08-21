@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-from pipeline_core.evidence_relation_constraints import (
+from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS,
 )
 
@@ -12,7 +12,7 @@ from domains.dac_her.relation_constraints import (
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as DAC_HER_STRICT_RELATION_CONSTRAINTS,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS,
 )
-from pipeline_core.evidence_relation_constraints import (
+from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS as LEGACY_COMMON,
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS as SERS_AU_AG_STRICT_RELATION_CONSTRAINTS,
 )
@@ -136,7 +136,7 @@ def test_core_constraint_module_has_no_legacy_domain_import():
     path = (
         ROOT
         / "pipeline_core"
-        / "evidence_relation_constraints.py"
+        / "corpus/extraction/evidence_relation_constraints.py"
     )
 
     tree = ast.parse(

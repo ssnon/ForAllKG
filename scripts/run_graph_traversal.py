@@ -33,7 +33,7 @@ from pipeline_core.discovery.traversal_engine import (
     TraversalConstraints,
     TraversalEngine,
 )
-from pipeline_core.traversal_runtime_policy import (
+from pipeline_core.discovery.traversal_runtime_policy import (
     DEFAULT_SEMANTIC_STOP_ABLATION_MAX_TRIPLES,
     guard_semantic_stop_ablation,
     resolve_semantic_stop_max_depth,

@@ -8,7 +8,7 @@ from domains.dac_her.relation_constraints import (
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CANONICAL_LEGACY,
 )
 
-from pipeline_core.evidence_relation_constraints import (
+from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS,
 )
 
@@ -17,7 +17,7 @@ from domains.dac_her.relation_constraints import (
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as LEGACY_DAC,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as LEGACY_LEGACY,
 )
-from pipeline_core.evidence_relation_constraints import COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS as SERS_AU_AG_STRICT_RELATION_CONSTRAINTS
+from pipeline_core.corpus.extraction.evidence_relation_constraints import COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS as SERS_AU_AG_STRICT_RELATION_CONSTRAINTS
 
 
 

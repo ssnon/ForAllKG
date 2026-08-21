@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from pipeline_core.evidence_relation_constraints import (
+from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS,
 )
-from pipeline_core.graph_domain import RelationConstraint
+from pipeline_core.corpus.graph.graph_domain import RelationConstraint
 
 
 DAC_LEGACY_STRICT_RELATION_CONSTRAINTS = (

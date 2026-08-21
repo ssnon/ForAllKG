@@ -5,11 +5,11 @@ from __future__ import annotations
 import re
 from typing import Any, Callable, Iterable, Mapping
 
-from pipeline_core.bridge_schemas import BridgeChunkGraph
+from pipeline_core.corpus.bridge.bridge_schemas import BridgeChunkGraph
 from domains.dac_her.scientific_signatures import (
     strong_anchor_context_issues,
 )
-from pipeline_core.bridge_validation import (
+from pipeline_core.corpus.bridge.bridge_validation import (
     _CAUSAL_RELATIONS,
     _CORRELATIONAL_RELATIONS,
     _is_subspan,

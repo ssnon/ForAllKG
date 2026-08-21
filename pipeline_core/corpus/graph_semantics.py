@@ -8,7 +8,7 @@ from typing import Any
 
 import networkx as nx
 
-from pipeline_core.graph_domain import GraphDomainAdapter
+from pipeline_core.corpus.graph.graph_domain import GraphDomainAdapter
 
 def _json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True)

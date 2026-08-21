@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pipeline_core.graph_validation as graph_validation
-from pipeline_core.draft_schema import KnowledgeGraphDraft
+import pipeline_core.corpus.graph.graph_validation as graph_validation
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
 
 
 def _empty_draft() -> KnowledgeGraphDraft:

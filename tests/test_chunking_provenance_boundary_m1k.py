@@ -4,21 +4,21 @@ import ast
 from dataclasses import fields
 from pathlib import Path
 
-import pipeline_core.chunking as chunking
+import pipeline_core.corpus.extraction.chunking as chunking
 
-from pipeline_core.document_config import (
+from pipeline_core.corpus.extraction.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,
     PaperConfig,
 )
-from pipeline_core.extraction_policy import (
+from pipeline_core.corpus.extraction.extraction_policy import (
     ExtractionPolicy,
 )
-from pipeline_core.run_metadata import (
+from pipeline_core.runtime.run_metadata import (
     compute_run_metadata,
 )
-from pipeline_core.document_provenance import (
+from pipeline_core.corpus.extraction.document_provenance import (
     sha256_file,
 )
 
@@ -224,7 +224,7 @@ def test_extraction_provenance_points_at_shared_chunking_owner():
     )
 
     assert (
-        "import pipeline_core.chunking "
+        "import pipeline_core.corpus.extraction.chunking "
         "as chunking_module"
         in source
     )
@@ -244,7 +244,7 @@ def test_extraction_provenance_points_at_shared_chunking_owner():
 
 def test_shared_chunking_dependency_boundary():
     path = Path(
-        "pipeline_core/chunking.py"
+        "pipeline_core/corpus/extraction/chunking.py"
     )
 
     tree = ast.parse(
@@ -276,8 +276,8 @@ def test_shared_chunking_dependency_boundary():
     assert dac_modules == set()
 
     assert {
-        "pipeline_core.asset_index",
-        "pipeline_core.extraction_policy",
+        "pipeline_core.corpus.extraction.asset_index",
+        "pipeline_core.corpus.extraction.extraction_policy",
     }.issubset(
         imported_modules
     )
@@ -285,11 +285,11 @@ def test_shared_chunking_dependency_boundary():
 
 
 def test_shared_chunking_owner_is_real_provenance_file():
-    import pipeline_core.chunking as core
+    import pipeline_core.corpus.extraction.chunking as core
 
     expected = (
         Path(
-            "pipeline_core/chunking.py"
+            "pipeline_core/corpus/extraction/chunking.py"
         )
         .resolve()
     )

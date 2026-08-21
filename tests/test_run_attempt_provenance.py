@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from domains.dac_her.bridge_run_state import compute_bridge_extraction_metadata
-import pipeline_core.run_lifecycle as run_lifecycle
-from pipeline_core.serialization_primitives import write_json
+import pipeline_core.runtime.run_lifecycle as run_lifecycle
+from pipeline_core.runtime.serialization_primitives import write_json
 
 
 attempt_directory = run_lifecycle.attempt_directory

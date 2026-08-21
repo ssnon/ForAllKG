@@ -6,7 +6,7 @@ import hashlib
 import json
 from typing import Any
 
-from pipeline_core.validation_issues import IssueCode, ValidationIssue
+from pipeline_core.runtime.validation_issues import IssueCode, ValidationIssue
 
 
 NODE_COLLECTIONS = (

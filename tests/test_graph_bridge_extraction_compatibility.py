@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-import pipeline_core.bridge_draft_schema as core_bridge_draft
-import pipeline_core.bridge_schemas as core_bridge
-import pipeline_core.graph_io as core_graph_io
-import pipeline_core.graph_validation as core_graph_validation
-import pipeline_core.node_references as core_node_references
-import pipeline_core.discovery_semantics as core_discovery
-import pipeline_core.asset_index as core_assets
-import pipeline_core.locator_index as core_locators
-import pipeline_core.extraction_policy as core_extraction_policy
-import pipeline_core.explorer_text_safety as core_text_safety
-import pipeline_core.markdown as core_markdown
-import pipeline_core.traversal_runtime_policy as core_traversal_policy
-import pipeline_core.validation as core_validation
-import pipeline_core.validation_issues as core_issues
+import pipeline_core.corpus.bridge.bridge_draft_schema as core_bridge_draft
+import pipeline_core.corpus.bridge.bridge_schemas as core_bridge
+import pipeline_core.corpus.graph.graph_io as core_graph_io
+import pipeline_core.corpus.graph.graph_validation as core_graph_validation
+import pipeline_core.corpus.extraction.node_references as core_node_references
+import pipeline_core.discovery.discovery_semantics as core_discovery
+import pipeline_core.corpus.extraction.asset_index as core_assets
+import pipeline_core.corpus.extraction.locator_index as core_locators
+import pipeline_core.corpus.extraction.extraction_policy as core_extraction_policy
+import pipeline_core.discovery.explorer_text_safety as core_text_safety
+import pipeline_core.corpus.extraction.markdown as core_markdown
+import pipeline_core.discovery.traversal_runtime_policy as core_traversal_policy
+import pipeline_core.runtime.validation as core_validation
+import pipeline_core.runtime.validation_issues as core_issues
 
 
 

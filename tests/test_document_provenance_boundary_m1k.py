@@ -5,13 +5,13 @@ import hashlib
 import json
 from pathlib import Path
 
-from pipeline_core.document_config import (
+from pipeline_core.corpus.extraction.document_config import (
     DocumentConfig,
     DocumentSelection,
     FigureProcessingConfig,
     PaperConfig,
 )
-from pipeline_core.document_provenance import (
+from pipeline_core.corpus.extraction.document_provenance import (
     document_source_fingerprints,
     sha256_file,
 )
@@ -256,7 +256,7 @@ def test_strict_bridge_runtime_uses_shared_document_provenance():
     assert (
         imports[
             "pipeline_core."
-            "document_provenance"
+            "corpus.extraction.document_provenance"
         ]
         == [
             "document_source_fingerprints"

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from pipeline_core.feasibility_contracts import (
+from pipeline_core.discovery.feasibility.feasibility_contracts import (
     FeasibilityHypothesis,
     FeasibilityIntake,
     FeasibilityPremise,
     FeasibilityPrediction,
 )
-from pipeline_core.physics_runtime import PhysicsFeasibilityRuntime
-from pipeline_core.scope_compiler import HypothesisScopeCompiler
-from pipeline_core.validation_specification import ValidationSpecificationCompiler
+from pipeline_core.discovery.feasibility.physics_runtime import PhysicsFeasibilityRuntime
+from pipeline_core.discovery.feasibility.scope_compiler import HypothesisScopeCompiler
+from pipeline_core.runtime.validation_specification import ValidationSpecificationCompiler
 
 
 def make_intake(statement: str, hypothesis_type: str = "mechanistic_extension") -> FeasibilityIntake:

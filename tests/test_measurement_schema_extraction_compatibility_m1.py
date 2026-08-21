@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pipeline_core.corpus.schemas as legacy
-import pipeline_core.measurement_schema as core
+import pipeline_core.corpus.extraction.measurement_schema as core
 
 
 def test_legacy_measurement_schema_symbols_are_core_objects():
@@ -12,9 +12,9 @@ def test_legacy_measurement_schema_symbols_are_core_objects():
 
 
 def test_measurement_models_are_owned_by_pipeline_core():
-    assert core.Condition.__module__ == "pipeline_core.measurement_schema"
-    assert core.MeasurementNode.__module__ == "pipeline_core.measurement_schema"
+    assert core.Condition.__module__ == "pipeline_core.corpus.extraction.measurement_schema"
+    assert core.MeasurementNode.__module__ == "pipeline_core.corpus.extraction.measurement_schema"
     assert (
         core.MeasurementGroupNode.__module__
-        == "pipeline_core.measurement_schema"
+        == "pipeline_core.corpus.extraction.measurement_schema"
     )

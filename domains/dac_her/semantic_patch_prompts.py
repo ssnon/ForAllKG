@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any
 
-from pipeline_core.validation_issues import ValidationReport
+from pipeline_core.runtime.validation_issues import ValidationReport
 
 
 PATCH_PROMPT_VERSION = "dac-her-semantic-patch-v1.4-capability-routing"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pipeline_core.corpus.schemas as legacy
-import pipeline_core.scientific_node_schema as core
+import pipeline_core.corpus.extraction.scientific_node_schema as core
 
 
 def test_legacy_scientific_leaf_symbols_are_core_objects():
@@ -19,16 +19,16 @@ def test_legacy_scientific_leaf_symbols_are_core_objects():
 
 def test_scientific_leaf_models_are_owned_by_pipeline_core():
     assert core.EntityNode.__module__ == (
-        "pipeline_core.scientific_node_schema"
+        "pipeline_core.corpus.extraction.scientific_node_schema"
     )
     assert core.CalculationNode.__module__ == (
-        "pipeline_core.scientific_node_schema"
+        "pipeline_core.corpus.extraction.scientific_node_schema"
     )
     assert core.ObservationClaimNode.__module__ == (
-        "pipeline_core.scientific_node_schema"
+        "pipeline_core.corpus.extraction.scientific_node_schema"
     )
     assert core.MechanismClaimNode.__module__ == (
-        "pipeline_core.scientific_node_schema"
+        "pipeline_core.corpus.extraction.scientific_node_schema"
     )
 
 

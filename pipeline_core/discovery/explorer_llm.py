@@ -7,7 +7,7 @@ from typing import Any, Mapping, Protocol, runtime_checkable
 
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from pipeline_core.discovery.explorer_prompt import ExplorerPrompt
-from pipeline_core.llm_telemetry import run_instructor_structured_call
+from pipeline_core.llm.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)

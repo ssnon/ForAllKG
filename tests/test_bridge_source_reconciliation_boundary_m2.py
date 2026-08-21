@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import pipeline_core.bridge_source_reconciliation as core
+import pipeline_core.corpus.bridge.bridge_source_reconciliation as core
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,12 +34,12 @@ PRIVATE_COMPAT_SYMBOLS = (
 def test_functions_are_core_owned():
     assert (
         core.reconcile_phrase_to_text.__module__
-        == "pipeline_core.bridge_source_reconciliation"
+        == "pipeline_core.corpus.bridge.bridge_source_reconciliation"
     )
 
     assert (
         core.reconcile_concept_payload.__module__
-        == "pipeline_core.bridge_source_reconciliation"
+        == "pipeline_core.corpus.bridge.bridge_source_reconciliation"
     )
 
 
@@ -63,7 +63,7 @@ def test_bridge_recovery_imports_core_reconciliation():
     ]
 
     assert (
-        "pipeline_core.bridge_source_reconciliation"
+        "pipeline_core.corpus.bridge.bridge_source_reconciliation"
         in modules
     )
 
@@ -72,7 +72,7 @@ def test_core_module_has_no_domain_reverse_dependency():
     path = (
         ROOT
         / "pipeline_core"
-        / "bridge_source_reconciliation.py"
+        / "corpus/bridge/bridge_source_reconciliation.py"
     )
 
     tree = ast.parse(

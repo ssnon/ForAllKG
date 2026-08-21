@@ -6,16 +6,16 @@ from typing import Any, Callable
 
 from pydantic import ValidationError
 
-from pipeline_core.bridge_draft_schema import (
+from pipeline_core.corpus.bridge.bridge_draft_schema import (
     BridgeCandidateRepair,
     BridgeChunkDraft,
 )
-from pipeline_core.bridge_schemas import (
+from pipeline_core.corpus.bridge.bridge_schemas import (
     BridgeChunkGraph,
     BridgeConcept,
     BridgeLink,
 )
-from pipeline_core.bridge_source_reconciliation import (
+from pipeline_core.corpus.bridge.bridge_source_reconciliation import (
     BRIDGE_SOURCE_RECONCILIATION_VERSION,
     reconcile_concept_payload,
 )

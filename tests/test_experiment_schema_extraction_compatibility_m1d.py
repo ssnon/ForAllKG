@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pipeline_core.corpus.schemas as legacy
-import pipeline_core.experiment_schema as core
+import pipeline_core.corpus.extraction.experiment_schema as core
 
 
 def test_legacy_experiment_schema_symbols_are_core_objects():
@@ -12,7 +12,7 @@ def test_legacy_experiment_schema_symbols_are_core_objects():
 
 def test_experiment_node_is_owned_by_pipeline_core():
     assert core.ExperimentNode.__module__ == (
-        "pipeline_core.experiment_schema"
+        "pipeline_core.corpus.extraction.experiment_schema"
     )
 
 

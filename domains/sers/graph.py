@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-from pipeline_core.graph_domain import GraphDomainAdapter, RelationConstraint
+from pipeline_core.corpus.graph.graph_domain import GraphDomainAdapter, RelationConstraint
 from domains.sers.graph_diagnostics import (
     collect_sers_graph_diagnostics,
 )

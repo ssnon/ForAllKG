@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from pipeline_core.extraction_policy import ExtractionPolicy
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 
 
 BROAD_ABSTRACT_RECOVERY_POLICY_ID = (

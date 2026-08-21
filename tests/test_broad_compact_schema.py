@@ -7,8 +7,8 @@ import pytest
 import yaml
 
 from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
-from pipeline_core.draft_schema import KnowledgeGraphDraft
-from pipeline_core.llm_telemetry import estimate_tokens, normalize_stage_name
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
+from pipeline_core.llm.llm_telemetry import estimate_tokens, normalize_stage_name
 
 
 def _empty_payload() -> dict:

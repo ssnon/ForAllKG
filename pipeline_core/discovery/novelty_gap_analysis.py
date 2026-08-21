@@ -4,7 +4,7 @@ import hashlib
 import json
 import re
 
-from pipeline_core.domain_profile import ScientificDomainProfile
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,

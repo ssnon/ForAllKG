@@ -4,7 +4,7 @@ import hashlib
 import json
 from typing import Any
 
-from pipeline_core.feasibility_contracts import (
+from pipeline_core.discovery.feasibility.feasibility_contracts import (
     FeasibilityFalsifier,
     FeasibilityHypothesis,
     FeasibilityIntake,

@@ -10,7 +10,7 @@ from pipeline_core.corpus.recovery_policy import (
     has_common_undefined_endpoint_cluster,
 )
 from scripts.strict_extraction_runtime import _is_reserved_collection_domain_violation
-from pipeline_core.validation_issues import (
+from pipeline_core.runtime.validation_issues import (
     IssueCode,
     IssueStage,
     ValidationReport,

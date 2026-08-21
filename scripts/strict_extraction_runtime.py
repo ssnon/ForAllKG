@@ -6,12 +6,12 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from pipeline_core.chunking import ChunkSpec, count_tokens
-from pipeline_core.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.extraction.chunking import ChunkSpec, count_tokens
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
 from pipeline_core.corpus.domain_gate_replay import build_domain_gate_replay_fixture
-from pipeline_core.extraction_domain import ExtractionDomainAdapter
-from pipeline_core.extraction_policy import ExtractionPolicy
-from pipeline_core.openrouter_llm import OpenRouterLLM
+from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
+from pipeline_core.llm.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
 from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
@@ -28,8 +28,8 @@ from pipeline_core.corpus.strict_validation import (
     finalize_draft,
     validate_draft,
 )
-from pipeline_core.validation import validate_graph_provenance
-from pipeline_core.validation_issues import ValidationReport
+from pipeline_core.runtime.validation import validate_graph_provenance
+from pipeline_core.runtime.validation_issues import ValidationReport
 from pipeline_core.corpus.vocab_registry import VocabularyRegistry
 from domains.dac_her.micro_reextract_prompts import (
     MICRO_REEXTRACT_SYSTEM_PROMPT,

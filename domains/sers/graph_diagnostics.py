@@ -5,7 +5,7 @@ from typing import Any
 
 import networkx as nx
 
-from pipeline_core.graph_domain import GraphDomainAdapter
+from pipeline_core.corpus.graph.graph_domain import GraphDomainAdapter
 
 
 SERS_GRAPH_DIAGNOSTICS_VERSION = "sers-alpha4a.5.2"

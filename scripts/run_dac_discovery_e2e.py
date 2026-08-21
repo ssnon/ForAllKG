@@ -11,10 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from pipeline_core.domain_profile import ScientificDomainProfile
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from domains.feasibility_registry import resolve_feasibility_adapter
 from domains.registry import get_domain_profile
-from pipeline_core.feasibility_domain import FeasibilityDomainAdapter
+from pipeline_core.domain.feasibility_domain import FeasibilityDomainAdapter
 from pipeline_core.discovery.prior_art_provider_plan import (
     require_standard_or_full_auto_plan,
     resolve_literature_provider_plan,

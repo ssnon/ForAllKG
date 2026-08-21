@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx as nx
 
-import pipeline_core.graphagents_adapter as adapter
+import pipeline_core.corpus.graph.graphagents_adapter as adapter
 
 from domains.registry import (
     get_domain_profile,

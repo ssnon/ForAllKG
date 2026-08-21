@@ -7,9 +7,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pipeline_core.asset_index import AssetRecord
-from pipeline_core.document_config import FigureProcessingConfig
-from pipeline_core.openrouter_llm import OpenRouterLLM
+from pipeline_core.corpus.extraction.asset_index import AssetRecord
+from pipeline_core.corpus.extraction.document_config import FigureProcessingConfig
+from pipeline_core.llm.openrouter_llm import OpenRouterLLM
 
 
 class FigureValue(BaseModel):

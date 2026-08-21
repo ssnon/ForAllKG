@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 
 
-CORE = Path("pipeline_core/openrouter_llm.py")
+CORE = Path("pipeline_core/llm/openrouter_llm.py")
 PAPER = Path("scripts/extract_paper.py")
 BRIDGE = Path("scripts/extract_bridge_graph.py")
 

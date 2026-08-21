@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
 from domains.extraction_registry import get_extraction_adapter
-from pipeline_core.draft_schema import KnowledgeGraphDraft
-from pipeline_core.graph_validation import collect_graph_issues
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.graph.graph_validation import collect_graph_issues
 from pipeline_core.corpus.schemas import EntityNode, KGEdge
 
 

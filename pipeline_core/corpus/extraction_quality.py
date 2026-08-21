@@ -5,8 +5,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from pipeline_core.chunking import count_tokens
-from pipeline_core.extraction_policy import ExtractionPolicy
+from pipeline_core.corpus.extraction.chunking import count_tokens
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 
 
 QUALITY_COMPLETE = "complete"

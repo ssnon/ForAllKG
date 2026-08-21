@@ -7,7 +7,7 @@ from typing import Any, Mapping, Protocol, runtime_checkable
 
 from pipeline_core.discovery.hypothesis_semantic_contracts import HypothesisSemanticReviewDraft
 from pipeline_core.discovery.hypothesis_semantic_prompt import HypothesisSemanticPrompt
-from pipeline_core.llm_telemetry import run_instructor_structured_call
+from pipeline_core.llm.llm_telemetry import run_instructor_structured_call
 
 
 @dataclass(frozen=True)

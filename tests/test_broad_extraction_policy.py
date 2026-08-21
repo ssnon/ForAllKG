@@ -6,7 +6,7 @@ from pipeline_core.corpus.broad_extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,
 )
-from pipeline_core.extraction_policy import ExtractionPolicy
+from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 
 
 def test_broad_abstract_policy_limits_recovery_without_relaxing_acceptance():

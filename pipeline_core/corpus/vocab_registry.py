@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pipeline_core.vocabulary_registry import (
+from pipeline_core.corpus.extraction.vocabulary_registry import (
     ParameterizedVocabularyMatch,
     VocabularyEntry,
     VocabularyRegistry,

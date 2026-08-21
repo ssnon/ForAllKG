@@ -6,10 +6,10 @@ from domains.sers.graph import (
     SERS_RELATION_CONSTRAINTS,
 )
 from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as DAC_HER_STRICT_RELATION_CONSTRAINTS
-from pipeline_core.draft_schema import KnowledgeGraphDraft
-from pipeline_core.graph_validation import collect_graph_issues
-from pipeline_core.knowledge_graph_schema import KnowledgeGraph
-from pipeline_core.validation_issues import IssueCode
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.graph.graph_validation import collect_graph_issues
+from pipeline_core.corpus.graph.knowledge_graph_schema import KnowledgeGraph
+from pipeline_core.runtime.validation_issues import IssueCode
 
 
 def _pointer(*, document_id: str = "main") -> dict:

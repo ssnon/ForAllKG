@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import Field, model_validator
 
-from pipeline_core.draft_schema import KnowledgeGraphDraft
+from pipeline_core.corpus.extraction.draft_schema import KnowledgeGraphDraft
 
 
 BROAD_COMPACT_SCHEMA_ID = "broad-mechanism-graph-draft-v1"

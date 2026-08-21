@@ -158,7 +158,7 @@ def test_canonical_profile_uses_shared_profile_contract():
         type(
             canonical.DAC_HER_PROFILE
         ).__module__
-        == "pipeline_core.domain_profile"
+        == "pipeline_core.domain.domain_profile"
     )
 
 

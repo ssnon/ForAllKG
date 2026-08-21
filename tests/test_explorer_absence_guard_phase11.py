@@ -6,7 +6,7 @@ from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 from pipeline_core.discovery.explorer_normalization import ExplorerDraftNormalizer
 from pipeline_core.discovery.explorer_validation import ExplorationReportValidator
-from pipeline_core.explorer_text_safety import contains_absence_language
+from pipeline_core.discovery.explorer_text_safety import contains_absence_language
 
 
 def _packet(*, absence_allowed: bool) -> GraphExplorerPacket:
