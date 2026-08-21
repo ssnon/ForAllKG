@@ -32,7 +32,7 @@ def main() -> int:
     parser.add_argument("--context", type=Path, required=True)
     parser.add_argument(
         "--domain-profile",
-        default="dac_her",
+        required=True,
         help="Scientific domain profile whose feasibility adapter must be used.",
     )
     parser.add_argument("--portfolio", type=Path, required=True)

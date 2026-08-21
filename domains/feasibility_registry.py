@@ -53,8 +53,12 @@ def resolve_feasibility_adapter(
 
 
 def get_feasibility_adapter(
-    profile_id: str | None = None,
+    profile_id: str,
 ) -> FeasibilityDomainAdapter:
+    if profile_id is None or not str(profile_id).strip():
+        raise ValueError(
+            "feasibility domain profile_id must be explicit"
+        )
     return resolve_feasibility_adapter(
         get_domain_profile(profile_id)
     )
