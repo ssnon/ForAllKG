@@ -1,11 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime as RealDateTime, timezone
 import inspect
 from pathlib import Path
 
-import dac_her.run_state as legacy
-import pipeline_core.run_lifecycle as shared
+import pytest
+
+import pipeline_core.run_lifecycle as runtime
+from pipeline_core.serialization_primitives import (
+    read_json,
+    write_json,
+)
+
+
+LAYOUT_VERSION = "run-attempt-provenance-v1"
+UPDATED_AT_UTC = "2026-08-21T00:00:00+00:00"
 
 
 def _metadata() -> dict[str, str]:
@@ -23,10 +31,13 @@ def test_shared_runtime_requires_explicit_policy_inputs():
         "resolve_run_directory",
     ):
         signature = inspect.signature(
-            getattr(shared, name)
+            getattr(runtime, name)
         )
+
         assert (
-            signature.parameters["data_root"].default
+            signature.parameters[
+                "data_root"
+            ].default
             is inspect.Parameter.empty
         )
 
@@ -35,87 +46,31 @@ def test_shared_runtime_requires_explicit_policy_inputs():
         "write_latest_run_pointer",
     ):
         signature = inspect.signature(
-            getattr(shared, name)
+            getattr(runtime, name)
         )
+
         for parameter in (
             "data_root",
             "attempt_layout_version",
             "updated_at_utc",
         ):
             assert (
-                signature.parameters[parameter].default
+                signature.parameters[
+                    parameter
+                ].default
                 is inspect.Parameter.empty
             )
 
 
-def test_legacy_api_keeps_dac_ownership_and_default():
-    for name in (
-        "paper_output_root",
-        "run_directory",
-        "attempt_directory",
-        "write_latest_attempt_pointer",
-        "write_latest_run_pointer",
-        "resolve_run_directory",
-    ):
-        assert (
-            getattr(legacy, name).__module__
-            == "dac_her.run_state"
-        )
-
-    assert (
-        inspect.signature(
-            legacy.paper_output_root
-        ).parameters["data_root"].default
-        == "data_dac"
-    )
-
-
-def test_shared_and_legacy_paths_match(
+def test_pointer_policy_and_resolution_are_explicit(
     tmp_path: Path,
 ):
     project_root = tmp_path / "project"
     project_root.mkdir()
+
     data_root = tmp_path / "data"
 
-    assert (
-        legacy.paper_output_root(
-            project_root,
-            "paper-A",
-            data_root=data_root,
-        )
-        == shared.paper_output_root(
-            project_root,
-            "paper-A",
-            data_root=data_root,
-        )
-    )
-
-    assert (
-        legacy.attempt_directory(
-            project_root,
-            "paper-A",
-            "run-A",
-            "attempt-A",
-            data_root=data_root,
-        )
-        == shared.attempt_directory(
-            project_root,
-            "paper-A",
-            "run-A",
-            "attempt-A",
-            data_root=data_root,
-        )
-    )
-
-
-def test_shared_pointer_policy_is_injected(
-    tmp_path: Path,
-):
-    project_root = tmp_path / "project"
-    project_root.mkdir()
-    data_root = tmp_path / "data"
-
-    concrete = shared.attempt_directory(
+    concrete = runtime.attempt_directory(
         project_root,
         "paper-A",
         "run-A",
@@ -124,29 +79,41 @@ def test_shared_pointer_policy_is_injected(
     )
     concrete.mkdir(parents=True)
 
-    path = shared.write_latest_run_pointer(
+    runtime.write_latest_attempt_pointer(
+        project_root=project_root,
+        paper_id="paper-A",
+        run_metadata=_metadata(),
+        attempt_id="attempt-A",
+        data_root=data_root,
+        attempt_layout_version=LAYOUT_VERSION,
+        updated_at_utc=UPDATED_AT_UTC,
+    )
+
+    latest_run = runtime.write_latest_run_pointer(
         project_root=project_root,
         paper_id="paper-A",
         run_metadata=_metadata(),
         data_root=data_root,
-        attempt_layout_version="test-layout-v1",
-        updated_at_utc="2026-08-19T01:02:03+00:00",
+        attempt_layout_version=LAYOUT_VERSION,
+        updated_at_utc=UPDATED_AT_UTC,
         attempt_id="attempt-A",
     )
 
-    payload = legacy.read_json(path)
+    payload = read_json(
+        latest_run
+    )
 
     assert (
         payload["attempt_layout_version"]
-        == "test-layout-v1"
+        == LAYOUT_VERSION
     )
     assert (
         payload["updated_at_utc"]
-        == "2026-08-19T01:02:03+00:00"
+        == UPDATED_AT_UTC
     )
 
     assert (
-        shared.resolve_run_directory(
+        runtime.resolve_run_directory(
             project_root=project_root,
             paper_id="paper-A",
             run_id=None,
@@ -156,70 +123,15 @@ def test_shared_pointer_policy_is_injected(
     )
 
 
-def test_legacy_datetime_policy_remains_wrapper_owned(
-    tmp_path: Path,
-    monkeypatch,
-):
-    class FrozenDateTime:
-        @classmethod
-        def now(cls, tz=None):
-            return RealDateTime(
-                2026,
-                8,
-                19,
-                1,
-                2,
-                3,
-                tzinfo=timezone.utc,
-            )
-
-    monkeypatch.setattr(
-        legacy,
-        "datetime",
-        FrozenDateTime,
-    )
-
-    project_root = tmp_path / "project"
-    project_root.mkdir()
-    data_root = tmp_path / "data"
-
-    concrete = legacy.attempt_directory(
-        project_root,
-        "paper-A",
-        "run-A",
-        "attempt-A",
-        data_root=data_root,
-    )
-    concrete.mkdir(parents=True)
-
-    path = legacy.write_latest_run_pointer(
-        project_root=project_root,
-        paper_id="paper-A",
-        run_metadata=_metadata(),
-        data_root=data_root,
-        attempt_id="attempt-A",
-    )
-
-    payload = legacy.read_json(path)
-
-    assert (
-        payload["attempt_layout_version"]
-        == legacy.ATTEMPT_LAYOUT_VERSION
-    )
-    assert (
-        payload["updated_at_utc"]
-        == "2026-08-19T01:02:03+00:00"
-    )
-
-
-def test_legacy_flat_layout_remains_supported(
+def test_flat_run_layout_remains_supported(
     tmp_path: Path,
 ):
     project_root = tmp_path / "project"
     project_root.mkdir()
+
     data_root = tmp_path / "data"
 
-    family = legacy.run_directory(
+    family = runtime.run_directory(
         project_root,
         "paper-A",
         "legacy-run",
@@ -227,12 +139,14 @@ def test_legacy_flat_layout_remains_supported(
     )
     family.mkdir(parents=True)
 
-    legacy.write_json(
+    write_json(
         family / "active_chunks.json",
-        {"run_id": "legacy-run"},
+        {
+            "run_id": "legacy-run",
+        },
     )
 
-    legacy.write_latest_run_pointer(
+    runtime.write_latest_run_pointer(
         project_root=project_root,
         paper_id="paper-A",
         run_metadata={
@@ -240,10 +154,12 @@ def test_legacy_flat_layout_remains_supported(
             "run_fingerprint": "legacy-fp",
         },
         data_root=data_root,
+        attempt_layout_version=LAYOUT_VERSION,
+        updated_at_utc=UPDATED_AT_UTC,
     )
 
     assert (
-        shared.resolve_run_directory(
+        runtime.resolve_run_directory(
             project_root=project_root,
             paper_id="paper-A",
             run_id=None,
@@ -251,3 +167,81 @@ def test_legacy_flat_layout_remains_supported(
         )
         == family.resolve()
     )
+
+
+def test_stale_latest_run_attempt_falls_back_to_latest_attempt(
+    tmp_path: Path,
+):
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+
+    data_root = tmp_path / "data"
+
+    latest = runtime.attempt_directory(
+        project_root,
+        "paper-A",
+        "run-A",
+        "latest-A",
+        data_root=data_root,
+    )
+    latest.mkdir(parents=True)
+
+    runtime.write_latest_attempt_pointer(
+        project_root=project_root,
+        paper_id="paper-A",
+        run_metadata=_metadata(),
+        attempt_id="latest-A",
+        data_root=data_root,
+        attempt_layout_version=LAYOUT_VERSION,
+        updated_at_utc=UPDATED_AT_UTC,
+    )
+
+    # Points latest_run at an attempt that does not exist.
+    runtime.write_latest_run_pointer(
+        project_root=project_root,
+        paper_id="paper-A",
+        run_metadata=_metadata(),
+        data_root=data_root,
+        attempt_layout_version=LAYOUT_VERSION,
+        updated_at_utc=UPDATED_AT_UTC,
+        attempt_id="stale-A",
+    )
+
+    assert (
+        runtime.resolve_run_directory(
+            project_root=project_root,
+            paper_id="paper-A",
+            run_id=None,
+            data_root=data_root,
+        )
+        == latest.resolve()
+    )
+
+
+def test_resolver_missing_paths_raise(
+    tmp_path: Path,
+):
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+
+    data_root = tmp_path / "data"
+
+    with pytest.raises(
+        FileNotFoundError
+    ):
+        runtime.resolve_run_directory(
+            project_root=project_root,
+            paper_id="paper-A",
+            run_id=None,
+            data_root=data_root,
+        )
+
+    with pytest.raises(
+        FileNotFoundError
+    ):
+        runtime.resolve_run_directory(
+            project_root=project_root,
+            paper_id="paper-A",
+            run_id="missing-run",
+            data_root=data_root,
+        )

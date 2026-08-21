@@ -263,25 +263,3 @@ def test_strict_bridge_uses_shared_document_provenance():
             "document_source_fingerprints"
         ]
     )
-
-
-def test_shared_document_provenance_owner_exists_and_run_state_reexports_it():
-    import dac_her.run_state as legacy
-    import pipeline_core.document_provenance as core
-
-    assert Path(
-        core.__file__
-    ).resolve() == Path(
-        "pipeline_core/"
-        "document_provenance.py"
-    ).resolve()
-
-    assert (
-        legacy.sha256_file
-        is core.sha256_file
-    )
-
-    assert (
-        legacy.document_source_fingerprints
-        is core.document_source_fingerprints
-    )

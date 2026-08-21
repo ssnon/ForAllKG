@@ -4,14 +4,54 @@ import json
 from pathlib import Path
 
 from domains.dac_her.bridge_run_state import compute_bridge_extraction_metadata
-from dac_her.run_state import (
-    attempt_directory,
-    resolve_run_directory,
-    run_directory,
-    write_json,
-    write_latest_attempt_pointer,
-    write_latest_run_pointer,
-)
+import pipeline_core.run_lifecycle as run_lifecycle
+from pipeline_core.serialization_primitives import write_json
+
+
+attempt_directory = run_lifecycle.attempt_directory
+resolve_run_directory = run_lifecycle.resolve_run_directory
+run_directory = run_lifecycle.run_directory
+
+_ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
+_TEST_UPDATED_AT_UTC = "2026-08-21T00:00:00+00:00"
+
+
+def write_latest_attempt_pointer(
+    *,
+    project_root,
+    paper_id,
+    run_metadata,
+    attempt_id,
+    data_root,
+):
+    return run_lifecycle.write_latest_attempt_pointer(
+        project_root=project_root,
+        paper_id=paper_id,
+        run_metadata=run_metadata,
+        attempt_id=attempt_id,
+        data_root=data_root,
+        attempt_layout_version=_ATTEMPT_LAYOUT_VERSION,
+        updated_at_utc=_TEST_UPDATED_AT_UTC,
+    )
+
+
+def write_latest_run_pointer(
+    *,
+    project_root,
+    paper_id,
+    run_metadata,
+    data_root,
+    attempt_id=None,
+):
+    return run_lifecycle.write_latest_run_pointer(
+        project_root=project_root,
+        paper_id=paper_id,
+        run_metadata=run_metadata,
+        data_root=data_root,
+        attempt_layout_version=_ATTEMPT_LAYOUT_VERSION,
+        updated_at_utc=_TEST_UPDATED_AT_UTC,
+        attempt_id=attempt_id,
+    )
 
 
 def _metadata(run_id: str = "run-abc") -> dict[str, str]:
