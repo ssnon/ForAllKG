@@ -23,7 +23,6 @@ import pipeline_core.corpus.graph.graph_normalization_runtime as graph_normaliza
 import pipeline_core.llm.openrouter_llm as llm_openrouter_module
 import pipeline_core.corpus.measurement_scalarization as measurement_scalarization_module
 import pipeline_core.corpus.structural_repair as structural_repair_module
-import pipeline_core.corpus.extraction_vocabulary_context as extraction_vocabulary_context_module
 import pipeline_core.runtime.validation as validation_module
 import pipeline_core.corpus.chunking_recovery as chunking_recovery_module
 import pipeline_core.corpus.extraction.draft_schema as draft_schema_module
@@ -52,19 +51,11 @@ from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.llm.llm_telemetry import append_extraction_artifact_resolutions
-from pipeline_core.corpus.broad_extraction_policy import (
-    BROAD_ABSTRACT_RECOVERY_POLICY_ID,
-    broad_abstract_extraction_policy,
-)
 from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     annotate_quarantined_records,
     evaluate_extraction_quality,
-)
-from pipeline_core.corpus.extraction_vocabulary_context import (
-    BROAD_METHODS_ONLY_CONTEXT_ID,
-    build_broad_experiment_methods_vocabulary_context,
 )
 from pipeline_core.corpus.figure_extraction import (
     FigureAnalysis,
@@ -363,10 +354,18 @@ def main() -> None:
         PROJECT_ROOT
     )
     if args.broad_prune_metric_vocabulary:
-        vocabulary_context = (
-            build_broad_experiment_methods_vocabulary_context(
-                experiment_registry
+        vocabulary_builder = (
+            extraction_adapter.reduced_vocabulary_context_builder
+        )
+
+        if vocabulary_builder is None:
+            raise ValueError(
+                "Active extraction adapter does not provide "
+                "a reduced vocabulary-context builder."
             )
+
+        vocabulary_context = vocabulary_builder(
+            experiment_registry
         )
     else:
         vocabulary_context = "\n".join([
@@ -383,10 +382,15 @@ def main() -> None:
             raise ValueError("--concurrency must be at least 1.")
         policy = replace(policy, concurrency=args.concurrency)
 
-    extraction_policy_id = "default-strict-recovery"
-    if domain_profile.profile_id == "catalysis_mechanism":
-        policy = broad_abstract_extraction_policy(policy)
-        extraction_policy_id = BROAD_ABSTRACT_RECOVERY_POLICY_ID
+    extraction_policy_id = (
+        extraction_adapter.extraction_policy_id
+        or "default-strict-recovery"
+    )
+
+    if extraction_adapter.extraction_policy_transform is not None:
+        policy = extraction_adapter.extraction_policy_transform(
+            policy
+        )
 
     semantic_collector_impl_path = None
     if extraction_adapter.strict_semantic_issue_collector is not None:
@@ -430,7 +434,7 @@ def main() -> None:
             **(
                 {
                     "vocabulary_context_serialization_id": (
-                        BROAD_METHODS_ONLY_CONTEXT_ID
+                        extraction_adapter.reduced_vocabulary_context_id
                     )
                 }
                 if args.broad_prune_metric_vocabulary else {}
@@ -451,13 +455,15 @@ def main() -> None:
             validation_module.__file__,
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
+            *extraction_adapter.extraction_policy_implementation_paths(),
             *(
                 (extraction_adapter.compact_response_model_implementation_paths()[0],)
                 if args.broad_compact_schema
                 else ()
             ),
             *(
-                (extraction_vocabulary_context_module.__file__,)
+                extraction_adapter
+                .reduced_vocabulary_context_implementation_paths()
                 if args.broad_prune_metric_vocabulary
                 else ()
             ),

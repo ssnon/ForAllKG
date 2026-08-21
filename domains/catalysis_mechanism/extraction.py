@@ -18,6 +18,14 @@ from domains.catalysis_mechanism.compact_schema import (
     BROAD_COMPACT_SCHEMA_ID,
     BroadMechanismGraphDraft,
 )
+from domains.catalysis_mechanism.extraction_policy import (
+    BROAD_ABSTRACT_RECOVERY_POLICY_ID,
+    broad_abstract_extraction_policy,
+)
+from domains.catalysis_mechanism.vocabulary_context import (
+    BROAD_METHODS_ONLY_CONTEXT_ID,
+    build_broad_experiment_methods_vocabulary_context,
+)
 from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
 
 
@@ -45,6 +53,12 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     ),
     compact_generation_schema_id=BROAD_COMPACT_SCHEMA_ID,
     compact_domain_gate_recovery_schema_id=BROAD_COMPACT_SCHEMA_ID,
+    extraction_policy_id=BROAD_ABSTRACT_RECOVERY_POLICY_ID,
+    extraction_policy_transform=broad_abstract_extraction_policy,
+    reduced_vocabulary_context_id=BROAD_METHODS_ONLY_CONTEXT_ID,
+    reduced_vocabulary_context_builder=(
+        build_broad_experiment_methods_vocabulary_context
+    ),
     allowed_entity_types=frozenset({
         "Paper",
         "Catalyst",

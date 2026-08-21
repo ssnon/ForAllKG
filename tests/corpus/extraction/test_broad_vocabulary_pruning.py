@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from pipeline_core.corpus.extraction_vocabulary_context import (
+from domains.catalysis_mechanism.vocabulary_context import (
     BROAD_METHODS_ONLY_CONTEXT_ID,
     build_broad_experiment_methods_vocabulary_context,
 )

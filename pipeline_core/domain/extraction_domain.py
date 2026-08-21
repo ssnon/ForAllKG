@@ -37,6 +37,10 @@ class ExtractionDomainAdapter:
     ) = None
     compact_generation_schema_id: str | None = None
     compact_domain_gate_recovery_schema_id: str | None = None
+    extraction_policy_id: str | None = None
+    extraction_policy_transform: Callable[..., Any] | None = None
+    reduced_vocabulary_context_id: str | None = None
+    reduced_vocabulary_context_builder: Callable[..., str] | None = None
     strict_semantic_contract_id: str | None = None
     strict_semantic_contract_rules: tuple[str, ...] = ()
     strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
@@ -98,6 +102,47 @@ class ExtractionDomainAdapter:
                 paths.append(source_path)
 
         return tuple(paths)
+
+    def extraction_policy_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return source files for an active domain extraction-policy transform."""
+
+        transform = self.extraction_policy_transform
+
+        if transform is None:
+            return ()
+
+        source_path = inspect.getsourcefile(transform)
+
+        if source_path is None:
+            raise RuntimeError(
+                "Could not resolve extraction-policy "
+                f"implementation source for {transform!r}"
+            )
+
+        return (source_path,)
+
+    def reduced_vocabulary_context_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return source files for an active reduced vocabulary serializer."""
+
+        builder = self.reduced_vocabulary_context_builder
+
+        if builder is None:
+            return ()
+
+        source_path = inspect.getsourcefile(builder)
+
+        if source_path is None:
+            raise RuntimeError(
+                "Could not resolve reduced vocabulary-context "
+                f"implementation source for {builder!r}"
+            )
+
+        return (source_path,)
+
 
 
     def strict_relation_contract_payload(
