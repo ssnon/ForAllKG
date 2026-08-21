@@ -19,7 +19,7 @@ from pipeline_core.locator_index import (
     write_locator_index_csv,
     write_locator_index_json,
 )
-from dac_her.run_state import write_json
+from pipeline_core.serialization_primitives import write_json
 
 
 _VISUAL_LOCATOR_RE = re.compile(

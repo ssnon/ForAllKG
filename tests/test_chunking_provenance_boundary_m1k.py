@@ -15,8 +15,10 @@ from pipeline_core.document_config import (
 from pipeline_core.extraction_policy import (
     ExtractionPolicy,
 )
-from dac_her.run_state import (
+from pipeline_core.run_metadata import (
     compute_run_metadata,
+)
+from pipeline_core.document_provenance import (
     sha256_file,
 )
 

@@ -52,10 +52,12 @@ from dac_her.resolution_candidates import (
 )
 from dac_her.claim_overlap import write_claim_overlap_audit
 from domains.dac_her.semantic_roles import SemanticRoleAdjustment
-from dac_her.run_state import (
+from pipeline_core.run_lifecycle import (
     paper_output_root,
-    read_json,
     resolve_run_directory,
+)
+from pipeline_core.serialization_primitives import (
+    read_json,
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph

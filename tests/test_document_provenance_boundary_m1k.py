@@ -11,7 +11,7 @@ from pipeline_core.document_config import (
     FigureProcessingConfig,
     PaperConfig,
 )
-from dac_her.run_state import (
+from pipeline_core.document_provenance import (
     document_source_fingerprints,
     sha256_file,
 )

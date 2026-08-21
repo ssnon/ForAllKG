@@ -235,7 +235,7 @@ def test_extraction_run_fingerprint_tracks_graph_normalization_source():
 
 def test_run_metadata_hashes_each_implementation_file():
     source = Path(
-        "dac_her/run_state.py"
+        "pipeline_core/run_metadata.py"
     ).read_text(
         encoding="utf-8"
     )

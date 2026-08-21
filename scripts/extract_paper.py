@@ -75,15 +75,18 @@ from pipeline_core.corpus.figure_extraction import (
     resolve_vision_model,
     should_analyze_asset,
 )
-from dac_her.run_state import (
-    ATTEMPT_LAYOUT_VERSION,
+from pipeline_core.run_lifecycle import (
     attempt_directory,
-    compute_run_metadata,
     resolve_run_directory,
     run_directory,
-    write_json,
     write_latest_attempt_pointer,
     write_latest_run_pointer,
+)
+from pipeline_core.run_metadata import (
+    compute_run_metadata,
+)
+from pipeline_core.serialization_primitives import (
+    write_json,
 )
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
@@ -91,6 +94,7 @@ from pipeline_core.corpus.vocab_registry import load_default_registries
 load_dotenv()
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "papers.yaml"
+ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 
 
 def parse_args() -> argparse.Namespace:
@@ -1030,12 +1034,24 @@ def main() -> None:
         run_metadata=run_metadata,
         attempt_id=attempt_id,
         data_root=data_root,
+        attempt_layout_version=(
+            ATTEMPT_LAYOUT_VERSION
+        ),
+        updated_at_utc=datetime.now(
+            timezone.utc
+        ).isoformat(),
     )
     write_latest_run_pointer(
         project_root=PROJECT_ROOT,
         paper_id=paper.paper_id,
         run_metadata=run_metadata,
         data_root=data_root,
+        attempt_layout_version=(
+            ATTEMPT_LAYOUT_VERSION
+        ),
+        updated_at_utc=datetime.now(
+            timezone.utc
+        ).isoformat(),
         attempt_id=attempt_id,
     )
 

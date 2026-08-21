@@ -63,10 +63,12 @@ from domains.dac_her.bridge_run_state import (
     bridge_extraction_directory,
     compute_bridge_extraction_metadata,
 )
-from dac_her.run_state import (
+from pipeline_core.run_lifecycle import (
     paper_output_root,
-    read_json,
     resolve_run_directory,
+)
+from pipeline_core.serialization_primitives import (
+    read_json,
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
