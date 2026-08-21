@@ -16,7 +16,7 @@ from domains.dac_her.bridge_prompts import (
     BRIDGE_SYSTEM_PROMPT,
     build_bridge_prompt,
 )
-from dac_her.bridge_recovery import (
+from domains.dac_her.bridge_recovery import (
     BRIDGE_RECOVERY_VERSION,
     BridgeRecoveryError,
     recover_bridge_draft,

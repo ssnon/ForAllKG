@@ -18,7 +18,7 @@ import pipeline_core.bridge_domain \
     as bridge_domain_module
 import domains.bridge_registry as bridge_registry_module
 import domains.dac_her.bridge as dac_her_bridge_module
-import dac_her.bridge_extraction \
+import scripts.bridge_extraction_runtime \
     as bridge_extraction_module
 import pipeline_core.bridge_filtering \
     as bridge_filtering_module
@@ -42,12 +42,12 @@ import domains.dac_her.scientific_signatures \
     as scientific_signatures_module
 import pipeline_core.bridge_policy_run \
     as bridge_policy_run_module
-import dac_her.bridge_recovery \
+import domains.dac_her.bridge_recovery \
     as bridge_recovery_module
 import pipeline_core.bridge_source_reconciliation \
     as bridge_source_reconciliation_module
 
-from dac_her.bridge_extraction import (
+from scripts.bridge_extraction_runtime import (
     extract_bridge_raw_chunk,
 )
 from domains.bridge_registry import resolve_bridge_adapter

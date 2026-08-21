@@ -44,7 +44,12 @@ def test_functions_are_core_owned():
 
 
 def test_bridge_recovery_imports_core_reconciliation():
-    path = ROOT / "dac_her" / "bridge_recovery.py"
+    path = (
+        ROOT
+        / "domains"
+        / "dac_her"
+        / "bridge_recovery.py"
+    )
 
     tree = ast.parse(
         path.read_text(encoding="utf-8"),
