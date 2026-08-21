@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
+from pipeline_core.discovery.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 
 
 def test_grounding_preservation_requires_exact_lineage_and_type():

@@ -6,7 +6,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisProposalDraft,
     PredictedObservationDraft,
 )
-from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
+from pipeline_core.discovery.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 
 
 def _draft():

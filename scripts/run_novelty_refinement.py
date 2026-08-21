@@ -28,7 +28,7 @@ from pipeline_core.discovery.prior_art_provider_plan import (
 from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
 from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
 from pipeline_core.discovery.novelty_gap_analysis import NoveltyGapAnalyzer
-from dac_her.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
+from pipeline_core.discovery.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
 from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
 
