@@ -222,10 +222,9 @@ def test_document_source_fingerprints_preserve_document_and_package_semantics(
     )
 
 
-def test_strict_bridge_uses_shared_document_provenance():
+def test_strict_bridge_runtime_uses_shared_document_provenance():
     path = Path(
-        "pipeline_core/"
-        "strict_bridge_corpus_pipeline.py"
+        'scripts/strict_bridge_corpus_runtime.py'
     )
 
     tree = ast.parse(

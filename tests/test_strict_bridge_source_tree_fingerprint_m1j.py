@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pipeline_core.strict_bridge_corpus_pipeline import (
+from scripts.strict_bridge_corpus_runtime import (
     _sha256_source_tree,
 )
 

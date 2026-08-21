@@ -389,10 +389,9 @@ def test_legacy_paper_yaml_shape_is_preserved(
 
 
 
-def test_shared_core_no_longer_depends_on_dac_config():
+def test_strict_bridge_runtime_uses_shared_document_config():
     path = Path(
-        "pipeline_core/"
-        "strict_bridge_corpus_pipeline.py"
+        'scripts/strict_bridge_corpus_runtime.py'
     )
 
     tree = ast.parse(

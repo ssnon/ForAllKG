@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pipeline_core.strict_bridge_corpus_pipeline import (
+from scripts.strict_bridge_corpus_runtime import (
     StrictBridgeCorpusPipeline,
     StrictBridgePipelineOptions,
 )
