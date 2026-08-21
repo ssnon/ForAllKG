@@ -38,19 +38,19 @@ from pipeline_core.corpus.provenance_backfill import (
 from pipeline_core.corpus.semantic_repairs import repair_model_of_targets
 from pipeline_core.corpus.graph_normalization import normalize_networkx_metric_vocabularies
 from pipeline_core.node_references import remap_node_reference_attributes
-from dac_her.paper_graph_postprocess import (
+from pipeline_core.corpus.paper_graph_postprocess import (
     canonicalize_paper_graph,
     load_resolution_plan,
     merge_node_attributes,
 )
-from dac_her.resolution_candidates import (
+from pipeline_core.corpus.resolution_candidates import (
     build_raw_canonical_report,
     format_raw_canonical_report,
     generate_resolution_candidates,
     sync_decisions_jsonl,
     write_candidates_csv,
 )
-from dac_her.claim_overlap import write_claim_overlap_audit
+from domains.dac_her.claim_overlap import write_claim_overlap_audit
 from domains.dac_her.semantic_roles import SemanticRoleAdjustment
 from pipeline_core.run_lifecycle import (
     paper_output_root,

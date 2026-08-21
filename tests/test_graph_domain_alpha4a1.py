@@ -13,8 +13,8 @@ from domains.graph_registry import (
 )
 from domains.registry import get_domain_profile
 from domains.dac_her.profile import DAC_HER_PROFILE
-from dac_her.paper_graph_postprocess import load_resolution_plan
-from dac_her.resolution_candidates import generate_resolution_candidates
+from pipeline_core.corpus.paper_graph_postprocess import load_resolution_plan
+from pipeline_core.corpus.resolution_candidates import generate_resolution_candidates
 from dac_her.strict_recovery import _domain_gate
 
 

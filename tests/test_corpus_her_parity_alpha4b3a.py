@@ -4,7 +4,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from dac_her.corpus_graph import ProjectionBundle, build_corpus_graph
+from pipeline_core.corpus.corpus_graph import ProjectionBundle, build_corpus_graph
 from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
 
 

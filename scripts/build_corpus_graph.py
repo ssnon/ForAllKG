@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from dac_her.corpus_graph import (
+from pipeline_core.corpus.corpus_graph import (
     audit_corpus_graph,
     build_corpus_graph,
     load_projection_bundle,

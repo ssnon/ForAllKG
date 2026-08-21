@@ -6,7 +6,7 @@ from pipeline_core.domain_profile import CorpusSemantics
 from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
 from domains.dac_her.profile import DAC_HER_PROFILE
 from domains.sers.profile import SERS_AU_AG_PROFILE
-from dac_her.resolution_candidates import normalize_scientific_text
+from pipeline_core.corpus.resolution_candidates import normalize_scientific_text
 
 
 def test_alpha4b3a_profiles_expose_explicit_corpus_semantics() -> None:

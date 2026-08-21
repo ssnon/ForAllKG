@@ -2,7 +2,7 @@
 
 ## Goal
 
-Move cross-paper scientific policy out of `dac_her/corpus_graph.py` and into
+Move cross-paper scientific policy out of `pipeline_core/corpus/corpus_graph.py` and into
 `ScientificDomainProfile`, while keeping corpus algorithms shared and
 non-destructive.
 

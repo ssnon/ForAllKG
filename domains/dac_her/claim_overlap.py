@@ -11,7 +11,7 @@ from typing import Any, Iterable, Sequence
 
 import networkx as nx
 
-from dac_her.resolution_candidates import (
+from pipeline_core.corpus.resolution_candidates import (
     normalize_scientific_text as _normalize_scientific_text,
     normalized_tokens as _normalized_tokens,
 )

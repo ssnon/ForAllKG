@@ -88,7 +88,7 @@ def test_core_has_no_reverse_dependency():
 
 def test_production_consumers_use_core():
     paths = (
-        ROOT / "dac_her" / "resolution_candidates.py",
+        ROOT / "pipeline_core" / "corpus" / "resolution_candidates.py",
         ROOT / "domains" / "dac_her" / "scientific_signatures.py",
         ROOT / "pipeline_core" / "corpus" / "semantic_repairs.py",
         ROOT / "domains" / "sers" / "bridge_signatures.py",

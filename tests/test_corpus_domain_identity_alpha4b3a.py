@@ -5,7 +5,7 @@ from pathlib import Path
 import networkx as nx
 import pytest
 
-from dac_her.corpus_graph import ProjectionBundle, build_corpus_graph
+from pipeline_core.corpus.corpus_graph import ProjectionBundle, build_corpus_graph
 from domains.sers.profile import SERS_AU_AG_PROFILE
 
 
