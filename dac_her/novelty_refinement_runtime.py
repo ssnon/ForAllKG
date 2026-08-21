@@ -8,7 +8,7 @@ from typing import Any
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
-from dac_her.external_novelty import ExternalNoveltyAssessor
+from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyCard,
     ExternalNoveltyReport,

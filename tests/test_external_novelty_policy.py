@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from dac_her.external_novelty import ExternalNoveltyAssessor
+from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ClaimSearchCoverage,

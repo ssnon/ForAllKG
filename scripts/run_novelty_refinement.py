@@ -8,7 +8,7 @@ from pathlib import Path
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
 from domains.registry import get_domain_profile
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
-from dac_her.external_novelty import ExternalNoveltyAssessor
+from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
     ExternalNoveltyReport,
