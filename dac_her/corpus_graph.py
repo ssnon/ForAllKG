@@ -391,14 +391,6 @@ def _alignment_edge_attrs(
     }
 
 
-def _legacy_corpus_profile() -> ScientificDomainProfile:
-    # Lazy import avoids coupling the shared corpus core to a scientific
-    # domain at import time while preserving the historical direct-call API.
-    from domains.dac_her.profile import DAC_HER_PROFILE
-
-    return DAC_HER_PROFILE
-
-
 def _require_corpus_semantics(
     profile: ScientificDomainProfile,
 ):
@@ -440,9 +432,9 @@ def add_registry_alignment_hubs(
     graph: nx.MultiDiGraph,
     *,
     alignment_types: frozenset[str] | None = None,
-    domain_profile: ScientificDomainProfile | None = None,
+    domain_profile: ScientificDomainProfile,
 ) -> list[dict[str, Any]]:
-    profile = domain_profile or _legacy_corpus_profile()
+    profile = domain_profile
     if alignment_types is None:
         alignment_types = profile.resolution.auto_merge_types
 
@@ -572,9 +564,9 @@ def is_confirmed_corpus_pattern(attrs: dict[str, Any]) -> bool:
 def add_pattern_alignment_hubs(
     graph: nx.MultiDiGraph,
     *,
-    domain_profile: ScientificDomainProfile | None = None,
+    domain_profile: ScientificDomainProfile,
 ) -> list[dict[str, Any]]:
-    profile = domain_profile or _legacy_corpus_profile()
+    profile = domain_profile
     grouped: dict[tuple[str, str, str], list[str]] = {}
     for node_id, attrs in graph.nodes(data=True):
         attrs_dict = dict(attrs)
@@ -660,9 +652,9 @@ def generate_cross_paper_review_candidates(
     *,
     candidate_types: frozenset[str] | None = None,
     high_priority_types: frozenset[str] | None = None,
-    domain_profile: ScientificDomainProfile | None = None,
+    domain_profile: ScientificDomainProfile,
 ) -> list[dict[str, Any]]:
-    profile = domain_profile or _legacy_corpus_profile()
+    profile = domain_profile
     semantics = _require_corpus_semantics(profile)
     if candidate_types is None:
         candidate_types = semantics.review_candidate_types
@@ -803,7 +795,7 @@ def build_corpus_graph(
     *,
     corpus_id: str,
     mode: ProjectionMode,
-    domain_profile: ScientificDomainProfile | None = None,
+    domain_profile: ScientificDomainProfile,
     add_registry_alignment: bool = True,
     add_pattern_alignment: bool = True,
 ) -> tuple[
@@ -823,14 +815,12 @@ def build_corpus_graph(
     if any(bundle.mode != mode for bundle in bundles):
         raise ValueError("All projection bundles must use the same mode.")
 
-    explicit_domain_profile = domain_profile is not None
-    profile = domain_profile or _legacy_corpus_profile()
+    profile = domain_profile
     semantics = _require_corpus_semantics(profile)
-    if explicit_domain_profile:
-        _validate_bundle_domain_identity(
-            bundles,
-            expected_profile_id=profile.profile_id,
-        )
+    _validate_bundle_domain_identity(
+        bundles,
+        expected_profile_id=profile.profile_id,
+    )
 
     registry_alignment_types = profile.resolution.auto_merge_types
     review_candidate_types = semantics.review_candidate_types

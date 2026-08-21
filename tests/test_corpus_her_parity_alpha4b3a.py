@@ -6,7 +6,6 @@ import networkx as nx
 
 from dac_her.corpus_graph import ProjectionBundle, build_corpus_graph
 from domains.catalysis_mechanism.profile import CATALYSIS_MECHANISM_PROFILE
-from domains.dac_her.profile import DAC_HER_PROFILE
 
 
 def _bundle(paper_id: str, *, domain: str = "dac_her") -> ProjectionBundle:
@@ -55,30 +54,6 @@ def _edge_signature(graph: nx.MultiDiGraph) -> list[tuple[str, str, str, str]]:
     )
 
 
-def test_alpha4b3a_explicit_her_profile_preserves_legacy_direct_call_outputs() -> None:
-    bundles = [_bundle("H1"), _bundle("H2")]
-
-    legacy = build_corpus_graph(
-        bundles,
-        corpus_id="her-parity",
-        mode="exploratory",
-    )
-    explicit = build_corpus_graph(
-        bundles,
-        corpus_id="her-parity",
-        mode="exploratory",
-        domain_profile=DAC_HER_PROFILE,
-    )
-
-    legacy_graph = legacy[0]
-    explicit_graph = explicit[0]
-
-    assert sorted(legacy_graph.nodes) == sorted(explicit_graph.nodes)
-    assert _edge_signature(legacy_graph) == _edge_signature(explicit_graph)
-    assert legacy[3] == explicit[3]
-    assert legacy[4] == explicit[4]
-    assert legacy[5] == explicit[5]
-    assert legacy[6] == explicit[6]
 
 
 def test_alpha4b3a_broad_profile_disables_pattern_alignment_capability() -> None:

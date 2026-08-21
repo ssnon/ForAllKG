@@ -11,7 +11,6 @@ import networkx as nx
 from pipeline_core.node_references import remap_node_reference_attributes
 from dac_her.resolution_candidates import (
     CLAIM_NODE_TYPES,
-    RESOLVABLE_NODE_TYPES,
     read_jsonl,
 )
 
@@ -162,11 +161,13 @@ def _load_jsonl_resolution_plan(
     graph: nx.Graph,
     resolvable_node_types: frozenset[str] | None = None,
 ) -> ResolutionPlan:
-    allowed_resolvable_types = (
-        RESOLVABLE_NODE_TYPES
-        if resolvable_node_types is None
-        else resolvable_node_types
-    )
+    if resolvable_node_types is None:
+        raise ValueError(
+            "resolvable_node_types is required for JSONL "
+            "resolution decisions."
+        )
+
+    allowed_resolvable_types = resolvable_node_types
     records = read_jsonl(path)
     dsu = _DisjointSet()
     approved_records: list[tuple[str, str, str | None, bool]] = []

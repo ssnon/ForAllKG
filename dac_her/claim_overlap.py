@@ -12,9 +12,24 @@ from typing import Any, Iterable, Sequence
 import networkx as nx
 
 from dac_her.resolution_candidates import (
-    normalize_scientific_text,
-    normalized_tokens,
+    normalize_scientific_text as _normalize_scientific_text,
+    normalized_tokens as _normalized_tokens,
 )
+from domains.dac_her.profile import DAC_HER_PROFILE
+
+
+def normalize_scientific_text(value: Any) -> str:
+    return _normalize_scientific_text(
+        value,
+        domain_profile=DAC_HER_PROFILE,
+    )
+
+
+def normalized_tokens(value: Any) -> frozenset[str]:
+    return _normalized_tokens(
+        value,
+        domain_profile=DAC_HER_PROFILE,
+    )
 
 
 _GENERIC_PATTERNS = (

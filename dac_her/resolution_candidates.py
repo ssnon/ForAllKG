@@ -19,37 +19,27 @@ from pipeline_core.chemistry_signatures import (
     metal_signature,
 )
 from pipeline_core.domain_profile import ScientificDomainProfile
-from domains.registry import get_domain_profile
 
-_DEFAULT_DOMAIN_PROFILE = get_domain_profile("dac_her")
-_ACTIVE_DOMAIN_PROFILE: ContextVar[ScientificDomainProfile] = ContextVar(
+_ACTIVE_DOMAIN_PROFILE: ContextVar[ScientificDomainProfile | None] = ContextVar(
     "resolution_domain_profile",
-    default=_DEFAULT_DOMAIN_PROFILE,
+    default=None,
 )
 
-# Backward-compatible constants. Domain-aware candidate generation below does
-# not use these module constants as active policy.
-RESOLVABLE_NODE_TYPES: frozenset[str] = (
-    _DEFAULT_DOMAIN_PROFILE.resolution.resolvable_node_types
-)
-CLAIM_NODE_TYPES: frozenset[str] = frozenset({"ObservationClaim", "MechanismClaim"})
-AUTO_MERGE_TYPES: frozenset[str] = (
-    _DEFAULT_DOMAIN_PROFILE.resolution.auto_merge_types
+CLAIM_NODE_TYPES: frozenset[str] = frozenset(
+    {"ObservationClaim", "MechanismClaim"}
 )
 
 
 def _active_domain_profile() -> ScientificDomainProfile:
-    return _ACTIVE_DOMAIN_PROFILE.get()
+    profile = _ACTIVE_DOMAIN_PROFILE.get()
 
+    if profile is None:
+        raise RuntimeError(
+            "Resolution domain policy is not active. "
+            "Supply domain_profile at the public resolution boundary."
+        )
 
-def _resolve_domain_profile(
-    value: ScientificDomainProfile | str | None,
-) -> ScientificDomainProfile:
-    if value is None:
-        return _DEFAULT_DOMAIN_PROFILE
-    if isinstance(value, ScientificDomainProfile):
-        return value
-    return get_domain_profile(str(value))
+    return profile
 
 _ELEMENT_NAMES = {
     name: symbol.lower()
@@ -62,12 +52,12 @@ _STATE_RE = re.compile(r"\b(?:[a-z]{1,2}\()?\d+h\)?\b", re.I)
 def normalize_scientific_text(
     value: Any,
     *,
-    domain_profile: ScientificDomainProfile | str | None = None,
+    domain_profile: ScientificDomainProfile | None = None,
 ) -> str:
     profile = (
         _active_domain_profile()
         if domain_profile is None
-        else _resolve_domain_profile(domain_profile)
+        else domain_profile
     )
     text = unicodedata.normalize("NFKC", str(value or ""))
     text = text.replace("−", "-").replace("–", "-").replace("—", "-")
@@ -82,8 +72,17 @@ def normalize_scientific_text(
     return re.sub(r"\s+", " ", text).strip()
 
 
-def normalized_tokens(value: Any) -> frozenset[str]:
-    return frozenset(normalize_scientific_text(value).split())
+def normalized_tokens(
+    value: Any,
+    *,
+    domain_profile: ScientificDomainProfile | None = None,
+) -> frozenset[str]:
+    return frozenset(
+        normalize_scientific_text(
+            value,
+            domain_profile=domain_profile,
+        ).split()
+    )
 
 
 def _jaccard(left: Iterable[Any], right: Iterable[Any]) -> float:
@@ -433,9 +432,9 @@ def generate_resolution_candidates(
     *,
     fuzzy_minimum_score: float = 0.72,
     measurement_minimum_score: float = 0.90,
-    domain_profile: ScientificDomainProfile | str | None = None,
+    domain_profile: ScientificDomainProfile,
 ) -> tuple[list[ResolutionCandidate], CandidateSummary]:
-    profile = _resolve_domain_profile(domain_profile)
+    profile = domain_profile
     token = _ACTIVE_DOMAIN_PROFILE.set(profile)
     try:
         return _generate_resolution_candidates_impl(
@@ -673,9 +672,9 @@ def build_raw_canonical_report(
     canonical_graph: nx.Graph,
     candidate_summary: Mapping[str, Any],
     resolution_summary: Mapping[str, Any],
-    domain_profile: ScientificDomainProfile | str | None = None,
+    domain_profile: ScientificDomainProfile,
 ) -> dict[str, Any]:
-    profile = _resolve_domain_profile(domain_profile)
+    profile = domain_profile
     token = _ACTIVE_DOMAIN_PROFILE.set(profile)
     try:
         raw = _graph_summary(raw_graph)

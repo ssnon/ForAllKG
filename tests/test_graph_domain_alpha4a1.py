@@ -12,6 +12,7 @@ from domains.graph_registry import (
     get_graph_adapter,
 )
 from domains.registry import get_domain_profile
+from domains.dac_her.profile import DAC_HER_PROFILE
 from dac_her.paper_graph_postprocess import load_resolution_plan
 from dac_her.resolution_candidates import generate_resolution_candidates
 from dac_her.strict_recovery import _domain_gate
@@ -137,7 +138,13 @@ def test_resolution_plan_accepts_domain_owned_resolvable_types(tmp_path):
     assert plan.applied_aliases == 1
 
     with pytest.raises(ValueError, match="Unsupported node type"):
-        load_resolution_plan(path, graph=graph)
+        load_resolution_plan(
+            path,
+            graph=graph,
+            resolvable_node_types=(
+                DAC_HER_PROFILE.resolution.resolvable_node_types
+            ),
+        )
 
 
 def test_post_recovery_domain_gate_rejects_cross_domain_relation():

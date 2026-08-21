@@ -56,14 +56,3 @@ def test_alpha4b3a_explicit_domain_rejects_missing_projection_identity() -> None
             mode="exploratory",
             domain_profile=SERS_AU_AG_PROFILE,
         )
-
-
-def test_alpha4b3a_legacy_direct_call_remains_backward_compatible() -> None:
-    result = build_corpus_graph(
-        [_bundle("legacy", domain_profile_id=None)],
-        corpus_id="legacy",
-        mode="exploratory",
-    )
-    manifest = result[-1]
-    assert manifest["domain_profile_id"] == "dac_her"
-    assert manifest["corpus_semantics_id"] == "dac_her_corpus_v1_alpha4b3a"
