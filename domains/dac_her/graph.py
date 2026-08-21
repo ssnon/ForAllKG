@@ -13,4 +13,9 @@ DAC_HER_GRAPH_ADAPTER = GraphDomainAdapter(
         "establishes a catalytic role."
     ),
     semantic_role_normalizer=normalize_measurement_subject_roles,
+    primary_subject_types=frozenset({
+        "Catalyst",
+        "CatalystModel",
+    }),
+    duplicate_review_types=frozenset({"Paper"}),
 )

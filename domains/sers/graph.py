@@ -3,6 +3,9 @@ from __future__ import annotations
 import networkx as nx
 
 from pipeline_core.graph_domain import GraphDomainAdapter, RelationConstraint
+from domains.sers.graph_diagnostics import (
+    collect_sers_graph_diagnostics,
+)
 
 
 def _preserve_sers_semantic_roles(
@@ -178,4 +181,19 @@ SERS_AU_AG_GRAPH_ADAPTER = GraphDomainAdapter(
     ),
     semantic_role_normalizer=_preserve_sers_semantic_roles,
     relation_constraints=SERS_RELATION_CONSTRAINTS,
+    primary_subject_types=frozenset({
+        "PlasmonicSubstrate",
+        "Nanostructure",
+    }),
+    duplicate_review_types=frozenset({
+        "PlasmonicSubstrate",
+        "Nanostructure",
+        "StructuralMotif",
+        "Morphology",
+        "Analyte",
+        "RamanReporter",
+        "OpticalCondition",
+        "Paper",
+    }),
+    diagnostics_collector=collect_sers_graph_diagnostics,
 )

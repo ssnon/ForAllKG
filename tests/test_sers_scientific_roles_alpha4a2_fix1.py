@@ -4,7 +4,7 @@ import networkx as nx
 
 from domains.extraction_registry import get_extraction_adapter
 from domains.graph_registry import get_graph_adapter
-from pipeline_core.corpus.graph_semantics import node_role_diagnostics
+from domains.sers.graph_diagnostics import node_role_diagnostics
 
 
 def test_sers_uses_material_is_official_relation():

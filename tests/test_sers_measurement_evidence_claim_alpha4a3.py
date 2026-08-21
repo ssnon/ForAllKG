@@ -3,7 +3,7 @@ from __future__ import annotations
 import networkx as nx
 from pathlib import Path
 
-from pipeline_core.corpus.graph_semantics import evidence_topology_diagnostics
+from domains.sers.graph_diagnostics import evidence_topology_diagnostics
 from domains.sers.prompts import (
     SERS_MICRO_REEXTRACT_SYSTEM_PROMPT,
     SERS_PATCH_SYSTEM_PROMPT,

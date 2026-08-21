@@ -87,6 +87,11 @@ def test_duplicate_label_groups_are_review_not_auto_merge_for_substrates():
             type="PlasmonicSubstrate",
             label="SiO2@Au@Ag nanoparticles",
         )
-    groups = duplicate_label_groups(graph)
+    groups = duplicate_label_groups(
+        graph,
+        review_node_types=(
+            get_graph_adapter("sers_au_ag").duplicate_review_types
+        ),
+    )
     assert groups[0]["node_type"] == "PlasmonicSubstrate"
     assert groups[0]["severity"] == "review"

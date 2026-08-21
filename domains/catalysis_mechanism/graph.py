@@ -222,4 +222,9 @@ CATALYSIS_MECHANISM_GRAPH_ADAPTER = GraphDomainAdapter(
     ),
     semantic_role_normalizer=_preserve_broad_semantic_roles,
     relation_constraints=CATALYSIS_MECHANISM_RELATION_CONSTRAINTS,
+    primary_subject_types=frozenset({
+        "Catalyst",
+        "CatalystModel",
+    }),
+    duplicate_review_types=frozenset({"Paper"}),
 )

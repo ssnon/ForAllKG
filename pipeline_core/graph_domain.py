@@ -7,6 +7,7 @@ import networkx as nx
 
 
 SemanticRoleNormalizer = Callable[..., tuple[nx.MultiDiGraph, list[Any]]]
+GraphDiagnosticsCollector = Callable[..., dict[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -95,6 +96,26 @@ class GraphDomainAdapter:
     semantic_role_policy: str
     semantic_role_normalizer: SemanticRoleNormalizer
     relation_constraints: tuple[RelationConstraint, ...] = ()
+    primary_subject_types: frozenset[str] = frozenset()
+    duplicate_review_types: frozenset[str] = frozenset()
+    diagnostics_collector: GraphDiagnosticsCollector | None = None
+
+    def collect_diagnostics(
+        self,
+        graph: nx.MultiDiGraph,
+    ) -> dict[str, Any]:
+        if self.diagnostics_collector is None:
+            return {}
+
+        payload = self.diagnostics_collector(
+            graph,
+            self,
+        )
+        if not isinstance(payload, dict):
+            raise TypeError(
+                "graph diagnostics collector must return dict"
+            )
+        return dict(payload)
 
     def normalize_semantic_roles(
         self,
