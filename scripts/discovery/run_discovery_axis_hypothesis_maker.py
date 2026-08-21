@@ -23,7 +23,7 @@ from pipeline_core.discovery.hypothesis_evidence_diversity import (
 from pipeline_core.discovery.node_mapping import NodeMapper
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _header(value: str) -> tuple[str, str]:

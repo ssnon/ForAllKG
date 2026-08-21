@@ -33,7 +33,7 @@ from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, Pr
 from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _write(path: Path, value: object) -> None:

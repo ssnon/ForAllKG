@@ -7,8 +7,28 @@ from domains.catalysis_mechanism.prompts import (
     CATALYSIS_MECHANISM_SYSTEM_PROMPT,
 )
 from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
-from pipeline_core.corpus.broad_compact_schema import BroadMechanismGraphDraft
-from domains.dac_her.relation_constraints import DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
+from domains.catalysis_mechanism.prompt_builders import (
+    build_domain_gate_recovery_prompt,
+    build_extraction_prompt,
+    build_micro_reextract_prompt,
+    build_patch_rejection_feedback,
+    build_semantic_patch_prompt,
+)
+from domains.catalysis_mechanism.compact_schema import (
+    BROAD_COMPACT_SCHEMA_ID,
+    BroadMechanismGraphDraft,
+)
+from domains.catalysis_mechanism.extraction_policy import (
+    BROAD_ABSTRACT_RECOVERY_POLICY_ID,
+    broad_abstract_extraction_policy,
+)
+from domains.catalysis_mechanism.vocabulary_context import (
+    BROAD_METHODS_ONLY_CONTEXT_ID,
+    build_broad_experiment_methods_vocabulary_context,
+)
+from domains.catalysis_mechanism.relation_constraints import (
+    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
+)
 
 
 CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
@@ -20,6 +40,11 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     micro_reextract_system_prompt=(
         CATALYSIS_MECHANISM_MICRO_REEXTRACT_SYSTEM_PROMPT
     ),
+    generation_prompt_builder=build_extraction_prompt,
+    semantic_patch_prompt_builder=build_semantic_patch_prompt,
+    patch_rejection_feedback_builder=build_patch_rejection_feedback,
+    micro_reextract_prompt_builder=build_micro_reextract_prompt,
+    domain_gate_recovery_prompt_builder=build_domain_gate_recovery_prompt,
     default_data_root="data_broad",
     strict_relation_constraints=(
         CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
@@ -27,6 +52,14 @@ CATALYSIS_MECHANISM_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     compact_generation_response_model=BroadMechanismGraphDraft,
     compact_domain_gate_recovery_response_model=(
         BroadMechanismGraphDraft
+    ),
+    compact_generation_schema_id=BROAD_COMPACT_SCHEMA_ID,
+    compact_domain_gate_recovery_schema_id=BROAD_COMPACT_SCHEMA_ID,
+    extraction_policy_id=BROAD_ABSTRACT_RECOVERY_POLICY_ID,
+    extraction_policy_transform=broad_abstract_extraction_policy,
+    reduced_vocabulary_context_id=BROAD_METHODS_ONLY_CONTEXT_ID,
+    reduced_vocabulary_context_builder=(
+        build_broad_experiment_methods_vocabulary_context
     ),
     allowed_entity_types=frozenset({
         "Paper",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import os
 import shutil
@@ -22,22 +23,18 @@ import pipeline_core.corpus.graph.graph_normalization_runtime as graph_normaliza
 import pipeline_core.llm.openrouter_llm as llm_openrouter_module
 import pipeline_core.corpus.measurement_scalarization as measurement_scalarization_module
 import pipeline_core.corpus.structural_repair as structural_repair_module
-import pipeline_core.corpus.extraction_vocabulary_context as extraction_vocabulary_context_module
 import pipeline_core.runtime.validation as validation_module
 import pipeline_core.corpus.chunking_recovery as chunking_recovery_module
 import pipeline_core.corpus.extraction.draft_schema as draft_schema_module
-import pipeline_core.corpus.broad_compact_schema as broad_compact_schema_module
 import pipeline_core.corpus.graph.graph_validation as graph_validation_module
 import pipeline_core.corpus.extraction_quality as extraction_quality_module
 import pipeline_core.corpus.lossless_normalization as lossless_normalization_module
 import pipeline_core.corpus.recovery_policy as recovery_policy_module
 import pipeline_core.corpus.semantic_patch as semantic_patch_module
-import domains.dac_her.semantic_patch_prompts as semantic_patch_prompts_module
 import pipeline_core.corpus.semantic_patch_schema as semantic_patch_schema_module
 import scripts.corpus.strict_extraction_runtime as strict_recovery_module
 import pipeline_core.corpus.strict_validation as strict_validation_module
 import pipeline_core.runtime.validation_issues as validation_issues_module
-import domains.dac_her.micro_reextract_prompts as micro_reextract_prompts_module
 
 from pipeline_core.corpus.extraction.asset_index import AssetRecord, assets_by_id, write_assets_jsonl
 from pipeline_core.corpus.extraction.chunking import ChunkSpec, count_tokens, create_chunks, split_chunk_in_half
@@ -54,19 +51,11 @@ from domains.extraction_registry import get_extraction_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.llm.llm_telemetry import append_extraction_artifact_resolutions
-from pipeline_core.corpus.broad_extraction_policy import (
-    BROAD_ABSTRACT_RECOVERY_POLICY_ID,
-    broad_abstract_extraction_policy,
-)
 from pipeline_core.corpus.extraction_quality import (
     QUALITY_PARTIAL_CRITICAL,
     QUALITY_REJECTED,
     annotate_quarantined_records,
     evaluate_extraction_quality,
-)
-from pipeline_core.corpus.extraction_vocabulary_context import (
-    BROAD_METHODS_ONLY_CONTEXT_ID,
-    build_broad_experiment_methods_vocabulary_context,
 )
 from pipeline_core.corpus.figure_extraction import (
     FigureAnalysis,
@@ -91,7 +80,7 @@ from pipeline_core.runtime.serialization_primitives import (
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "papers.yaml"
 ATTEMPT_LAYOUT_VERSION = "run-attempt-provenance-v1"
 
@@ -121,31 +110,39 @@ def parse_args() -> argparse.Namespace:
         help="Ignore valid chunk caches in the current fingerprinted run.",
     )
     parser.add_argument(
+        "--compact-generation-schema",
         "--broad-compact-schema",
+        dest="compact_generation_schema",
         action="store_true",
         help=(
-            "Use the experimental compact initial-generation response schema "
-            "for catalysis_mechanism abstracts. The prompt, validators, and "
-            "recovery policy are unchanged."
+            "Use the active extraction adapter's compact initial-generation "
+            "response schema. The legacy --broad-compact-schema spelling "
+            "remains accepted as an alias."
         ),
     )
     parser.add_argument(
+        "--compact-domain-gate-recovery",
         "--broad-compact-domain-recovery",
+        dest="compact_domain_gate_recovery",
         action="store_true",
         help=(
-            "For catalysis_mechanism Broad extraction, use the "
-            "adapter-owned compact schema for the targeted domain-gate "
-            "recovery call. Requires --broad-compact-schema."
+            "Use the active extraction adapter's compact response schema "
+            "for targeted domain-gate recovery. Requires "
+            "--compact-generation-schema. The legacy "
+            "--broad-compact-domain-recovery spelling remains accepted "
+            "as an alias."
         ),
     )
     parser.add_argument(
+        "--reduced-vocabulary-context",
         "--broad-prune-metric-vocabulary",
+        dest="reduced_vocabulary_context",
         action="store_true",
         help=(
-            "For catalysis_mechanism extraction only, omit the registered "
-            "measurement-metric vocabulary from the LLM prompt surface. "
-            "The metric registry remains active in final validation. "
-            "Intended for controlled PR6.1 A/B runs."
+            "Use the active extraction adapter's reduced vocabulary-context "
+            "serializer while leaving the full registries active for final "
+            "validation. The legacy --broad-prune-metric-vocabulary "
+            "spelling remains accepted as an alias."
         ),
     )
     parser.add_argument(
@@ -218,7 +215,9 @@ def write_source_chunk(
         "page_ids": list(chunk.page_ids),
         "asset_ids": list(chunk.asset_ids),
         "asset_paths": list(chunk.asset_paths),
+        "asset_pages": list(chunk.asset_pages),
         "asset_locators": list(chunk.asset_locators),
+        "asset_context": chunk.asset_context,
         "left_context": chunk.left_context,
         "core_text": chunk.core_text,
         "right_context": chunk.right_context,
@@ -307,37 +306,65 @@ def main() -> None:
     domain_profile = get_domain_profile(args.domain_profile)
     extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
     if (
-        args.broad_compact_schema
-        and domain_profile.profile_id != "catalysis_mechanism"
-    ):
-        raise ValueError(
-            "--broad-compact-schema is only valid with "
-            "--domain-profile catalysis_mechanism"
+        args.compact_generation_schema
+        and (
+            extraction_adapter.compact_generation_response_model
+            is None
+            or extraction_adapter.compact_generation_schema_id
+            is None
         )
-    if (
-        args.broad_prune_metric_vocabulary
-        and domain_profile.profile_id != "catalysis_mechanism"
     ):
         raise ValueError(
-            "--broad-prune-metric-vocabulary is only valid with "
-            "--domain-profile catalysis_mechanism"
+            "--compact-generation-schema requires an extraction "
+            "adapter with compact-generation capability."
         )
+
     if (
-        args.broad_compact_domain_recovery
-        and not args.broad_compact_schema
+        args.compact_domain_gate_recovery
+        and not args.compact_generation_schema
     ):
         raise ValueError(
-            "--broad-compact-domain-recovery requires "
-            "--broad-compact-schema"
+            "--compact-domain-gate-recovery requires "
+            "--compact-generation-schema."
+        )
+
+    if (
+        args.compact_domain_gate_recovery
+        and (
+            extraction_adapter
+            .compact_domain_gate_recovery_response_model
+            is None
+            or extraction_adapter
+            .compact_domain_gate_recovery_schema_id
+            is None
+        )
+    ):
+        raise ValueError(
+            "--compact-domain-gate-recovery requires an extraction "
+            "adapter with compact domain-gate recovery capability."
+        )
+
+    if (
+        args.reduced_vocabulary_context
+        and (
+            extraction_adapter.reduced_vocabulary_context_builder
+            is None
+            or extraction_adapter.reduced_vocabulary_context_id
+            is None
+        )
+    ):
+        raise ValueError(
+            "--reduced-vocabulary-context requires an extraction "
+            "adapter with reduced vocabulary-context capability."
         )
     generation_response_schema_id = (
-        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
-        if args.broad_compact_schema
+        extraction_adapter.compact_generation_schema_id
+        if args.compact_generation_schema
         else "knowledge-graph-draft-full"
     )
     domain_gate_recovery_response_schema_id = (
-        broad_compact_schema_module.BROAD_COMPACT_SCHEMA_ID
-        if args.broad_compact_domain_recovery
+        extraction_adapter.compact_domain_gate_recovery_schema_id
+        if args.compact_domain_gate_recovery
         else "knowledge-graph-draft-full"
     )
     data_root = args.data_root or extraction_adapter.default_data_root
@@ -362,11 +389,19 @@ def main() -> None:
     experiment_registry, metric_registry = load_default_registries(
         PROJECT_ROOT
     )
-    if args.broad_prune_metric_vocabulary:
-        vocabulary_context = (
-            build_broad_experiment_methods_vocabulary_context(
-                experiment_registry
+    if args.reduced_vocabulary_context:
+        vocabulary_builder = (
+            extraction_adapter.reduced_vocabulary_context_builder
+        )
+
+        if vocabulary_builder is None:
+            raise ValueError(
+                "Active extraction adapter does not provide "
+                "a reduced vocabulary-context builder."
             )
+
+        vocabulary_context = vocabulary_builder(
+            experiment_registry
         )
     else:
         vocabulary_context = "\n".join([
@@ -383,10 +418,26 @@ def main() -> None:
             raise ValueError("--concurrency must be at least 1.")
         policy = replace(policy, concurrency=args.concurrency)
 
-    extraction_policy_id = "default-strict-recovery"
-    if domain_profile.profile_id == "catalysis_mechanism":
-        policy = broad_abstract_extraction_policy(policy)
-        extraction_policy_id = BROAD_ABSTRACT_RECOVERY_POLICY_ID
+    extraction_policy_id = (
+        extraction_adapter.extraction_policy_id
+        or "default-strict-recovery"
+    )
+
+    if extraction_adapter.extraction_policy_transform is not None:
+        policy = extraction_adapter.extraction_policy_transform(
+            policy
+        )
+
+    semantic_collector_impl_path = None
+    if extraction_adapter.strict_semantic_issue_collector is not None:
+        semantic_collector_impl_path = inspect.getsourcefile(
+            extraction_adapter.strict_semantic_issue_collector
+        )
+        if semantic_collector_impl_path is None:
+            raise RuntimeError(
+                "Could not resolve strict semantic collector "
+                "implementation path for run provenance."
+            )
 
     run_metadata = compute_run_metadata(
         project_root=PROJECT_ROOT,
@@ -402,6 +453,14 @@ def main() -> None:
             "vision_model_override": args.vision_model,
             "domain_profile_id": domain_profile.profile_id,
             "extraction_adapter_id": extraction_adapter.adapter_id,
+            "strict_relation_contract": (
+                extraction_adapter
+                .strict_relation_contract_payload()
+            ),
+            "strict_semantic_contract": (
+                extraction_adapter
+                .strict_semantic_contract_payload()
+            ),
             "extraction_policy_id": extraction_policy_id,
             "generation_response_schema_id": generation_response_schema_id,
             "domain_gate_recovery_response_schema_id": (
@@ -411,10 +470,10 @@ def main() -> None:
             **(
                 {
                     "vocabulary_context_serialization_id": (
-                        BROAD_METHODS_ONLY_CONTEXT_ID
+                        extraction_adapter.reduced_vocabulary_context_id
                     )
                 }
-                if args.broad_prune_metric_vocabulary else {}
+                if args.reduced_vocabulary_context else {}
             ),
         },
         prompt_version=extraction_adapter.prompt_version,
@@ -432,14 +491,20 @@ def main() -> None:
             validation_module.__file__,
             chunking_recovery_module.__file__,
             draft_schema_module.__file__,
+            *extraction_adapter.extraction_policy_implementation_paths(),
             *(
-                (broad_compact_schema_module.__file__,)
-                if args.broad_compact_schema
+                extraction_adapter
+                .compact_response_model_implementation_paths()
+                if (
+                    args.compact_generation_schema
+                    or args.compact_domain_gate_recovery
+                )
                 else ()
             ),
             *(
-                (extraction_vocabulary_context_module.__file__,)
-                if args.broad_prune_metric_vocabulary
+                extraction_adapter
+                .reduced_vocabulary_context_implementation_paths()
+                if args.reduced_vocabulary_context
                 else ()
             ),
             graph_validation_module.__file__,
@@ -447,12 +512,16 @@ def main() -> None:
             lossless_normalization_module.__file__,
             recovery_policy_module.__file__,
             semantic_patch_module.__file__,
-            semantic_patch_prompts_module.__file__,
+            *extraction_adapter.prompt_builder_implementation_paths(),
             semantic_patch_schema_module.__file__,
             strict_recovery_module.__file__,
             strict_validation_module.__file__,
             validation_issues_module.__file__,
-            micro_reextract_prompts_module.__file__,
+            *(
+                (semantic_collector_impl_path,)
+                if semantic_collector_impl_path
+                else ()
+            ),
         ),
     )
     run_id = str(run_metadata["run_id"])
@@ -711,7 +780,16 @@ def main() -> None:
                 current_path = chunk_output_path(chunk, chunk_output_dir)
                 if current_path.exists() or not legacy_path.exists():
                     continue
-                if load_existing_result(chunk=chunk, output_path=legacy_path) is None:
+                if load_existing_result(
+                    chunk=chunk,
+                    output_path=legacy_path,
+                    relation_constraints=(
+                        extraction_adapter.strict_relation_constraints
+                    ),
+                    semantic_issue_collector=(
+                        extraction_adapter.strict_semantic_issue_collector
+                    ),
+                ) is None:
                     print("[LEGACY CACHE REJECTED]", legacy_path, flush=True)
                     continue
                 shutil.copy2(legacy_path, current_path)
@@ -774,9 +852,9 @@ def main() -> None:
                     vocabulary_context=vocabulary_context,
                     force=(args.force or args.force_vision),
                     extraction_adapter=extraction_adapter,
-                    compact_generation_schema=args.broad_compact_schema,
+                    compact_generation_schema=args.compact_generation_schema,
                     compact_domain_gate_recovery=(
-                        args.broad_compact_domain_recovery
+                        args.compact_domain_gate_recovery
                     ),
                 ): chunk
                 for chunk in logical_batch

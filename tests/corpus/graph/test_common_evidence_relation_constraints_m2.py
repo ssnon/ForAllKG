@@ -7,8 +7,10 @@ from pipeline_core.corpus.extraction.evidence_relation_constraints import (
     COMMON_EVIDENCE_STRICT_RELATION_CONSTRAINTS,
 )
 
+from domains.catalysis_mechanism.relation_constraints import (
+    CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
+)
 from domains.dac_her.relation_constraints import (
-    DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS as DAC_HER_STRICT_RELATION_CONSTRAINTS,
     DAC_LEGACY_STRICT_RELATION_CONSTRAINTS,
 )
@@ -120,7 +122,7 @@ def test_dac_common_elements_reuse_canonical_objects():
     )
 
 
-def test_existing_full_policy_alias_identity_is_preserved():
+def test_dac_alias_identity_and_broad_contract_independence():
     assert (
         DAC_HER_STRICT_RELATION_CONSTRAINTS
         is DAC_LEGACY_STRICT_RELATION_CONSTRAINTS
@@ -128,8 +130,19 @@ def test_existing_full_policy_alias_identity_is_preserved():
 
     assert (
         CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
-        is DAC_LEGACY_STRICT_RELATION_CONSTRAINTS
+        is not DAC_LEGACY_STRICT_RELATION_CONSTRAINTS
     )
+
+    assert tuple(
+        _shape(item)
+        for item
+        in CATALYSIS_MECHANISM_STRICT_RELATION_CONSTRAINTS
+    ) == tuple(
+        _shape(item)
+        for item
+        in DAC_LEGACY_STRICT_RELATION_CONSTRAINTS
+    )
+
 
 
 def test_core_constraint_module_has_no_legacy_domain_import():

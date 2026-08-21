@@ -13,15 +13,12 @@ from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
 from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
 from pipeline_core.llm.openrouter_llm import OpenRouterLLM
 from pipeline_core.corpus.lossless_normalization import normalize_knowledge_graph_payload
-from domains.dac_her.prompts import build_extraction_prompt
 from pipeline_core.corpus.recovery_policy import RecoveryAction, decide_recovery
 from pipeline_core.corpus.schemas import KnowledgeGraph
-from pipeline_core.corpus.semantic_patch import PatchRejected, apply_semantic_patch
-from domains.dac_her.semantic_patch_prompts import (
-    PATCH_SYSTEM_PROMPT,
-    build_patch_rejection_feedback,
-    build_semantic_patch_prompt,
+from pipeline_core.corpus.graph.strict_chunk_loading import (
+    load_strict_validated_chunk_graph,
 )
+from pipeline_core.corpus.semantic_patch import PatchRejected, apply_semantic_patch
 from pipeline_core.corpus.semantic_patch_schema import KnowledgeGraphPatch
 from pipeline_core.corpus.strict_validation import (
     ValidationContext,
@@ -31,11 +28,6 @@ from pipeline_core.corpus.strict_validation import (
 from pipeline_core.runtime.validation import validate_graph_provenance
 from pipeline_core.runtime.validation_issues import ValidationReport
 from pipeline_core.corpus.vocab_registry import VocabularyRegistry
-from domains.dac_her.micro_reextract_prompts import (
-    MICRO_REEXTRACT_SYSTEM_PROMPT,
-    build_domain_gate_recovery_prompt,
-    build_micro_reextract_prompt,
-)
 
 def chunk_output_path(chunk: ChunkSpec, chunk_output_dir: str | Path) -> Path:
     safe_chunk_id = chunk.chunk_id.replace(":", "__")
@@ -63,12 +55,42 @@ def load_existing_result(
     *,
     chunk: ChunkSpec,
     output_path: str | Path,
+    relation_constraints: tuple[Any, ...],
+    semantic_issue_collector: Any | None,
 ) -> KnowledgeGraph | None:
+    """Admit a cached chunk only under the CURRENT strict contract.
+
+    The shared strict-chunk loader preserves historical artifact semantics and
+    intentionally does not replay present-day domain relation policy. Cache
+    admission is different: a graph entering the current extraction run must
+    still satisfy the active strict validation contract.
+    """
     path = Path(output_path)
     if not path.exists():
         return None
+
     try:
-        result = KnowledgeGraph.model_validate_json(path.read_text(encoding="utf-8"))
+        result = load_strict_validated_chunk_graph(path)
+
+        # Replay the same current cross-graph validator used during normal
+        # extraction/finalization. This includes the active domain-owned
+        # relation constraints without reviving legacy DAC compatibility
+        # validation inside KnowledgeGraph itself.
+        draft = KnowledgeGraphDraft.model_validate(
+            result.model_dump()
+        )
+
+        report = validate_draft(
+            draft,
+            relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
+        )
+
+        if not report.valid:
+            return None
+
         validate_graph_provenance(
             result,
             paper_id=chunk.paper_id,
@@ -79,7 +101,9 @@ def load_existing_result(
             page_ids=chunk.page_ids,
             asset_ids=chunk.asset_ids,
         )
+
         return result
+
     except Exception:
         return None
 
@@ -225,6 +249,7 @@ def _finalize_and_save(
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
     relation_constraints: tuple[Any, ...],
+    semantic_issue_collector: Any | None,
 ) -> tuple[KnowledgeGraph | None, list[Any], ValidationReport]:
     finalized = finalize_draft(
         draft=draft,
@@ -232,6 +257,9 @@ def _finalize_and_save(
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     if finalized.graph is not None:
         _write_json(output_path, finalized.graph.model_dump())
@@ -274,6 +302,9 @@ def extract_one_chunk(
         )
     )
     relation_constraints = extraction_adapter.strict_relation_constraints
+    semantic_issue_collector = (
+        extraction_adapter.strict_semantic_issue_collector
+    )
     output_path = chunk_output_path(chunk, chunk_output_dir)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -297,7 +328,14 @@ def extract_one_chunk(
         directory.mkdir(parents=True, exist_ok=True)
 
     if not force:
-        existing = load_existing_result(chunk=chunk, output_path=output_path)
+        existing = load_existing_result(
+            chunk=chunk,
+            output_path=output_path,
+            relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
+        )
         if existing is not None:
             return {
                 "status": "skipped",
@@ -309,6 +347,10 @@ def extract_one_chunk(
             }
 
     safe_chunk_id = chunk.chunk_id.replace(":", "__")
+    default_llm_debug_path = str(
+        debug_dir
+        / f"{safe_chunk_id}__last_invalid_structured_response.json"
+    )
     attempt_usages: list[dict[str, Any]] = []
     generation_feedback: str | None = None
     draft: KnowledgeGraphDraft | None = None
@@ -323,14 +365,14 @@ def extract_one_chunk(
             provider=provider,
             reproducible=False,
             zdr=True,
-            application_title="GraphAgents DAC-HER",
-            default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+            application_title="ForAllKG",
+            default_debug_path=default_llm_debug_path,
         )
         raw_debug_path = debug_dir / f"{safe_chunk_id}__generation_{generation_attempt}.json"
         try:
             generated_draft = llm.generate_structured(
                 system_prompt=extraction_adapter.system_prompt,
-                prompt=build_extraction_prompt(
+                prompt=extraction_adapter.generation_prompt_builder(
                     paper_id=chunk.paper_id,
                     chunk_id=chunk.chunk_id,
                     document_id=chunk.document_id,
@@ -435,14 +477,14 @@ def extract_one_chunk(
                     provider=provider,
                     reproducible=False,
                     zdr=True,
-                    application_title="GraphAgents DAC-HER",
-                    default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                    application_title="ForAllKG",
+                    default_debug_path=default_llm_debug_path,
                 )
                 domain_recovery_debug_path = (
                     debug_dir
                     / f"{safe_chunk_id}__domain_gate_recovery_0.json"
                 )
-                domain_recovery_prompt = build_domain_gate_recovery_prompt(
+                domain_recovery_prompt = extraction_adapter.domain_gate_recovery_prompt_builder(
                     paper_id=chunk.paper_id,
                     chunk_id=chunk.chunk_id,
                     document_id=chunk.document_id,
@@ -583,6 +625,9 @@ def extract_one_chunk(
     report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     _write_report(validation_dir / f"{safe_chunk_id}__raw.json", report)
 
@@ -593,6 +638,9 @@ def extract_one_chunk(
         experiment_registry=experiment_registry,
         metric_registry=metric_registry,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
     if graph is not None:
         return _success_record(
@@ -635,6 +683,9 @@ def extract_one_chunk(
         report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
         _write_report(validation_dir / f"{safe_chunk_id}__normalized.json", report)
         graph, vocabulary_issues, final_report = _finalize_and_save(
@@ -644,6 +695,9 @@ def extract_one_chunk(
             experiment_registry=experiment_registry,
             metric_registry=metric_registry,
             relation_constraints=relation_constraints,
+            semantic_issue_collector=(
+                semantic_issue_collector
+            ),
         )
         if graph is not None:
             return _success_record(
@@ -742,8 +796,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
-                application_title="GraphAgents DAC-HER",
-                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                application_title="ForAllKG",
+                default_debug_path=default_llm_debug_path,
             )
             patch_debug_path = (
                 debug_dir / f"{patch_stem}.json"
@@ -753,7 +807,7 @@ def extract_one_chunk(
             try:
                 patch = llm.generate_structured(
                     system_prompt=extraction_adapter.patch_system_prompt,
-                    prompt=build_semantic_patch_prompt(
+                    prompt=extraction_adapter.semantic_patch_prompt_builder(
                         paper_id=chunk.paper_id,
                         chunk_id=chunk.chunk_id,
                         document_id=chunk.document_id,
@@ -843,6 +897,9 @@ def extract_one_chunk(
                 report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=(
+            semantic_issue_collector
+        ),
     )
 
                 validation_suffix = (
@@ -873,6 +930,9 @@ def extract_one_chunk(
                     ),
                     metric_registry=metric_registry,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 if is_post_micro_patch:
@@ -961,7 +1021,7 @@ def extract_one_chunk(
                 else:
                     patch_attempts += 1
 
-                patch_feedback = build_patch_rejection_feedback(
+                patch_feedback = extraction_adapter.patch_rejection_feedback_builder(
                     error
                 )
                 continue
@@ -975,8 +1035,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
-                application_title="GraphAgents DAC-HER",
-                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                application_title="ForAllKG",
+                default_debug_path=default_llm_debug_path,
             )
 
             micro_index = micro_reextract_attempts
@@ -994,7 +1054,7 @@ def extract_one_chunk(
                     system_prompt=(
                         extraction_adapter.micro_reextract_system_prompt
                     ),
-                    prompt=build_micro_reextract_prompt(
+                    prompt=extraction_adapter.micro_reextract_prompt_builder(
                         paper_id=chunk.paper_id,
                         chunk_id=chunk.chunk_id,
                         document_id=chunk.document_id,
@@ -1054,6 +1114,9 @@ def extract_one_chunk(
                 micro_report = validate_draft(
                     micro_draft,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 micro_normalization = (
@@ -1084,6 +1147,9 @@ def extract_one_chunk(
                 report = validate_draft(
                     micro_draft,
                     relation_constraints=relation_constraints,
+                    semantic_issue_collector=(
+                        semantic_issue_collector
+                    ),
                 )
 
                 _write_report(
@@ -1106,6 +1172,9 @@ def extract_one_chunk(
                         ),
                         metric_registry=metric_registry,
                         relation_constraints=relation_constraints,
+                        semantic_issue_collector=(
+                            semantic_issue_collector
+                        ),
                     )
                 )
 

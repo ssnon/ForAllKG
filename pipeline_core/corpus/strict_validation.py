@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import ValidationError
 
@@ -22,6 +22,7 @@ from pipeline_core.runtime.validation import validate_graph_provenance
 from pipeline_core.runtime.validation_issues import (
     IssueCode,
     IssueStage,
+    ValidationIssue,
     ValidationReport,
     issue,
 )
@@ -50,10 +51,23 @@ def validate_draft(
     draft: KnowledgeGraphDraft,
     *,
     relation_constraints: tuple[RelationConstraint, ...] | None = None,
+    semantic_issue_collector: (
+        Callable[[KnowledgeGraphDraft], list[ValidationIssue]] | None
+    ) = None,
 ) -> ValidationReport:
-    return collect_graph_issues(
+    base_report = collect_graph_issues(
         draft,
         relation_constraints=relation_constraints,
+    )
+    if semantic_issue_collector is None:
+        return base_report
+
+    semantic_issues = semantic_issue_collector(draft)
+    return ValidationReport.from_issues(
+        [
+            *base_report.issues,
+            *semantic_issues,
+        ]
     )
 
 
@@ -64,10 +78,14 @@ def finalize_draft(
     experiment_registry: VocabularyRegistry,
     metric_registry: VocabularyRegistry,
     relation_constraints: tuple[RelationConstraint, ...] | None = None,
+    semantic_issue_collector: (
+        Callable[[KnowledgeGraphDraft], list[ValidationIssue]] | None
+    ) = None,
 ) -> FinalizationResult:
     report = validate_draft(
         draft,
         relation_constraints=relation_constraints,
+        semantic_issue_collector=semantic_issue_collector,
     )
     if not report.valid:
         return FinalizationResult(report=report, graph=None, vocabulary_issues=[])

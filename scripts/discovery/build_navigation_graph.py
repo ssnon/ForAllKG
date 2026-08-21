@@ -10,7 +10,7 @@ import networkx as nx
 from pipeline_core.corpus.graph.graph_io import save_graphml
 from pipeline_core.corpus.navigation_graph import NavigationPolicy, build_navigation_graph
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _sha256_file(path: Path) -> str:

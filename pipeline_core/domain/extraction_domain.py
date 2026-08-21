@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
+
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import BaseModel
 
@@ -19,6 +21,11 @@ class ExtractionDomainAdapter:
     system_prompt: str
     patch_system_prompt: str
     micro_reextract_system_prompt: str
+    generation_prompt_builder: Callable[..., str]
+    semantic_patch_prompt_builder: Callable[..., str]
+    patch_rejection_feedback_builder: Callable[[Exception], str]
+    micro_reextract_prompt_builder: Callable[..., str]
+    domain_gate_recovery_prompt_builder: Callable[..., str]
     default_data_root: str
     allowed_entity_types: frozenset[str]
     allowed_relation_types: frozenset[str]
@@ -28,6 +35,215 @@ class ExtractionDomainAdapter:
     compact_domain_gate_recovery_response_model: (
         type[BaseModel] | None
     ) = None
+    compact_generation_schema_id: str | None = None
+    compact_domain_gate_recovery_schema_id: str | None = None
+    extraction_policy_id: str | None = None
+    extraction_policy_transform: Callable[..., Any] | None = None
+    reduced_vocabulary_context_id: str | None = None
+    reduced_vocabulary_context_builder: Callable[..., str] | None = None
+    strict_semantic_contract_id: str | None = None
+    strict_semantic_contract_rules: tuple[str, ...] = ()
+    strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
+
+    def __post_init__(self) -> None:
+        """Reject structurally incomplete optional capabilities."""
+
+        capability_pairs = (
+            (
+                "compact generation",
+                self.compact_generation_response_model,
+                "compact_generation_schema_id",
+                self.compact_generation_schema_id,
+            ),
+            (
+                "compact domain-gate recovery",
+                self.compact_domain_gate_recovery_response_model,
+                "compact_domain_gate_recovery_schema_id",
+                self.compact_domain_gate_recovery_schema_id,
+            ),
+            (
+                "extraction policy",
+                self.extraction_policy_transform,
+                "extraction_policy_id",
+                self.extraction_policy_id,
+            ),
+            (
+                "reduced vocabulary context",
+                self.reduced_vocabulary_context_builder,
+                "reduced_vocabulary_context_id",
+                self.reduced_vocabulary_context_id,
+            ),
+            (
+                "strict semantic validation",
+                self.strict_semantic_issue_collector,
+                "strict_semantic_contract_id",
+                self.strict_semantic_contract_id,
+            ),
+        )
+
+        for (
+            capability_name,
+            implementation,
+            identifier_name,
+            identifier,
+        ) in capability_pairs:
+            if (
+                (implementation is None)
+                == (identifier is None)
+            ):
+                continue
+
+            raise ValueError(
+                f"{capability_name} capability requires "
+                f"implementation and {identifier_name} "
+                "to be configured together"
+            )
+
+        if (
+            self.strict_semantic_contract_rules
+            and self.strict_semantic_issue_collector is None
+        ):
+            raise ValueError(
+                "strict semantic contract rules require "
+                "strict semantic validation capability"
+            )
+
+    def prompt_builder_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return deterministic source files for active user-prompt builders."""
+
+        builders = (
+            self.generation_prompt_builder,
+            self.semantic_patch_prompt_builder,
+            self.patch_rejection_feedback_builder,
+            self.micro_reextract_prompt_builder,
+            self.domain_gate_recovery_prompt_builder,
+        )
+
+        paths: list[str] = []
+
+        for builder in builders:
+            source_path = inspect.getsourcefile(builder)
+
+            if source_path is None:
+                raise RuntimeError(
+                    "Could not resolve prompt-builder implementation "
+                    f"source for {builder!r}"
+                )
+
+            if source_path not in paths:
+                paths.append(source_path)
+
+        return tuple(paths)
+
+    def compact_response_model_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return deterministic source files for active compact response models."""
+
+        models = (
+            self.compact_generation_response_model,
+            self.compact_domain_gate_recovery_response_model,
+        )
+
+        paths: list[str] = []
+
+        for model in models:
+            if model is None:
+                continue
+
+            source_path = inspect.getsourcefile(model)
+
+            if source_path is None:
+                raise RuntimeError(
+                    "Could not resolve compact response-model "
+                    f"implementation source for {model!r}"
+                )
+
+            if source_path not in paths:
+                paths.append(source_path)
+
+        return tuple(paths)
+
+    def extraction_policy_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return source files for an active domain extraction-policy transform."""
+
+        transform = self.extraction_policy_transform
+
+        if transform is None:
+            return ()
+
+        source_path = inspect.getsourcefile(transform)
+
+        if source_path is None:
+            raise RuntimeError(
+                "Could not resolve extraction-policy "
+                f"implementation source for {transform!r}"
+            )
+
+        return (source_path,)
+
+    def reduced_vocabulary_context_implementation_paths(
+        self,
+    ) -> tuple[str, ...]:
+        """Return source files for an active reduced vocabulary serializer."""
+
+        builder = self.reduced_vocabulary_context_builder
+
+        if builder is None:
+            return ()
+
+        source_path = inspect.getsourcefile(builder)
+
+        if source_path is None:
+            raise RuntimeError(
+                "Could not resolve reduced vocabulary-context "
+                f"implementation source for {builder!r}"
+            )
+
+        return (source_path,)
+
+
+
+    def strict_relation_contract_payload(
+        self,
+    ) -> list[dict[str, Any]]:
+        """Return deterministic strict-validation semantics for run provenance."""
+        return [
+            {
+                "relation": constraint.relation,
+                "source_types": sorted(
+                    constraint.source_types
+                ),
+                "target_types": sorted(
+                    constraint.target_types
+                ),
+                "severity": constraint.severity,
+            }
+            for constraint
+            in self.strict_relation_constraints
+        ]
+
+    def strict_semantic_contract_payload(self) -> dict[str, Any] | None:
+        """Return deterministic domain-semantic validation provenance."""
+        collector = self.strict_semantic_issue_collector
+        if collector is None:
+            return None
+        if not self.strict_semantic_contract_id:
+            raise ValueError(
+                "strict semantic collector requires "
+                "strict_semantic_contract_id"
+            )
+        return {
+            "contract_id": self.strict_semantic_contract_id,
+            "rules": list(self.strict_semantic_contract_rules),
+            "collector": (
+                f"{collector.__module__}.{collector.__qualname__}"
+            ),
+        }
 
     def canonical_relation(self, relation: str) -> str:
         aliases = dict(self.relation_aliases)

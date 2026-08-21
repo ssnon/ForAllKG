@@ -32,7 +32,7 @@ from pipeline_core.discovery.node_mapping import NodeMapper, QueryConcept, load_
 from pipeline_core.discovery.path_quality import PathQualityScorer
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _types(raw: str | None) -> tuple[str, ...]:

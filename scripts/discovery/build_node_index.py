@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, build_node_embedding_index
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def parse_args() -> argparse.Namespace:

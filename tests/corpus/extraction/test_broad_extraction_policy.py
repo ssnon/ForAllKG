@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pipeline_core.corpus.broad_extraction_policy import (
+from domains.catalysis_mechanism.extraction_policy import (
     BROAD_ABSTRACT_RECOVERY_POLICY_ID,
     broad_abstract_extraction_policy,
 )
 from pipeline_core.corpus.extraction.extraction_policy import ExtractionPolicy
+from domains.extraction_registry import get_extraction_adapter
 
 
 def test_broad_abstract_policy_limits_recovery_without_relaxing_acceptance():
@@ -23,9 +24,61 @@ def test_broad_abstract_policy_limits_recovery_without_relaxing_acceptance():
     assert policy.allow_destructive_patches is False
 
 
-def test_extract_paper_source_applies_policy_only_to_broad_domain():
+def test_broad_policy_capability_is_domain_scoped_and_script_generic():
+    broad = get_extraction_adapter(
+        "catalysis_mechanism"
+    )
+    dac = get_extraction_adapter(
+        "dac_her"
+    )
+    sers = get_extraction_adapter(
+        "sers_au_ag"
+    )
+
+    assert (
+        broad.extraction_policy_transform
+        is broad_abstract_extraction_policy
+    )
+    assert (
+        broad.extraction_policy_id
+        == BROAD_ABSTRACT_RECOVERY_POLICY_ID
+    )
+
+    for adapter in (
+        dac,
+        sers,
+    ):
+        assert (
+            adapter.extraction_policy_transform
+            is None
+        )
+        assert (
+            adapter.extraction_policy_id
+            is None
+        )
+
     root = Path(__file__).resolve().parents[3]
-    source = (root / "scripts" / "corpus/extract_paper.py").read_text(encoding="utf-8")
-    assert "broad_abstract_extraction_policy" in source
-    assert 'domain_profile.profile_id == "catalysis_mechanism"' in source
-    assert "BROAD_ABSTRACT_RECOVERY_POLICY_ID" in source
+
+    source = (
+        root
+        / "scripts"
+        / "corpus"
+        / "extract_paper.py"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "extraction_adapter.extraction_policy_transform"
+        in source
+    )
+
+    assert (
+        "broad_abstract_extraction_policy"
+        not in source
+    )
+
+    assert (
+        "BROAD_ABSTRACT_RECOVERY_POLICY_ID"
+        not in source
+    )

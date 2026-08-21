@@ -61,11 +61,14 @@ from pipeline_core.runtime.serialization_primitives import (
     write_json,
 )
 from pipeline_core.corpus.schemas import KnowledgeGraph
+from pipeline_core.corpus.graph.strict_chunk_loading import (
+    load_strict_validated_chunk_graph,
+)
 from pipeline_core.runtime.validation import validate_graph_provenance
 from pipeline_core.corpus.vocab_registry import load_default_registries
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "papers.yaml"
 
 
@@ -559,8 +562,8 @@ def main() -> None:
         if not json_path.exists():
             raise FileNotFoundError(f"Active chunk JSON not found: {json_path}")
 
-        result = KnowledgeGraph.model_validate_json(
-            json_path.read_text(encoding="utf-8")
+        result = load_strict_validated_chunk_graph(
+            json_path
         )
         validate_graph_provenance(
             result,

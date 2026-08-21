@@ -4,9 +4,21 @@ from pipeline_core.domain.extraction_domain import ExtractionDomainAdapter
 from domains.dac_her.relation_constraints import (
     DAC_HER_STRICT_RELATION_CONSTRAINTS,
 )
-from domains.dac_her.micro_reextract_prompts import MICRO_REEXTRACT_SYSTEM_PROMPT
-from domains.dac_her.prompts import PROMPT_VERSION, SYSTEM_PROMPT
-from domains.dac_her.semantic_patch_prompts import PATCH_SYSTEM_PROMPT
+from domains.dac_her.micro_reextract_prompts import (
+    MICRO_REEXTRACT_SYSTEM_PROMPT,
+    build_domain_gate_recovery_prompt,
+    build_micro_reextract_prompt,
+)
+from domains.dac_her.prompts import (
+    PROMPT_VERSION,
+    SYSTEM_PROMPT,
+    build_extraction_prompt,
+)
+from domains.dac_her.semantic_patch_prompts import (
+    PATCH_SYSTEM_PROMPT,
+    build_patch_rejection_feedback,
+    build_semantic_patch_prompt,
+)
 
 
 DAC_HER_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
@@ -16,6 +28,11 @@ DAC_HER_EXTRACTION_ADAPTER = ExtractionDomainAdapter(
     system_prompt=SYSTEM_PROMPT,
     patch_system_prompt=PATCH_SYSTEM_PROMPT,
     micro_reextract_system_prompt=MICRO_REEXTRACT_SYSTEM_PROMPT,
+    generation_prompt_builder=build_extraction_prompt,
+    semantic_patch_prompt_builder=build_semantic_patch_prompt,
+    patch_rejection_feedback_builder=build_patch_rejection_feedback,
+    micro_reextract_prompt_builder=build_micro_reextract_prompt,
+    domain_gate_recovery_prompt_builder=build_domain_gate_recovery_prompt,
     default_data_root="data_dac",
     allowed_entity_types=frozenset({
         "Paper", "Catalyst", "CatalystModel", "Metal", "Support",

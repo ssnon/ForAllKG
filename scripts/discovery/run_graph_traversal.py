@@ -44,7 +44,7 @@ from pipeline_core.discovery.waypoint_selection import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _types(

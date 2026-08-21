@@ -11,7 +11,7 @@ from pipeline_core.domain.domain_profile import (
 # This is intentionally separate from the shared projection
 # engine. None-valued projection semantics still resolve to
 # this policy for compatibility with existing callers,
-# including the current catalysis_mechanism profile.
+# including profiles that still rely on the legacy fallback.
 _MECHANISM_NODE_TYPES = {
     "Catalyst",
     "CatalystModel",

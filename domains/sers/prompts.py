@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a4"
+SERS_PROMPT_VERSION = "sers-au-ag-extraction-v1-alpha4a5"
 
 SERS_SYSTEM_PROMPT = r"""
 You extract a provenance-preserving knowledge graph from scientific literature
@@ -134,6 +134,10 @@ EDGE DIRECTIONS:
 24a. SynthesisMethod --USES_MATERIAL--> Material for a non-precursor reagent,
      reducing agent, stabilizer, structure-directing agent, solvent, or other
      explicitly used synthesis material.
+24aa. A physical target or foil used as feedstock in laser ablation,
+      sputtering, or evaporation is Material and uses USES_MATERIAL.
+      Do not type such a physical process target as Precursor merely because
+      it supplies material to the produced nanostructure.
 24b. Do not use PREPARED_BY or HAS_COMPONENT from a SynthesisMethod to encode
      synthesis inputs. Use USES_PRECURSOR or USES_MATERIAL according to role.
 25. PlasmonicSubstrate/Nanostructure/Material --TESTED_IN--> Experiment.
@@ -302,6 +306,10 @@ SCIENTIFIC ROLE REPAIR GUIDANCE:
 - SynthesisMethod inputs that are actual precursors use USES_PRECURSOR.
 - Other explicit synthesis inputs such as reducing agents, stabilizers, and
   structure-directing materials use USES_MATERIAL.
+- A physical target or foil used as feedstock in laser ablation, sputtering,
+  or evaporation remains Material and uses USES_MATERIAL. Never retype such a
+  target or foil as Precursor merely to satisfy an existing USES_PRECURSOR edge;
+  repair that edge to USES_MATERIAL when the source supports the physical role.
 - Support may be PREPARED_BY SynthesisMethod.
 - Support may HAS_COMPONENT Material only for explicit composition/constituent
   statements. Never use Support --USES_MATERIAL--> Material for composition.
