@@ -110,31 +110,39 @@ def parse_args() -> argparse.Namespace:
         help="Ignore valid chunk caches in the current fingerprinted run.",
     )
     parser.add_argument(
+        "--compact-generation-schema",
         "--broad-compact-schema",
+        dest="compact_generation_schema",
         action="store_true",
         help=(
-            "Use the experimental compact initial-generation response schema "
-            "for catalysis_mechanism abstracts. The prompt, validators, and "
-            "recovery policy are unchanged."
+            "Use the active extraction adapter's compact initial-generation "
+            "response schema. The legacy --broad-compact-schema spelling "
+            "remains accepted as an alias."
         ),
     )
     parser.add_argument(
+        "--compact-domain-gate-recovery",
         "--broad-compact-domain-recovery",
+        dest="compact_domain_gate_recovery",
         action="store_true",
         help=(
-            "For catalysis_mechanism Broad extraction, use the "
-            "adapter-owned compact schema for the targeted domain-gate "
-            "recovery call. Requires --broad-compact-schema."
+            "Use the active extraction adapter's compact response schema "
+            "for targeted domain-gate recovery. Requires "
+            "--compact-generation-schema. The legacy "
+            "--broad-compact-domain-recovery spelling remains accepted "
+            "as an alias."
         ),
     )
     parser.add_argument(
+        "--reduced-vocabulary-context",
         "--broad-prune-metric-vocabulary",
+        dest="reduced_vocabulary_context",
         action="store_true",
         help=(
-            "For catalysis_mechanism extraction only, omit the registered "
-            "measurement-metric vocabulary from the LLM prompt surface. "
-            "The metric registry remains active in final validation. "
-            "Intended for controlled PR6.1 A/B runs."
+            "Use the active extraction adapter's reduced vocabulary-context "
+            "serializer while leaving the full registries active for final "
+            "validation. The legacy --broad-prune-metric-vocabulary "
+            "spelling remains accepted as an alias."
         ),
     )
     parser.add_argument(
@@ -298,37 +306,65 @@ def main() -> None:
     domain_profile = get_domain_profile(args.domain_profile)
     extraction_adapter = get_extraction_adapter(domain_profile.profile_id)
     if (
-        args.broad_compact_schema
-        and domain_profile.profile_id != "catalysis_mechanism"
-    ):
-        raise ValueError(
-            "--broad-compact-schema is only valid with "
-            "--domain-profile catalysis_mechanism"
+        args.compact_generation_schema
+        and (
+            extraction_adapter.compact_generation_response_model
+            is None
+            or extraction_adapter.compact_generation_schema_id
+            is None
         )
-    if (
-        args.broad_prune_metric_vocabulary
-        and domain_profile.profile_id != "catalysis_mechanism"
     ):
         raise ValueError(
-            "--broad-prune-metric-vocabulary is only valid with "
-            "--domain-profile catalysis_mechanism"
+            "--compact-generation-schema requires an extraction "
+            "adapter with compact-generation capability."
         )
+
     if (
-        args.broad_compact_domain_recovery
-        and not args.broad_compact_schema
+        args.compact_domain_gate_recovery
+        and not args.compact_generation_schema
     ):
         raise ValueError(
-            "--broad-compact-domain-recovery requires "
-            "--broad-compact-schema"
+            "--compact-domain-gate-recovery requires "
+            "--compact-generation-schema."
+        )
+
+    if (
+        args.compact_domain_gate_recovery
+        and (
+            extraction_adapter
+            .compact_domain_gate_recovery_response_model
+            is None
+            or extraction_adapter
+            .compact_domain_gate_recovery_schema_id
+            is None
+        )
+    ):
+        raise ValueError(
+            "--compact-domain-gate-recovery requires an extraction "
+            "adapter with compact domain-gate recovery capability."
+        )
+
+    if (
+        args.reduced_vocabulary_context
+        and (
+            extraction_adapter.reduced_vocabulary_context_builder
+            is None
+            or extraction_adapter.reduced_vocabulary_context_id
+            is None
+        )
+    ):
+        raise ValueError(
+            "--reduced-vocabulary-context requires an extraction "
+            "adapter with reduced vocabulary-context capability."
         )
     generation_response_schema_id = (
         extraction_adapter.compact_generation_schema_id
-        if args.broad_compact_schema
+        if args.compact_generation_schema
         else "knowledge-graph-draft-full"
     )
     domain_gate_recovery_response_schema_id = (
         extraction_adapter.compact_domain_gate_recovery_schema_id
-        if args.broad_compact_domain_recovery
+        if args.compact_domain_gate_recovery
         else "knowledge-graph-draft-full"
     )
     data_root = args.data_root or extraction_adapter.default_data_root
@@ -353,7 +389,7 @@ def main() -> None:
     experiment_registry, metric_registry = load_default_registries(
         PROJECT_ROOT
     )
-    if args.broad_prune_metric_vocabulary:
+    if args.reduced_vocabulary_context:
         vocabulary_builder = (
             extraction_adapter.reduced_vocabulary_context_builder
         )
@@ -437,7 +473,7 @@ def main() -> None:
                         extraction_adapter.reduced_vocabulary_context_id
                     )
                 }
-                if args.broad_prune_metric_vocabulary else {}
+                if args.reduced_vocabulary_context else {}
             ),
         },
         prompt_version=extraction_adapter.prompt_version,
@@ -458,13 +494,13 @@ def main() -> None:
             *extraction_adapter.extraction_policy_implementation_paths(),
             *(
                 (extraction_adapter.compact_response_model_implementation_paths()[0],)
-                if args.broad_compact_schema
+                if args.compact_generation_schema
                 else ()
             ),
             *(
                 extraction_adapter
                 .reduced_vocabulary_context_implementation_paths()
-                if args.broad_prune_metric_vocabulary
+                if args.reduced_vocabulary_context
                 else ()
             ),
             graph_validation_module.__file__,
@@ -812,9 +848,9 @@ def main() -> None:
                     vocabulary_context=vocabulary_context,
                     force=(args.force or args.force_vision),
                     extraction_adapter=extraction_adapter,
-                    compact_generation_schema=args.broad_compact_schema,
+                    compact_generation_schema=args.compact_generation_schema,
                     compact_domain_gate_recovery=(
-                        args.broad_compact_domain_recovery
+                        args.compact_domain_gate_recovery
                     ),
                 ): chunk
                 for chunk in logical_batch
