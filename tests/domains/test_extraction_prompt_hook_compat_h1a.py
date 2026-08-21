@@ -14,15 +14,14 @@ from domains.dac_her.semantic_patch_prompts import (
 from domains.extraction_registry import get_extraction_adapter
 
 
-PROFILE_IDS = (
+LEGACY_PROFILE_IDS = (
     "dac_her",
-    "sers_au_ag",
     "catalysis_mechanism",
 )
 
 
-def test_h1a_preserves_exact_historical_user_prompt_callables() -> None:
-    for profile_id in PROFILE_IDS:
+def test_h1a_remaining_legacy_profiles_preserve_exact_callables() -> None:
+    for profile_id in LEGACY_PROFILE_IDS:
         adapter = get_extraction_adapter(profile_id)
 
         assert (
@@ -47,14 +46,14 @@ def test_h1a_preserves_exact_historical_user_prompt_callables() -> None:
         )
 
 
-def test_h1a_prompt_builder_provenance_tracks_exact_source_files() -> None:
+def test_h1a_remaining_legacy_prompt_provenance_tracks_source_files() -> None:
     expected = {
         Path(build_extraction_prompt.__code__.co_filename).resolve(),
         Path(build_semantic_patch_prompt.__code__.co_filename).resolve(),
         Path(build_micro_reextract_prompt.__code__.co_filename).resolve(),
     }
 
-    for profile_id in PROFILE_IDS:
+    for profile_id in LEGACY_PROFILE_IDS:
         adapter = get_extraction_adapter(profile_id)
 
         actual = {
