@@ -45,6 +45,69 @@ class ExtractionDomainAdapter:
     strict_semantic_contract_rules: tuple[str, ...] = ()
     strict_semantic_issue_collector: Callable[[Any], list[Any]] | None = None
 
+    def __post_init__(self) -> None:
+        """Reject structurally incomplete optional capabilities."""
+
+        capability_pairs = (
+            (
+                "compact generation",
+                self.compact_generation_response_model,
+                "compact_generation_schema_id",
+                self.compact_generation_schema_id,
+            ),
+            (
+                "compact domain-gate recovery",
+                self.compact_domain_gate_recovery_response_model,
+                "compact_domain_gate_recovery_schema_id",
+                self.compact_domain_gate_recovery_schema_id,
+            ),
+            (
+                "extraction policy",
+                self.extraction_policy_transform,
+                "extraction_policy_id",
+                self.extraction_policy_id,
+            ),
+            (
+                "reduced vocabulary context",
+                self.reduced_vocabulary_context_builder,
+                "reduced_vocabulary_context_id",
+                self.reduced_vocabulary_context_id,
+            ),
+            (
+                "strict semantic validation",
+                self.strict_semantic_issue_collector,
+                "strict_semantic_contract_id",
+                self.strict_semantic_contract_id,
+            ),
+        )
+
+        for (
+            capability_name,
+            implementation,
+            identifier_name,
+            identifier,
+        ) in capability_pairs:
+            if (
+                (implementation is None)
+                == (identifier is None)
+            ):
+                continue
+
+            raise ValueError(
+                f"{capability_name} capability requires "
+                f"implementation and {identifier_name} "
+                "to be configured together"
+            )
+
+        if (
+            self.strict_semantic_contract_rules
+            and self.strict_semantic_issue_collector is None
+        ):
+            raise ValueError(
+                "strict semantic contract rules require "
+                "strict semantic validation capability"
+            )
+
     def prompt_builder_implementation_paths(
         self,
     ) -> tuple[str, ...]:

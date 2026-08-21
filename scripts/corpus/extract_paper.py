@@ -493,8 +493,12 @@ def main() -> None:
             draft_schema_module.__file__,
             *extraction_adapter.extraction_policy_implementation_paths(),
             *(
-                (extraction_adapter.compact_response_model_implementation_paths()[0],)
-                if args.compact_generation_schema
+                extraction_adapter
+                .compact_response_model_implementation_paths()
+                if (
+                    args.compact_generation_schema
+                    or args.compact_domain_gate_recovery
+                )
                 else ()
             ),
             *(

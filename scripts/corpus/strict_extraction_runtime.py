@@ -347,6 +347,10 @@ def extract_one_chunk(
             }
 
     safe_chunk_id = chunk.chunk_id.replace(":", "__")
+    default_llm_debug_path = str(
+        debug_dir
+        / f"{safe_chunk_id}__last_invalid_structured_response.json"
+    )
     attempt_usages: list[dict[str, Any]] = []
     generation_feedback: str | None = None
     draft: KnowledgeGraphDraft | None = None
@@ -361,8 +365,8 @@ def extract_one_chunk(
             provider=provider,
             reproducible=False,
             zdr=True,
-            application_title="GraphAgents DAC-HER",
-            default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+            application_title="ForAllKG",
+            default_debug_path=default_llm_debug_path,
         )
         raw_debug_path = debug_dir / f"{safe_chunk_id}__generation_{generation_attempt}.json"
         try:
@@ -473,8 +477,8 @@ def extract_one_chunk(
                     provider=provider,
                     reproducible=False,
                     zdr=True,
-                    application_title="GraphAgents DAC-HER",
-                    default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                    application_title="ForAllKG",
+                    default_debug_path=default_llm_debug_path,
                 )
                 domain_recovery_debug_path = (
                     debug_dir
@@ -792,8 +796,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
-                application_title="GraphAgents DAC-HER",
-                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                application_title="ForAllKG",
+                default_debug_path=default_llm_debug_path,
             )
             patch_debug_path = (
                 debug_dir / f"{patch_stem}.json"
@@ -1031,8 +1035,8 @@ def extract_one_chunk(
                 provider=provider,
                 reproducible=False,
                 zdr=True,
-                application_title="GraphAgents DAC-HER",
-                default_debug_path="data_dac/debug/last_invalid_structured_response.json",
+                application_title="ForAllKG",
+                default_debug_path=default_llm_debug_path,
             )
 
             micro_index = micro_reextract_attempts
