@@ -182,10 +182,11 @@ class ExternalNoveltyAssessor:
                 "The available search/abstract coverage is insufficient to interpret missing direct matches as evidence of external distinctness.",
             )
 
-        relation_backed = any(
+        relation_backed_count = sum(
             row in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART"}
             for row in statuses
         )
+        relation_backed = relation_backed_count > 0
         no_direct = any(row == "NO_DIRECT_MATCH_FOUND" for row in statuses)
         components_only = any(row == "COMPONENTS_ONLY" for row in statuses)
 
@@ -197,12 +198,33 @@ class ExternalNoveltyAssessor:
                 "No direct prior-art match was found for the core claims under the recorded minimum search coverage. This is search-bounded plausibility, not proof of literature-wide novelty.",
             )
 
-        if relation_backed and (components_only or no_direct):
+        if relation_backed and no_direct:
             reasons.append("known_relations_with_unmatched_composite_relation")
             return (
                 "NEW_COMBINATION_OF_KNOWN_EFFECTS",
                 reasons,
-                "The reviewed literature positively represents at least one core scientific relation, while at least one other core relation remains unmatched or only component-supported under minimum search coverage.",
+                "The reviewed literature positively represents at least one core scientific relation, while at least one other core relation has no direct match under minimum search coverage.",
+            )
+
+        if relation_backed and components_only:
+            strict_majority_relation_backed = (
+                relation_backed_count * 2 > len(statuses)
+            )
+            if strict_majority_relation_backed:
+                reasons.append(
+                    "majority_core_relations_have_direct_or_partial_prior_art"
+                )
+                return (
+                    "LITERATURE_SUPPORTED_EXTENSION",
+                    reasons,
+                    "A strict majority of the core differentiating relations are directly or partially represented in the reviewed literature, while the remaining core claims are component-supported rather than externally unmatched.",
+                )
+
+            reasons.append("known_relations_with_component_supported_gap")
+            return (
+                "NEW_COMBINATION_OF_KNOWN_EFFECTS",
+                reasons,
+                "The reviewed literature positively represents some core scientific relations, but a majority of the core differentiating relations are not directly or partially represented and remain component-supported.",
             )
 
         if components_only and not relation_backed:

@@ -89,3 +89,57 @@ def test_title_only_core_needs_absence_coverage_and_does_not_count_as_supported_
         coverage(False),
     )
     assert status == "INSUFFICIENT_SEARCH_EVIDENCE"
+
+
+def test_n1_2_strict_majority_relation_backed_is_supported_extension() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("COMPONENTS_ONLY"),
+            review("PARTIAL_PRIOR_ART"),
+            review("PARTIAL_PRIOR_ART"),
+        ],
+        coverage(),
+    )
+    assert status == "LITERATURE_SUPPORTED_EXTENSION"
+    assert (
+        "majority_core_relations_have_direct_or_partial_prior_art"
+        in reasons
+    )
+
+
+def test_n1_2_relation_backed_minority_remains_new_combination() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("COMPONENTS_ONLY"),
+            review("PARTIAL_PRIOR_ART"),
+            review("COMPONENTS_ONLY"),
+        ],
+        coverage(),
+    )
+    assert status == "NEW_COMBINATION_OF_KNOWN_EFFECTS"
+    assert "known_relations_with_component_supported_gap" in reasons
+
+
+def test_n1_2_tied_relation_support_does_not_count_as_majority() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("PARTIAL_PRIOR_ART"),
+            review("COMPONENTS_ONLY"),
+        ],
+        coverage(),
+    )
+    assert status == "NEW_COMBINATION_OF_KNOWN_EFFECTS"
+    assert "known_relations_with_component_supported_gap" in reasons
+
+
+def test_n1_2_actual_no_direct_gap_stays_new_combination_even_with_majority_support() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("PARTIAL_PRIOR_ART"),
+            review("PARTIAL_PRIOR_ART"),
+            review("NO_DIRECT_MATCH_FOUND"),
+        ],
+        coverage(),
+    )
+    assert status == "NEW_COMBINATION_OF_KNOWN_EFFECTS"
+    assert "known_relations_with_unmatched_composite_relation" in reasons
