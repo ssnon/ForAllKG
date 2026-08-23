@@ -57,7 +57,11 @@ RELATION-NUCLEUS RULES:
 3. For mediator claims, PARTIAL_PRIOR_ART requires evidence linking the proposed mediator to the relevant relation or outcome. Evidence that merely discusses the mediator variable is COMPONENT_ONLY.
 4. For moderator_interaction or descriptor_interaction claims, PARTIAL_PRIOR_ART requires an interaction, dependence, conditionality, or joint effect relevant to the asserted relation. Separate main effects or separate components are COMPONENT_ONLY.
 5. For context_condition claims, PARTIAL_PRIOR_ART requires a comparison across contexts or an explicit context-dependent effect. Evidence from only one context is COMPONENT_ONLY.
-6. For distinctive_prediction claims, PARTIAL_PRIOR_ART requires the same dependent relation or contrast even if direction, material scope, or a control condition is incomplete. Evidence for only one arm of the comparison or only the dependent variable is COMPONENT_ONLY.
+6. For distinctive_prediction claims, first determine whether the prediction's distinctive relation nucleus is unconditional or explicitly conditional/moderated.
+   - If the claim contains an explicit moderator, context condition, interaction, or cross-context comparison (for example "in X-conditioned structures", "compared with X-free structures", or "X changes the Y-versus-Z relationship"), a record that establishes only the underlying base input-to-outcome relation WITHOUT that moderator/conditional contrast is COMPONENT_ONLY, not PARTIAL_PRIOR_ART.
+   - PARTIAL_PRIOR_ART may tolerate incomplete direction, material scope, or secondary control details only when the defining conditional/moderating relation or an equivalent contrast is still represented.
+   - For an unconditional distinctive prediction, the same dependent relation or contrast may qualify as PARTIAL_PRIOR_ART even when direction, material scope, or a secondary control condition is incomplete.
+   - Evidence for only the dependent variable, only one unrelated arm of a comparison, or only the unconditioned base relation of a conditional claim is COMPONENT_ONLY.
 7. For mechanistic_link claims, PARTIAL_PRIOR_ART requires substantially the same mechanistic link. Sharing mechanism ingredients without the link is COMPONENT_ONLY.
 8. A scope mismatch can still permit PARTIAL_PRIOR_ART when the relation nucleus is preserved; scope similarity alone cannot create PARTIAL_PRIOR_ART.
 
