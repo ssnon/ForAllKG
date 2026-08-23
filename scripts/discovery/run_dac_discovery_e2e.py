@@ -131,6 +131,16 @@ class PipelineRunner:
             "title": args.title,
             "grounding_policy": args.grounding_policy,
             "grounding_algorithm_used": None,
+            "candidate_unit_policy": {
+                "min_candidate_unit_score": float(
+                    getattr(
+                        args,
+                        "min_candidate_unit_score",
+                        0.30,
+                    )
+                ),
+                "shared_between_discovery_bundle_and_alpha4": True,
+            },
             "stages": [],
             "failure": None,
         }
@@ -665,6 +675,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--traversal", str(candidate_traversal),
             "--domain-profile", domain_profile.profile_id,
             "--top-k", str(args.discovery_top_k),
+            "--min-reserved-candidate-unit-score",
+            str(args.min_candidate_unit_score),
             "--output", str(bundle),
         ],
         expected=[bundle],
@@ -706,6 +718,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
             *_base_model_args(args),
             *_mechanism_index_args(args),
             "--max-axes", str(args.max_axes),
+            "--min-candidate-unit-score",
+            str(args.min_candidate_unit_score),
             "--parse-retries", str(args.hypothesis_parse_retries),
             "--output-prefix", str(axis_prefix),
             "--save-prompts",
@@ -978,6 +992,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-depth", type=int, default=12)
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--discovery-top-k", type=int, default=8)
+    parser.add_argument(
+        "--min-candidate-unit-score",
+        type=float,
+        default=0.30,
+        help=(
+            "Shared candidate-unit quality floor used by both "
+            "DiscoveryBundle reserved candidate selection and the "
+            "Alpha4 discovery-axis planner."
+        ),
+    )
     parser.add_argument("--max-axes", type=int, default=5)
     parser.add_argument(
         "--hypothesis-parse-retries",
@@ -1028,7 +1052,12 @@ def parse_args() -> argparse.Namespace:
             "the runner refuses non-empty directories to prevent stale-artifact mixing."
         ),
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not 0.0 <= args.min_candidate_unit_score <= 1.0:
+        parser.error(
+            "--min-candidate-unit-score must be between 0 and 1"
+        )
+    return args
 
 
 def _mark_failed_manifest(run_dir: Path, exc: BaseException) -> None:
