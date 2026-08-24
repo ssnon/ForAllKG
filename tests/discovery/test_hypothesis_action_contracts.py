@@ -409,3 +409,59 @@ def test_directive_scope_cannot_span_multiple_hypotheses():
             disposition="repair_required",
             interpretation="invalid",
         )
+
+
+def test_external_novelty_claim_scope_requires_claim_id():
+    with pytest.raises(
+        ValidationError,
+        match="requires assertion_ids",
+    ):
+        G1FindingScope(
+            kind="external_novelty_claim",
+            hypothesis_ids=[
+                "hypothesis:final"
+            ],
+        )
+
+
+def test_finding_source_attributes_must_be_nonempty_strings():
+    with pytest.raises(
+        ValidationError,
+        match="source_attributes",
+    ):
+        G1FindingRef(
+            finding_ref_id="finding-ref:bad-attributes",
+            source_kind="external_novelty",
+            source_artifact_id="external:test",
+            source_finding_id="claim:test",
+            source_status="COMPONENTS_ONLY",
+            source_attributes={
+                "importance": "",
+            },
+            authority="informational",
+            source_portfolio_id="portfolio:final",
+            source_hypothesis_ids=[
+                "hypothesis:final"
+            ],
+            source_scope=G1FindingScope(
+                kind="external_novelty_claim",
+                hypothesis_ids=[
+                    "hypothesis:final"
+                ],
+                assertion_ids=[
+                    "claim:test"
+                ],
+            ),
+            target_portfolio_id="portfolio:final",
+            target_hypothesis_id="hypothesis:final",
+            target_scope=G1FindingScope(
+                kind="external_novelty_claim",
+                hypothesis_ids=[
+                    "hypothesis:final"
+                ],
+                assertion_ids=[
+                    "claim:test"
+                ],
+            ),
+            rationale="test",
+        )

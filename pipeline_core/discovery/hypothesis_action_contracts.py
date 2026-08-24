@@ -69,6 +69,7 @@ G1FindingScopeKind = Literal[
     "bridge",
     "prediction",
     "assumption",
+    "external_novelty_claim",
 ]
 
 
@@ -160,6 +161,13 @@ class G1FindingRef(StrictModel):
         min_length=1
     )
 
+    # Producer-specific metadata required by later lifecycle policy
+    # without leaking producer semantics into generic G1 contracts.
+    # Examples: external novelty claim importance or assessment level.
+    source_attributes: dict[str, str] = Field(
+        default_factory=dict
+    )
+
     authority: G1FindingAuthority
 
     source_portfolio_id: str | None = None
@@ -192,6 +200,17 @@ class G1FindingRef(StrictModel):
     def _provenance_binding(
         self,
     ) -> "G1FindingRef":
+        if any(
+            not str(key).strip()
+            or not str(value).strip()
+            for key, value
+            in self.source_attributes.items()
+        ):
+            raise ValueError(
+                "source_attributes keys/values "
+                "must be non-empty strings"
+            )
+
         if (
             len(self.source_hypothesis_ids)
             != len(
