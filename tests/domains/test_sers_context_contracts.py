@@ -478,3 +478,119 @@ def test_review_rejects_foreign_fact_reference() -> None:
             ],
             status="pass",
         )
+
+
+def test_direct_edge_binding_requires_relation() -> None:
+    from domains.sers.context_contracts import (
+        SERSContextBinding,
+    )
+
+    with pytest.raises(
+        ValidationError
+    ):
+        SERSContextBinding(
+            basis="direct_edge",
+            owner_ref_id="node:owner",
+            owner_label="3D-Si substrate",
+            owner_type="PlasmonicSubstrate",
+        )
+
+
+def test_context_signature_v1_remains_parseable() -> None:
+    payload = {
+        "schema_version":
+            "sers-context-signature-v1",
+        "signature_id":
+            "sig:v1",
+        "domain_profile_id":
+            "sers_au_ag",
+        "scope":
+            "axis_inspiration",
+        "source_ref_id":
+            "candidate:v1",
+        "facts": [
+            {
+                "fact_id":
+                    "fact:v1",
+                "dimension":
+                    "material_identity",
+                "scientific_role":
+                    "component",
+                "knowledge_state":
+                    "explicit",
+                "value":
+                    "Gold",
+                "provenance": [
+                    {
+                        "kind":
+                            "axis_anchor",
+                        "node_ids": [
+                            "node:gold"
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+
+    signature = (
+        SERSContextSignature.model_validate(
+            payload
+        )
+    )
+
+    assert (
+        signature.schema_version
+        == "sers-context-signature-v1"
+    )
+
+    assert (
+        signature.facts[0].binding
+        is None
+    )
+
+
+def test_new_signature_defaults_to_v2() -> None:
+    from domains.sers.context_contracts import (
+        SERSContextBinding,
+    )
+
+    signature = SERSContextSignature(
+        signature_id="sig:v2",
+        domain_profile_id="sers_au_ag",
+        scope="axis_inspiration",
+        source_ref_id="candidate:v2",
+        facts=[
+            SERSContextFact(
+                fact_id="fact:v2",
+                dimension="morphology",
+                scientific_role="morphology",
+                knowledge_state="explicit",
+                value="Inserted pyramid",
+                binding=SERSContextBinding(
+                    basis="direct_edge",
+                    owner_ref_id="node:si",
+                    owner_label="3D-Si substrate",
+                    owner_type="PlasmonicSubstrate",
+                    relation="HAS_MORPHOLOGY",
+                ),
+                provenance=[
+                    SERSContextProvenance(
+                        kind="axis_structural_edge",
+                        node_ids=[
+                            "node:si",
+                            "node:pyramid",
+                        ],
+                        edge_ids=[
+                            "edge:morph"
+                        ],
+                    )
+                ],
+            )
+        ],
+    )
+
+    assert (
+        signature.schema_version
+        == "sers-context-signature-v2"
+    )

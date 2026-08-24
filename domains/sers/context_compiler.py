@@ -12,6 +12,7 @@ from domains.sers.bridge_signatures import (
     normalize_sers_bridge_text,
 )
 from domains.sers.context_contracts import (
+    SERSContextBinding,
     SERSContextFact,
     SERSContextProvenance,
     SERSContextSignature,
@@ -593,6 +594,7 @@ class _FactAccumulator:
         knowledge_state: str,
         value: str | None,
         provenance: SERSContextProvenance,
+        binding: SERSContextBinding | None = None,
         discriminator: str | None = None,
         tags: Iterable[str] = (),
     ) -> None:
@@ -610,11 +612,18 @@ class _FactAccumulator:
             else normalized
         )
 
+        binding_key = (
+            binding.model_dump_json()
+            if binding is not None
+            else ""
+        )
+
         key = (
             dimension,
             scientific_role,
             knowledge_state,
             semantic_discriminator,
+            binding_key,
         )
 
         row = self._rows.setdefault(
@@ -634,6 +643,8 @@ class _FactAccumulator:
                         if value is not None
                         else None
                     ),
+                "binding":
+                    binding,
                 "provenance": [],
                 "tags": set(),
                 "discriminator":
@@ -697,6 +708,15 @@ class _FactAccumulator:
                         row[
                             "discriminator"
                         ],
+                    "binding":
+                        (
+                            row["binding"].model_dump(
+                                mode="json"
+                            )
+                            if row["binding"]
+                            is not None
+                            else None
+                        ),
                 })
             )
 
@@ -721,6 +741,9 @@ class _FactAccumulator:
                     value=row["value"],
                     normalized_value=row[
                         "normalized_value"
+                    ],
+                    binding=row[
+                        "binding"
                     ],
                     provenance=provenance,
                     tags=sorted(
@@ -887,6 +910,15 @@ class SERSContextCompiler:
             knowledge_state="explicit",
             value=label,
             provenance=provenance,
+            binding=SERSContextBinding(
+                basis="node",
+                owner_ref_id=node_id,
+                owner_label=label,
+                owner_type=_node_type(
+                    self.graph,
+                    node_id,
+                ),
+            ),
         )
 
 
@@ -968,6 +1000,19 @@ class SERSContextCompiler:
                 knowledge_state="explicit",
                 value=target_label,
                 provenance=provenance,
+                binding=SERSContextBinding(
+                    basis="direct_edge",
+                    owner_ref_id=source_node_id,
+                    owner_label=_node_label(
+                        self.graph,
+                        source_node_id,
+                    ),
+                    owner_type=_node_type(
+                        self.graph,
+                        source_node_id,
+                    ),
+                    relation=relation,
+                ),
             )
 
             # Material state is intentionally explicit-or-unknown.
@@ -1004,6 +1049,15 @@ class SERSContextCompiler:
                         knowledge_state="unknown",
                         value=None,
                         provenance=provenance,
+                        binding=SERSContextBinding(
+                            basis="derived_material_state",
+                            owner_ref_id=target_id,
+                            owner_label=target_label,
+                            owner_type=_node_type(
+                                self.graph,
+                                target_id,
+                            ),
+                        ),
                         discriminator=(
                             subject_tag
                         ),
@@ -1019,6 +1073,15 @@ class SERSContextCompiler:
                         knowledge_state="explicit",
                         value=state,
                         provenance=provenance,
+                        binding=SERSContextBinding(
+                            basis="derived_material_state",
+                            owner_ref_id=target_id,
+                            owner_label=target_label,
+                            owner_type=_node_type(
+                                self.graph,
+                                target_id,
+                            ),
+                        ),
                         discriminator=(
                             subject_tag
                             + ":"

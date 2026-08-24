@@ -58,6 +58,14 @@ SERSContextKnowledgeState = Literal[
 ]
 
 
+SERSContextBindingBasis = Literal[
+    "node",
+    "direct_edge",
+    "derived_material_state",
+    "hypothesis_assertion",
+]
+
+
 SERSContextProvenanceKind = Literal[
     "axis_anchor",
     "axis_structural_edge",
@@ -198,6 +206,53 @@ class SERSContextProvenance(StrictModel):
         return self
 
 
+class SERSContextBinding(StrictModel):
+    """Attachment of one context fact to its scientific owner.
+
+    This preserves distinctions such as:
+
+      3D-Si substrate --HAS_MORPHOLOGY--> inserted pyramid
+
+    versus:
+
+      Au@Ag nanoparticle --HAS_STRUCTURAL_MOTIF--> nanoparticle gap
+
+    which cannot be recovered safely from a dimension/value pair alone.
+    """
+
+    basis: SERSContextBindingBasis
+
+    owner_ref_id: str | None = None
+
+    owner_label: str = Field(
+        min_length=1
+    )
+
+    owner_type: str = Field(
+        min_length=1
+    )
+
+    relation: str | None = None
+
+    @model_validator(mode="after")
+    def _binding_consistency(
+        self,
+    ) -> "SERSContextBinding":
+        if (
+            self.basis == "direct_edge"
+            and not (
+                self.relation
+                or ""
+            ).strip()
+        ):
+            raise ValueError(
+                "direct_edge context binding "
+                "requires relation"
+            )
+
+        return self
+
+
 class SERSContextFact(StrictModel):
     fact_id: str = Field(
         min_length=1
@@ -212,6 +267,8 @@ class SERSContextFact(StrictModel):
     value: str | None = None
 
     normalized_value: str | None = None
+
+    binding: SERSContextBinding | None = None
 
     provenance: list[
         SERSContextProvenance
@@ -259,9 +316,12 @@ class SERSContextFact(StrictModel):
 
 
 class SERSContextSignature(StrictModel):
+    # v1 signatures remain parseable. v2 preserves scientific
+    # attachment/binding for compiled context facts.
     schema_version: Literal[
-        "sers-context-signature-v1"
-    ] = "sers-context-signature-v1"
+        "sers-context-signature-v1",
+        "sers-context-signature-v2",
+    ] = "sers-context-signature-v2"
 
     signature_id: str = Field(
         min_length=1

@@ -1152,3 +1152,346 @@ def test_axis_does_not_inherit_unconnected_same_paper_anchor() -> None:
             "substrate",
         )
     )
+
+
+def test_h1_context_binding_preserves_distinct_scientific_owners() -> None:
+    graph = nx.MultiDiGraph()
+
+    bridge = "paper::bind1::bridge"
+    si = "paper::bind1::si"
+    auag = "paper::bind1::auag"
+    pyramid = "paper::bind1::pyramid"
+    gap = "paper::bind1::gap"
+
+    graph.add_node(
+        bridge,
+        type="BridgeConcept",
+        label="candidate",
+        source_paper_id="bind1",
+    )
+
+    graph.add_node(
+        si,
+        type="PlasmonicSubstrate",
+        label="3D-Si substrate",
+        source_paper_id="bind1",
+    )
+
+    graph.add_node(
+        auag,
+        type="Nanostructure",
+        label="Au@Ag nanoparticle",
+        source_paper_id="bind1",
+    )
+
+    graph.add_node(
+        pyramid,
+        type="Morphology",
+        label="3D-Si with inserted small pyramid",
+        source_paper_id="bind1",
+    )
+
+    graph.add_node(
+        gap,
+        type="StructuralMotif",
+        label="10 nm nanoparticle gap",
+        source_paper_id="bind1",
+    )
+
+    graph.add_edge(
+        si,
+        bridge,
+        relation="GROUNDS_SEMANTIC_CANDIDATE",
+        edge_id="ground:si",
+    )
+
+    graph.add_edge(
+        auag,
+        bridge,
+        relation="GROUNDS_SEMANTIC_CANDIDATE",
+        edge_id="ground:auag",
+    )
+
+    graph.add_edge(
+        si,
+        pyramid,
+        relation="HAS_MORPHOLOGY",
+        edge_id="edge:pyramid",
+    )
+
+    graph.add_edge(
+        auag,
+        gap,
+        relation="HAS_STRUCTURAL_MOTIF",
+        edge_id="edge:gap",
+    )
+
+    inspiration = _inspiration(
+        inspiration_id="insp:bind1",
+        label="candidate",
+        node_ids=[
+            bridge,
+            si,
+            auag,
+        ],
+        entry=si,
+        exit=auag,
+    )
+
+    signature = (
+        _compiler(
+            graph
+        ).compile_axis_inspiration(
+            inspiration
+        )
+    )
+
+    morphology = [
+        row
+        for row in signature.facts
+        if (
+            row.dimension == "morphology"
+            and row.value
+            == "3D-Si with inserted small pyramid"
+        )
+    ]
+
+    gaps = [
+        row
+        for row in signature.facts
+        if (
+            row.dimension == "gap_regime"
+            and row.value
+            == "10 nm nanoparticle gap"
+        )
+    ]
+
+    assert len(morphology) == 1
+    assert len(gaps) == 1
+
+    assert morphology[0].binding is not None
+    assert morphology[0].binding.owner_ref_id == si
+    assert (
+        morphology[0].binding.owner_label
+        == "3D-Si substrate"
+    )
+    assert (
+        morphology[0].binding.relation
+        == "HAS_MORPHOLOGY"
+    )
+
+    assert gaps[0].binding is not None
+    assert gaps[0].binding.owner_ref_id == auag
+    assert (
+        gaps[0].binding.owner_label
+        == "Au@Ag nanoparticle"
+    )
+    assert (
+        gaps[0].binding.relation
+        == "HAS_STRUCTURAL_MOTIF"
+    )
+
+    assert (
+        morphology[0].binding.owner_ref_id
+        != gaps[0].binding.owner_ref_id
+    )
+
+
+def test_same_component_value_on_distinct_substrates_keeps_two_bindings() -> None:
+    graph = nx.MultiDiGraph()
+
+    bridge = "paper::bind2::bridge"
+    left = "paper::bind2::left"
+    right = "paper::bind2::right"
+    copper = "paper::bind2::cu"
+
+    graph.add_node(
+        bridge,
+        type="BridgeConcept",
+        label="candidate",
+        source_paper_id="bind2",
+    )
+
+    graph.add_node(
+        left,
+        type="PlasmonicSubstrate",
+        label="Copper substrate with gold",
+        source_paper_id="bind2",
+    )
+
+    graph.add_node(
+        right,
+        type="PlasmonicSubstrate",
+        label="Copper substrate with silver",
+        source_paper_id="bind2",
+    )
+
+    graph.add_node(
+        copper,
+        type="Metal",
+        label="Copper",
+        source_paper_id="bind2",
+    )
+
+    graph.add_edge(
+        left,
+        bridge,
+        relation="GROUNDS_SEMANTIC_CANDIDATE",
+        edge_id="ground:left",
+    )
+
+    graph.add_edge(
+        right,
+        bridge,
+        relation="GROUNDS_SEMANTIC_CANDIDATE",
+        edge_id="ground:right",
+    )
+
+    graph.add_edge(
+        left,
+        copper,
+        relation="HAS_COMPONENT",
+        edge_id="component:left",
+    )
+
+    graph.add_edge(
+        right,
+        copper,
+        relation="HAS_COMPONENT",
+        edge_id="component:right",
+    )
+
+    inspiration = _inspiration(
+        inspiration_id="insp:bind2",
+        label="candidate",
+        node_ids=[
+            bridge,
+            left,
+            right,
+        ],
+        entry=left,
+        exit=right,
+    )
+
+    signature = (
+        _compiler(
+            graph
+        ).compile_axis_inspiration(
+            inspiration
+        )
+    )
+
+    copper_facts = [
+        row
+        for row in signature.facts
+        if (
+            row.dimension
+            == "material_identity"
+            and row.value == "Copper"
+        )
+    ]
+
+    assert len(copper_facts) == 2
+
+    owners = {
+        row.binding.owner_ref_id
+        for row in copper_facts
+        if row.binding is not None
+    }
+
+    assert owners == {
+        left,
+        right,
+    }
+
+
+def test_unknown_material_state_binding_belongs_to_material_entity() -> None:
+    graph = nx.MultiDiGraph()
+
+    bridge = "paper::bind3::bridge"
+    substrate = "paper::bind3::substrate"
+    copper = "paper::bind3::cu"
+
+    graph.add_node(
+        bridge,
+        type="BridgeConcept",
+        label="candidate",
+        source_paper_id="bind3",
+    )
+
+    graph.add_node(
+        substrate,
+        type="PlasmonicSubstrate",
+        label="Copper substrate",
+        source_paper_id="bind3",
+    )
+
+    graph.add_node(
+        copper,
+        type="Metal",
+        label="Copper",
+        source_paper_id="bind3",
+    )
+
+    graph.add_edge(
+        substrate,
+        bridge,
+        relation="GROUNDS_SEMANTIC_CANDIDATE",
+        edge_id="ground:substrate",
+    )
+
+    graph.add_edge(
+        substrate,
+        copper,
+        relation="HAS_COMPONENT",
+        edge_id="component:cu",
+    )
+
+    inspiration = _inspiration(
+        inspiration_id="insp:bind3",
+        label="candidate",
+        node_ids=[
+            bridge,
+            substrate,
+        ],
+        entry=substrate,
+        exit=substrate,
+    )
+
+    signature = (
+        _compiler(
+            graph
+        ).compile_axis_inspiration(
+            inspiration
+        )
+    )
+
+    state = [
+        row
+        for row in signature.facts
+        if (
+            row.dimension
+            == "material_state"
+            and row.knowledge_state
+            == "unknown"
+            and (
+                "material_subject:copper"
+                in row.tags
+            )
+        )
+    ]
+
+    assert len(state) == 1
+    assert state[0].binding is not None
+    assert (
+        state[0].binding.basis
+        == "derived_material_state"
+    )
+    assert (
+        state[0].binding.owner_ref_id
+        == copper
+    )
+    assert (
+        state[0].binding.owner_label
+        == "Copper"
+    )
