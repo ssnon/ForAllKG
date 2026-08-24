@@ -14,6 +14,11 @@ from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryHypothesisLineage,
 )
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
+from pipeline_core.discovery.discovery_axis_context_runtime import (
+    AxisContextReviewRecord,
+    DiscoveryAxisContextReviewer,
+    validate_context_review_shape,
+)
 from pipeline_core.discovery.discovery_axis_inference_contracts import (
     AxisInferenceReview,
 )
@@ -113,6 +118,7 @@ class AcceptedAxisDraft:
     fidelity_repaired: bool
     inference_repaired: bool
     novelty_repaired: bool
+    context_review: Any | None = None
 
 
 @dataclass(frozen=True)
@@ -139,6 +145,8 @@ class DiscoveryAxisSynthesisOutcome:
     axis_prompts: tuple[AxisPromptRecord, ...]
     inference_reviews: tuple[AxisInferenceReview, ...]
     inference_review_history: tuple[AxisInferenceReviewRecord, ...]
+    context_reviews: tuple[Any, ...] = ()
+    context_review_history: tuple[AxisContextReviewRecord, ...] = ()
 
 
 class DiscoveryAxisSynthesisRuntime:
@@ -158,6 +166,7 @@ class DiscoveryAxisSynthesisRuntime:
         validator: HypothesisValidator | None = None,
         fidelity_critic: DiscoveryAxisFidelityCritic | None = None,
         inference_critic: DiscoveryAxisInferenceCritic | None = None,
+        context_reviewer: DiscoveryAxisContextReviewer | None = None,
         novelty_assessor: InternalNoveltyAssessor | None = None,
         max_compile_repairs: int = 1,
         max_fidelity_repairs: int = 1,
@@ -183,6 +192,7 @@ class DiscoveryAxisSynthesisRuntime:
         self.validator = validator or HypothesisValidator()
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
         self.inference_critic = inference_critic
+        self.context_reviewer = context_reviewer
         self.novelty_assessor = novelty_assessor or InternalNoveltyAssessor()
         self.max_compile_repairs = int(max_compile_repairs)
         self.max_fidelity_repairs = int(max_fidelity_repairs)
@@ -245,6 +255,42 @@ class DiscoveryAxisSynthesisRuntime:
 
         return review
 
+    def _review_context(
+        self,
+        *,
+        dual: DualHypothesisContext,
+        axis: DiscoveryAxis,
+        card: Any,
+        stage: str,
+        generation_index: int,
+        history: list[AxisContextReviewRecord],
+    ) -> Any | None:
+        if self.context_reviewer is None:
+            return None
+
+        review = self.context_reviewer.review(
+            dual=dual,
+            axis=axis,
+            card=card,
+        )
+
+        validate_context_review_shape(
+            axis=axis,
+            card=card,
+            review=review,
+        )
+
+        history.append(
+            AxisContextReviewRecord(
+                axis_id=axis.axis_id,
+                generation_index=generation_index,
+                stage=stage,
+                review=review,
+            )
+        )
+
+        return review
+
     def _novelty_card(
         self,
         dual: DualHypothesisContext,
@@ -272,6 +318,7 @@ class DiscoveryAxisSynthesisRuntime:
         inference_review_history: list[
             AxisInferenceReviewRecord
         ] = []
+        context_review_history: list[AxisContextReviewRecord] = []
 
         for axis in plan.axes:
             assembler = DiscoveryAxisHypothesisPromptAssembler(
@@ -353,6 +400,7 @@ class DiscoveryAxisSynthesisRuntime:
             fidelity_repaired = False
             inference_repaired = False
             novelty_repaired = False
+            context_review = None
             inference: AxisInferenceReview | None = None
             fidelity = self.fidelity_critic.review(axis, card, self.mapper.encoder)
 
@@ -592,6 +640,23 @@ class DiscoveryAxisSynthesisRuntime:
                     )
                     continue
 
+            # S1 context review: observational here; G1 owns action policy.
+            if self.context_reviewer is not None:
+                context_review = self._review_context(
+                    dual=dual,
+                    axis=axis,
+                    card=card,
+                    stage=(
+                        "inference_repair"
+                        if inference_repaired
+                        else "fidelity_repair"
+                        if fidelity_repaired
+                        else "initial"
+                    ),
+                    generation_index=generation_index,
+                    history=context_review_history,
+                )
+
             novelty = self._novelty_card(dual, portfolio)
             if novelty.status in self.reject_novelty_statuses and self.max_novelty_repairs:
                 attempts.append(
@@ -701,6 +766,16 @@ class DiscoveryAxisSynthesisRuntime:
                         )
                         continue
 
+                if self.context_reviewer is not None:
+                    context_review = self._review_context(
+                        dual=dual,
+                        axis=axis,
+                        card=card,
+                        stage="novelty_repair",
+                        generation_index=generation_index,
+                        history=context_review_history,
+                    )
+
                 novelty = self._novelty_card(dual, portfolio)
 
             if novelty.status in self.reject_novelty_statuses:
@@ -730,6 +805,7 @@ class DiscoveryAxisSynthesisRuntime:
                     fidelity_repaired=fidelity_repaired,
                     inference_repaired=inference_repaired,
                     novelty_repaired=novelty_repaired,
+                    context_review=context_review,
                 )
             )
             attempts.append(
@@ -844,5 +920,13 @@ class DiscoveryAxisSynthesisRuntime:
             ),
             inference_review_history=tuple(
                 inference_review_history
+            ),
+            context_reviews=tuple(
+                row.context_review
+                for row in accepted
+                if row.context_review is not None
+            ),
+            context_review_history=tuple(
+                context_review_history
             ),
         )
