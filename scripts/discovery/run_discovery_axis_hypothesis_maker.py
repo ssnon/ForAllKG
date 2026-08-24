@@ -8,6 +8,12 @@ from pathlib import Path
 from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 from pipeline_core.discovery.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
+from pipeline_core.discovery.discovery_axis_inference_critic import (
+    DiscoveryAxisInferenceCritic,
+)
+from pipeline_core.discovery.discovery_axis_inference_llm import (
+    InstructorOpenAICompatibleAxisInferenceBackend,
+)
 from pipeline_core.discovery.evidence_family_decomposition import (
     EvidenceFamilyDecompositionReport,
 )
@@ -90,7 +96,16 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--max-compile-repairs", type=int, choices=(0, 1), default=1)
     parser.add_argument("--max-fidelity-repairs", type=int, choices=(0, 1), default=1)
+    parser.add_argument("--max-inference-repairs", type=int, choices=(0, 1), default=1)
     parser.add_argument("--max-novelty-repairs", type=int, choices=(0, 1), default=1)
+    parser.add_argument(
+        "--inference-critic-model",
+        default=os.getenv("OPENROUTER_CRITIC_MODEL"),
+        help=(
+            "Model for discovery-axis inference-strength review. "
+            "Defaults to OPENROUTER_CRITIC_MODEL, then --model."
+        ),
+    )
 
     parser.add_argument("--output-prefix", type=Path, required=True)
     parser.add_argument("--save-prompts", action="store_true")
@@ -187,11 +202,28 @@ def main() -> int:
         timeout=args.timeout,
         extra_headers=dict(args.header),
     )
+    inference_backend = InstructorOpenAICompatibleAxisInferenceBackend(
+        model=args.inference_critic_model or args.model,
+        api_key_env=args.api_key_env,
+        base_url=args.base_url,
+        instructor_mode=args.instructor_mode,
+        temperature=0.0,
+        parse_retries=1,
+        timeout=args.timeout,
+        extra_headers=dict(args.header),
+    )
+
+    inference_critic = DiscoveryAxisInferenceCritic(
+        inference_backend
+    )
+
     runtime = DiscoveryAxisSynthesisRuntime(
         backend,
         mapper,
+        inference_critic=inference_critic,
         max_compile_repairs=args.max_compile_repairs,
         max_fidelity_repairs=args.max_fidelity_repairs,
+        max_inference_repairs=args.max_inference_repairs,
         max_novelty_repairs=args.max_novelty_repairs,
         family_hierarchy=family_hierarchy,
     )
@@ -206,6 +238,60 @@ def main() -> int:
     _write_json(Path(str(args.output_prefix) + ".draft.json"), outcome.final_draft)
     _write_json(Path(str(args.output_prefix) + ".portfolio.json"), outcome.portfolio)
     _write_json(Path(str(args.output_prefix) + ".lineage.json"), outcome.report)
+
+    inference_path = Path(
+        str(args.output_prefix) + ".inference.json"
+    )
+
+    inference_records = []
+
+    if outcome.inference_reviews:
+        review_by_axis = {
+            row.axis_id: row
+            for row in outcome.inference_reviews
+        }
+
+        for lineage in outcome.report.lineages:
+            review = review_by_axis.get(
+                lineage.axis_id
+            )
+
+            if review is None:
+                continue
+
+            inference_records.append(
+                {
+                    "final_hypothesis_id":
+                        lineage.hypothesis_id,
+                    "axis_id":
+                        lineage.axis_id,
+                    "source_review_hypothesis_id":
+                        review.hypothesis_id,
+                    "status":
+                        review.status,
+                    "inference_repaired":
+                        lineage.inference_repaired,
+                    "review":
+                        review.model_dump(
+                            mode="json"
+                        ),
+                }
+            )
+
+    _write_json(
+        inference_path,
+        {
+            "schema_version":
+                "discovery-axis-inference-artifact-v1",
+            "portfolio_id":
+                outcome.portfolio.portfolio_id,
+            "policy_version":
+                outcome.report.policy_version,
+            "records":
+                inference_records,
+        },
+    )
+
     _write_json(
         Path(str(args.output_prefix) + ".internal_novelty.json"),
         outcome.internal_novelty_report,
@@ -272,6 +358,8 @@ def main() -> int:
             f"[{index}] fidelity={lineage.axis_fidelity_status} "
             f"internal_novelty={novelty.status} "
             f"fidelity_repaired={lineage.fidelity_repaired} "
+            f"inference={lineage.inference_status} "
+            f"inference_repaired={lineage.inference_repaired} "
             f"novelty_repaired={lineage.novelty_repaired}"
         )
         print("     ", card.title)
@@ -285,11 +373,14 @@ def main() -> int:
         for row in rejected:
             print(
                 f"- axis={row.axis_id} stage={row.stage} decision={row.decision} "
-                f"fidelity={row.fidelity_status} novelty={row.internal_novelty_status}"
+                f"fidelity={row.fidelity_status} "
+                f"inference={row.inference_status} "
+                f"novelty={row.internal_novelty_status}"
             )
 
     print("Saved portfolio:", Path(str(args.output_prefix) + ".portfolio.json"))
     print("Saved lineage:", Path(str(args.output_prefix) + ".lineage.json"))
+    print("Saved inference:", inference_path)
     print(
         "Saved internal novelty:",
         Path(str(args.output_prefix) + ".internal_novelty.json"),

@@ -707,6 +707,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     axis_portfolio = run / "hypothesis_axis_a4.portfolio.json"
     axis_plan = run / "hypothesis_axis_a4.axis_plan.json"
     lineage = run / "hypothesis_axis_a4.lineage.json"
+    axis_inference = run / "hypothesis_axis_a4.inference.json"
     axis_evidence_diversity = (
         run / "hypothesis_axis_a4.evidence_diversity.json"
     )
@@ -721,6 +722,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--min-candidate-unit-score",
             str(args.min_candidate_unit_score),
             "--parse-retries", str(args.hypothesis_parse_retries),
+            "--inference-critic-model", str(args.critic_model),
             "--output-prefix", str(axis_prefix),
             "--save-prompts",
         ],
@@ -728,6 +730,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             axis_portfolio,
             axis_plan,
             lineage,
+            axis_inference,
             axis_evidence_diversity,
         ],
     )

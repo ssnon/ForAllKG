@@ -186,6 +186,79 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
             ]
         )
 
+    def inference_repair_feedback(
+        self,
+        *,
+        previous_draft: HypothesisPortfolioDraft,
+        review: object,
+    ) -> str:
+        review_json = (
+            review.model_dump_json(indent=2)
+            if hasattr(review, "model_dump_json")
+            else str(review)
+        )
+
+        return "\n".join(
+            [
+                "DISCOVERY-AXIS INFERENCE-STRENGTH REPAIR",
+                "========================================",
+                (
+                    "The previous hypothesis is scientifically usable in core form, "
+                    "but the inference-strength critic found one or more assertions "
+                    "that exceed the support supplied by the selected positive premises "
+                    "and the inspiration-only discovery axis."
+                ),
+                "",
+                f"Assigned axis: {self.axis.label}",
+                (
+                    "Proposed axis semantics: "
+                    f"{self.axis.proposed_subject} | "
+                    f"{self.axis.proposed_relation} | "
+                    f"{self.axis.proposed_object}"
+                ),
+                "",
+                "REPAIR RULES",
+                "------------",
+                "- Preserve assertions marked KEEP.",
+                "- Preserve A_AXIS content as explicitly hypothetical.",
+                (
+                    "- For OPEN_DIRECTION, remove unsupported sign, ordering, "
+                    "response shape, optimum, threshold, or directional specificity."
+                ),
+                (
+                    "- For REFRAME, retain only the minimum open-direction relation "
+                    "needed to test the central grounded-plus-axis synthesis."
+                ),
+                (
+                    "- For REMOVE, remove that unsupported prediction/consequence "
+                    "unless a weaker directly testable replacement is necessary to "
+                    "keep the hypothesis falsifiable."
+                ),
+                (
+                    "- If a prediction is removed or replaced, update its matching "
+                    "falsification criterion so the final draft remains internally "
+                    "consistent."
+                ),
+                "- Do not add new positive premises.",
+                "- Do not promote the discovery axis into evidence.",
+                (
+                    "- Do not introduce new increase/decrease/shift/non-monotonic/"
+                    "optimum/threshold claims unless they are explicitly supported "
+                    "by the selected premises or axis semantics."
+                ),
+                "- Keep exactly one hypothesis for this axis, or abstain.",
+                "- Return a complete replacement HypothesisPortfolioDraft.",
+                "",
+                "INFERENCE REVIEW",
+                "----------------",
+                review_json,
+                "",
+                "PREVIOUS DRAFT",
+                "--------------",
+                previous_draft.model_dump_json(indent=2),
+            ]
+        )
+
     def novelty_repair_feedback(
         self,
         *,

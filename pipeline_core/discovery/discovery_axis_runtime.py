@@ -14,6 +14,12 @@ from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryHypothesisLineage,
 )
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
+from pipeline_core.discovery.discovery_axis_inference_contracts import (
+    AxisInferenceReview,
+)
+from pipeline_core.discovery.discovery_axis_inference_critic import (
+    DiscoveryAxisInferenceCritic,
+)
 from pipeline_core.discovery.evidence_family_selection import EvidenceFamilyHierarchy
 from pipeline_core.discovery.discovery_axis_prompt import DiscoveryAxisHypothesisPromptAssembler
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
@@ -102,8 +108,10 @@ class AcceptedAxisDraft:
     axis: DiscoveryAxis
     proposal: HypothesisProposalDraft
     fidelity: AxisFidelityReview
+    inference: AxisInferenceReview | None
     internal_novelty_status: str
     fidelity_repaired: bool
+    inference_repaired: bool
     novelty_repaired: bool
 
 
@@ -121,6 +129,7 @@ class DiscoveryAxisSynthesisOutcome:
     internal_novelty_report: InternalNoveltyReport
     final_draft: HypothesisPortfolioDraft
     axis_prompts: tuple[AxisPromptRecord, ...]
+    inference_reviews: tuple[AxisInferenceReview, ...]
 
 
 class DiscoveryAxisSynthesisRuntime:
@@ -139,9 +148,11 @@ class DiscoveryAxisSynthesisRuntime:
         compiler: HypothesisCompiler | None = None,
         validator: HypothesisValidator | None = None,
         fidelity_critic: DiscoveryAxisFidelityCritic | None = None,
+        inference_critic: DiscoveryAxisInferenceCritic | None = None,
         novelty_assessor: InternalNoveltyAssessor | None = None,
         max_compile_repairs: int = 1,
         max_fidelity_repairs: int = 1,
+        max_inference_repairs: int = 1,
         max_novelty_repairs: int = 1,
         reject_novelty_statuses: tuple[str, ...] = (
             "reconstructs_existing_corpus_claim",
@@ -152,6 +163,7 @@ class DiscoveryAxisSynthesisRuntime:
         for name, value in {
             "max_compile_repairs": max_compile_repairs,
             "max_fidelity_repairs": max_fidelity_repairs,
+            "max_inference_repairs": max_inference_repairs,
             "max_novelty_repairs": max_novelty_repairs,
         }.items():
             if value not in {0, 1}:
@@ -161,9 +173,11 @@ class DiscoveryAxisSynthesisRuntime:
         self.compiler = compiler or HypothesisCompiler()
         self.validator = validator or HypothesisValidator()
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
+        self.inference_critic = inference_critic
         self.novelty_assessor = novelty_assessor or InternalNoveltyAssessor()
         self.max_compile_repairs = int(max_compile_repairs)
         self.max_fidelity_repairs = int(max_fidelity_repairs)
+        self.max_inference_repairs = int(max_inference_repairs)
         self.max_novelty_repairs = int(max_novelty_repairs)
         self.reject_novelty_statuses = tuple(reject_novelty_statuses)
         self.family_hierarchy = family_hierarchy
@@ -293,7 +307,9 @@ class DiscoveryAxisSynthesisRuntime:
                 continue
 
             fidelity_repaired = False
+            inference_repaired = False
             novelty_repaired = False
+            inference: AxisInferenceReview | None = None
             fidelity = self.fidelity_critic.review(axis, card, self.mapper.encoder)
 
             if fidelity.status == "fail" and self.max_fidelity_repairs:
@@ -362,6 +378,158 @@ class DiscoveryAxisSynthesisRuntime:
                 )
                 continue
 
+            # --------------------------------------------------------------
+            # Discovery-axis inference-strength gate.
+            #
+            # This gate is optional at the library-runtime level so legacy
+            # callers/tests can remain compatible. The production Alpha4
+            # runner supplies it explicitly.
+            # --------------------------------------------------------------
+            if self.inference_critic is not None:
+                inference_outcome = self.inference_critic.review(
+                    context,
+                    axis,
+                    card,
+                )
+                inference = inference_outcome.review
+
+                if (
+                    inference.status == "reframe_required"
+                    and self.max_inference_repairs
+                ):
+                    attempts.append(
+                        AxisAttemptRecord(
+                            axis_id=axis.axis_id,
+                            stage=(
+                                "fidelity_repair"
+                                if fidelity_repaired
+                                else "initial"
+                            ),
+                            generation_index=generation_index,
+                            decision="inference_rejected",
+                            hypothesis_id=card.hypothesis_id,
+                            title=card.title,
+                            fidelity_status=fidelity.status,
+                            inference_status=inference.status,
+                            repair_reason=";".join(
+                                inference.reason_codes
+                            )
+                            or inference.interpretation,
+                        )
+                    )
+
+                    feedback = assembler.inference_repair_feedback(
+                        previous_draft=current_draft,
+                        review=inference,
+                    )
+
+                    repaired = self.backend.repair(
+                        outcome.prompt,
+                        current_draft,
+                        feedback,
+                    )
+
+                    current_draft = repaired.draft
+                    generation_index += 1
+                    inference_repaired = True
+
+                    if not current_draft.hypotheses:
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision="abstained",
+                                inference_status="reframe_required",
+                                repair_reason=(
+                                    "inference-strength repair chose abstention"
+                                ),
+                            )
+                        )
+                        continue
+
+                    portfolio, compile_codes, validation_codes = (
+                        self._compile_validate(
+                            context,
+                            current_draft,
+                        )
+                    )
+
+                    card = self._single_card(portfolio)
+
+                    if card is None:
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision=(
+                                    "compile_rejected"
+                                    if compile_codes
+                                    else "validation_rejected"
+                                ),
+                                compile_issue_codes=compile_codes,
+                                validation_issue_codes=validation_codes,
+                                inference_status="reframe_required",
+                            )
+                        )
+                        continue
+
+                    # A repair must preserve assigned-axis fidelity.
+                    fidelity = self.fidelity_critic.review(
+                        axis,
+                        card,
+                        self.mapper.encoder,
+                    )
+
+                    if fidelity.status == "fail":
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision="fidelity_rejected",
+                                hypothesis_id=card.hypothesis_id,
+                                title=card.title,
+                                fidelity_status=fidelity.status,
+                                inference_status="reframe_required",
+                                repair_reason=(
+                                    "inference repair lost assigned-axis fidelity"
+                                ),
+                            )
+                        )
+                        continue
+
+                    inference_outcome = self.inference_critic.review(
+                        context,
+                        axis,
+                        card,
+                    )
+                    inference = inference_outcome.review
+
+                if inference.status != "pass":
+                    attempts.append(
+                        AxisAttemptRecord(
+                            axis_id=axis.axis_id,
+                            stage=(
+                                "inference_repair"
+                                if inference_repaired
+                                else "initial"
+                            ),
+                            generation_index=generation_index,
+                            decision="inference_rejected",
+                            hypothesis_id=card.hypothesis_id,
+                            title=card.title,
+                            fidelity_status=fidelity.status,
+                            inference_status=inference.status,
+                            repair_reason=(
+                                "inference-strength review still requires "
+                                "reframing after bounded repair"
+                            ),
+                        )
+                    )
+                    continue
+
             novelty = self._novelty_card(dual, portfolio)
             if novelty.status in self.reject_novelty_statuses and self.max_novelty_repairs:
                 attempts.append(
@@ -427,10 +595,43 @@ class DiscoveryAxisSynthesisRuntime:
                             hypothesis_id=card.hypothesis_id,
                             title=card.title,
                             fidelity_status=fidelity.status,
+                            inference_status=(
+                                inference.status
+                                if inference is not None
+                                else "not_assessed"
+                            ),
                             repair_reason="novelty repair lost assigned-axis fidelity",
                         )
                     )
                     continue
+
+                if self.inference_critic is not None:
+                    inference_outcome = self.inference_critic.review(
+                        context,
+                        axis,
+                        card,
+                    )
+                    inference = inference_outcome.review
+
+                    if inference.status != "pass":
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="novelty_repair",
+                                generation_index=generation_index,
+                                decision="inference_rejected",
+                                hypothesis_id=card.hypothesis_id,
+                                title=card.title,
+                                fidelity_status=fidelity.status,
+                                inference_status=inference.status,
+                                repair_reason=(
+                                    "novelty repair introduced or retained "
+                                    "unsupported inference specificity"
+                                ),
+                            )
+                        )
+                        continue
+
                 novelty = self._novelty_card(dual, portfolio)
 
             if novelty.status in self.reject_novelty_statuses:
@@ -455,8 +656,10 @@ class DiscoveryAxisSynthesisRuntime:
                     axis=axis,
                     proposal=proposal,
                     fidelity=fidelity,
+                    inference=inference,
                     internal_novelty_status=str(novelty.status),
                     fidelity_repaired=fidelity_repaired,
+                    inference_repaired=inference_repaired,
                     novelty_repaired=novelty_repaired,
                 )
             )
@@ -475,6 +678,11 @@ class DiscoveryAxisSynthesisRuntime:
                     hypothesis_id=card.hypothesis_id,
                     title=card.title,
                     fidelity_status=fidelity.status,
+                    inference_status=(
+                        inference.status
+                        if inference is not None
+                        else "not_assessed"
+                    ),
                     internal_novelty_status=novelty.status,
                 )
             )
@@ -510,8 +718,14 @@ class DiscoveryAxisSynthesisRuntime:
                     inspiration_id=accepted_row.axis.inspiration_id,
                     candidate_unit_id=accepted_row.axis.candidate_unit_id,
                     axis_fidelity_status=accepted_row.fidelity.status,
+                    inference_status=(
+                        accepted_row.inference.status
+                        if accepted_row.inference is not None
+                        else "not_assessed"
+                    ),
                     internal_novelty_status=final_card_novelty.status,
                     fidelity_repaired=accepted_row.fidelity_repaired,
+                    inference_repaired=accepted_row.inference_repaired,
                     novelty_repaired=accepted_row.novelty_repaired,
                 )
             )
@@ -538,7 +752,11 @@ class DiscoveryAxisSynthesisRuntime:
             "lineages": [row.model_dump(mode="json") for row in lineages],
             "attempts": [row.model_dump(mode="json") for row in attempts],
             "external_novelty_status": "not_assessed",
-            "policy_version": "discovery-axis-synthesis-policy-v1",
+            "policy_version": (
+                "discovery-axis-synthesis-policy-v2"
+                if self.inference_critic is not None
+                else "discovery-axis-synthesis-policy-v1"
+            ),
         }
         report = DiscoveryAxisSynthesisReport(
             **report_payload,
@@ -550,4 +768,9 @@ class DiscoveryAxisSynthesisRuntime:
             internal_novelty_report=final_novelty,
             final_draft=final_draft,
             axis_prompts=tuple(prompt_records),
+            inference_reviews=tuple(
+                row.inference
+                for row in accepted
+                if row.inference is not None
+            ),
         )

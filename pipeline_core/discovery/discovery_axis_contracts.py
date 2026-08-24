@@ -4,6 +4,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from pipeline_core.discovery.discovery_axis_inference_contracts import (
+    InferenceReviewStatus,
+)
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 
 
@@ -24,6 +27,7 @@ AxisAttemptStage = Literal[
     "initial",
     "compile_repair",
     "fidelity_repair",
+    "inference_repair",
     "novelty_repair",
 ]
 AxisAttemptDecision = Literal[
@@ -32,6 +36,7 @@ AxisAttemptDecision = Literal[
     "compile_rejected",
     "validation_rejected",
     "fidelity_rejected",
+    "inference_rejected",
     "novelty_rejected",
 ]
 
@@ -111,6 +116,7 @@ class AxisAttemptRecord(StrictModel):
     hypothesis_id: str | None = None
     title: str | None = None
     fidelity_status: AxisFidelityStatus | None = None
+    inference_status: InferenceReviewStatus | Literal["not_assessed"] = "not_assessed"
     internal_novelty_status: InternalNoveltyStatus | None = None
     compile_issue_codes: list[str] = Field(default_factory=list)
     validation_issue_codes: list[str] = Field(default_factory=list)
@@ -125,8 +131,10 @@ class DiscoveryHypothesisLineage(StrictModel):
     discovery_dependency: Literal["essential"] = "essential"
     epistemic_status: Literal["inspiration_only"] = "inspiration_only"
     axis_fidelity_status: AxisFidelityStatus
+    inference_status: InferenceReviewStatus | Literal["not_assessed"] = "not_assessed"
     internal_novelty_status: InternalNoveltyStatus
     fidelity_repaired: bool = False
+    inference_repaired: bool = False
     novelty_repaired: bool = False
 
 
@@ -147,9 +155,10 @@ class DiscoveryAxisSynthesisReport(StrictModel):
     lineages: list[DiscoveryHypothesisLineage] = Field(default_factory=list)
     attempts: list[AxisAttemptRecord] = Field(default_factory=list)
     external_novelty_status: Literal["not_assessed"] = "not_assessed"
-    policy_version: Literal["discovery-axis-synthesis-policy-v1"] = (
-        "discovery-axis-synthesis-policy-v1"
-    )
+    policy_version: Literal[
+        "discovery-axis-synthesis-policy-v1",
+        "discovery-axis-synthesis-policy-v2",
+    ] = "discovery-axis-synthesis-policy-v2"
 
 
 class DiscoveryAxisSynthesisArtifact(StrictModel):
