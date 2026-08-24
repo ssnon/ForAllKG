@@ -123,6 +123,14 @@ class AxisPromptRecord:
 
 
 @dataclass(frozen=True)
+class AxisInferenceReviewRecord:
+    axis_id: str
+    generation_index: int
+    stage: str
+    review: AxisInferenceReview
+
+
+@dataclass(frozen=True)
 class DiscoveryAxisSynthesisOutcome:
     portfolio: HypothesisPortfolio
     report: DiscoveryAxisSynthesisReport
@@ -130,6 +138,7 @@ class DiscoveryAxisSynthesisOutcome:
     final_draft: HypothesisPortfolioDraft
     axis_prompts: tuple[AxisPromptRecord, ...]
     inference_reviews: tuple[AxisInferenceReview, ...]
+    inference_review_history: tuple[AxisInferenceReviewRecord, ...]
 
 
 class DiscoveryAxisSynthesisRuntime:
@@ -204,6 +213,38 @@ class DiscoveryAxisSynthesisRuntime:
             return None
         return portfolio.hypotheses[0]
 
+    def _review_inference(
+        self,
+        *,
+        context: Any,
+        axis: DiscoveryAxis,
+        card: Any,
+        stage: str,
+        generation_index: int,
+        history: list[AxisInferenceReviewRecord],
+    ) -> AxisInferenceReview | None:
+        if self.inference_critic is None:
+            return None
+
+        outcome = self.inference_critic.review(
+            context,
+            axis,
+            card,
+        )
+
+        review = outcome.review
+
+        history.append(
+            AxisInferenceReviewRecord(
+                axis_id=axis.axis_id,
+                generation_index=generation_index,
+                stage=stage,
+                review=review,
+            )
+        )
+
+        return review
+
     def _novelty_card(
         self,
         dual: DualHypothesisContext,
@@ -228,6 +269,9 @@ class DiscoveryAxisSynthesisRuntime:
         accepted: list[AcceptedAxisDraft] = []
         attempts: list[AxisAttemptRecord] = []
         prompt_records: list[AxisPromptRecord] = []
+        inference_review_history: list[
+            AxisInferenceReviewRecord
+        ] = []
 
         for axis in plan.axes:
             assembler = DiscoveryAxisHypothesisPromptAssembler(
@@ -386,12 +430,23 @@ class DiscoveryAxisSynthesisRuntime:
             # runner supplies it explicitly.
             # --------------------------------------------------------------
             if self.inference_critic is not None:
-                inference_outcome = self.inference_critic.review(
-                    context,
-                    axis,
-                    card,
+                inference = self._review_inference(
+                    context=context,
+                    axis=axis,
+                    card=card,
+                    stage=(
+                        "fidelity_repair"
+                        if fidelity_repaired
+                        else "initial"
+                    ),
+                    generation_index=generation_index,
+                    history=inference_review_history,
                 )
-                inference = inference_outcome.review
+
+                if inference is None:
+                    raise RuntimeError(
+                        "configured inference critic returned no review"
+                    )
 
                 if (
                     inference.status == "reframe_required"
@@ -500,12 +555,19 @@ class DiscoveryAxisSynthesisRuntime:
                         )
                         continue
 
-                    inference_outcome = self.inference_critic.review(
-                        context,
-                        axis,
-                        card,
+                    inference = self._review_inference(
+                        context=context,
+                        axis=axis,
+                        card=card,
+                        stage="inference_repair",
+                        generation_index=generation_index,
+                        history=inference_review_history,
                     )
-                    inference = inference_outcome.review
+
+                    if inference is None:
+                        raise RuntimeError(
+                            "configured inference critic returned no review"
+                        )
 
                 if inference.status != "pass":
                     attempts.append(
@@ -606,12 +668,19 @@ class DiscoveryAxisSynthesisRuntime:
                     continue
 
                 if self.inference_critic is not None:
-                    inference_outcome = self.inference_critic.review(
-                        context,
-                        axis,
-                        card,
+                    inference = self._review_inference(
+                        context=context,
+                        axis=axis,
+                        card=card,
+                        stage="novelty_repair",
+                        generation_index=generation_index,
+                        history=inference_review_history,
                     )
-                    inference = inference_outcome.review
+
+                    if inference is None:
+                        raise RuntimeError(
+                            "configured inference critic returned no review"
+                        )
 
                     if inference.status != "pass":
                         attempts.append(
@@ -772,5 +841,8 @@ class DiscoveryAxisSynthesisRuntime:
                 row.inference
                 for row in accepted
                 if row.inference is not None
+            ),
+            inference_review_history=tuple(
+                inference_review_history
             ),
         )

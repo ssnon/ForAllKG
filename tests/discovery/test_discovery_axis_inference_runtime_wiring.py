@@ -112,30 +112,37 @@ def test_novelty_repair_rechecks_inference() -> None:
         "pipeline_core/discovery/discovery_axis_runtime.py"
     ).read_text(encoding="utf-8")
 
-    # Verify ordering rather than searching for the runtime-concatenated
-    # representation of adjacent Python string literals.
+    # After novelty repair, fidelity is rechecked first. Inference review
+    # must then go through the centralized provenance-recording helper
+    # before internal novelty is reassessed.
     novelty_repair_fidelity = text.index(
         "novelty repair lost assigned-axis fidelity"
     )
 
     inference_recheck = text.index(
-        "inference_outcome = self.inference_critic.review(",
+        "inference = self._review_inference(",
         novelty_repair_fidelity,
+    )
+
+    novelty_stage = text.index(
+        'stage="novelty_repair"',
+        inference_recheck,
     )
 
     novelty_reassessment = text.index(
         "novelty = self._novelty_card(dual, portfolio)",
-        inference_recheck,
+        novelty_stage,
     )
 
     assert (
         novelty_repair_fidelity
         < inference_recheck
+        < novelty_stage
         < novelty_reassessment
     )
 
-    # Preserve an explicit diagnostic assertion without depending on
-    # Python's adjacent-string-literal runtime concatenation.
+    # Preserve the rejection diagnostic as two source literals because
+    # Python concatenates them only at runtime.
     assert '"novelty repair introduced or retained "' in text
     assert '"unsupported inference specificity"' in text
 
@@ -170,5 +177,72 @@ def test_e2e_requires_inference_artifact() -> None:
     )
     assert (
         '"--inference-critic-model"'
+        in text
+    )
+
+
+def test_runtime_centralizes_inference_review_history_capture() -> None:
+    text = Path(
+        "pipeline_core/discovery/discovery_axis_runtime.py"
+    ).read_text(encoding="utf-8")
+
+    # There should be exactly one direct backend-critic call in the
+    # runtime: the centralized history-recording helper.
+    assert (
+        text.count(
+            "self.inference_critic.review("
+        )
+        == 1
+    )
+
+    assert (
+        "inference_review_history"
+        in text
+    )
+
+    assert (
+        "history.append("
+        in text
+    )
+
+    assert (
+        'stage="inference_repair"'
+        in text
+    )
+
+    assert (
+        'stage="novelty_repair"'
+        in text
+    )
+
+
+def test_runner_persists_complete_inference_review_history() -> None:
+    text = Path(
+        "scripts/discovery/run_discovery_axis_hypothesis_maker.py"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "discovery-axis-inference-artifact-v2"
+        in text
+    )
+
+    assert (
+        '"review_history"'
+        in text
+    )
+
+    assert (
+        "outcome.inference_review_history"
+        in text
+    )
+
+    assert (
+        '"review_history_count"'
+        in text
+    )
+
+    # Final accepted records remain present for compatibility.
+    assert (
+        '"records"'
         in text
     )

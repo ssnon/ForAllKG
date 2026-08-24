@@ -278,17 +278,51 @@ def main() -> int:
                 }
             )
 
+    inference_review_history = [
+        {
+            "axis_id":
+                row.axis_id,
+            "generation_index":
+                row.generation_index,
+            "stage":
+                row.stage,
+            "review_id":
+                row.review.review_id,
+            "hypothesis_id":
+                row.review.hypothesis_id,
+            "status":
+                row.review.status,
+            "review":
+                row.review.model_dump(
+                    mode="json"
+                ),
+        }
+        for row in outcome.inference_review_history
+    ]
+
     _write_json(
         inference_path,
         {
             "schema_version":
-                "discovery-axis-inference-artifact-v1",
+                "discovery-axis-inference-artifact-v2",
             "portfolio_id":
                 outcome.portfolio.portfolio_id,
             "policy_version":
                 outcome.report.policy_version,
+
+            # Backward-compatible final accepted records.
             "records":
                 inference_records,
+
+            # Complete critic history, including rejected and
+            # pre-repair reviews.
+            "review_history":
+                inference_review_history,
+
+            "final_record_count":
+                len(inference_records),
+            "review_history_count":
+                len(inference_review_history),
         },
     )
 
