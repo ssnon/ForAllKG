@@ -896,3 +896,57 @@ def test_render_enforces_single_mutation_owner_and_call():
         "satisfy BOTH constraints"
         in rendered
     )
+
+def test_render_forbids_cross_assertion_specificity_migration():
+    plan = _plan()
+
+    builder = (
+        SERSG1UnifiedRepairFeedbackBuilder()
+    )
+
+    feedback = builder.build(
+        binding=_binding(plan),
+        application_plan=plan,
+        source_card=_final_card(),
+        d1_review=_d1(
+            prediction_action=
+                "REFRAME",
+
+            prediction_source_class=
+                "X_UNSUPPORTED_SPECIFICITY",
+        ),
+    )
+
+    rendered = builder.render(
+        feedback
+    )
+
+    assert (
+        "sers-g1-unified-repair-render-v1.1"
+        in rendered
+    )
+
+    assert (
+        "MUST NOT be moved or reintroduced"
+        in rendered
+    )
+
+    assert (
+        "inferential bridge"
+        in rendered
+    )
+
+    assert (
+        "falsification criterion"
+        in rendered
+    )
+
+    assert (
+        "non-migration rule"
+        in rendered
+    )
+
+    assert (
+        "not a new D1 scientific judgment"
+        in rendered
+    )

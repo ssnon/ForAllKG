@@ -468,6 +468,14 @@ class SERSG1RepairInputBinder:
 class SERSG1UnifiedRepairFeedbackBuilder:
     policy_version = _POLICY_VERSION
 
+    # Rendering has execution semantics distinct from the
+    # structured merge identity. Version it explicitly so a
+    # frozen repair prompt can record the exact instruction
+    # surface without changing scientific feedback IDs.
+    render_version = (
+        "sers-g1-unified-repair-render-v1.1"
+    )
+
     def build(
         self,
         *,
@@ -892,6 +900,10 @@ class SERSG1UnifiedRepairFeedbackBuilder:
         return "\n".join([
             "UNIFIED D1 + G1 BOUNDED HYPOTHESIS REPAIR",
             "==========================================",
+            (
+                "Render policy: "
+                f"{self.render_version}"
+            ),
             "",
             "AUTHORITATIVE SOURCE BINDING",
             "----------------------------",
@@ -993,6 +1005,23 @@ class SERSG1UnifiedRepairFeedbackBuilder:
             (
                 "- When D1 and G1 target the same assertion, "
                 "satisfy BOTH constraints in one local rewrite."
+            ),
+            (
+                "- Unsupported specificity identified by D1 "
+                "MUST NOT be moved or reintroduced into the "
+                "central hypothesis, inferential bridge, "
+                "assumptions, another prediction, rationale, "
+                "or falsification criterion."
+            ),
+            (
+                "- If a D1 repair weakens or removes "
+                "prediction-level specificity, update other "
+                "G1-targeted text and matching falsification "
+                "wording only as needed to prevent that same "
+                "unsupported specificity from surviving "
+                "elsewhere. This is a non-migration rule, not "
+                "a new D1 scientific judgment on assertions "
+                "that D1 did not review."
             ),
             "",
             "UNIFIED SCIENTIFIC REQUIREMENTS",
