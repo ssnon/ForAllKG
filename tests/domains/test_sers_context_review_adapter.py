@@ -370,3 +370,53 @@ def test_reviewer_fails_when_assigned_axis_is_not_in_bundle():
         raise AssertionError(
             "missing assigned inspiration must fail"
         )
+
+
+def test_reviewer_keeps_grounded_and_axis_compilation_on_separate_lanes():
+    grounded_compiler = _Compiler()
+    axis_compiler = _Compiler()
+
+    reviewer = (
+        SERSDiscoveryAxisContextReviewer(
+            grounded_compiler=(
+                grounded_compiler
+            ),
+            axis_compiler=(
+                axis_compiler
+            ),
+            interpreter=_Interpreter(),
+            comparator=_Comparator(),
+        )
+    )
+
+    card = SimpleNamespace(
+        hypothesis_id="hypothesis:h1",
+        premise_statement_ids=[
+            "stmt:a",
+            "stmt:b",
+        ],
+    )
+
+    axis = SimpleNamespace(
+        axis_id="axis:1",
+        inspiration_id="insp:selected",
+    )
+
+    reviewer.review(
+        dual=_dual(),
+        axis=axis,
+        card=card,
+    )
+
+    assert grounded_compiler.grounded == [
+        "stmt:a",
+        "stmt:b",
+    ]
+
+    assert grounded_compiler.axes == []
+
+    assert axis_compiler.grounded == []
+
+    assert axis_compiler.axes == [
+        "insp:selected",
+    ]

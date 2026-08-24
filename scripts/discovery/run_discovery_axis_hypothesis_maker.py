@@ -142,9 +142,26 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help=(
-            "Mechanism source graph.graphml used for "
-            "claim-local scientific context compilation. "
-            "Defaults from --index-dir."
+            "Explicit shared context graph override for diagnostics. "
+            "Cannot be combined with lane-specific graph overrides."
+        ),
+    )
+    parser.add_argument(
+        "--context-grounded-graph",
+        type=Path,
+        default=None,
+        help=(
+            "Grounded-premise context source graph. "
+            "Defaults to mechanism/graph.graphml from --index-dir."
+        ),
+    )
+    parser.add_argument(
+        "--context-axis-graph",
+        type=Path,
+        default=None,
+        help=(
+            "Axis-inspiration context source graph. "
+            "Defaults to exploratory/graph.graphml beside mechanism."
         ),
     )
 
@@ -260,8 +277,12 @@ def main() -> int:
 
     context_adapter = None
     context_reviewer = None
-    context_graph = None
-    context_graph_path = None
+
+    context_grounded_graph = None
+    context_axis_graph = None
+
+    context_grounded_graph_path = None
+    context_axis_graph_path = None
 
     context_profile_id = (
         dual.grounded_context.domain_profile_id
@@ -283,28 +304,92 @@ def main() -> int:
                 "--inference-critic-model."
             )
 
-        context_graph_path = (
-            args.context_graph
-            or (
-                index_dir.parents[1]
-                / "graph.graphml"
+        if (
+            args.context_graph is not None
+            and (
+                args.context_grounded_graph is not None
+                or args.context_axis_graph is not None
+            )
+        ):
+            raise SystemExit(
+                "--context-graph cannot be combined with "
+                "--context-grounded-graph or --context-axis-graph."
+            )
+
+        if args.context_graph is not None:
+            context_grounded_graph_path = (
+                args.context_graph
+            )
+            context_axis_graph_path = (
+                args.context_graph
+            )
+
+        else:
+            context_grounded_graph_path = (
+                args.context_grounded_graph
+                or (
+                    index_dir.parents[1]
+                    / "graph.graphml"
+                )
+            )
+
+            context_axis_graph_path = (
+                args.context_axis_graph
+                or (
+                    index_dir.parents[2]
+                    / "exploratory"
+                    / "graph.graphml"
+                )
+            )
+
+        for (
+            lane_name,
+            graph_path,
+        ) in (
+            (
+                "grounded",
+                context_grounded_graph_path,
+            ),
+            (
+                "axis",
+                context_axis_graph_path,
+            ),
+        ):
+            if not graph_path.is_file():
+                raise FileNotFoundError(
+                    "Scientific context "
+                    f"{lane_name} source graph missing: "
+                    f"{graph_path}"
+                )
+
+        context_grounded_graph = (
+            nx.read_graphml(
+                context_grounded_graph_path,
+                force_multigraph=True,
             )
         )
 
-        if not context_graph_path.is_file():
-            raise FileNotFoundError(
-                "Scientific context source graph missing: "
-                f"{context_graph_path}"
+        context_axis_graph = (
+            nx.read_graphml(
+                context_axis_graph_path,
+                force_multigraph=True,
             )
-
-        context_graph = nx.read_graphml(
-            context_graph_path,
-            force_multigraph=True,
         )
 
-        if not context_graph.is_directed():
+        if not (
+            context_grounded_graph.is_directed()
+        ):
             raise RuntimeError(
-                "Scientific context source graph must be directed."
+                "Grounded scientific-context "
+                "source graph must be directed."
+            )
+
+        if not (
+            context_axis_graph.is_directed()
+        ):
+            raise RuntimeError(
+                "Axis scientific-context "
+                "source graph must be directed."
             )
 
         context_adapter = (
@@ -315,7 +400,12 @@ def main() -> int:
 
         context_reviewer = (
             context_adapter.build_openai_compatible(
-                graph=context_graph,
+                grounded_graph=(
+                    context_grounded_graph
+                ),
+                axis_graph=(
+                    context_axis_graph
+                ),
                 model=context_model,
                 api_key_env=args.api_key_env,
                 base_url=args.base_url,
@@ -449,57 +539,100 @@ def main() -> int:
     if context_reviewer is not None:
         if (
             context_adapter is None
-            or context_graph is None
-            or context_graph_path is None
+            or context_grounded_graph is None
+            or context_axis_graph is None
+            or context_grounded_graph_path is None
+            or context_axis_graph_path is None
         ):
             raise RuntimeError(
-                "Context reviewer lacks source provenance."
+                "Context reviewer lacks dual-lane source provenance."
             )
 
         context_payload = {
             "schema_version": (
-                "discovery-axis-context-artifact-v1"
+                "discovery-axis-context-artifact-v2"
+            ),
+            "context_source_policy": (
+                "sers-dual-lane-claim-local-v1"
             ),
             "domain_profile_id": context_profile_id,
             "adapter_id": context_adapter.adapter_id,
             "model": context_model,
-            "source_graph": str(context_graph_path),
-            "source_graph_sha256": _sha256_file(
-                context_graph_path
+
+            "grounded_source_graph": str(
+                context_grounded_graph_path
             ),
-            "source_graph_node_count": (
-                context_graph.number_of_nodes()
+            "grounded_source_graph_sha256": (
+                _sha256_file(
+                    context_grounded_graph_path
+                )
             ),
-            "source_graph_edge_count": (
-                context_graph.number_of_edges()
+            "grounded_source_graph_node_count": (
+                context_grounded_graph
+                .number_of_nodes()
             ),
+            "grounded_source_graph_edge_count": (
+                context_grounded_graph
+                .number_of_edges()
+            ),
+
+            "axis_source_graph": str(
+                context_axis_graph_path
+            ),
+            "axis_source_graph_sha256": (
+                _sha256_file(
+                    context_axis_graph_path
+                )
+            ),
+            "axis_source_graph_node_count": (
+                context_axis_graph
+                .number_of_nodes()
+            ),
+            "axis_source_graph_edge_count": (
+                context_axis_graph
+                .number_of_edges()
+            ),
+
             "records": [
                 (
                     row.model_dump(mode="json")
                     if hasattr(row, "model_dump")
                     else row
                 )
-                for row in outcome.context_reviews
+                for row
+                in outcome.context_reviews
             ],
+
             "review_history": [
                 {
-                    "axis_id": row.axis_id,
-                    "generation_index": row.generation_index,
-                    "stage": row.stage,
+                    "axis_id":
+                        row.axis_id,
+                    "generation_index":
+                        row.generation_index,
+                    "stage":
+                        row.stage,
                     "review": (
-                        row.review.model_dump(mode="json")
-                        if hasattr(row.review, "model_dump")
+                        row.review.model_dump(
+                            mode="json"
+                        )
+                        if hasattr(
+                            row.review,
+                            "model_dump",
+                        )
                         else row.review
                     ),
                 }
-                for row in outcome.context_review_history
+                for row
+                in outcome.context_review_history
             ],
+
             "final_record_count": len(
                 outcome.context_reviews
             ),
             "review_history_count": len(
                 outcome.context_review_history
             ),
+
             "action_policy_applied": False,
             "g1_action_policy_deferred": True,
         }

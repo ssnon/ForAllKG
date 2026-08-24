@@ -19,7 +19,7 @@ MAKER = Path(
 )
 
 
-def test_domain_adapter_builds_context_backend_without_network():
+def test_domain_adapter_builds_dual_lane_backend_without_network():
     os.environ[
         "SERS_CONTEXT_TEST_KEY_DO_NOT_USE"
     ] = "dummy-key"
@@ -30,7 +30,8 @@ def test_domain_adapter_builds_context_backend_without_network():
 
     reviewer = (
         adapter.build_openai_compatible(
-            graph=nx.MultiDiGraph(),
+            grounded_graph=nx.MultiDiGraph(),
+            axis_graph=nx.MultiDiGraph(),
             model="test-context-model",
             api_key_env=(
                 "SERS_CONTEXT_TEST_KEY_DO_NOT_USE"
@@ -41,6 +42,38 @@ def test_domain_adapter_builds_context_backend_without_network():
     assert isinstance(
         reviewer,
         SERSDiscoveryAxisContextReviewer,
+    )
+
+    assert (
+        reviewer.grounded_compiler
+        is not reviewer.axis_compiler
+    )
+
+
+def test_shared_graph_override_remains_explicitly_supported():
+    os.environ[
+        "SERS_CONTEXT_TEST_KEY_DO_NOT_USE"
+    ] = "dummy-key"
+
+    adapter = get_context_review_adapter(
+        "sers_au_ag"
+    )
+
+    graph = nx.MultiDiGraph()
+
+    reviewer = (
+        adapter.build_openai_compatible(
+            graph=graph,
+            model="test-context-model",
+            api_key_env=(
+                "SERS_CONTEXT_TEST_KEY_DO_NOT_USE"
+            ),
+        )
+    )
+
+    assert (
+        reviewer.compiler
+        is not None
     )
 
 
@@ -76,23 +109,48 @@ def test_maker_injects_context_reviewer_into_runtime():
     )
 
 
-def test_maker_uses_mechanism_source_graph():
+def test_maker_defaults_to_dual_source_graph_lanes():
     source = MAKER.read_text(
         encoding="utf-8"
     )
 
+    # Grounded lane:
+    # mechanism/navigation/node_index -> mechanism/graph.graphml
     assert (
         "index_dir.parents[1]"
         in source
     )
 
+    # Axis lane:
+    # mechanism/navigation/node_index -> corpus root
+    # -> exploratory/graph.graphml
     assert (
-        '/ "graph.graphml"'
+        "index_dir.parents[2]"
         in source
     )
 
     assert (
-        "nx.read_graphml("
+        '/ "exploratory"'
+        in source
+    )
+
+    assert (
+        "context_grounded_graph_path"
+        in source
+    )
+
+    assert (
+        "context_axis_graph_path"
+        in source
+    )
+
+    assert (
+        "grounded_graph=("
+        in source
+    )
+
+    assert (
+        "axis_graph=("
         in source
     )
 
@@ -113,35 +171,22 @@ def test_context_model_defaults_to_inference_critic():
     )
 
 
-def test_maker_persists_final_and_historical_context_reviews():
+def test_maker_persists_dual_lane_context_artifact_v2():
     source = MAKER.read_text(
         encoding="utf-8"
     )
 
-    assert (
-        "discovery-axis-context-artifact-v1"
-        in source
-    )
-
-    assert (
-        '".context.json"'
-        in source
-    )
-
-    assert (
-        "outcome.context_reviews"
-        in source
-    )
-
-    assert (
-        "outcome.context_review_history"
-        in source
-    )
-
-    assert (
-        '"source_graph_sha256"'
-        in source
-    )
+    for token in (
+        "discovery-axis-context-artifact-v2",
+        "sers-dual-lane-claim-local-v1",
+        '"grounded_source_graph"',
+        '"grounded_source_graph_sha256"',
+        '"axis_source_graph"',
+        '"axis_source_graph_sha256"',
+        "outcome.context_reviews",
+        "outcome.context_review_history",
+    ):
+        assert token in source
 
 
 def test_s1_context_findings_are_not_action_policy():

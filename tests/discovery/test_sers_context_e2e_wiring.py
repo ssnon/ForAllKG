@@ -134,7 +134,9 @@ def test_maker_context_artifact_has_minimum_provenance():
         '"review_history_count"',
         '"action_policy_applied": False',
         '"g1_action_policy_deferred": True',
-        '"source_graph_sha256"',
+        '"grounded_source_graph_sha256"',
+        '"axis_source_graph_sha256"',
+        '"context_source_policy"',
     ):
         assert token in source
 

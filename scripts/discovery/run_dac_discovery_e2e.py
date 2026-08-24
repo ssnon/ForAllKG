@@ -818,7 +818,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
         if (
             context_payload.get("schema_version")
-            != "discovery-axis-context-artifact-v1"
+            != "discovery-axis-context-artifact-v2"
         ):
             raise RuntimeError(
                 "Unexpected discovery-axis context artifact schema."
@@ -897,14 +897,31 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 "Context artifact review_history_count mismatch."
             )
 
-        if not str(
+        for provenance_key in (
+            "grounded_source_graph",
+            "grounded_source_graph_sha256",
+            "axis_source_graph",
+            "axis_source_graph_sha256",
+        ):
+            if not str(
+                context_payload.get(
+                    provenance_key
+                )
+                or ""
+            ).strip():
+                raise RuntimeError(
+                    "Context artifact dual-lane provenance "
+                    f"is missing: {provenance_key}"
+                )
+
+        if (
             context_payload.get(
-                "source_graph_sha256"
+                "context_source_policy"
             )
-            or ""
-        ).strip():
+            != "sers-dual-lane-claim-local-v1"
+        ):
             raise RuntimeError(
-                "Context artifact source graph SHA256 is missing."
+                "Unexpected SERS context source policy."
             )
 
         if (
@@ -937,21 +954,43 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 context_payload.get(
                     "model"
                 ),
-            "source_graph":
+            "context_source_policy":
                 context_payload.get(
-                    "source_graph"
+                    "context_source_policy"
                 ),
-            "source_graph_sha256":
+
+            "grounded_source_graph":
                 context_payload.get(
-                    "source_graph_sha256"
+                    "grounded_source_graph"
                 ),
-            "source_graph_node_count":
+            "grounded_source_graph_sha256":
                 context_payload.get(
-                    "source_graph_node_count"
+                    "grounded_source_graph_sha256"
                 ),
-            "source_graph_edge_count":
+            "grounded_source_graph_node_count":
                 context_payload.get(
-                    "source_graph_edge_count"
+                    "grounded_source_graph_node_count"
+                ),
+            "grounded_source_graph_edge_count":
+                context_payload.get(
+                    "grounded_source_graph_edge_count"
+                ),
+
+            "axis_source_graph":
+                context_payload.get(
+                    "axis_source_graph"
+                ),
+            "axis_source_graph_sha256":
+                context_payload.get(
+                    "axis_source_graph_sha256"
+                ),
+            "axis_source_graph_node_count":
+                context_payload.get(
+                    "axis_source_graph_node_count"
+                ),
+            "axis_source_graph_edge_count":
+                context_payload.get(
+                    "axis_source_graph_edge_count"
                 ),
             "final_record_count":
                 len(records),

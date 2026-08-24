@@ -43,11 +43,50 @@ class SERSDiscoveryAxisContextReviewer:
     def __init__(
         self,
         *,
-        compiler: Any,
+        compiler: Any | None = None,
+        grounded_compiler: Any | None = None,
+        axis_compiler: Any | None = None,
         interpreter: Any,
         comparator: Any,
     ) -> None:
-        self.compiler = compiler
+        if compiler is not None:
+            if (
+                grounded_compiler is not None
+                or axis_compiler is not None
+            ):
+                raise ValueError(
+                    "compiler cannot be combined with "
+                    "grounded_compiler/axis_compiler"
+                )
+
+            grounded_compiler = compiler
+            axis_compiler = compiler
+
+        if (
+            grounded_compiler is None
+            or axis_compiler is None
+        ):
+            raise ValueError(
+                "SERS context reviewer requires both "
+                "grounded_compiler and axis_compiler"
+            )
+
+        self.grounded_compiler = (
+            grounded_compiler
+        )
+        self.axis_compiler = (
+            axis_compiler
+        )
+
+        # Compatibility alias only when both lanes intentionally share
+        # one compiler. Production dual-lane wiring leaves this None.
+        self.compiler = (
+            grounded_compiler
+            if grounded_compiler
+            is axis_compiler
+            else None
+        )
+
         self.interpreter = interpreter
         self.comparator = comparator
 
@@ -55,8 +94,10 @@ class SERSDiscoveryAxisContextReviewer:
     def build(
         cls,
         *,
-        graph: Any,
         backend: Any,
+        graph: Any | None = None,
+        grounded_graph: Any | None = None,
+        axis_graph: Any | None = None,
         domain_profile_id: str = "sers_au_ag",
     ) -> "SERSDiscoveryAxisContextReviewer":
         if domain_profile_id != cls.domain_profile_id:
@@ -66,9 +107,50 @@ class SERSDiscoveryAxisContextReviewer:
                 f"actual={domain_profile_id!r}"
             )
 
-        return cls(
-            compiler=SERSContextCompiler(
+        if graph is not None:
+            if (
+                grounded_graph is not None
+                or axis_graph is not None
+            ):
+                raise ValueError(
+                    "graph cannot be combined with "
+                    "grounded_graph/axis_graph"
+                )
+
+            # Explicit shared-graph compatibility/diagnostic mode:
+            # both context lanes intentionally use the SAME compiler.
+            shared_compiler = SERSContextCompiler(
                 graph=graph,
+                domain_profile_id=domain_profile_id,
+            )
+
+            return cls(
+                compiler=shared_compiler,
+                interpreter=SERSHypothesisContextInterpreter(
+                    backend
+                ),
+                comparator=SERSHypothesisContextComparator(),
+            )
+
+        if (
+            grounded_graph is None
+            or axis_graph is None
+        ):
+            raise ValueError(
+                "SERS context reviewer requires both "
+                "grounded_graph and axis_graph"
+            )
+
+        # Production scientific path:
+        # grounded premises and axis inspirations retain independent
+        # source-graph provenance.
+        return cls(
+            grounded_compiler=SERSContextCompiler(
+                graph=grounded_graph,
+                domain_profile_id=domain_profile_id,
+            ),
+            axis_compiler=SERSContextCompiler(
+                graph=axis_graph,
                 domain_profile_id=domain_profile_id,
             ),
             interpreter=SERSHypothesisContextInterpreter(
@@ -189,7 +271,7 @@ class SERSDiscoveryAxisContextReviewer:
             )
 
         source_signatures = [
-            self.compiler
+            self.grounded_compiler
             .compile_grounded_statement(
                 evidence[statement_id]
             )
@@ -201,7 +283,7 @@ class SERSDiscoveryAxisContextReviewer:
         # from positive-premise context and appended as exactly one axis
         # signature.
         source_signatures.append(
-            self.compiler
+            self.axis_compiler
             .compile_axis_inspiration(
                 inspiration
             )
@@ -252,14 +334,18 @@ class SERSContextReviewAdapter:
     def build(
         self,
         *,
-        graph: Any,
         backend: Any,
+        graph: Any | None = None,
+        grounded_graph: Any | None = None,
+        axis_graph: Any | None = None,
     ) -> SERSDiscoveryAxisContextReviewer:
         return (
             SERSDiscoveryAxisContextReviewer
             .build(
-                graph=graph,
                 backend=backend,
+                graph=graph,
+                grounded_graph=grounded_graph,
+                axis_graph=axis_graph,
                 domain_profile_id=(
                     self.domain_profile_id
                 ),
@@ -270,8 +356,10 @@ class SERSContextReviewAdapter:
     def build_openai_compatible(
         self,
         *,
-        graph: Any,
         model: str,
+        graph: Any | None = None,
+        grounded_graph: Any | None = None,
+        axis_graph: Any | None = None,
         api_key_env: str = "OPENAI_API_KEY",
         base_url: str | None = None,
         instructor_mode: str = "JSON",
@@ -294,8 +382,10 @@ class SERSContextReviewAdapter:
         )
 
         return self.build(
-            graph=graph,
             backend=backend,
+            graph=graph,
+            grounded_graph=grounded_graph,
+            axis_graph=axis_graph,
         )
 
 
