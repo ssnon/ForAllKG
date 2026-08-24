@@ -5,6 +5,14 @@ import json
 import os
 from pathlib import Path
 
+import hashlib
+import networkx as nx
+
+from domains.context_review_registry import (
+    available_context_review_profiles,
+    get_context_review_adapter,
+)
+
 from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
 from pipeline_core.discovery.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
@@ -47,6 +55,21 @@ def _write_json(path: Path, value: object) -> None:
     if hasattr(value, "model_dump"):
         value = value.model_dump(mode="json")  # type: ignore[attr-defined]
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+
+    with path.open("rb") as handle:
+        for block in iter(
+            lambda: handle.read(
+                1024 * 1024
+            ),
+            b"",
+        ):
+            digest.update(block)
+
+    return digest.hexdigest()
 
 
 def parse_args() -> argparse.Namespace:
@@ -104,6 +127,24 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Model for discovery-axis inference-strength review. "
             "Defaults to OPENROUTER_CRITIC_MODEL, then --model."
+        ),
+    )
+    parser.add_argument(
+        "--context-critic-model",
+        default=None,
+        help=(
+            "Optional SERS scientific-context model override. "
+            "Defaults to --inference-critic-model."
+        ),
+    )
+    parser.add_argument(
+        "--context-graph",
+        type=Path,
+        default=None,
+        help=(
+            "Mechanism source graph.graphml used for "
+            "claim-local scientific context compilation. "
+            "Defaults from --index-dir."
         ),
     )
 
@@ -217,10 +258,80 @@ def main() -> int:
         inference_backend
     )
 
+    context_adapter = None
+    context_reviewer = None
+    context_graph = None
+    context_graph_path = None
+
+    context_profile_id = (
+        dual.grounded_context.domain_profile_id
+    )
+
+    if (
+        context_profile_id
+        in available_context_review_profiles()
+    ):
+        context_model = (
+            args.context_critic_model
+            or args.inference_critic_model
+        )
+
+        if not context_model:
+            raise SystemExit(
+                "Context-review capable domain requires "
+                "--context-critic-model or "
+                "--inference-critic-model."
+            )
+
+        context_graph_path = (
+            args.context_graph
+            or (
+                index_dir.parents[1]
+                / "graph.graphml"
+            )
+        )
+
+        if not context_graph_path.is_file():
+            raise FileNotFoundError(
+                "Scientific context source graph missing: "
+                f"{context_graph_path}"
+            )
+
+        context_graph = nx.read_graphml(
+            context_graph_path,
+            force_multigraph=True,
+        )
+
+        if not context_graph.is_directed():
+            raise RuntimeError(
+                "Scientific context source graph must be directed."
+            )
+
+        context_adapter = (
+            get_context_review_adapter(
+                context_profile_id
+            )
+        )
+
+        context_reviewer = (
+            context_adapter.build_openai_compatible(
+                graph=context_graph,
+                model=context_model,
+                api_key_env=args.api_key_env,
+                base_url=args.base_url,
+                instructor_mode=args.instructor_mode,
+                temperature=0.0,
+                parse_retries=args.parse_retries,
+                timeout=args.timeout,
+                extra_headers=dict(args.header),
+            )
+        )
+
     runtime = DiscoveryAxisSynthesisRuntime(
         backend,
         mapper,
         inference_critic=inference_critic,
+        context_reviewer=context_reviewer,
         max_compile_repairs=args.max_compile_repairs,
         max_fidelity_repairs=args.max_fidelity_repairs,
         max_inference_repairs=args.max_inference_repairs,
@@ -334,6 +445,70 @@ def main() -> int:
         Path(str(args.output_prefix) + ".evidence_diversity.json"),
         evidence_diversity,
     )
+
+    if context_reviewer is not None:
+        if (
+            context_adapter is None
+            or context_graph is None
+            or context_graph_path is None
+        ):
+            raise RuntimeError(
+                "Context reviewer lacks source provenance."
+            )
+
+        context_payload = {
+            "schema_version": (
+                "discovery-axis-context-artifact-v1"
+            ),
+            "domain_profile_id": context_profile_id,
+            "adapter_id": context_adapter.adapter_id,
+            "source_graph": str(context_graph_path),
+            "source_graph_sha256": _sha256_file(
+                context_graph_path
+            ),
+            "source_graph_node_count": (
+                context_graph.number_of_nodes()
+            ),
+            "source_graph_edge_count": (
+                context_graph.number_of_edges()
+            ),
+            "records": [
+                (
+                    row.model_dump(mode="json")
+                    if hasattr(row, "model_dump")
+                    else row
+                )
+                for row in outcome.context_reviews
+            ],
+            "review_history": [
+                {
+                    "axis_id": row.axis_id,
+                    "generation_index": row.generation_index,
+                    "stage": row.stage,
+                    "review": (
+                        row.review.model_dump(mode="json")
+                        if hasattr(row.review, "model_dump")
+                        else row.review
+                    ),
+                }
+                for row in outcome.context_review_history
+            ],
+        }
+
+        context_path = Path(
+            str(args.output_prefix)
+            + ".context.json"
+        )
+
+        _write_json(
+            context_path,
+            context_payload,
+        )
+
+        print(
+            "Saved context review:",
+            context_path,
+        )
 
     if family_hierarchy is not None:
         _write_json(

@@ -12,6 +12,9 @@ from domains.sers.context_compiler import (
 from domains.sers.hypothesis_context_interpreter import (
     SERSHypothesisContextInterpreter,
 )
+from domains.sers.hypothesis_context_llm import (
+    InstructorOpenAICompatibleHypothesisContextBackend,
+)
 from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxis,
 )
@@ -261,6 +264,38 @@ class SERSContextReviewAdapter:
                     self.domain_profile_id
                 ),
             )
+        )
+
+
+    def build_openai_compatible(
+        self,
+        *,
+        graph: Any,
+        model: str,
+        api_key_env: str = "OPENAI_API_KEY",
+        base_url: str | None = None,
+        instructor_mode: str = "JSON",
+        temperature: float = 0.0,
+        parse_retries: int = 1,
+        timeout: float | None = 180.0,
+        extra_headers: dict[str, str] | None = None,
+    ) -> SERSDiscoveryAxisContextReviewer:
+        backend = (
+            InstructorOpenAICompatibleHypothesisContextBackend(
+                model=model,
+                api_key_env=api_key_env,
+                base_url=base_url,
+                instructor_mode=instructor_mode,
+                temperature=temperature,
+                parse_retries=parse_retries,
+                timeout=timeout,
+                extra_headers=extra_headers,
+            )
+        )
+
+        return self.build(
+            graph=graph,
+            backend=backend,
         )
 
 
