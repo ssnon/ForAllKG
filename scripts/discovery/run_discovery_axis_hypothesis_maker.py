@@ -72,6 +72,77 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _context_records_from_outcome(outcome) -> list[dict]:
+    """Bind pre-namespace S1 reviews to final Alpha4 hypothesis IDs.
+
+    Context review occurs before accepted proposals are namespaced and
+    recompiled into the final portfolio. Review history retains axis_id,
+    so the accepted review must be rebound through final lineage.
+    """
+
+    latest_review_by_axis = {}
+
+    for row in outcome.context_review_history:
+        latest_review_by_axis[
+            row.axis_id
+        ] = row.review
+
+    records = []
+
+    for lineage in outcome.report.lineages:
+        review = latest_review_by_axis.get(
+            lineage.axis_id
+        )
+
+        if review is None:
+            raise RuntimeError(
+                "Accepted hypothesis lacks final context review: "
+                f"axis={lineage.axis_id}, "
+                f"hypothesis={lineage.hypothesis_id}"
+            )
+
+        review_payload = (
+            review.model_dump(
+                mode="json"
+            )
+            if hasattr(
+                review,
+                "model_dump",
+            )
+            else review
+        )
+
+        records.append(
+            {
+                "final_hypothesis_id":
+                    lineage.hypothesis_id,
+                "axis_id":
+                    lineage.axis_id,
+                "source_review_hypothesis_id":
+                    review.hypothesis_id,
+                "context_review_id":
+                    review.review_id,
+                "status":
+                    review.status,
+                "review":
+                    review_payload,
+            }
+        )
+
+    if (
+        len(records)
+        != len(outcome.context_reviews)
+    ):
+        raise RuntimeError(
+            "Final context binding count differs from "
+            "accepted context review count: "
+            f"bound={len(records)}, "
+            f"accepted={len(outcome.context_reviews)}"
+        )
+
+    return records
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -548,9 +619,15 @@ def main() -> int:
                 "Context reviewer lacks dual-lane source provenance."
             )
 
+        context_records = (
+            _context_records_from_outcome(
+                outcome
+            )
+        )
+
         context_payload = {
             "schema_version": (
-                "discovery-axis-context-artifact-v2"
+                "discovery-axis-context-artifact-v3"
             ),
             "context_source_policy": (
                 "sers-dual-lane-claim-local-v1"
@@ -558,6 +635,9 @@ def main() -> int:
             "domain_profile_id": context_profile_id,
             "adapter_id": context_adapter.adapter_id,
             "model": context_model,
+            "portfolio_id": (
+                outcome.portfolio.portfolio_id
+            ),
 
             "grounded_source_graph": str(
                 context_grounded_graph_path
@@ -593,15 +673,8 @@ def main() -> int:
                 .number_of_edges()
             ),
 
-            "records": [
-                (
-                    row.model_dump(mode="json")
-                    if hasattr(row, "model_dump")
-                    else row
-                )
-                for row
-                in outcome.context_reviews
-            ],
+            "records":
+                context_records,
 
             "review_history": [
                 {
@@ -611,6 +684,12 @@ def main() -> int:
                         row.generation_index,
                     "stage":
                         row.stage,
+                    "review_id":
+                        row.review.review_id,
+                    "hypothesis_id":
+                        row.review.hypothesis_id,
+                    "status":
+                        row.review.status,
                     "review": (
                         row.review.model_dump(
                             mode="json"
@@ -627,7 +706,7 @@ def main() -> int:
             ],
 
             "final_record_count": len(
-                outcome.context_reviews
+                context_records
             ),
             "review_history_count": len(
                 outcome.context_review_history

@@ -818,7 +818,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
         if (
             context_payload.get("schema_version")
-            != "discovery-axis-context-artifact-v2"
+            != "discovery-axis-context-artifact-v3"
         ):
             raise RuntimeError(
                 "Unexpected discovery-axis context artifact schema."
@@ -875,6 +875,175 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 "match the accepted Alpha4 hypothesis count: "
                 f"context={len(records)}, "
                 f"hypotheses={initial_hypotheses}"
+            )
+
+        portfolio_payload = _load_json(
+            axis_portfolio
+        )
+
+        portfolio_rows = (
+            portfolio_payload.get(
+                "hypotheses"
+            )
+        )
+
+        if not isinstance(
+            portfolio_rows,
+            list,
+        ):
+            raise RuntimeError(
+                "Alpha4 portfolio hypotheses must be a list."
+            )
+
+        final_portfolio_ids = {
+            str(
+                row.get(
+                    "hypothesis_id"
+                )
+            )
+            for row in portfolio_rows
+            if isinstance(
+                row,
+                dict,
+            )
+        }
+
+        if (
+            len(final_portfolio_ids)
+            != len(portfolio_rows)
+        ):
+            raise RuntimeError(
+                "Alpha4 portfolio contains missing or "
+                "duplicate hypothesis IDs."
+            )
+
+        context_final_ids = set()
+
+        for record in records:
+            if not isinstance(
+                record,
+                dict,
+            ):
+                raise RuntimeError(
+                    "Context final record must be an object."
+                )
+
+            required_record_fields = (
+                "final_hypothesis_id",
+                "axis_id",
+                "source_review_hypothesis_id",
+                "context_review_id",
+                "status",
+                "review",
+            )
+
+            for field in required_record_fields:
+                if field not in record:
+                    raise RuntimeError(
+                        "Context final record missing field: "
+                        f"{field}"
+                    )
+
+            final_hypothesis_id = str(
+                record[
+                    "final_hypothesis_id"
+                ]
+            )
+
+            if (
+                final_hypothesis_id
+                in context_final_ids
+            ):
+                raise RuntimeError(
+                    "Duplicate final hypothesis ID in "
+                    "context artifact: "
+                    f"{final_hypothesis_id}"
+                )
+
+            context_final_ids.add(
+                final_hypothesis_id
+            )
+
+            review = record[
+                "review"
+            ]
+
+            if not isinstance(
+                review,
+                dict,
+            ):
+                raise RuntimeError(
+                    "Context final record review must be an object."
+                )
+
+            if (
+                str(
+                    review.get(
+                        "hypothesis_id"
+                    )
+                )
+                != str(
+                    record[
+                        "source_review_hypothesis_id"
+                    ]
+                )
+            ):
+                raise RuntimeError(
+                    "Context final record source-review "
+                    "hypothesis binding mismatch."
+                )
+
+            if (
+                str(
+                    review.get(
+                        "review_id"
+                    )
+                )
+                != str(
+                    record[
+                        "context_review_id"
+                    ]
+                )
+            ):
+                raise RuntimeError(
+                    "Context final record review ID mismatch."
+                )
+
+            if (
+                str(
+                    review.get(
+                        "status"
+                    )
+                )
+                != str(
+                    record[
+                        "status"
+                    ]
+                )
+            ):
+                raise RuntimeError(
+                    "Context final record status mismatch."
+                )
+
+        if (
+            context_final_ids
+            != final_portfolio_ids
+        ):
+            raise RuntimeError(
+                "Context final hypothesis IDs do not match "
+                "the accepted Alpha4 portfolio."
+            )
+
+        if (
+            context_payload.get(
+                "portfolio_id"
+            )
+            != portfolio_payload.get(
+                "portfolio_id"
+            )
+        ):
+            raise RuntimeError(
+                "Context artifact portfolio_id mismatch."
             )
 
         if (

@@ -177,7 +177,7 @@ def test_maker_persists_dual_lane_context_artifact_v2():
     )
 
     for token in (
-        "discovery-axis-context-artifact-v2",
+        "discovery-axis-context-artifact-v3",
         "sers-dual-lane-claim-local-v1",
         '"grounded_source_graph"',
         '"grounded_source_graph_sha256"',
@@ -203,3 +203,92 @@ def test_s1_context_findings_are_not_action_policy():
         'context_review.status != "pass"'
         not in source
     )
+
+
+def test_context_records_bind_source_reviews_to_final_namespaced_ids():
+    from types import SimpleNamespace
+
+    from scripts.discovery.run_discovery_axis_hypothesis_maker import (
+        _context_records_from_outcome,
+    )
+
+    old_axis1_review = SimpleNamespace(
+        review_id="review:axis1:old",
+        hypothesis_id="hypothesis:pre-axis1-old",
+        status="reframe_required",
+    )
+
+    final_axis1_review = SimpleNamespace(
+        review_id="review:axis1:final",
+        hypothesis_id="hypothesis:pre-axis1-final",
+        status="pass_with_unknowns",
+    )
+
+    final_axis2_review = SimpleNamespace(
+        review_id="review:axis2:final",
+        hypothesis_id="hypothesis:pre-axis2-final",
+        status="reframe_required",
+    )
+
+    outcome = SimpleNamespace(
+        context_review_history=(
+            SimpleNamespace(
+                axis_id="axis:1",
+                review=old_axis1_review,
+            ),
+            SimpleNamespace(
+                axis_id="axis:1",
+                review=final_axis1_review,
+            ),
+            SimpleNamespace(
+                axis_id="axis:2",
+                review=final_axis2_review,
+            ),
+        ),
+        context_reviews=(
+            final_axis1_review,
+            final_axis2_review,
+        ),
+        report=SimpleNamespace(
+            lineages=(
+                SimpleNamespace(
+                    hypothesis_id="hypothesis:AX1-final",
+                    axis_id="axis:1",
+                ),
+                SimpleNamespace(
+                    hypothesis_id="hypothesis:AX2-final",
+                    axis_id="axis:2",
+                ),
+            )
+        ),
+    )
+
+    records = (
+        _context_records_from_outcome(
+            outcome
+        )
+    )
+
+    assert [
+        row["final_hypothesis_id"]
+        for row in records
+    ] == [
+        "hypothesis:AX1-final",
+        "hypothesis:AX2-final",
+    ]
+
+    assert [
+        row["source_review_hypothesis_id"]
+        for row in records
+    ] == [
+        "hypothesis:pre-axis1-final",
+        "hypothesis:pre-axis2-final",
+    ]
+
+    assert [
+        row["context_review_id"]
+        for row in records
+    ] == [
+        "review:axis1:final",
+        "review:axis2:final",
+    ]
