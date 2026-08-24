@@ -462,6 +462,7 @@ def main() -> int:
             ),
             "domain_profile_id": context_profile_id,
             "adapter_id": context_adapter.adapter_id,
+            "model": context_model,
             "source_graph": str(context_graph_path),
             "source_graph_sha256": _sha256_file(
                 context_graph_path
@@ -493,6 +494,14 @@ def main() -> int:
                 }
                 for row in outcome.context_review_history
             ],
+            "final_record_count": len(
+                outcome.context_reviews
+            ),
+            "review_history_count": len(
+                outcome.context_review_history
+            ),
+            "action_policy_applied": False,
+            "g1_action_policy_deferred": True,
         }
 
         context_path = Path(

@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any
 
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
+from domains.context_review_registry import (
+    available_context_review_profiles,
+    get_context_review_adapter,
+)
 from domains.feasibility_registry import resolve_feasibility_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.domain.feasibility_domain import FeasibilityDomainAdapter
@@ -88,6 +92,28 @@ def _resolve_feasibility_capability(
     if not adapter_id:
         return None
     return resolve_feasibility_adapter(profile)
+
+
+
+def _resolve_context_review_capability(
+    profile: ScientificDomainProfile,
+) -> Any | None:
+    """Resolve optional scientific-context capability without mutating
+    ScientificDomainProfile identity.
+
+    Absence is a valid multidomain state; registered capability remains
+    domain-specific and fail-closed through the context registry.
+    """
+
+    if (
+        profile.profile_id
+        not in available_context_review_profiles()
+    ):
+        return None
+
+    return get_context_review_adapter(
+        profile.profile_id
+    )
 
 
 _ALPHA6_DEGRADED_DECISIONS = {
@@ -336,21 +362,50 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     _check_alpha6_available()
     domain_profile = get_domain_profile(args.domain_profile)
-    feasibility_adapter = _resolve_feasibility_capability(domain_profile)
-    runner.manifest["domain_profile_id"] = domain_profile.profile_id
+    feasibility_adapter = _resolve_feasibility_capability(
+        domain_profile
+    )
+    context_review_adapter = (
+        _resolve_context_review_capability(
+            domain_profile
+        )
+    )
+
+    runner.manifest["domain_profile_id"] = (
+        domain_profile.profile_id
+    )
+
     runner.manifest["capabilities"] = {
-        "feasibility": feasibility_adapter is not None,
+        "feasibility":
+            feasibility_adapter is not None,
+        "context_review":
+            context_review_adapter is not None,
     }
+
     runner.manifest["feasibility_status"] = (
         "available"
         if feasibility_adapter is not None
         else "not_supported_for_domain"
     )
+
     runner.manifest["feasibility_adapter_id"] = (
         feasibility_adapter.adapter_id
         if feasibility_adapter is not None
         else None
     )
+
+    runner.manifest["context_review_status"] = (
+        "available"
+        if context_review_adapter is not None
+        else "not_supported_for_domain"
+    )
+
+    runner.manifest["context_review_adapter_id"] = (
+        context_review_adapter.adapter_id
+        if context_review_adapter is not None
+        else None
+    )
+
     runner._save_manifest()
     run = runner.run_dir
 
@@ -708,9 +763,24 @@ def run_pipeline(args: argparse.Namespace) -> int:
     axis_plan = run / "hypothesis_axis_a4.axis_plan.json"
     lineage = run / "hypothesis_axis_a4.lineage.json"
     axis_inference = run / "hypothesis_axis_a4.inference.json"
+    axis_context = run / "hypothesis_axis_a4.context.json"
     axis_evidence_diversity = (
         run / "hypothesis_axis_a4.evidence_diversity.json"
     )
+
+    stage8_expected = [
+        axis_portfolio,
+        axis_plan,
+        lineage,
+        axis_inference,
+        axis_evidence_diversity,
+    ]
+
+    if context_review_adapter is not None:
+        stage8_expected.append(
+            axis_context
+        )
+
     runner.run_stage(
         "[8/13] Discovery-axis hypothesis synthesis",
         "scripts.discovery.run_discovery_axis_hypothesis_maker",
@@ -723,19 +793,191 @@ def run_pipeline(args: argparse.Namespace) -> int:
             str(args.min_candidate_unit_score),
             "--parse-retries", str(args.hypothesis_parse_retries),
             "--inference-critic-model", str(args.critic_model),
+            *(
+                [
+                    "--context-critic-model",
+                    str(args.critic_model),
+                ]
+                if context_review_adapter is not None
+                else []
+            ),
             "--output-prefix", str(axis_prefix),
             "--save-prompts",
         ],
-        expected=[
-            axis_portfolio,
-            axis_plan,
-            lineage,
-            axis_inference,
-            axis_evidence_diversity,
-        ],
+        expected=stage8_expected,
     )
-    initial_hypotheses = _hypothesis_count(axis_portfolio)
-    diversity_payload = _load_json(axis_evidence_diversity)
+
+    initial_hypotheses = _hypothesis_count(
+        axis_portfolio
+    )
+
+    if context_review_adapter is not None:
+        context_payload = _load_json(
+            axis_context
+        )
+
+        if (
+            context_payload.get("schema_version")
+            != "discovery-axis-context-artifact-v1"
+        ):
+            raise RuntimeError(
+                "Unexpected discovery-axis context artifact schema."
+            )
+
+        if (
+            context_payload.get("domain_profile_id")
+            != domain_profile.profile_id
+        ):
+            raise RuntimeError(
+                "Context artifact domain_profile_id does not "
+                "match the active E2E domain profile."
+            )
+
+        if (
+            context_payload.get("adapter_id")
+            != context_review_adapter.adapter_id
+        ):
+            raise RuntimeError(
+                "Context artifact adapter_id does not match "
+                "the resolved E2E context capability."
+            )
+
+        records = context_payload.get(
+            "records"
+        )
+
+        review_history = context_payload.get(
+            "review_history"
+        )
+
+        if not isinstance(
+            records,
+            list,
+        ):
+            raise RuntimeError(
+                "Context artifact records must be a list."
+            )
+
+        if not isinstance(
+            review_history,
+            list,
+        ):
+            raise RuntimeError(
+                "Context artifact review_history must be a list."
+            )
+
+        if (
+            len(records)
+            != initial_hypotheses
+        ):
+            raise RuntimeError(
+                "Final context-review record count does not "
+                "match the accepted Alpha4 hypothesis count: "
+                f"context={len(records)}, "
+                f"hypotheses={initial_hypotheses}"
+            )
+
+        if (
+            context_payload.get(
+                "final_record_count"
+            )
+            != len(records)
+        ):
+            raise RuntimeError(
+                "Context artifact final_record_count mismatch."
+            )
+
+        if (
+            context_payload.get(
+                "review_history_count"
+            )
+            != len(review_history)
+        ):
+            raise RuntimeError(
+                "Context artifact review_history_count mismatch."
+            )
+
+        if not str(
+            context_payload.get(
+                "source_graph_sha256"
+            )
+            or ""
+        ).strip():
+            raise RuntimeError(
+                "Context artifact source graph SHA256 is missing."
+            )
+
+        if (
+            context_payload.get(
+                "action_policy_applied"
+            )
+            is not False
+        ):
+            raise RuntimeError(
+                "S1 context artifact unexpectedly claims "
+                "an action policy was applied."
+            )
+
+        runner.manifest[
+            "context_review"
+        ] = {
+            "status":
+                "assessed",
+            "artifact":
+                str(axis_context),
+            "schema_version":
+                context_payload.get(
+                    "schema_version"
+                ),
+            "adapter_id":
+                context_payload.get(
+                    "adapter_id"
+                ),
+            "model":
+                context_payload.get(
+                    "model"
+                ),
+            "source_graph":
+                context_payload.get(
+                    "source_graph"
+                ),
+            "source_graph_sha256":
+                context_payload.get(
+                    "source_graph_sha256"
+                ),
+            "source_graph_node_count":
+                context_payload.get(
+                    "source_graph_node_count"
+                ),
+            "source_graph_edge_count":
+                context_payload.get(
+                    "source_graph_edge_count"
+                ),
+            "final_record_count":
+                len(records),
+            "review_history_count":
+                len(review_history),
+            "action_policy_applied":
+                False,
+            "g1_action_policy_deferred":
+                True,
+        }
+
+    else:
+        runner.manifest[
+            "context_review"
+        ] = {
+            "status":
+                "not_supported_for_domain",
+            "artifact":
+                None,
+            "action_policy_applied":
+                False,
+        }
+
+    diversity_payload = _load_json(
+        axis_evidence_diversity
+    )
     runner.manifest["initial_hypothesis_count"] = initial_hypotheses
     runner.manifest["hypothesis_evidence_diversity"] = {
         "report_id": diversity_payload.get("report_id"),
