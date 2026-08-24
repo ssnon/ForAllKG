@@ -120,6 +120,11 @@ class TargetedNoveltyRefinementRuntime:
         "CONFLICTING_PRIOR_ART",
     }
 
+    SURVIVOR_DECISIONS = frozenset({
+        "kept_original",
+        "accepted_refinement",
+    })
+
     def __init__(
         self,
         *,
@@ -170,6 +175,110 @@ class TargetedNoveltyRefinementRuntime:
             == sorted(refined.gap_statement_ids)
             and original.hypothesis_type == refined.hypothesis_type
         )
+
+    @classmethod
+    def _bind_final_hypothesis_ids(
+        cls,
+        attempts: list[RefinementAttempt],
+        final_portfolio: HypothesisPortfolio,
+    ) -> list[RefinementAttempt]:
+        """Bind surviving attempts to actual final portfolio IDs.
+
+        Attempt-stage compilation and final portfolio compilation are
+        distinct identity namespaces because HypothesisCompiler includes
+        local_id in the hypothesis ID digest. Never infer final membership
+        from original/candidate identity.
+        """
+        survivor_indices = [
+            index
+            for index, attempt
+            in enumerate(attempts)
+            if (
+                attempt.decision
+                in cls.SURVIVOR_DECISIONS
+            )
+        ]
+
+        final_cards = list(
+            final_portfolio.hypotheses
+        )
+
+        if (
+            len(survivor_indices)
+            != len(final_cards)
+        ):
+            raise RuntimeError(
+                "novelty refinement survivor/final-portfolio "
+                "cardinality mismatch: "
+                f"survivors={len(survivor_indices)}, "
+                f"final={len(final_cards)}"
+            )
+
+        final_ids = [
+            card.hypothesis_id
+            for card in final_cards
+        ]
+
+        if (
+            len(final_ids)
+            != len(set(final_ids))
+        ):
+            raise RuntimeError(
+                "final novelty-refined portfolio contains "
+                "duplicate hypothesis IDs"
+            )
+
+        rebound = list(attempts)
+
+        for attempt_index, card in zip(
+            survivor_indices,
+            final_cards,
+            strict=True,
+        ):
+            attempt = rebound[
+                attempt_index
+            ]
+
+            if (
+                attempt.candidate_hypothesis_id
+                is None
+            ):
+                raise RuntimeError(
+                    "surviving refinement attempt is missing "
+                    "candidate_hypothesis_id before final binding"
+                )
+
+            if (
+                attempt.final_hypothesis_id
+                is not None
+            ):
+                raise RuntimeError(
+                    "final_hypothesis_id was populated before "
+                    "final portfolio binding"
+                )
+
+            rebound[
+                attempt_index
+            ] = attempt.model_copy(
+                update={
+                    "final_hypothesis_id":
+                        card.hypothesis_id,
+                }
+            )
+
+        for attempt in rebound:
+            if (
+                attempt.decision
+                not in cls.SURVIVOR_DECISIONS
+                and attempt.final_hypothesis_id
+                is not None
+            ):
+                raise RuntimeError(
+                    "non-surviving refinement attempt claims "
+                    "final portfolio membership"
+                )
+
+        return rebound
 
     @staticmethod
     def _lock_refinement_provenance(
@@ -274,7 +383,7 @@ class TargetedNoveltyRefinementRuntime:
                 attempts.append(
                     RefinementAttempt(
                         original_hypothesis_id=original.hypothesis_id,
-                        final_hypothesis_id=original.hypothesis_id,
+                        candidate_hypothesis_id=original.hypothesis_id,
                         gap_id=gap.gap_id,
                         action=gap.action,
                         decision="kept_original",
@@ -298,7 +407,7 @@ class TargetedNoveltyRefinementRuntime:
                     attempts.append(
                         RefinementAttempt(
                             original_hypothesis_id=original.hypothesis_id,
-                            final_hypothesis_id=original.hypothesis_id,
+                            candidate_hypothesis_id=original.hypothesis_id,
                             gap_id=gap.gap_id,
                             action=gap.action,
                             decision="kept_original",
@@ -371,7 +480,7 @@ class TargetedNoveltyRefinementRuntime:
                 attempts.append(
                     RefinementAttempt(
                         original_hypothesis_id=original.hypothesis_id,
-                        final_hypothesis_id=original.hypothesis_id,
+                        candidate_hypothesis_id=original.hypothesis_id,
                         gap_id=gap.gap_id,
                         action=gap.action,
                         decision="kept_original",
@@ -434,7 +543,7 @@ class TargetedNoveltyRefinementRuntime:
                 attempts.append(
                     RefinementAttempt(
                         original_hypothesis_id=original.hypothesis_id,
-                        final_hypothesis_id=original.hypothesis_id,
+                        candidate_hypothesis_id=original.hypothesis_id,
                         gap_id=gap.gap_id,
                         action=gap.action,
                         decision="kept_original",
@@ -551,7 +660,7 @@ class TargetedNoveltyRefinementRuntime:
                     attempts.append(
                         RefinementAttempt(
                             original_hypothesis_id=original.hypothesis_id,
-                            final_hypothesis_id=refined.hypothesis_id,
+                            candidate_hypothesis_id=refined.hypothesis_id,
                             gap_id=gap.gap_id,
                             action=gap.action,
                             decision="grounding_drift_rejected",
@@ -590,7 +699,7 @@ class TargetedNoveltyRefinementRuntime:
                         attempts.append(
                             RefinementAttempt(
                                 original_hypothesis_id=original.hypothesis_id,
-                                final_hypothesis_id=refined.hypothesis_id,
+                                candidate_hypothesis_id=refined.hypothesis_id,
                                 gap_id=gap.gap_id,
                                 action=gap.action,
                                 decision="axis_fidelity_rejected",
@@ -623,7 +732,7 @@ class TargetedNoveltyRefinementRuntime:
                     attempts.append(
                         RefinementAttempt(
                             original_hypothesis_id=original.hypothesis_id,
-                            final_hypothesis_id=refined.hypothesis_id,
+                            candidate_hypothesis_id=refined.hypothesis_id,
                             gap_id=gap.gap_id,
                             action=gap.action,
                             decision="internal_novelty_rejected",
@@ -659,7 +768,7 @@ class TargetedNoveltyRefinementRuntime:
                     attempts.append(
                         RefinementAttempt(
                             original_hypothesis_id=original.hypothesis_id,
-                            final_hypothesis_id=refined.hypothesis_id,
+                            candidate_hypothesis_id=refined.hypothesis_id,
                             gap_id=gap.gap_id,
                             action=gap.action,
                             decision="external_novelty_rejected",
@@ -682,7 +791,7 @@ class TargetedNoveltyRefinementRuntime:
             attempts.append(
                 RefinementAttempt(
                     original_hypothesis_id=original.hypothesis_id,
-                    final_hypothesis_id=refined.hypothesis_id,
+                    candidate_hypothesis_id=refined.hypothesis_id,
                     gap_id=gap.gap_id,
                     action=gap.action,
                     decision="accepted_refinement",
@@ -728,6 +837,11 @@ class TargetedNoveltyRefinementRuntime:
                 )
             )
 
+        attempts = self._bind_final_hypothesis_ids(
+            attempts,
+            final_portfolio,
+        )
+
         accepted_count = sum(
             x.decision == "accepted_refinement" for x in attempts
         )
@@ -742,7 +856,7 @@ class TargetedNoveltyRefinementRuntime:
             *(f"{x.original_hypothesis_id}:{x.decision}" for x in attempts),
         )
         body = {
-            "schema_version": "novelty-refinement-report-v1",
+            "schema_version": "novelty-refinement-report-v2",
             "report_id": report_id,
             "source_portfolio_id": portfolio.portfolio_id,
             "source_external_report_id": external_report.report_id,

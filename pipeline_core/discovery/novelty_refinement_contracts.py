@@ -95,6 +95,17 @@ class TargetedSearchRecord(StrictModel):
 
 class RefinementAttempt(StrictModel):
     original_hypothesis_id: str
+
+    # Identity of the hypothesis actually assessed during this
+    # refinement attempt. For kept-original paths this is the
+    # original hypothesis ID; for compiled refinements this is
+    # the single-card compiled candidate ID. It is NOT necessarily
+    # the identity assigned by the final portfolio compilation.
+    candidate_hypothesis_id: str | None = None
+
+    # Membership identity in NoveltyRefinementReport.final_portfolio_id.
+    # This is populated only after the final portfolio is compiled.
+    # Rejected/non-surviving attempts must leave it unset.
     final_hypothesis_id: str | None = None
     gap_id: str
     action: GapAction
@@ -111,9 +122,13 @@ class RefinementAttempt(StrictModel):
 
 
 class NoveltyRefinementReport(StrictModel):
-    schema_version: Literal["novelty-refinement-report-v1"] = (
-        "novelty-refinement-report-v1"
-    )
+    # v1 remains parseable for historical artifacts. v2 separates
+    # attempt-stage candidate identity from actual final-portfolio
+    # membership identity.
+    schema_version: Literal[
+        "novelty-refinement-report-v1",
+        "novelty-refinement-report-v2",
+    ] = "novelty-refinement-report-v2"
     report_id: str
     report_sha256: str
     source_portfolio_id: str
@@ -131,10 +146,180 @@ class NoveltyRefinementReport(StrictModel):
         "novelty-refinement-policy-v1"
     )
 
+    @model_validator(mode="after")
+    def _v2_identity_binding_consistency(
+        self,
+    ) -> "NoveltyRefinementReport":
+        # Historical v1 encoded an attempt-stage identity in
+        # final_hypothesis_id. Preserve its parseability exactly
+        # as historical evidence; do not reinterpret it.
+        if (
+            self.schema_version
+            == "novelty-refinement-report-v1"
+        ):
+            return self
+
+        survivor_decisions = {
+            "kept_original",
+            "accepted_refinement",
+        }
+
+        final_ids: list[str] = []
+
+        for attempt in self.attempts:
+            survives = (
+                attempt.decision
+                in survivor_decisions
+            )
+
+            if survives:
+                if (
+                    attempt.candidate_hypothesis_id
+                    is None
+                ):
+                    raise ValueError(
+                        "v2 surviving refinement attempt "
+                        "requires candidate_hypothesis_id"
+                    )
+
+                if (
+                    attempt.final_hypothesis_id
+                    is None
+                ):
+                    raise ValueError(
+                        "v2 surviving refinement attempt "
+                        "requires final_hypothesis_id"
+                    )
+
+                final_ids.append(
+                    attempt.final_hypothesis_id
+                )
+
+                continue
+
+            if (
+                attempt.final_hypothesis_id
+                is not None
+            ):
+                raise ValueError(
+                    "v2 rejected/non-surviving refinement "
+                    "attempt must not claim final portfolio "
+                    "membership"
+                )
+
+        if (
+            len(final_ids)
+            != len(set(final_ids))
+        ):
+            raise ValueError(
+                "v2 final_hypothesis_id values must be "
+                "unique among surviving attempts"
+            )
+
+        expected_survivors = (
+            self.accepted_refinement_count
+            + self.kept_original_count
+        )
+
+        if len(final_ids) != expected_survivors:
+            raise ValueError(
+                "v2 final hypothesis binding count does "
+                "not match surviving attempt counts"
+            )
+
+        return self
+
 
 class NoveltyRefinementArtifact(StrictModel):
-    schema_version: Literal["novelty-refinement-artifact-v1"] = (
-        "novelty-refinement-artifact-v1"
-    )
+    schema_version: Literal[
+        "novelty-refinement-artifact-v1",
+        "novelty-refinement-artifact-v2",
+    ] = "novelty-refinement-artifact-v2"
+
     portfolio: HypothesisPortfolio
     report: NoveltyRefinementReport
+
+    @model_validator(mode="after")
+    def _final_portfolio_membership_consistency(
+        self,
+    ) -> "NoveltyRefinementArtifact":
+        if (
+            self.report.final_portfolio_id
+            != self.portfolio.portfolio_id
+        ):
+            raise ValueError(
+                "novelty refinement report final_portfolio_id "
+                "does not match embedded portfolio"
+            )
+
+        # Historical v1 artifacts retain their historical identity
+        # semantics and must remain parseable without reinterpretation.
+        if (
+            self.schema_version
+            == "novelty-refinement-artifact-v1"
+        ):
+            return self
+
+        if (
+            self.report.schema_version
+            != "novelty-refinement-report-v2"
+        ):
+            raise ValueError(
+                "novelty-refinement-artifact-v2 requires "
+                "novelty-refinement-report-v2"
+            )
+
+        portfolio_ids = [
+            row.hypothesis_id
+            for row in self.portfolio.hypotheses
+        ]
+
+        if (
+            len(portfolio_ids)
+            != len(set(portfolio_ids))
+        ):
+            raise ValueError(
+                "final novelty-refined portfolio contains "
+                "duplicate hypothesis IDs"
+            )
+
+        report_final_ids = [
+            attempt.final_hypothesis_id
+            for attempt in self.report.attempts
+            if (
+                attempt.decision
+                in {
+                    "kept_original",
+                    "accepted_refinement",
+                }
+            )
+        ]
+
+        if any(
+            value is None
+            for value in report_final_ids
+        ):
+            raise ValueError(
+                "v2 surviving attempt is missing "
+                "final portfolio membership ID"
+            )
+
+        if (
+            set(report_final_ids)
+            != set(portfolio_ids)
+        ):
+            raise ValueError(
+                "v2 refinement final_hypothesis_id set "
+                "does not equal final portfolio hypothesis ID set"
+            )
+
+        if (
+            len(report_final_ids)
+            != len(portfolio_ids)
+        ):
+            raise ValueError(
+                "v2 refinement final hypothesis binding "
+                "cardinality does not match final portfolio"
+            )
+
+        return self
