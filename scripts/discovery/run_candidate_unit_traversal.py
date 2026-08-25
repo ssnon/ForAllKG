@@ -15,6 +15,10 @@ from pipeline_core.discovery.candidate_unit_selection import (
     endpoint_pair_payload,
 )
 from domains.registry import get_domain_profile
+from domains.candidate_unit_applicability_registry import (
+    available_candidate_unit_applicability_profiles,
+    get_candidate_unit_applicability_adapter,
+)
 from domains.extraction_registry import (
     get_extraction_adapter,
 )
@@ -74,6 +78,23 @@ def parse_args() -> argparse.Namespace:
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--target", default=None)
     target.add_argument("--target-node-id", default=None)
+
+    parser.add_argument(
+        "--semantic-stop",
+        default=None,
+        help=(
+            "Optional domain-owned applicability/relevance stop. "
+            "This is not a hard traversal waypoint."
+        ),
+    )
+    parser.add_argument(
+        "--corrected-route-contract",
+        action="store_true",
+        help=(
+            "Activate the locked RCF correction chain. Requires a "
+            "supported semantic stop and max-depth=13."
+        ),
+    )
 
     parser.add_argument("--source-types", default=None)
     parser.add_argument("--target-types", default=None)
@@ -170,7 +191,14 @@ def _step(graph: nx.DiGraph, source: str, target: str, *, unit: dict[str, Any]) 
     }
 
 
-def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualityScorer) -> dict[str, Any]:
+def _materialize_route(
+    graph: nx.DiGraph,
+    route: Any,
+    quality_scorer: PathQualityScorer,
+    *,
+    corrected_route_contract: bool = False,
+    semantic_stop: str | None = None,
+) -> dict[str, Any]:
     base = route.to_dict()
     unit = dict(base["candidate_unit"])
     nodes = [str(node) for node in base["nodes"]]
@@ -185,8 +213,14 @@ def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualit
     visited_papers: set[str] = set(base.get("visited_paper_ids", []))
     supporting_papers: set[str] = set()
     hub_scope_papers: set[str] = set()
-    for node in nodes:
-        visited_papers.update(paper_ids_from_node(graph, node))
+    if not corrected_route_contract:
+        # Historical behavior. In the corrected route contract the selector
+        # already emitted the provenance-safe visited-paper set and alignment
+        # hub corpus scope must not be reintroduced here.
+        for node in nodes:
+            visited_papers.update(
+                paper_ids_from_node(graph, node)
+            )
     for step in steps:
         papers = {str(item) for item in step.get("source_paper_ids", []) if str(item).strip()}
         if str(step.get("edge_class", "")) in {"registry_alignment", "pattern_alignment"}:
@@ -209,7 +243,7 @@ def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualit
         "mode": "exploratory",
         "source": nodes[0],
         "target": nodes[-1],
-        "semantic_stop": None,
+        "semantic_stop": semantic_stop,
         "nodes": nodes,
         "steps": steps,
         "total_cost": float(base["total_cost"]),
@@ -264,6 +298,43 @@ def _materialize_route(graph: nx.DiGraph, route: Any, quality_scorer: PathQualit
 def main() -> None:
     args = parse_args()
     domain_profile = get_domain_profile(args.domain_profile)
+
+    applicability_adapter = None
+
+    if args.corrected_route_contract:
+        if args.max_depth != 13:
+            raise ValueError(
+                "Locked corrected-route contract requires --max-depth 13"
+            )
+
+        if not str(args.semantic_stop or "").strip():
+            raise ValueError(
+                "Locked corrected-route contract requires --semantic-stop"
+            )
+
+        if (
+            domain_profile.profile_id
+            not in available_candidate_unit_applicability_profiles()
+        ):
+            raise ValueError(
+                "Locked corrected-route contract requires a domain-owned "
+                "candidate-unit applicability capability"
+            )
+
+        applicability_adapter = (
+            get_candidate_unit_applicability_adapter(
+                domain_profile.profile_id
+            )
+        )
+
+        if not applicability_adapter.supports_stop(
+            args.semantic_stop
+        ):
+            raise ValueError(
+                "Locked corrected-route contract is not authorized for "
+                f"semantic stop {args.semantic_stop!r}"
+            )
+
     extraction_adapter = get_extraction_adapter(
         domain_profile.profile_id
     )
@@ -315,11 +386,69 @@ def main() -> None:
     if not target_matches:
         raise RuntimeError("No grounded target nodes matched")
 
-    units = CandidateUnitBuilder(graph).build(bridge_capable_only=True)
+    all_units = CandidateUnitBuilder(graph).build(
+        bridge_capable_only=True
+    )
+    units = list(all_units)
+
+    applicability_records: list[dict[str, Any]] = []
+
+    if args.corrected_route_contract:
+        assert applicability_adapter is not None
+
+        eligible_units = []
+
+        for unit in all_units:
+            decision = applicability_adapter.classify(
+                unit,
+                stop=str(args.semantic_stop),
+            )
+
+            row = {
+                "unit_id": unit.unit_id,
+                "candidate_node_id": unit.candidate_node_id,
+                "label": unit.label,
+                **decision.to_dict(),
+            }
+
+            applicability_records.append(row)
+
+            if decision.eligible:
+                eligible_units.append(unit)
+
+        units = eligible_units
+
     confirmed = confirmed_navigation_graph(graph)
     vectors = _index_vectors(index)
 
-    combined_query = f"{args.source or args.source_node_id} ; candidate scientific bridge ; {args.target or args.target_node_id}"
+    source_text = (
+        args.source or args.source_node_id
+    )
+    target_text = (
+        args.target or args.target_node_id
+    )
+
+    if args.corrected_route_contract:
+        assert applicability_adapter is not None
+
+        relevance_stop = applicability_adapter.relevance_context(
+            str(args.semantic_stop)
+        )
+
+        combined_query = (
+            f"{source_text} ; "
+            f"{relevance_stop} ; "
+            "candidate scientific bridge ; "
+            f"{target_text}"
+        )
+    else:
+        relevance_stop = None
+
+        combined_query = (
+            f"{source_text} ; "
+            "candidate scientific bridge ; "
+            f"{target_text}"
+        )
     query_vector = np.asarray(mapper.encoder.encode_query(combined_query), dtype=np.float32)
     query_norm = float(np.linalg.norm(query_vector))
     if query_norm <= 0:
@@ -347,6 +476,7 @@ def main() -> None:
         max_unit_semantic_similarity=args.max_unit_semantic_similarity,
         min_unit_relevance=args.min_unit_relevance,
         min_selection_score=args.min_selection_score,
+        corrected_route_contract=args.corrected_route_contract,
     )
     selector = CandidateUnitSelector(
         graph,
@@ -362,12 +492,38 @@ def main() -> None:
         graph,
         discovery_semantics=domain_profile.discovery,
     )
-    all_paths = [_materialize_route(graph, route, quality_scorer) for route in routes]
-    paths = [_materialize_route(graph, route, quality_scorer) for route in selected_routes]
+    all_paths = [
+        _materialize_route(
+            graph,
+            route,
+            quality_scorer,
+            corrected_route_contract=args.corrected_route_contract,
+            semantic_stop=args.semantic_stop,
+        )
+        for route in routes
+    ]
+
+    paths = [
+        _materialize_route(
+            graph,
+            route,
+            quality_scorer,
+            corrected_route_contract=args.corrected_route_contract,
+            semantic_stop=args.semantic_stop,
+        )
+        for route in selected_routes
+    ]
 
     candidate_groups = {"CANDIDATE_EXPLORATION": [row["path_id"] for row in all_paths]}
     returned_groups = {"CANDIDATE_EXPLORATION": [row["path_id"] for row in paths]}
     inventory = candidate_unit_inventory(units)
+    pre_owner_inventory = candidate_unit_inventory(all_units)
+
+    owner_blocked_count = sum(
+        not bool(row["eligible"])
+        for row in applicability_records
+    )
+
     payload = {
         "schema_version": "candidate-unit-traversal-v1",
         "corpus_id": args.corpus_id,
@@ -377,7 +533,12 @@ def main() -> None:
         "algorithm": "candidate_unit_top_n",
         "source_query": args.source,
         "target_query": args.target,
-        "semantic_stop_query": None,
+        "semantic_stop_query": args.semantic_stop,
+        "candidate_relevance_query": combined_query,
+        "candidate_relevance_stop_context": relevance_stop,
+        "corrected_route_contract_active": bool(
+            args.corrected_route_contract
+        ),
         "constraints": {
             "mode": "exploratory",
             "max_depth": args.max_depth,
@@ -385,12 +546,31 @@ def main() -> None:
             "candidate_edge_count_per_unit": 2,
             "distinct_entry_exit_required": True,
             "confirmed_prefix_suffix_only": True,
+            "owner_applicability_gate": bool(
+                args.corrected_route_contract
+            ),
+            "score_first_route_selection": bool(
+                args.corrected_route_contract
+            ),
+            "semantic_state_retention": bool(
+                args.corrected_route_contract
+            ),
+            "narrow_carrier_reuse": bool(
+                args.corrected_route_contract
+            ),
+            "candidate_anchor_reuse_allowed": False,
         },
         "effective_max_depth": args.max_depth,
         "source_matches": source_matches,
         "target_matches": target_matches,
         "stop_matches": [],
         "candidate_unit_inventory": inventory,
+        "candidate_unit_inventory_pre_owner_gate":
+            pre_owner_inventory,
+        "candidate_unit_applicability_records":
+            applicability_records,
+        "candidate_unit_owner_blocked_count":
+            owner_blocked_count,
         "candidate_unit_route_count": len(routes),
         "selected_candidate_unit_count": len({row["candidate_unit"]["unit_id"] for row in paths}),
         "candidate_path_count": len(all_paths),
@@ -414,7 +594,26 @@ def main() -> None:
 
     print("Candidate-unit traversal complete")
     print("Corpus:", args.corpus_id)
-    print("Bridge-capable candidate units:", inventory["candidate_unit_count"])
+    print(
+        "Bridge-capable candidate units before owner gate:",
+        pre_owner_inventory["candidate_unit_count"],
+    )
+    print(
+        "Bridge-capable candidate units after owner gate:",
+        inventory["candidate_unit_count"],
+    )
+    print(
+        "Corrected route contract:",
+        bool(args.corrected_route_contract),
+    )
+    print(
+        "Owner-gate blocked units:",
+        owner_blocked_count,
+    )
+    print(
+        "Candidate relevance query:",
+        combined_query,
+    )
     print("Valid source→unit→target routes:", len(all_paths))
     print("Returned paths:", len(paths))
     print("Full candidate pool included:", bool(args.include_candidate_paths))

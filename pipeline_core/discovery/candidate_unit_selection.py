@@ -10,11 +10,13 @@ import networkx as nx
 
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from pipeline_core.discovery.discovery_semantics import (
+    is_alignment_edge as is_semantic_alignment_edge,
     is_alignment_node,
     is_generic_entity_node,
     is_mechanism_edge,
     is_mechanism_node,
     is_scaffold_edge,
+    is_shared_entity_node,
     normalized_node_type,
 )
 from pipeline_core.discovery.candidate_units import (
@@ -64,50 +66,340 @@ def _bounded_shortest_paths(
     start: str,
     *,
     max_hops: int,
+    discovery_semantics: Any | None = None,
+    retain_semantic_state: bool = False,
 ) -> dict[str, tuple[tuple[float, tuple[str, ...]], ...]]:
-    """Pareto-style min-cost paths indexed by exact hop count.
+    """Return bounded simple paths retained by exact routing state.
 
-    Keeping one weighted-shortest path per node is insufficient under a hard
-    *total* hop budget: a cheap 10-hop prefix can crowd out a costlier 3-hop
-    prefix that is the only one leaving room for the candidate unit + suffix.
-    We therefore retain the minimum-cost simple path for every reachable
-    ``(node, hops)`` state and expose all hop variants to the triple selector.
+    Legacy mode retains one minimum-cost path per ``(node, hops)``.
+
+    The corrected route contract additionally retains mechanism/alignment
+    state.  This prevents a cheaper scaffold-only path from suppressing a
+    scientifically richer path that reaches the same node at the same hop
+    count.
     """
     if start not in graph or max_hops < 0:
         return {}
-    best_state: dict[tuple[str, int], tuple[float, tuple[str, ...]]] = {
-        (start, 0): (0.0, (start,))
-    }
-    heap: list[tuple[float, int, str, tuple[str, ...]]] = [(0.0, 0, start, (start,))]
 
-    while heap:
-        cost, hops, node, path = heapq.heappop(heap)
-        current = best_state.get((node, hops))
-        if current is None or cost > current[0] or (cost == current[0] and path != current[1]):
+    if not retain_semantic_state:
+        best_state: dict[
+            tuple[str, int],
+            tuple[float, tuple[str, ...]],
+        ] = {
+            (start, 0): (0.0, (start,))
+        }
+
+        heap: list[
+            tuple[float, int, str, tuple[str, ...]]
+        ] = [
+            (0.0, 0, start, (start,))
+        ]
+
+        while heap:
+            cost, hops, node, path = heapq.heappop(heap)
+
+            current = best_state.get((node, hops))
+
+            if (
+                current is None
+                or cost > current[0]
+                or (
+                    cost == current[0]
+                    and path != current[1]
+                )
+            ):
+                continue
+
+            if hops >= max_hops:
+                continue
+
+            for neighbor in graph.successors(node):
+                nxt = str(neighbor)
+
+                if nxt in path:
+                    continue
+
+                attrs = dict(graph.edges[node, nxt])
+
+                edge_cost = float(
+                    attrs.get("exploration_cost", 1.0)
+                )
+
+                new_cost = cost + edge_cost
+                new_hops = hops + 1
+                new_path = path + (nxt,)
+
+                state = (nxt, new_hops)
+
+                previous = best_state.get(state)
+
+                if (
+                    previous is not None
+                    and (new_cost, new_path)
+                    >= (previous[0], previous[1])
+                ):
+                    continue
+
+                best_state[state] = (
+                    new_cost,
+                    new_path,
+                )
+
+                heapq.heappush(
+                    heap,
+                    (
+                        new_cost,
+                        new_hops,
+                        nxt,
+                        new_path,
+                    ),
+                )
+
+        by_node: dict[
+            str,
+            list[tuple[float, tuple[str, ...]]],
+        ] = {}
+
+        for (node, _hops), value in best_state.items():
+            by_node.setdefault(node, []).append(value)
+
+        return {
+            node: tuple(
+                sorted(
+                    values,
+                    key=lambda item: (
+                        len(item[1]) - 1,
+                        item[0],
+                        item[1],
+                    ),
+                )
+            )
+            for node, values in by_node.items()
+        }
+
+    if discovery_semantics is None:
+        raise ValueError(
+            "discovery_semantics is required when "
+            "retain_semantic_state=True"
+        )
+
+    start_attrs = dict(graph.nodes[start])
+
+    start_mechanism = is_mechanism_node(
+        start,
+        start_attrs,
+        discovery_semantics,
+    )
+
+    start_alignment = is_alignment_node(
+        start_attrs
+    )
+
+    SemanticState = tuple[
+        str,
+        int,
+        bool,
+        bool,
+    ]
+
+    best_semantic_state: dict[
+        SemanticState,
+        tuple[float, tuple[str, ...]],
+    ] = {
+        (
+            start,
+            0,
+            start_mechanism,
+            start_alignment,
+        ): (
+            0.0,
+            (start,),
+        )
+    }
+
+    semantic_heap: list[
+        tuple[
+            float,
+            int,
+            str,
+            bool,
+            bool,
+            tuple[str, ...],
+        ]
+    ] = [
+        (
+            0.0,
+            0,
+            start,
+            start_mechanism,
+            start_alignment,
+            (start,),
+        )
+    ]
+
+    while semantic_heap:
+        (
+            cost,
+            hops,
+            node,
+            mechanism_seen,
+            alignment_seen,
+            path,
+        ) = heapq.heappop(
+            semantic_heap
+        )
+
+        state = (
+            node,
+            hops,
+            mechanism_seen,
+            alignment_seen,
+        )
+
+        current = best_semantic_state.get(
+            state
+        )
+
+        if (
+            current is None
+            or cost > current[0]
+            or (
+                cost == current[0]
+                and path != current[1]
+            )
+        ):
             continue
+
         if hops >= max_hops:
             continue
+
         for neighbor in graph.successors(node):
             nxt = str(neighbor)
+
+            # Each side remains a simple path.  The corrected
+            # carrier-reuse contract is applied only when the
+            # independently simple prefix/suffix are combined.
             if nxt in path:
                 continue
-            attrs = dict(graph.edges[node, nxt])
-            edge_cost = float(attrs.get("exploration_cost", 1.0))
-            new_cost = cost + edge_cost
+
+            attrs = dict(
+                graph.edges[node, nxt]
+            )
+
+            nxt_attrs = dict(
+                graph.nodes[nxt]
+            )
+
+            next_mechanism = (
+                mechanism_seen
+                or is_mechanism_edge(
+                    attrs,
+                    discovery_semantics,
+                )
+                or is_mechanism_node(
+                    nxt,
+                    nxt_attrs,
+                    discovery_semantics,
+                )
+            )
+
+            next_alignment = (
+                alignment_seen
+                or is_semantic_alignment_edge(
+                    attrs
+                )
+                or is_alignment_node(
+                    nxt_attrs
+                )
+            )
+
+            new_cost = (
+                cost
+                + float(
+                    attrs.get(
+                        "exploration_cost",
+                        1.0,
+                    )
+                )
+            )
+
             new_hops = hops + 1
             new_path = path + (nxt,)
-            state = (nxt, new_hops)
-            previous = best_state.get(state)
-            if previous is not None and (new_cost, new_path) >= (previous[0], previous[1]):
-                continue
-            best_state[state] = (new_cost, new_path)
-            heapq.heappush(heap, (new_cost, new_hops, nxt, new_path))
 
-    by_node: dict[str, list[tuple[float, tuple[str, ...]]]] = {}
-    for (node, _hops), value in best_state.items():
-        by_node.setdefault(node, []).append(value)
+            next_state = (
+                nxt,
+                new_hops,
+                next_mechanism,
+                next_alignment,
+            )
+
+            previous = (
+                best_semantic_state.get(
+                    next_state
+                )
+            )
+
+            if (
+                previous is not None
+                and (
+                    new_cost,
+                    new_path,
+                )
+                >= (
+                    previous[0],
+                    previous[1],
+                )
+            ):
+                continue
+
+            best_semantic_state[
+                next_state
+            ] = (
+                new_cost,
+                new_path,
+            )
+
+            heapq.heappush(
+                semantic_heap,
+                (
+                    new_cost,
+                    new_hops,
+                    nxt,
+                    next_mechanism,
+                    next_alignment,
+                    new_path,
+                ),
+            )
+
+    by_node: dict[
+        str,
+        list[tuple[float, tuple[str, ...]]],
+    ] = {}
+
+    for (
+        node,
+        _hops,
+        _mechanism,
+        _alignment,
+    ), value in best_semantic_state.items():
+        by_node.setdefault(
+            node,
+            [],
+        ).append(
+            value
+        )
+
     return {
-        node: tuple(sorted(values, key=lambda item: (len(item[1]) - 1, item[0], item[1])))
+        node: tuple(
+            sorted(
+                set(values),
+                key=lambda item: (
+                    len(item[1]) - 1,
+                    item[0],
+                    item[1],
+                ),
+            )
+        )
         for node, values in by_node.items()
     }
 
@@ -194,6 +486,16 @@ class CandidateUnitSelectionPolicy:
     min_unit_relevance: float = 0.0
     min_selection_score: float = 0.0
 
+    # RCF-7 correction contract.
+    #
+    # False preserves the historical selector behavior.
+    # True atomically enables:
+    #   - semantic-state path retention,
+    #   - score-first route choice within one endpoint/anchor quadruple,
+    #   - alignment-hub provenance exclusion,
+    #   - narrow routing-carrier reuse with candidate-anchor reuse forbidden.
+    corrected_route_contract: bool = False
+
     endpoint_weight: float = 0.18
     unit_relevance_weight: float = 0.24
     mechanistic_continuity_weight: float = 0.24
@@ -242,6 +544,118 @@ class CandidateUnitSelector:
         self.discovery_semantics = self.domain_profile.discovery
         self.unit_relevance = {str(k): _clip01(float(v)) for k, v in dict(unit_relevance or {}).items()}
         self.unit_vectors = dict(unit_vectors or {})
+        self._corrected_reusable_carriers = (
+            self._build_corrected_reusable_carriers()
+            if self.policy.corrected_route_contract
+            else frozenset()
+        )
+
+    def _build_corrected_reusable_carriers(
+        self,
+    ) -> frozenset[str]:
+        """Return the narrow routing-only carrier class validated by RCF.
+
+        Reusable nodes are:
+        1. corpus-alignment nodes; or
+        2. shared scientific entities whose incident confirmed edges are
+           exclusively domain scaffold relations or corpus-alignment edges.
+
+        Candidate anchors are *not* authorized here.  They are removed again
+        per candidate unit by ``_route_reuse_allowed``.
+        """
+        reusable: set[str] = set()
+
+        for raw_node in self.confirmed_graph.nodes:
+            node = str(raw_node)
+
+            attrs = dict(
+                self.confirmed_graph.nodes[node]
+            )
+
+            if is_alignment_node(attrs):
+                reusable.add(node)
+                continue
+
+            if not is_shared_entity_node(
+                node,
+                attrs,
+                self.discovery_semantics,
+            ):
+                continue
+
+            incident = [
+                dict(edge)
+                for _, _, edge
+                in self.confirmed_graph.in_edges(
+                    node,
+                    data=True,
+                )
+            ]
+
+            incident.extend(
+                dict(edge)
+                for _, _, edge
+                in self.confirmed_graph.out_edges(
+                    node,
+                    data=True,
+                )
+            )
+
+            if (
+                incident
+                and all(
+                    is_scaffold_edge(
+                        edge,
+                        self.discovery_semantics,
+                    )
+                    or is_semantic_alignment_edge(
+                        edge
+                    )
+                    for edge in incident
+                )
+            ):
+                reusable.add(node)
+
+        return frozenset(
+            reusable
+        )
+
+    def _route_reuse_allowed(
+        self,
+        nodes: tuple[str, ...],
+        unit: CandidateUnit,
+    ) -> bool:
+        seen: set[str] = set()
+        duplicates: set[str] = set()
+
+        for node in nodes:
+            if node in seen:
+                duplicates.add(node)
+            else:
+                seen.add(node)
+
+        if not duplicates:
+            return True
+
+        if not self.policy.corrected_route_contract:
+            return False
+
+        strict_anchors = {
+            anchor.node_id
+            for anchor in unit.anchors
+        }
+
+        for node in duplicates:
+            if node in strict_anchors:
+                return False
+
+            if (
+                node
+                not in self._corrected_reusable_carriers
+            ):
+                return False
+
+        return True
 
     def _route_diagnostics(
         self,
@@ -333,7 +747,25 @@ class CandidateUnitSelector:
 
         papers: set[str] = set()
         for node in nodes:
-            papers.update(paper_ids_from_node(self.graph, node))
+            if (
+                self.policy.corrected_route_contract
+                and node in self.graph
+                and is_alignment_node(
+                    dict(self.graph.nodes[node])
+                )
+            ):
+                # Corpus-alignment hubs can summarize hundreds of papers.
+                # They are routing aids, not scientific evidence visited by
+                # this candidate route.
+                continue
+
+            papers.update(
+                paper_ids_from_node(
+                    self.graph,
+                    node,
+                )
+            )
+
         cross_paper_span = _clip01((len(papers) - 1) / 2.0) if papers else 0.0
         return (
             mechanistic_continuity,
@@ -406,6 +838,330 @@ class CandidateUnitSelector:
             papers,
         )
 
+    def _enumerate_routes_corrected(
+        self,
+        units: list[CandidateUnit],
+        sources: list[dict[str, Any]],
+        targets: list[dict[str, Any]],
+    ) -> list[CandidateUnitRoute]:
+        side_hops = self.policy.max_depth - 2
+
+        prefix_cache = {
+            str(match["node_id"]): _bounded_shortest_paths(
+                self.confirmed_graph,
+                str(match["node_id"]),
+                max_hops=side_hops,
+                discovery_semantics=self.discovery_semantics,
+                retain_semantic_state=True,
+            )
+            for match in sources
+        }
+
+        reverse_confirmed = self.confirmed_graph.reverse(
+            copy=False
+        )
+
+        suffix_cache = {
+            str(match["node_id"]): _bounded_shortest_paths(
+                reverse_confirmed,
+                str(match["node_id"]),
+                max_hops=side_hops,
+                discovery_semantics=self.discovery_semantics,
+                retain_semantic_state=True,
+            )
+            for match in targets
+        }
+
+        routes: list[CandidateUnitRoute] = []
+
+        for unit in units:
+            relevance = self.unit_relevance.get(
+                unit.candidate_node_id,
+                0.0,
+            )
+
+            if (
+                relevance
+                < self.policy.min_unit_relevance
+            ):
+                continue
+
+            candidate_id = (
+                unit.candidate_node_id
+            )
+
+            for entry in unit.anchors:
+                if not self.graph.has_edge(
+                    entry.node_id,
+                    candidate_id,
+                ):
+                    continue
+
+                first_candidate = dict(
+                    self.graph.edges[
+                        entry.node_id,
+                        candidate_id,
+                    ]
+                )
+
+                if (
+                    not edge_is_candidate(
+                        first_candidate
+                    )
+                    or edge_is_reverse(
+                        first_candidate
+                    )
+                ):
+                    continue
+
+                for exit_anchor in unit.anchors:
+                    if (
+                        entry.node_id
+                        == exit_anchor.node_id
+                    ):
+                        continue
+
+                    if not self.graph.has_edge(
+                        candidate_id,
+                        exit_anchor.node_id,
+                    ):
+                        continue
+
+                    second_candidate = dict(
+                        self.graph.edges[
+                            candidate_id,
+                            exit_anchor.node_id,
+                        ]
+                    )
+
+                    if (
+                        not edge_is_candidate(
+                            second_candidate
+                        )
+                        or not edge_is_reverse(
+                            second_candidate
+                        )
+                    ):
+                        continue
+
+                    for source_match in sources:
+                        source_id = str(
+                            source_match[
+                                "node_id"
+                            ]
+                        )
+
+                        prefix_variants = (
+                            prefix_cache[
+                                source_id
+                            ].get(
+                                entry.node_id,
+                                (),
+                            )
+                        )
+
+                        if not prefix_variants:
+                            continue
+
+                        for target_match in targets:
+                            target_id = str(
+                                target_match[
+                                    "node_id"
+                                ]
+                            )
+
+                            suffix_variants = (
+                                suffix_cache[
+                                    target_id
+                                ].get(
+                                    exit_anchor.node_id,
+                                    (),
+                                )
+                            )
+
+                            if not suffix_variants:
+                                continue
+
+                            best_route: (
+                                CandidateUnitRoute
+                                | None
+                            ) = None
+
+                            best_key: (
+                                tuple[Any, ...]
+                                | None
+                            ) = None
+
+                            for (
+                                prefix_cost,
+                                prefix_nodes,
+                            ) in prefix_variants:
+                                prefix_hops = (
+                                    len(prefix_nodes)
+                                    - 1
+                                )
+
+                                for (
+                                    suffix_cost,
+                                    suffix_reverse_nodes,
+                                ) in suffix_variants:
+                                    suffix_hops = (
+                                        len(
+                                            suffix_reverse_nodes
+                                        )
+                                        - 1
+                                    )
+
+                                    hop_count = (
+                                        prefix_hops
+                                        + 2
+                                        + suffix_hops
+                                    )
+
+                                    if (
+                                        hop_count
+                                        > self.policy.max_depth
+                                    ):
+                                        continue
+
+                                    suffix_nodes = tuple(
+                                        reversed(
+                                            suffix_reverse_nodes
+                                        )
+                                    )
+
+                                    nodes = (
+                                        prefix_nodes
+                                        + (
+                                            candidate_id,
+                                        )
+                                        + suffix_nodes
+                                    )
+
+                                    if not self._route_reuse_allowed(
+                                        nodes,
+                                        unit,
+                                    ):
+                                        continue
+
+                                    total_cost = (
+                                        float(prefix_cost)
+                                        + float(
+                                            first_candidate.get(
+                                                "exploration_cost",
+                                                1.0,
+                                            )
+                                        )
+                                        + float(
+                                            second_candidate.get(
+                                                "exploration_cost",
+                                                1.0,
+                                            )
+                                        )
+                                        + float(suffix_cost)
+                                    )
+
+                                    (
+                                        score,
+                                        contexts,
+                                        papers,
+                                    ) = self._score(
+                                        source_match=
+                                            source_match,
+                                        target_match=
+                                            target_match,
+                                        unit=unit,
+                                        nodes=nodes,
+                                        entry_id=
+                                            entry.node_id,
+                                        exit_id=
+                                            exit_anchor.node_id,
+                                    )
+
+                                    if (
+                                        score.total
+                                        < self.policy.min_selection_score
+                                    ):
+                                        continue
+
+                                    route_id = _stable_id(
+                                        "candidate_unit_route",
+                                        source_id,
+                                        unit.unit_id,
+                                        entry.node_id,
+                                        exit_anchor.node_id,
+                                        target_id,
+                                        *nodes,
+                                    )
+
+                                    candidate_route = (
+                                        CandidateUnitRoute(
+                                            route_id=
+                                                route_id,
+                                            unit=unit,
+                                            entry_anchor=
+                                                entry,
+                                            exit_anchor=
+                                                exit_anchor,
+                                            source_match=
+                                                source_match,
+                                            target_match=
+                                                target_match,
+                                            nodes=nodes,
+                                            total_cost=
+                                                total_cost,
+                                            hop_count=
+                                                hop_count,
+                                            score=score,
+                                            context_node_labels=
+                                                contexts,
+                                            visited_paper_ids=
+                                                papers,
+                                        )
+                                    )
+
+                                    # Scientific score is the local objective.
+                                    # Cost is only a deterministic tie-breaker.
+                                    candidate_key = (
+                                        -score.total,
+                                        -score.unit_relevance,
+                                        score.context_switch_penalty,
+                                        total_cost,
+                                        hop_count,
+                                        route_id,
+                                    )
+
+                                    if (
+                                        best_key is None
+                                        or candidate_key
+                                        < best_key
+                                    ):
+                                        best_key = (
+                                            candidate_key
+                                        )
+
+                                        best_route = (
+                                            candidate_route
+                                        )
+
+                            if best_route is not None:
+                                routes.append(
+                                    best_route
+                                )
+
+        routes.sort(
+            key=lambda route: (
+                -route.score.total,
+                -route.score.unit_relevance,
+                route.score.context_switch_penalty,
+                route.total_cost,
+                route.hop_count,
+                route.route_id,
+            )
+        )
+
+        return routes
+
     def enumerate_routes(
         self,
         units: Iterable[CandidateUnit],
@@ -417,6 +1173,13 @@ class CandidateUnitSelector:
         targets = [dict(match) for match in target_matches if str(match.get("node_id", "")) in self.confirmed_graph]
         if not sources or not targets or not units:
             return []
+
+        if self.policy.corrected_route_contract:
+            return self._enumerate_routes_corrected(
+                units,
+                sources,
+                targets,
+            )
 
         prefix_cache = {
             str(match["node_id"]): _bounded_shortest_paths(

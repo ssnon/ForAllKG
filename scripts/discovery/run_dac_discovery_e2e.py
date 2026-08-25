@@ -16,6 +16,10 @@ from domains.context_review_registry import (
     available_context_review_profiles,
     get_context_review_adapter,
 )
+from domains.candidate_unit_applicability_registry import (
+    available_candidate_unit_applicability_profiles,
+    get_candidate_unit_applicability_adapter,
+)
 from domains.feasibility_registry import resolve_feasibility_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.domain.feasibility_domain import FeasibilityDomainAdapter
@@ -317,6 +321,85 @@ def _check_alpha6_available() -> None:
             "scripts.discovery.run_novelty_refinement is unavailable. Apply the alpha6 targeted "
             "novelty-refinement bundle before using this full E2E runner."
         ) from exc
+
+
+_RCF_CORRECTED_CANDIDATE_MAX_DEPTH = 13
+
+
+def _candidate_unit_correction_contract(
+    args: argparse.Namespace,
+    profile: ScientificDomainProfile,
+) -> tuple[list[str], dict[str, Any]]:
+    """Resolve the atomic RCF candidate-routing correction chain.
+
+    Grounding traversal depth remains controlled by ``args.max_depth``.
+    Candidate depth 13 is activated only when a domain-owned applicability
+    adapter explicitly supports the requested semantic stop.
+    """
+
+    legacy = (
+        ["--max-depth", str(args.max_depth)],
+        {
+            "active": False,
+            "candidate_max_depth": int(args.max_depth),
+            "grounding_max_depth": int(args.max_depth),
+            "semantic_stop": args.stop,
+            "reason": "unsupported_or_absent_stop",
+            "corrected_route_contract": False,
+            "owner_gate": False,
+            "stop_conditioned_relevance": False,
+        },
+    )
+
+    stop = str(args.stop or "").strip()
+
+    if not stop:
+        return legacy
+
+    if (
+        profile.profile_id
+        not in available_candidate_unit_applicability_profiles()
+    ):
+        return legacy
+
+    adapter = get_candidate_unit_applicability_adapter(
+        profile.profile_id
+    )
+
+    if not adapter.supports_stop(stop):
+        return legacy
+
+    return (
+        [
+            "--semantic-stop",
+            stop,
+            "--corrected-route-contract",
+            "--max-depth",
+            str(_RCF_CORRECTED_CANDIDATE_MAX_DEPTH),
+        ],
+        {
+            "active": True,
+            "candidate_max_depth":
+                _RCF_CORRECTED_CANDIDATE_MAX_DEPTH,
+            "grounding_max_depth": int(args.max_depth),
+            "semantic_stop": stop,
+            "applicability_adapter_id":
+                adapter.adapter_id,
+            "relevance_stop_context":
+                adapter.relevance_context(stop),
+            "corrected_route_contract": True,
+            "owner_gate": True,
+            "stop_conditioned_relevance": True,
+            "score_first": True,
+            "semantic_state_retention": True,
+            "corrected_provenance": True,
+            "narrow_carrier_reuse": True,
+            "candidate_anchor_reuse_allowed": False,
+            "threshold_changed": False,
+            "score_weights_changed": False,
+            "grounding_depth_changed": False,
+        },
+    )
 
 
 def run_pipeline(args: argparse.Namespace) -> int:
@@ -702,6 +785,19 @@ def run_pipeline(args: argparse.Namespace) -> int:
     # ------------------------------------------------------------------
     # 5-7. Discovery lane and dual context
     # ------------------------------------------------------------------
+    (
+        candidate_correction_args,
+        candidate_correction_manifest,
+    ) = _candidate_unit_correction_contract(
+        args,
+        domain_profile,
+    )
+
+    runner.manifest[
+        "candidate_unit_correction_chain"
+    ] = candidate_correction_manifest
+    runner._save_manifest()
+
     candidate_traversal = run / "candidate_unit.traversal.a3.json"
     runner.run_stage(
         "[5/13] Candidate-unit discovery",
@@ -713,7 +809,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--source", args.source,
             "--target", args.target,
             "--node-map-k", str(args.node_map_k),
-            "--max-depth", str(args.max_depth),
+            *candidate_correction_args,
             "--top-k", str(max(args.top_k, 12)),
             "--include-candidate-paths",
             "--output", str(candidate_traversal),
