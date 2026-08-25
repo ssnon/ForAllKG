@@ -346,6 +346,7 @@ class UnresolvedConnection(StrictModel):
         "missing_direct_relation_in_packet",
         "insufficient_provenance",
         "partial_source_scope",
+        "insufficient_context",
     ]
     scope: Literal["provided_evidence_packet"] = "provided_evidence_packet"
 

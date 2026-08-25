@@ -68,6 +68,7 @@ class UnresolvedConnectionDraft(StrictDraftModel):
         "missing_direct_relation_in_packet",
         "insufficient_provenance",
         "partial_source_scope",
+        "insufficient_context",
     ]
 
 

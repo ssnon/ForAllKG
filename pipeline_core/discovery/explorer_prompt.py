@@ -9,7 +9,7 @@ from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 
 
-PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.2"
+PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.3"
 
 
 def _sha256(text: str) -> str:
@@ -236,6 +236,7 @@ class ExplorerPromptAssembler:
                 "- Before writing any paper-specific absence statement, check PAPER COMPLETENESS. If absence_claims_allowed=false for any implicated paper, do not assert absence; express only a packet-scoped uncertainty/limitation without negative factual wording.",
                 "- Do not turn a multi-paper navigation route into a causal chain.",
                 "- If the packet only connects two mechanisms through registry/alignment navigation, say that explicitly and add an unresolved scope-limit statement rather than filling the missing causal link.",
+                "- For unresolved_connections.reason use exactly one of: alignment_only, navigation_heavy, candidate_only, missing_direct_relation_in_packet, insufficient_provenance, partial_source_scope, insufficient_context.",
                 "- Keep reported design levers to relationships explicitly supported in this packet; do not recommend a new composition, catalyst, or experiment.",
             ]
         )
