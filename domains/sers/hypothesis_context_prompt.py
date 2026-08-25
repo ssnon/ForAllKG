@@ -8,6 +8,7 @@ from domains.sers.context_contracts import (
     SERSContextSignature,
 )
 from domains.sers.hypothesis_context_contracts import (
+    HypothesisContextInterpretationDraft,
     expected_hypothesis_context_assertions,
 )
 from pipeline_core.discovery.hypothesis_contracts import (
@@ -16,7 +17,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 
 
 HYPOTHESIS_CONTEXT_PROMPT_VERSION = (
-    "sers-hypothesis-context-prompt-v1"
+    "sers-hypothesis-context-prompt-v1.1"
 )
 
 
@@ -281,4 +282,91 @@ class SERSHypothesisContextPromptAssembler:
                 SYSTEM_PROMPT,
             user_prompt=
                 user_prompt,
+        )
+
+
+    def repair_after_validation(
+        self,
+        *,
+        original_prompt: HypothesisContextPrompt,
+        previous_draft:
+            HypothesisContextInterpretationDraft,
+        issues: tuple[str, ...] | list[str],
+        source_signatures: list[
+            SERSContextSignature
+        ],
+    ) -> HypothesisContextPrompt:
+        """Build one bounded reference-integrity repair prompt.
+
+        This is not scientific hypothesis repair.  It only gives the
+        interpreter one opportunity to correct deterministic reference
+        errors while preserving the supplied assertions and context
+        fact surface.
+        """
+        valid_fact_ids = sorted({
+            fact.fact_id
+            for signature
+            in source_signatures
+            for fact in signature.facts
+        })
+
+        repair_payload = {
+            "validation_issues": [
+                str(issue)
+                for issue in issues
+            ],
+            "valid_source_fact_ids":
+                valid_fact_ids,
+            "previous_draft":
+                previous_draft.model_dump(
+                    mode="json"
+                ),
+        }
+
+        repair_system = (
+            SYSTEM_PROMPT
+            + "\n\n"
+            + """
+VALIDATION REPAIR MODE
+======================
+The previous structured interpretation passed the response schema but
+failed deterministic source-reference validation.
+
+This is a bounded reference-integrity repair, not a new interpretation
+task.
+
+- Preserve every assertion_id, assertion_kind, and assertion_text.
+- Do not add scientific claims or new hypothesis content.
+- Do not invent or synthesize source fact IDs.
+- Every source_fact_id in the replacement MUST be copied exactly from
+  VALID_SOURCE_FACT_IDS.
+- Repair only the context mentions necessary to resolve the listed
+  deterministic issues.
+- If no supplied source fact appropriately supports a context mention,
+  do not fabricate one. Use the existing treatment semantics
+  faithfully, including introduce with an empty source_fact_ids list
+  when appropriate, or remove an unsupported mention when the phrase
+  is not actually a context variable.
+- Return one complete replacement draft.
+""".strip()
+        )
+
+        repair_user = (
+            original_prompt.user_prompt
+            + "\n\n"
+            + "VALIDATION REPAIR INPUT\n"
+            + "=======================\n"
+            + json.dumps(
+                repair_payload,
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+        )
+
+        return HypothesisContextPrompt.create(
+            system_prompt=
+                repair_system,
+            user_prompt=
+                repair_user,
         )

@@ -256,15 +256,92 @@ class SERSHypothesisContextInterpreter:
         except (
             HypothesisContextInterpretationValidationError
         ) as exc:
-            raise (
-                HypothesisContextInterpreterValidationError(
-                    prompt=prompt,
-                    generation=generation,
-                    canonical_draft=
-                        canonical_draft,
-                    validation_error=exc,
+            # Only source-reference hallucination is eligible for
+            # automatic repair. Scientific/context-semantic validation
+            # failures remain immediate fail-closed outcomes.
+            reference_only = (
+                bool(exc.issues)
+                and all(
+                    "unknown source fact "
+                    in str(issue)
+                    for issue in exc.issues
                 )
-            ) from exc
+            )
+
+            if not reference_only:
+                raise (
+                    HypothesisContextInterpreterValidationError(
+                        prompt=prompt,
+                        generation=generation,
+                        canonical_draft=
+                            canonical_draft,
+                        validation_error=exc,
+                    )
+                ) from exc
+
+            repair_prompt = (
+                self.prompt_assembler
+                .repair_after_validation(
+                    original_prompt=prompt,
+                    previous_draft=
+                        canonical_draft,
+                    issues=list(
+                        exc.issues
+                    ),
+                    source_signatures=
+                        source_signatures,
+                )
+            )
+
+            repair_generation = (
+                self.backend.interpret(
+                    repair_prompt
+                )
+            )
+
+            repair_canonical_draft = (
+                _canonicalize_interpretation_draft(
+                    draft=
+                        repair_generation.draft,
+                    source_signatures=
+                        source_signatures,
+                )
+            )
+
+            try:
+                interpretation = (
+                    self.compiler.compile(
+                        card=card,
+                        source_signatures=
+                            source_signatures,
+                        draft=
+                            repair_canonical_draft,
+                    )
+                )
+
+            except (
+                HypothesisContextInterpretationValidationError
+            ) as repair_exc:
+                raise (
+                    HypothesisContextInterpreterValidationError(
+                        prompt=
+                            repair_prompt,
+                        generation=
+                            repair_generation,
+                        canonical_draft=
+                            repair_canonical_draft,
+                        validation_error=
+                            repair_exc,
+                    )
+                ) from repair_exc
+
+            # Final outcome corresponds to the accepted replacement
+            # generation and its exact repair prompt.
+            prompt = repair_prompt
+            generation = repair_generation
+            canonical_draft = (
+                repair_canonical_draft
+            )
 
         return (
             HypothesisContextInterpreterOutcome(
