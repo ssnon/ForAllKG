@@ -136,8 +136,11 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         ),
         scope_patterns=(
             ("au_ag", (
-                r"\bau\s*[-/@]?\s*ag\b",
-                r"\bag\s*[-/@]?\s*au\b",
+                # Treat Unicode dash variants as orthographic equivalents
+                # of the ordinary Au-Ag / Ag-Au notation. Do not widen the
+                # looser gold...silver proximity patterns below.
+                r"\bau\s*[‐-‒–—−/@-]?\s*ag\b",
+                r"\bag\s*[‐-‒–—−/@-]?\s*au\b",
                 r"gold.{0,30}silver",
                 r"silver.{0,30}gold",
                 r"bimetallic.{0,30}(?:au|ag|gold|silver)",
@@ -149,6 +152,10 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
             ("nanogap", (
                 r"nanogap", r"nano[- ]?gap", r"interior\s+gap",
                 r"interparticle\s+gap",
+                # In plasmonic particle systems these terms denote the same
+                # interparticle gap-control variable without requiring the
+                # document to use the literal word "nanogap".
+                r"interparticle[- ](?:spacing|separation|distance)s?\b",
             )),
             ("surface_composition", (
                 r"surface\s+(?:composition|segregation|enrichment)",
@@ -157,9 +164,14 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
             ("lspr", (
                 r"\blspr\b", r"localized\s+surface\s+plasmon",
                 r"plasmon\s+resonan",
+                # Coupled/collective nanoparticle plasmon modes are accepted
+                # as LSPR-family scope evidence. Generic "plasmonic coupling"
+                # alone remains intentionally insufficient.
+                r"collective\s+plasmon\s+modes?\b",
+                r"coupled\s+plasmon\s+modes?\b",
             )),
             ("electromagnetic_enhancement", (
-                r"electromagnetic\s+enhancement",
+                r"electromagnetic\s+(?:field\s+)?enhancement",
                 r"local\s+(?:electric\s+)?field",
                 r"near[- ]field", r"hot\s*spot|hotspot",
             )),
