@@ -143,3 +143,58 @@ def test_n1_2_actual_no_direct_gap_stays_new_combination_even_with_majority_supp
     )
     assert status == "NEW_COMBINATION_OF_KNOWN_EFFECTS"
     assert "known_relations_with_unmatched_composite_relation" in reasons
+
+
+def test_relation_backed_strict_majority_bypasses_absence_gate_for_supported_extension() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("COMPONENTS_ONLY"),
+            review("PARTIAL_PRIOR_ART"),
+            review("DIRECT_PRIOR_ART"),
+        ],
+        coverage(False),
+    )
+
+    assert status == "LITERATURE_SUPPORTED_EXTENSION"
+    assert (
+        "majority_core_relations_have_direct_or_partial_prior_art"
+        in reasons
+    )
+    assert (
+        "insufficient_coverage_for_absence_based_status"
+        not in reasons
+    )
+
+
+def test_relation_backed_minority_still_fails_closed_under_low_absence_coverage() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("COMPONENTS_ONLY"),
+            review("PARTIAL_PRIOR_ART"),
+            review("COMPONENTS_ONLY"),
+        ],
+        coverage(False),
+    )
+
+    assert status == "INSUFFICIENT_SEARCH_EVIDENCE"
+    assert (
+        "insufficient_coverage_for_absence_based_status"
+        in reasons
+    )
+
+
+def test_no_direct_gap_still_requires_absence_coverage_even_with_relation_majority() -> None:
+    status, reasons, _ = assessor()._status(
+        [
+            review("PARTIAL_PRIOR_ART"),
+            review("DIRECT_PRIOR_ART"),
+            review("NO_DIRECT_MATCH_FOUND"),
+        ],
+        coverage(False),
+    )
+
+    assert status == "INSUFFICIENT_SEARCH_EVIDENCE"
+    assert (
+        "insufficient_coverage_for_absence_based_status"
+        in reasons
+    )

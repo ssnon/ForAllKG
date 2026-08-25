@@ -167,6 +167,38 @@ class ExternalNoveltyAssessor:
                 "At least one core claim is supported only by title-level neighboring evidence, so substantive relationship overlap remains unresolved.",
             )
 
+        relation_backed_count = sum(
+            row in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART"}
+            for row in statuses
+        )
+        relation_backed = relation_backed_count > 0
+        no_direct = any(row == "NO_DIRECT_MATCH_FOUND" for row in statuses)
+        components_only = any(row == "COMPONENTS_ONLY" for row in statuses)
+
+        # A strict majority of positively relation-backed core claims is
+        # sufficient to classify the hypothesis as literature-supported
+        # even when a remaining claim is only component-supported.
+        #
+        # This classification does not infer novelty from a missing match;
+        # therefore it must not depend on absence-coverage sufficiency.
+        #
+        # NO_DIRECT_MATCH_FOUND remains absence-dependent and is deliberately
+        # excluded from this early positive-evidence branch.
+        if (
+            relation_backed
+            and components_only
+            and not no_direct
+            and relation_backed_count * 2 > len(statuses)
+        ):
+            reasons.append(
+                "majority_core_relations_have_direct_or_partial_prior_art"
+            )
+            return (
+                "LITERATURE_SUPPORTED_EXTENSION",
+                reasons,
+                "A strict majority of the core differentiating relations are directly or partially represented in the reviewed literature, while the remaining core claims are component-supported rather than externally unmatched.",
+            )
+
         absence_dependent = any(
             row in {
                 "NO_DIRECT_MATCH_FOUND",
@@ -181,14 +213,6 @@ class ExternalNoveltyAssessor:
                 reasons,
                 "The available search/abstract coverage is insufficient to interpret missing direct matches as evidence of external distinctness.",
             )
-
-        relation_backed_count = sum(
-            row in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART"}
-            for row in statuses
-        )
-        relation_backed = relation_backed_count > 0
-        no_direct = any(row == "NO_DIRECT_MATCH_FOUND" for row in statuses)
-        components_only = any(row == "COMPONENTS_ONLY" for row in statuses)
 
         if all(row == "NO_DIRECT_MATCH_FOUND" for row in statuses):
             reasons.append("no_direct_match_for_any_core_claim_under_minimum_coverage")
