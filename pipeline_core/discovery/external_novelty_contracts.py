@@ -120,6 +120,7 @@ class LiteratureQuery(StrictModel):
         "claim_primary",
         "claim_variant",
         "claim_diagnostic",
+        "claim_exact_verification",
         "hypothesis_composite",
     ]
     query_text: str

@@ -287,6 +287,105 @@ class NoveltyGapAnalyzer:
                 f"unsupported external novelty status for gap planning: {card.status}"
             ) from exc
 
+    def _exact_higher_order_verification_targets(
+        self,
+        card,
+    ):
+        """Return selected HORG core claims, or None when mode is ineligible.
+
+        This is deliberately narrower than generic targeted search.
+
+        Eligibility requires BOTH:
+        - KNOWN_COMPONENTS_WITH_RELATIONAL_GAP status; and
+        - HIGHER_ORDER_RELATIONAL_GAP provenance.
+
+        Only recorded core COMPONENTS_ONLY gap claims participate.
+        The existing max_target_claims bound is reused unchanged.
+        """
+
+        if (
+            card.status
+            != "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP"
+            or card.relational_gap_kind
+            != "HIGHER_ORDER_RELATIONAL_GAP"
+        ):
+            return None
+
+        gap_claim_ids = set(
+            card.higher_order_relational_gap_claim_ids
+        )
+
+        targets = [
+            review
+            for review in card.claim_reviews
+            if (
+                review.importance == "core"
+                and review.status == "COMPONENTS_ONLY"
+                and review.claim_id in gap_claim_ids
+            )
+        ]
+
+        return targets[: self.max_target_claims]
+
+
+    def _exact_higher_order_verification_queries(
+        self,
+        targets,
+        existing_plan: LiteratureQueryPlan,
+    ) -> list[TargetedGapQuery]:
+        """Build one full-relation query per selected higher-order gap claim.
+
+        The query is the whitespace-normalized claim text itself.
+        No domain expansion, synonym invention, lower-order relaxation,
+        or LLM generation occurs here.
+
+        An identical query already executed for the same claim is not
+        repeated, and there is no fallback to generic relation variants.
+        """
+
+        existing = {
+            (
+                row.claim_id,
+                " ".join(
+                    row.query_text.split()
+                ).lower(),
+            )
+            for row in existing_plan.queries
+        }
+
+        result: list[TargetedGapQuery] = []
+
+        for review in targets:
+            query_text = " ".join(
+                review.claim_text.split()
+            )[:300]
+
+            key = (
+                review.claim_id,
+                query_text.lower(),
+            )
+
+            if (
+                not query_text
+                or key in existing
+            ):
+                continue
+
+            existing.add(key)
+
+            result.append(
+                TargetedGapQuery(
+                    claim_id=review.claim_id,
+                    query_role=(
+                        "exact_higher_order_verification"
+                    ),
+                    query_text=query_text,
+                )
+            )
+
+        return result
+
+
     def _queries(
         self,
         card: ExternalNoveltyCard,
@@ -402,7 +501,22 @@ class NoveltyGapAnalyzer:
                     f"external report lacks hypothesis {hypothesis.hypothesis_id}"
                 )
             action = self._action(card)
-            ordered = sorted(card.claim_reviews, key=_claim_priority)
+
+            exact_verification_targets = (
+                self._exact_higher_order_verification_targets(
+                    card
+                )
+            )
+
+            exact_verification_mode = (
+                exact_verification_targets
+                is not None
+            )
+
+            ordered = sorted(
+                card.claim_reviews,
+                key=_claim_priority,
+            )
             if action == "refine_away_from_conflict":
                 conflicting = [
                     row
@@ -415,7 +529,12 @@ class NoveltyGapAnalyzer:
                     if row.status != "CONFLICTING_PRIOR_ART"
                 ]
                 ordered = conflicting + non_conflicting
-            targets = ordered[: self.max_target_claims]
+            targets = (
+                exact_verification_targets
+                if exact_verification_mode
+                else ordered[: self.max_target_claims]
+            )
+
             known = []
             unresolved = []
             for review in card.claim_reviews:
@@ -430,7 +549,15 @@ class NoveltyGapAnalyzer:
                 if targets
                 else _compact(hypothesis.hypothesis_statement, 320)
             )
-            reasons = [f"source_status:{card.status}"]
+            reasons = [
+                f"source_status:{card.status}"
+            ]
+
+            if exact_verification_mode:
+                reasons.append(
+                    "exact_higher_order_verification"
+                )
+
             if card.contextual_conflict_work_ids:
                 reasons.append("contextual_conflict_requires_target_scope_check")
             if not card.coverage.sufficient_for_absence_based_novelty:
@@ -470,7 +597,18 @@ class NoveltyGapAnalyzer:
                     targeted_queries=(
                         []
                         if action == "keep"
-                        else self._queries(card, targets, existing_plan)
+                        else (
+                            self._exact_higher_order_verification_queries(
+                                targets,
+                                existing_plan,
+                            )
+                            if exact_verification_mode
+                            else self._queries(
+                                card,
+                                targets,
+                                existing_plan,
+                            )
+                        )
                     ),
                     reason_codes=sorted(set(reasons)),
                 )

@@ -23,6 +23,7 @@ TargetedGapQueryRole = Literal[
     "relation_primary",
     "relation_variant",
     "scope_check",
+    "exact_higher_order_verification",
 ]
 
 

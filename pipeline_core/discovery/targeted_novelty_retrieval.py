@@ -33,6 +33,20 @@ def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
     return f"{prefix}:{hashlib.sha256(raw).hexdigest()[:length]}"
 
 
+def _targeted_query_kind(
+    target: TargetedGapQuery,
+) -> str:
+    """Map targeted semantic role into audit-visible query provenance."""
+
+    if (
+        target.query_role
+        == "exact_higher_order_verification"
+    ):
+        return "claim_exact_verification"
+
+    return "claim_variant"
+
+
 def build_augmented_query_plan(
     base: LiteratureQueryPlan,
     gap: NoveltyGap,
@@ -57,7 +71,9 @@ def build_augmented_query_plan(
                 ),
                 hypothesis_id=gap.hypothesis_id,
                 claim_id=target.claim_id,
-                query_kind="claim_variant",
+                query_kind=_targeted_query_kind(
+                    target
+                ),
                 query_text=target.query_text,
             )
         )
