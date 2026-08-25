@@ -252,7 +252,12 @@ class ClaimPriorArtCompiler:
             )
 
             if not work.abstract:
-                if relationship in {"DIRECT_PRIOR_ART", "CONFLICTING_PRIOR_ART"}:
+                if relationship in {
+                    "DIRECT_PRIOR_ART",
+                    "CONFLICTING_PRIOR_ART",
+                    "LOWER_ORDER_RELATION_PRIOR_ART",
+                    "DIRECTIONAL_COUNTEREVIDENCE",
+                }:
                     relationship = "TITLE_ONLY_NEIGHBOR"
                     reason_codes.append("strong_match_downgraded_without_abstract")
                 elif self.require_abstract_for_partial and relationship == "PARTIAL_PRIOR_ART":
@@ -301,9 +306,24 @@ class ClaimPriorArtCompiler:
             if row.relationship == "PARTIAL_PRIOR_ART"
             and row.confidence >= self.min_match_confidence
         ]
+        lower_order = [
+            row for row in matches
+            if row.relationship == "LOWER_ORDER_RELATION_PRIOR_ART"
+            and row.confidence >= self.min_match_confidence
+        ]
+        directional_counterevidence = [
+            row for row in matches
+            if row.relationship == "DIRECTIONAL_COUNTEREVIDENCE"
+            and row.confidence >= self.min_match_confidence
+        ]
         components = [
             row for row in matches
-            if row.relationship in {"COMPONENT_ONLY", "CONTEXTUAL_CONFLICT"}
+            if row.relationship in {
+                "COMPONENT_ONLY",
+                "CONTEXTUAL_CONFLICT",
+                "LOWER_ORDER_RELATION_PRIOR_ART",
+                "DIRECTIONAL_COUNTEREVIDENCE",
+            }
             and row.confidence >= self.min_match_confidence
         ]
         title_only = [
@@ -318,6 +338,14 @@ class ClaimPriorArtCompiler:
         ]
         if contextual_conflicts:
             reason_codes.append("contextual_conflict_present")
+        if lower_order:
+            reason_codes.append(
+                "lower_order_relation_prior_art_present"
+            )
+        if directional_counterevidence:
+            reason_codes.append(
+                "directional_counterevidence_present"
+            )
 
         claim_query_ids = {
             row.query_id

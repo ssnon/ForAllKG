@@ -400,7 +400,12 @@ class ExternalNoveltyAssessor:
             ]
 
             contextual_conflict_ids: list[str] = []
+            lower_order_ids: list[str] = []
+            directional_counterevidence_ids: list[str] = []
+
             seen_contextual: set[str] = set()
+            seen_lower_order: set[str] = set()
+            seen_directional_counterevidence: set[str] = set()
             for review in rows:
                 for match in review.matches:
                     if (
@@ -409,6 +414,39 @@ class ExternalNoveltyAssessor:
                     ):
                         seen_contextual.add(match.work_id)
                         contextual_conflict_ids.append(match.work_id)
+
+                    if (
+                        match.relationship
+                        == "LOWER_ORDER_RELATION_PRIOR_ART"
+                        and match.work_id not in seen_lower_order
+                    ):
+                        seen_lower_order.add(match.work_id)
+                        lower_order_ids.append(match.work_id)
+
+                    if (
+                        match.relationship
+                        == "DIRECTIONAL_COUNTEREVIDENCE"
+                        and match.work_id
+                        not in seen_directional_counterevidence
+                    ):
+                        seen_directional_counterevidence.add(
+                            match.work_id
+                        )
+                        directional_counterevidence_ids.append(
+                            match.work_id
+                        )
+
+            if lower_order_ids:
+                reasons.append(
+                    "lower_order_relation_prior_art_present"
+                )
+
+            if directional_counterevidence_ids:
+                reasons.append(
+                    "directional_counterevidence_present"
+                )
+
+            reasons = sorted(set(reasons))
 
             lineage_row = lineages.get(hypothesis.hypothesis_id)
             limitations = [
@@ -427,6 +465,10 @@ class ExternalNoveltyAssessor:
                     coverage=coverage,
                     strongest_prior_art_work_ids=strongest_ids,
                     contextual_conflict_work_ids=contextual_conflict_ids[:5],
+                    lower_order_prior_art_work_ids=lower_order_ids[:5],
+                    directional_counterevidence_work_ids=(
+                        directional_counterevidence_ids[:5]
+                    ),
                     discovery_axis_id=(lineage_row.axis_id if lineage_row else None),
                     discovery_inspiration_id=(
                         lineage_row.inspiration_id if lineage_row else None

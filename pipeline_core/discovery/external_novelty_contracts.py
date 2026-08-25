@@ -32,11 +32,19 @@ NoveltyClaimKind = Literal[
 
 NoveltyClaimImportance = Literal["core", "supporting"]
 
+NoveltyDiagnosticQueryKind = Literal[
+    "NONE",
+    "LOWER_ORDER_RELATION",
+    "DIRECTIONAL_BOUNDARY",
+]
+
 PriorArtRelationship = Literal[
     "DIRECT_PRIOR_ART",
     "PARTIAL_PRIOR_ART",
     "TITLE_ONLY_NEIGHBOR",
     "COMPONENT_ONLY",
+    "LOWER_ORDER_RELATION_PRIOR_ART",
+    "DIRECTIONAL_COUNTEREVIDENCE",
     "CONTEXTUAL_CONFLICT",
     "CONFLICTING_PRIOR_ART",
     "UNRELATED",
@@ -62,6 +70,10 @@ class NoveltyClaimDraft(StrictModel):
     rationale: str = Field(min_length=1)
     search_concepts: list[str] = Field(default_factory=list)
     search_queries: list[str] = Field(default_factory=list)
+    diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
+    diagnostic_search_query: str | None = None
+    diagnostic_structural_terms: list[str] = Field(default_factory=list)
+    diagnostic_relation_terms: list[str] = Field(default_factory=list)
 
 
 class NoveltyClaimDecompositionDraft(StrictModel):
@@ -86,6 +98,11 @@ class NoveltyClaim(StrictModel):
     rationale: str
     search_concepts: list[str] = Field(default_factory=list)
     search_queries: list[str] = Field(default_factory=list)
+    diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
+    diagnostic_search_query: str | None = None
+    diagnostic_execution_query: str | None = None
+    diagnostic_structural_terms: list[str] = Field(default_factory=list)
+    diagnostic_relation_terms: list[str] = Field(default_factory=list)
 
 
 class HypothesisNoveltyClaims(StrictModel):
@@ -102,6 +119,7 @@ class LiteratureQuery(StrictModel):
     query_kind: Literal[
         "claim_primary",
         "claim_variant",
+        "claim_diagnostic",
         "hypothesis_composite",
     ]
     query_text: str
@@ -273,6 +291,8 @@ class ExternalNoveltyCard(StrictModel):
     coverage: HypothesisSearchCoverage
     strongest_prior_art_work_ids: list[str] = Field(default_factory=list)
     contextual_conflict_work_ids: list[str] = Field(default_factory=list)
+    lower_order_prior_art_work_ids: list[str] = Field(default_factory=list)
+    directional_counterevidence_work_ids: list[str] = Field(default_factory=list)
     discovery_axis_id: str | None = None
     discovery_inspiration_id: str | None = None
     reason_codes: list[str] = Field(default_factory=list)

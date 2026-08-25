@@ -34,6 +34,31 @@ Identify the smallest scientifically meaningful claims that would make the hypot
 
 For each claim provide plain-text literature search concepts and 2-3 plain-text search queries. Search queries must not use Boolean operators or special search syntax, and should avoid hyphenated terms where possible. Keep them suitable for Semantic Scholar and Crossref relevance search.
 
+QUERY-DIVERSITY RULE:
+- Do not spend every query restating the full higher-order claim.
+- For moderator_interaction, descriptor_interaction, or another higher-order conditional claim, one retained query should target the full relation and another should probe a scientifically meaningful LOWER-ORDER RELATION by relaxing one moderator, condition, or interaction term.
+- A lower-order query must still express a relation among multiple scientific variables. Do not collapse it into a generic single-variable background query.
+- For an explicitly ordered or directional prediction, retain diagnostic metadata for a possible BOUNDARY OR COUNTEREVIDENCE search in neutral language: dependence, comparison, weak or absent correlation, regime dependence, competing determinants, or alternative dominant factors.
+- Ordinary search_queries are the first-pass retrieval queries and are independent of the diagnostic candidate metadata below. Do not sacrifice an ordinary first-pass query slot merely to execute the diagnostic candidate.
+- Never insert a known paper title, DOI, author, year, or literature conclusion into a search query unless that information was already present in the supplied hypothesis.
+
+STRUCTURED DIAGNOSTIC QUERY CONTRACT:
+- Always set diagnostic_query_kind explicitly.
+- If the claim contains an explicit ordered prediction such as greater, smaller, stronger, weaker, increase, decrease, higher, lower, or an explicitly ordered ratio/contrast, set diagnostic_query_kind=DIRECTIONAL_BOUNDARY and provide diagnostic_search_query as a neutral neighboring-scope search for dependence, comparison, competing determinants, regime dependence, weak correlation, or alternative dominant factors. Do not repeat the claimed direction as if it were true.
+- Otherwise, for moderator_interaction, descriptor_interaction, or another higher-order conditional relation, set diagnostic_query_kind=LOWER_ORDER_RELATION and provide diagnostic_search_query for one scientifically meaningful lower-order relation obtained by relaxing one moderator/condition while retaining a multi-variable relation.
+- Otherwise set diagnostic_query_kind=NONE and diagnostic_search_query=null.
+- diagnostic_search_query is separate from ordinary search_queries. The deterministic decomposer preserves it as diagnostic metadata and does not automatically insert it into first-pass search_queries.
+RELATION-FIRST DIAGNOSTIC ASSEMBLY CONTRACT:
+- For every non-NONE diagnostic query, provide diagnostic_structural_terms and diagnostic_relation_terms in addition to the human-readable diagnostic_search_query.
+- diagnostic_structural_terms contain only the minimum structural or topological carriers needed to preserve the scientific system class being probed, such as a dimer, junction, interface, film, catalyst site, cell type, or other architecture when scientifically necessary.
+- Do not include exact material identity, species identity, brand/platform identity, or incidental system-specific qualifiers in diagnostic_structural_terms unless removing them would destroy the scientific relation being tested.
+- diagnostic_relation_terms contain the variables, observable/outcome, mechanism descriptor, comparison/dependence concept, and relation vocabulary needed to search the lower-order or boundary relation.
+- For LOWER_ORDER_RELATION, remove the higher-order moderator or interaction that is intentionally being relaxed, but preserve the lower-order relation and its structural carrier.
+- For DIRECTIONAL_BOUNDARY, express the relation neutrally. Preserve the relevant structural carrier while omitting the proposed ordered conclusion itself when possible; include dependence, comparison, competing determinants, regime dependence, weak correlation, or alternative dominant factors as appropriate.
+- Keep diagnostic_structural_terms and diagnostic_relation_terms concise and retrieval-oriented rather than sentence-like.
+- Do not provide paper titles, DOI values, authors, years, or literature conclusions unless they were already present in the hypothesis.
+- The deterministic decomposer may assemble a diagnostic execution candidate by concatenating normalized structural terms followed by normalized relation terms. This candidate is preserved for provenance or a future bounded diagnostic pass and is not automatically inserted into first-pass search_queries. It will not invent synonyms or add scientific concepts.
+
 Do not decompose generic background facts unless they are necessary to distinguish the generated hypothesis. Return only the structured NoveltyClaimDecompositionDraft requested by the caller."""
 
 
@@ -46,6 +71,8 @@ For each truly relevant record, classify its relationship to the claim as one of
 - PARTIAL_PRIOR_ART: an ABSTRACT-BACKED record preserves the claim's RELATION NUCLEUS and establishes a substantial subset of that scientific relation, but not the full claim.
 - TITLE_ONLY_NEIGHBOR: the title suggests a neighboring relation but the abstract is missing, so the substantive overlap cannot be confirmed.
 - COMPONENT_ONLY: the record establishes one or more ingredients/components, variables, mechanisms, contexts, materials, or one arm of a comparison, but does not establish the claim's proposed interaction, dependence, mediation, conditionality, comparison, directional relation, or other relation nucleus.
+- LOWER_ORDER_RELATION_PRIOR_ART: for a higher-order or moderator/interaction claim, the record explicitly establishes a scientifically meaningful LOWER-ORDER SUBRELATION among variables in the claim, but does not establish the full higher-order relation nucleus. Separate single-variable main effects remain COMPONENT_ONLY.
+- DIRECTIONAL_COUNTEREVIDENCE: an ABSTRACT-BACKED record in a scientifically relevant neighboring scope materially challenges the claim's proposed ORDERED DIRECTION, for example by reporting weak or absent correlation, an opposite trend, regime dependence, or dominance by another factor. Use this when the evidence is important as a boundary condition but the scientific scope is not sufficiently matched for CONFLICTING_PRIOR_ART.
 - CONTEXTUAL_CONFLICT: the record challenges a broader descriptor/mechanistic assumption but differs materially in reaction domain, catalyst class, or site scope.
 - CONFLICTING_PRIOR_ART: the record directly reports a materially opposing relation/result in a sufficiently overlapping scientific scope.
 - UNRELATED: despite retrieval similarity, it does not materially bear on the claim.
@@ -64,6 +91,10 @@ RELATION-NUCLEUS RULES:
    - Evidence for only the dependent variable, only one unrelated arm of a comparison, or only the unconditioned base relation of a conditional claim is COMPONENT_ONLY.
 7. For mechanistic_link claims, PARTIAL_PRIOR_ART requires substantially the same mechanistic link. Sharing mechanism ingredients without the link is COMPONENT_ONLY.
 8. A scope mismatch can still permit PARTIAL_PRIOR_ART when the relation nucleus is preserved; scope similarity alone cannot create PARTIAL_PRIOR_ART.
+
+9. For a higher-order interaction claim, use LOWER_ORDER_RELATION_PRIOR_ART rather than COMPONENT_ONLY when the record explicitly establishes a nontrivial lower-order relation among two or more variables from the claim. Do not infer a lower-order relation from separate main effects.
+10. For a directional claim, distinguish exact contradiction from boundary evidence. Use CONFLICTING_PRIOR_ART only when the opposing result is in sufficiently overlapping scientific scope. Use DIRECTIONAL_COUNTEREVIDENCE when an abstract-backed neighboring system materially weakens the proposed ordered direction but does not satisfy the exact conflict-scope requirement.
+11. LOWER_ORDER_RELATION_PRIOR_ART and DIRECTIONAL_COUNTEREVIDENCE are diagnostic prior-art signals. They do not by themselves make the full claim DIRECT_PRIOR_ART or PARTIAL_PRIOR_ART.
 
 MODERATOR-INTERACTION DIRECTNESS:
 For a moderator_interaction claim, DIRECT_PRIOR_ART requires the supplied title/abstract metadata to explicitly state, test, compare, or demonstrate that the moderator changes, conditions, or modifies the base relation itself. The required logical form is approximately: M changes how X affects Y, the X-to-Y relationship differs across M conditions, or a joint M-by-X effect on Y is explicitly stated or tested.

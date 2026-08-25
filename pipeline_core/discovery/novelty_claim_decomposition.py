@@ -41,6 +41,70 @@ def _clean_query(text: str, *, limit: int = 280) -> str:
     return value[:limit].strip()
 
 
+def _clean_diagnostic_terms(
+    values: list[str],
+) -> list[str]:
+    """Normalize structured diagnostic terms without semantic expansion."""
+
+    rows: list[str] = []
+
+    for value in values:
+        cleaned = _clean_query(
+            value,
+            limit=120,
+        )
+
+        if (
+            cleaned
+            and cleaned.lower()
+            not in {
+                row.lower()
+                for row in rows
+            }
+        ):
+            rows.append(cleaned)
+
+    return rows
+
+
+def _assemble_diagnostic_relation_query(
+    structural_terms: list[str],
+    relation_terms: list[str],
+    *,
+    fallback: str,
+) -> tuple[str, list[str], list[str]]:
+    """Build a relation-first query without deleting or inventing terms."""
+
+    structural = _clean_diagnostic_terms(
+        structural_terms
+    )
+
+    relation = _clean_diagnostic_terms(
+        relation_terms
+    )
+
+    candidate = _clean_query(
+        " ".join(
+            [
+                *structural,
+                *relation,
+            ]
+        )
+    )
+
+    # Fail safe for incomplete structured output.
+    if len(candidate.split()) < 3:
+        candidate = _clean_query(
+            fallback
+        )
+
+    return (
+        candidate,
+        structural,
+        relation,
+    )
+
+
 class NoveltyClaimBackend(Protocol):
     def decompose(
         self,
@@ -90,6 +154,23 @@ class NoveltyClaimDecomposer:
                 concept_query = _clean_query(" ".join(concepts))
                 if concept_query and concept_query not in queries:
                     queries.append(concept_query)
+
+            diagnostic_kind = row.diagnostic_query_kind
+
+            diagnostic_source_query = _clean_query(
+                row.diagnostic_search_query or ""
+            )
+
+            (
+                diagnostic_execution_query,
+                diagnostic_structural_terms,
+                diagnostic_relation_terms,
+            ) = _assemble_diagnostic_relation_query(
+                row.diagnostic_structural_terms,
+                row.diagnostic_relation_terms,
+                fallback=diagnostic_source_query,
+            )
+
             rows.append(
                 NoveltyClaim(
                     claim_id=_stable_id(
@@ -107,6 +188,19 @@ class NoveltyClaimDecomposer:
                     rationale=row.rationale,
                     search_concepts=concepts,
                     search_queries=queries[: self.max_queries],
+                    diagnostic_query_kind=diagnostic_kind,
+                    diagnostic_search_query=(
+                        diagnostic_source_query or None
+                    ),
+                    diagnostic_execution_query=(
+                        diagnostic_execution_query or None
+                    ),
+                    diagnostic_structural_terms=(
+                        diagnostic_structural_terms
+                    ),
+                    diagnostic_relation_terms=(
+                        diagnostic_relation_terms
+                    ),
                 )
             )
         return HypothesisNoveltyClaims(
@@ -141,7 +235,11 @@ class LiteratureQueryPlanner:
                     cleaned = _clean_query(query_text)
                     if not cleaned:
                         continue
-                    kind = "claim_primary" if index == 0 else "claim_variant"
+
+                    if index == 0:
+                        kind = "claim_primary"
+                    else:
+                        kind = "claim_variant"
                     key = (hypothesis.hypothesis_id, claim.claim_id, cleaned.lower())
                     if key in seen:
                         continue
