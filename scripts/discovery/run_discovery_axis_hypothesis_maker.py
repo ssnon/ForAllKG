@@ -190,7 +190,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--max-compile-repairs", type=int, choices=(0, 1), default=1)
     parser.add_argument("--max-fidelity-repairs", type=int, choices=(0, 1), default=1)
-    parser.add_argument("--max-inference-repairs", type=int, choices=(0, 1), default=1)
+    parser.add_argument("--max-inference-repairs", type=int, choices=(0, 1, 2), default=2)
     parser.add_argument("--max-novelty-repairs", type=int, choices=(0, 1), default=1)
     parser.add_argument(
         "--inference-critic-model",

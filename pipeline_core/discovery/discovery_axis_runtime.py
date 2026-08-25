@@ -181,11 +181,15 @@ class DiscoveryAxisSynthesisRuntime:
         for name, value in {
             "max_compile_repairs": max_compile_repairs,
             "max_fidelity_repairs": max_fidelity_repairs,
-            "max_inference_repairs": max_inference_repairs,
             "max_novelty_repairs": max_novelty_repairs,
         }.items():
             if value not in {0, 1}:
                 raise ValueError(f"{name} must be 0 or 1 in alpha4")
+
+        if max_inference_repairs not in {0, 1, 2}:
+            raise ValueError(
+                "max_inference_repairs must be 0, 1, or 2 in alpha4"
+            )
         self.backend = draft_backend
         self.mapper = mapper
         self.compiler = compiler or HypothesisCompiler()
@@ -617,6 +621,135 @@ class DiscoveryAxisSynthesisRuntime:
                             "configured inference critic returned no review"
                         )
 
+                # ------------------------------------------------------
+                # Optional second bounded inference repair.
+                #
+                # This is deliberately NOT verdict carry-forward.
+                # If the second critic review surfaces specificity missed
+                # by the first review, give the synthesis backend exactly
+                # one additional opportunity to repair that newly exposed
+                # issue. A subsequent failure still fails closed.
+                # ------------------------------------------------------
+                if (
+                    inference.status == "reframe_required"
+                    and self.max_inference_repairs >= 2
+                ):
+                    attempts.append(
+                        AxisAttemptRecord(
+                            axis_id=axis.axis_id,
+                            stage="inference_repair",
+                            generation_index=generation_index,
+                            decision="inference_rejected",
+                            hypothesis_id=card.hypothesis_id,
+                            title=card.title,
+                            fidelity_status=fidelity.status,
+                            inference_status=inference.status,
+                            repair_reason=";".join(
+                                inference.reason_codes
+                            )
+                            or inference.interpretation,
+                        )
+                    )
+
+                    feedback = assembler.inference_repair_feedback(
+                        previous_draft=current_draft,
+                        review=inference,
+                    )
+
+                    repaired = self.backend.repair(
+                        outcome.prompt,
+                        current_draft,
+                        feedback,
+                    )
+
+                    current_draft = repaired.draft
+                    generation_index += 1
+                    inference_repaired = True
+
+                    if not current_draft.hypotheses:
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision="abstained",
+                                inference_status="reframe_required",
+                                repair_reason=(
+                                    "second bounded inference-strength "
+                                    "repair chose abstention"
+                                ),
+                            )
+                        )
+                        continue
+
+                    portfolio, compile_codes, validation_codes = (
+                        self._compile_validate(
+                            context,
+                            current_draft,
+                        )
+                    )
+
+                    card = self._single_card(portfolio)
+
+                    if card is None:
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision=(
+                                    "compile_rejected"
+                                    if compile_codes
+                                    else "validation_rejected"
+                                ),
+                                compile_issue_codes=compile_codes,
+                                validation_issue_codes=validation_codes,
+                                inference_status="reframe_required",
+                            )
+                        )
+                        continue
+
+                    # The second repair must still preserve assigned-axis
+                    # fidelity; repair budget never weakens that gate.
+                    fidelity = self.fidelity_critic.review(
+                        axis,
+                        card,
+                        self.mapper.encoder,
+                    )
+
+                    if fidelity.status == "fail":
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="inference_repair",
+                                generation_index=generation_index,
+                                decision="fidelity_rejected",
+                                hypothesis_id=card.hypothesis_id,
+                                title=card.title,
+                                fidelity_status=fidelity.status,
+                                inference_status="reframe_required",
+                                repair_reason=(
+                                    "second inference repair lost "
+                                    "assigned-axis fidelity"
+                                ),
+                            )
+                        )
+                        continue
+
+                    inference = self._review_inference(
+                        context=context,
+                        axis=axis,
+                        card=card,
+                        stage="inference_repair",
+                        generation_index=generation_index,
+                        history=inference_review_history,
+                    )
+
+                    if inference is None:
+                        raise RuntimeError(
+                            "configured inference critic returned no review"
+                        )
+
                 if inference.status != "pass":
                     attempts.append(
                         AxisAttemptRecord(
@@ -814,6 +947,8 @@ class DiscoveryAxisSynthesisRuntime:
                     stage=(
                         "novelty_repair"
                         if novelty_repaired
+                        else "inference_repair"
+                        if inference_repaired
                         else "fidelity_repair"
                         if fidelity_repaired
                         else "initial"
