@@ -209,11 +209,52 @@ class NoveltySemantics:
     ) -> tuple[bool, float, float, list[str]]:
         domain = self.domain_relevance(claim_text, document)
         scope = self.scope_relevance(claim_text, document)
+
+        claim_domains = self.domains(claim_text)
         claim_features = self.scope_features(claim_text)
         doc_features = self.scope_features(document)
+
+        # Application/domain compatibility is a hard requirement only
+        # when the claim actually asserts a configured domain, or when
+        # the document is explicitly incompatible with the scientific
+        # context of the claim.
+        #
+        # A domain-neutral mechanism/optical claim must not be rejected
+        # merely because domain_relevance() returns its neutral 0.5.
+        claim_context = _matches_any(
+            claim_text,
+            self.claim_context_patterns,
+        )
+        document_mismatch = _matches_any(
+            document,
+            self.document_mismatch_patterns,
+        )
+        document_compatible = _matches_any(
+            document,
+            self.document_compatible_patterns,
+        )
+
+        explicit_incompatible_context = (
+            claim_context
+            and document_mismatch
+            and not document_compatible
+        )
+
+        domain_gate_required = (
+            bool(claim_domains)
+            or explicit_incompatible_context
+        )
+
         reasons: list[str] = []
-        if domain < min_domain:
-            reasons.append(self.domain_mismatch_reason)
+
+        if (
+            domain_gate_required
+            and domain < min_domain
+        ):
+            reasons.append(
+                self.domain_mismatch_reason
+            )
+
         for critical in self.critical_scope_features:
             if critical in claim_features and critical not in doc_features:
                 reasons.append(f'missing_critical_scope:{critical}')
