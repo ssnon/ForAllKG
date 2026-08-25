@@ -32,6 +32,93 @@ def test_external_novelty_claim_is_rejected():
     assert any(x.code == "EXTERNAL_NOVELTY_CLAIM" for x in result.issues)
 
 
+def test_numeric_unit_parser_respects_prose_boundaries():
+    from pipeline_core.discovery.hypothesis_validation import _numbers
+
+    assert _numbers(
+        "Near-field values were 30 at 633 and 785 nm."
+    ) == {
+        "30",
+        "633",
+        "785 nm",
+    }
+
+    assert _numbers(
+        "A current of 5 A was applied."
+    ) == {
+        "5 a",
+    }
+
+    assert _numbers(
+        "The system showed 5 a day-to-day changes."
+    ) == {
+        "5",
+    }
+
+
+def test_supported_number_before_conjunction_is_not_rejected():
+    context = make_context()
+
+    statements = [
+        (
+            row.model_copy(
+                update={
+                    "text": (
+                        "The reported response was measured "
+                        "at 633 and 785 nm."
+                    )
+                }
+            )
+            if row.statement_id == "s:reported"
+            else row
+        )
+        for row in context.evidence_statements
+    ]
+
+    context = context.model_copy(
+        update={
+            "evidence_statements":
+                statements,
+        }
+    )
+
+    portfolio = HypothesisCompiler().compile(
+        context,
+        HypothesisPortfolioDraft(
+            hypotheses=[
+                proposal(
+                    premises=["s:reported"],
+                    gaps=["s:gap"],
+                )
+            ]
+        ),
+    )
+
+    card = portfolio.hypotheses[0].model_copy(
+        update={
+            "hypothesis_statement":
+                "The response may differ at 633 or 785 nm."
+        }
+    )
+
+    modified = portfolio.model_copy(
+        update={
+            "hypotheses": [card],
+        }
+    )
+
+    result = HypothesisValidator().validate(
+        context,
+        modified,
+    )
+
+    assert not any(
+        issue.code
+        == "UNSUPPORTED_NUMERIC_PREDICTION"
+        for issue in result.issues
+    )
+
+
 def test_unsupported_number_is_rejected():
     context, portfolio = _valid()
     card = portfolio.hypotheses[0].model_copy(

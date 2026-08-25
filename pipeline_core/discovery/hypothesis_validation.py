@@ -52,8 +52,11 @@ _PAPER_SCOPE_RE = re.compile(r"\b(?:paper|study|article|source|Kiwook_\d+)\b", r
 
 _NUMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_])[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?"
-    r"(?:\s*(?:eV|meV|V|mV|A|mA|K|°C|C|%|nm|Å|pm|cm|mm|s|ms|h|mol|M|pH))?",
-    re.I,
+    r"(?:\s*(?:"
+    r"(?i:eV|meV|mV|mA|nm|pm|cm|mm|ms|mol|pH)"
+    r"|Å|V|A|K|°C|C|%|s|h|M"
+    r"))?"
+    r"(?![A-Za-z])"
 )
 
 
