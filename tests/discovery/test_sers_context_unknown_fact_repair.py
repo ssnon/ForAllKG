@@ -113,6 +113,7 @@ def _draft(
     fact_id: str,
     *,
     corrupt_central_text: bool = False,
+    hypothesis_id: str | None = None,
 ) -> HypothesisContextInterpretationDraft:
     card = _card()
 
@@ -168,7 +169,10 @@ def _draft(
         )
 
     return HypothesisContextInterpretationDraft(
-        hypothesis_id=card.hypothesis_id,
+        hypothesis_id=(
+            hypothesis_id
+            or card.hypothesis_id
+        ),
         source_signature_ids=[
             "signature:test"
         ],
@@ -284,3 +288,38 @@ def test_non_reference_validation_failure_is_not_retried() -> None:
         )
 
     assert len(backend.prompts) == 1
+
+
+def test_hypothesis_id_is_authoritatively_canonicalized() -> None:
+    card = _card()
+
+    backend = SequenceBackend([
+        _draft(
+            VALID_FACT,
+            hypothesis_id="hypothesis:wrong-model-copy",
+        )
+    ])
+
+    outcome = (
+        SERSHypothesisContextInterpreter(
+            backend
+        ).interpret(
+            card=card,
+            source_signatures=[
+                _signature()
+            ],
+        )
+    )
+
+    # Identity reproduction noise must not require another LLM call.
+    assert len(backend.prompts) == 1
+
+    assert (
+        outcome.canonical_draft.hypothesis_id
+        == card.hypothesis_id
+    )
+
+    assert (
+        outcome.interpretation.hypothesis_id
+        == card.hypothesis_id
+    )

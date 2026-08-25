@@ -65,18 +65,22 @@ class HypothesisContextInterpreterValidationError(
 def _canonicalize_interpretation_draft(
     *,
     draft: HypothesisContextInterpretationDraft,
+    authoritative_hypothesis_id: str,
     source_signatures: list[
         SERSContextSignature
     ],
 ) -> HypothesisContextInterpretationDraft:
     """Canonicalize orchestration/citation noise without semantic repair.
 
-    Two operations are permitted:
+    Three operations are permitted:
 
-    1. source_signature_ids comes from the authoritative supplied
+    1. hypothesis_id comes from the authoritative HypothesisCard
+       identity rather than model reproduction.
+
+    2. source_signature_ids comes from the authoritative supplied
        signature set rather than model reproduction.
 
-    2. For treatments whose semantics require dimension preservation,
+    3. For treatments whose semantics require dimension preservation,
        remove *known* source facts from other dimensions only when at
        least one known source fact of the asserted dimension remains.
 
@@ -181,6 +185,8 @@ def _canonicalize_interpretation_draft(
 
     return draft.model_copy(
         update={
+            "hypothesis_id":
+                authoritative_hypothesis_id,
             "source_signature_ids":
                 canonical_signature_ids,
             "assertions":
@@ -237,6 +243,8 @@ class SERSHypothesisContextInterpreter:
             _canonicalize_interpretation_draft(
                 draft=
                     generation.draft,
+                authoritative_hypothesis_id=
+                    card.hypothesis_id,
                 source_signatures=
                     source_signatures,
             )
@@ -303,6 +311,8 @@ class SERSHypothesisContextInterpreter:
                 _canonicalize_interpretation_draft(
                     draft=
                         repair_generation.draft,
+                    authoritative_hypothesis_id=
+                        card.hypothesis_id,
                     source_signatures=
                         source_signatures,
                 )
