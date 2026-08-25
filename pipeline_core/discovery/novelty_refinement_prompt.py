@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
+from pipeline_core.discovery.novelty_prior_art_boundary import render_higher_order_relational_gap_boundary
+
 from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyCard
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisContext, HypothesisPortfolioDraft
 from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt
@@ -20,7 +22,7 @@ class NoveltyRefinementPromptAssembler:
     the exact grounded premise IDs of the original hypothesis.
     """
 
-    prompt_version = "novelty-refinement-prompt-v2.8.0-a6"
+    prompt_version = "novelty-refinement-prompt-v2.8.1-a6-relgap-boundary"
 
     def __init__(
         self,
@@ -100,6 +102,19 @@ A useful refinement introduces a more precise moderator, mediator, conditional d
                 "If this cannot be done without treating external prior art as evidence or changing scientific scope, abstain.",
             ]
         )
+        relational_gap_boundary = (
+            render_higher_order_relational_gap_boundary(
+                self.targeted_card
+            )
+        )
+
+        if relational_gap_boundary:
+            user = (
+                user
+                + "\n\n"
+                + relational_gap_boundary
+            )
+
         return HypothesisPrompt(
             prompt_version=self.prompt_version,
             system_prompt=system,

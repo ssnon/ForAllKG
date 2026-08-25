@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
+from pipeline_core.discovery.novelty_prior_art_boundary import render_higher_order_relational_gap_boundary
+
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyCard,
 )
@@ -49,7 +51,7 @@ class FreshNoveltyReaxisPromptAssembler:
     External prior art remains exclusion/boundary information only.
     """
 
-    prompt_version = "novelty-fresh-context-reaxis-prompt-v1"
+    prompt_version = "novelty-fresh-context-reaxis-prompt-v2-relgap-boundary"
 
     def __init__(
         self,
@@ -250,6 +252,19 @@ the supplied context; the inferential relation itself remains a hypothesis.
                 ]
             )
         )
+
+        relational_gap_boundary = (
+            render_higher_order_relational_gap_boundary(
+                self.targeted_card
+            )
+        )
+
+        if relational_gap_boundary:
+            user = (
+                user
+                + "\n\n"
+                + relational_gap_boundary
+            )
 
         return HypothesisPrompt(
             prompt_version=self.prompt_version,

@@ -801,3 +801,174 @@ def test_report_compiler_exposes_relational_gap_metadata() -> None:
         "higher_order_relational_gap_present",
     ):
         assert token in source
+
+
+
+def test_relational_gap_negative_boundary_renderer() -> None:
+    from types import SimpleNamespace
+
+    from pipeline_core.discovery.novelty_prior_art_boundary import (
+        render_higher_order_relational_gap_boundary,
+    )
+
+    gap_lower = SimpleNamespace(
+        work_id="work:gap-lower",
+        relationship="LOWER_ORDER_RELATION_PRIOR_ART",
+        title="Known lower-order relation",
+        rationale="Explicit lower-order subrelation.",
+    )
+
+    unrelated = SimpleNamespace(
+        work_id="work:unrelated",
+        relationship="COMPONENT_ONLY",
+        title="Component paper",
+        rationale="Component only.",
+    )
+
+    other_lower = SimpleNamespace(
+        work_id="work:not-gap",
+        relationship="LOWER_ORDER_RELATION_PRIOR_ART",
+        title="Other lower-order relation",
+        rationale="Belongs to a non-gap claim.",
+    )
+
+    card = SimpleNamespace(
+        relational_gap_kind=(
+            "HIGHER_ORDER_RELATIONAL_GAP"
+        ),
+        higher_order_relational_gap_claim_ids=[
+            "claim:gap",
+        ],
+        claim_reviews=[
+            SimpleNamespace(
+                importance="core",
+                claim_id="claim:gap",
+                claim_text=(
+                    "A higher-order unresolved interaction."
+                ),
+                status="COMPONENTS_ONLY",
+                matches=[
+                    unrelated,
+                    gap_lower,
+                ],
+            ),
+            SimpleNamespace(
+                importance="core",
+                claim_id="claim:not-gap",
+                claim_text="Another claim.",
+                status="COMPONENTS_ONLY",
+                matches=[
+                    other_lower,
+                ],
+            ),
+        ],
+    )
+
+    rendered = (
+        render_higher_order_relational_gap_boundary(
+            card
+        )
+    )
+
+    assert (
+        "HIGHER-ORDER RELATIONAL-GAP NEGATIVE BOUNDARY"
+        in rendered
+    )
+
+    assert "claim:gap" in rendered
+    assert "work:gap-lower" in rendered
+    assert "Known lower-order relation" in rendered
+
+    # Do not leak unrelated matches merely because they are
+    # present in the ordinary review serialization.
+    assert "work:unrelated" not in rendered
+
+    # Do not include lower-order evidence from a claim that is
+    # not recorded as a higher-order relational-gap claim.
+    assert "work:not-gap" not in rendered
+
+    assert (
+        "EXCLUSION/BOUNDARY information only"
+        in rendered
+    )
+
+    assert (
+        "MUST NOT become positive scientific premises"
+        in rendered
+    )
+
+    assert (
+        "Do NOT reinterpret them as DIRECT or PARTIAL"
+        in rendered
+    )
+
+
+def test_relational_gap_boundary_renderer_is_empty_without_gap() -> None:
+    from types import SimpleNamespace
+
+    from pipeline_core.discovery.novelty_prior_art_boundary import (
+        render_higher_order_relational_gap_boundary,
+    )
+
+    card = SimpleNamespace(
+        relational_gap_kind="NONE",
+        higher_order_relational_gap_claim_ids=[],
+        claim_reviews=[],
+    )
+
+    assert (
+        render_higher_order_relational_gap_boundary(
+            card
+        )
+        == ""
+    )
+
+
+def test_reaxis_and_refinement_prompts_wire_relational_gap_boundary() -> None:
+    import inspect
+
+    from pipeline_core.discovery.novelty_reaxis_prompt import (
+        FreshNoveltyReaxisPromptAssembler,
+    )
+
+    from pipeline_core.discovery.novelty_refinement_prompt import (
+        NoveltyRefinementPromptAssembler,
+    )
+
+    for cls in (
+        FreshNoveltyReaxisPromptAssembler,
+        NoveltyRefinementPromptAssembler,
+    ):
+        source = inspect.getsource(
+            cls.build
+        )
+
+        assert (
+            "render_higher_order_relational_gap_boundary"
+            in source
+        )
+
+        assert (
+            "relational_gap_boundary"
+            in source
+        )
+
+
+def test_relational_gap_prompt_wiring_is_not_a_reaxis_trigger() -> None:
+    from pipeline_core.discovery.novelty_refinement_runtime import (
+        TargetedNoveltyRefinementRuntime,
+    )
+
+    runtime = TargetedNoveltyRefinementRuntime
+
+    # The metadata label is not an ExternalNoveltyStatus and must
+    # never be promoted into status-trigger policy.
+    assert (
+        "HIGHER_ORDER_RELATIONAL_GAP"
+        not in runtime.REAXIS_EXTERNAL
+    )
+
+    assert (
+        "HIGHER_ORDER_RELATIONAL_GAP"
+        not in runtime.REAXIS_REJECT_EXTERNAL
+    )
