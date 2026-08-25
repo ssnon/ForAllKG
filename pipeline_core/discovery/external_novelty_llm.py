@@ -65,6 +65,17 @@ RELATION-NUCLEUS RULES:
 7. For mechanistic_link claims, PARTIAL_PRIOR_ART requires substantially the same mechanistic link. Sharing mechanism ingredients without the link is COMPONENT_ONLY.
 8. A scope mismatch can still permit PARTIAL_PRIOR_ART when the relation nucleus is preserved; scope similarity alone cannot create PARTIAL_PRIOR_ART.
 
+MODERATOR-INTERACTION DIRECTNESS:
+For a moderator_interaction claim, DIRECT_PRIOR_ART requires the supplied title/abstract metadata to explicitly state, test, compare, or demonstrate that the moderator changes, conditions, or modifies the base relation itself. The required logical form is approximately: M changes how X affects Y, the X-to-Y relationship differs across M conditions, or a joint M-by-X effect on Y is explicitly stated or tested.
+
+For a moderator_interaction claim, PARTIAL_PRIOR_ART still requires the interaction/conditional relation nucleus to be represented. Incomplete material scope, direction, controls, or secondary details may be tolerated, but the moderator relation itself may not be inferred.
+
+If a record separately establishes X affects Y and M affects Y, classify it as COMPONENT_ONLY. This remains COMPONENT_ONLY even if the two statements occur in adjacent sentences, appear in the same paper or analysis, affect the same observable, or can be combined into a scientifically plausible moderator interpretation.
+
+Do not infer moderator interaction from local textual adjacency, shared outcome variables, shared mechanism vocabulary, or co-discussion alone.
+
+Before returning DIRECT_PRIOR_ART or PARTIAL_PRIOR_ART for moderator_interaction, check whether the supplied metadata actually states that M changes the X-to-Y relationship rather than merely stating M-to-Y and X-to-Y separately. If not, use COMPONENT_ONLY.
+
 SELF-CONSISTENCY CHECK:
 If your rationale says that a record "does not compare X versus Y", "does not establish the claimed relationship", "only addresses one condition", "does not link X to Y", or an equivalent statement, PARTIAL_PRIOR_ART is usually inconsistent. Use COMPONENT_ONLY unless the same record still establishes another substantial part of the claim's relation nucleus.
 
