@@ -35,6 +35,7 @@ class TargetedGapQuery(StrictModel):
 RefinementDecision = Literal[
     "kept_original",
     "accepted_refinement",
+    "accepted_reaxis",
     "abstained",
     "compile_rejected",
     "validation_rejected",
@@ -93,6 +94,13 @@ class TargetedSearchRecord(StrictModel):
     successful_query_count: int
 
 
+GenerationMode = Literal[
+    "none",
+    "same_premise_refinement",
+    "fresh_context_reaxis",
+]
+
+
 class RefinementAttempt(StrictModel):
     original_hypothesis_id: str
 
@@ -117,6 +125,8 @@ class RefinementAttempt(StrictModel):
     internal_novelty_status: str | None = None
     grounding_preserved: bool = False
     refinement_generated: bool = False
+    generation_mode: GenerationMode = "none"
+    context_grounding_valid: bool = False
     reason_codes: list[str] = Field(default_factory=list)
     interpretation: str
 
@@ -138,13 +148,16 @@ class NoveltyRefinementReport(StrictModel):
     attempts: list[RefinementAttempt] = Field(default_factory=list)
     targeted_searches: list[TargetedSearchRecord] = Field(default_factory=list)
     accepted_refinement_count: int = 0
+    accepted_reaxis_count: int = 0
     kept_original_count: int = 0
     rejected_count: int = 0
     max_refinements_per_hypothesis: Literal[1] = 1
+    max_reaxes_per_hypothesis: Literal[1] = 1
     external_prior_art_can_be_positive_premise: Literal[False] = False
-    policy_version: Literal["novelty-refinement-policy-v1"] = (
-        "novelty-refinement-policy-v1"
-    )
+    policy_version: Literal[
+        "novelty-refinement-policy-v1",
+        "novelty-refinement-policy-v2",
+    ] = "novelty-refinement-policy-v2"
 
     @model_validator(mode="after")
     def _v2_identity_binding_consistency(
@@ -162,6 +175,7 @@ class NoveltyRefinementReport(StrictModel):
         survivor_decisions = {
             "kept_original",
             "accepted_refinement",
+            "accepted_reaxis",
         }
 
         final_ids: list[str] = []
@@ -218,6 +232,7 @@ class NoveltyRefinementReport(StrictModel):
 
         expected_survivors = (
             self.accepted_refinement_count
+            + self.accepted_reaxis_count
             + self.kept_original_count
         )
 
@@ -291,6 +306,7 @@ class NoveltyRefinementArtifact(StrictModel):
                 in {
                     "kept_original",
                     "accepted_refinement",
+                    "accepted_reaxis",
                 }
             )
         ]

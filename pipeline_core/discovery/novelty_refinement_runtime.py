@@ -36,6 +36,9 @@ from pipeline_core.discovery.novelty_refinement_contracts import (
     TargetedSearchRecord,
 )
 from pipeline_core.discovery.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
+from pipeline_core.discovery.novelty_reaxis_prompt import (
+    FreshNoveltyReaxisPromptAssembler,
+)
 from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
@@ -120,9 +123,34 @@ class TargetedNoveltyRefinementRuntime:
         "CONFLICTING_PRIOR_ART",
     }
 
+    # Strong known-axis states that may justify ONE fresh-context re-axis.
+    # INSUFFICIENT_SEARCH_EVIDENCE is intentionally absent: UNKNOWN is not
+    # a scientific rejection and must not trigger novelty chasing.
+    REAXIS_EXTERNAL = {
+        "WELL_ESTABLISHED",
+        "LITERATURE_SUPPORTED_EXTENSION",
+    }
+
+    # A fresh re-axis has not improved the known-axis problem if its own
+    # final fresh search still lands in one of these states.
+    REAXIS_REJECT_EXTERNAL = {
+        "WELL_ESTABLISHED",
+        "LITERATURE_SUPPORTED_EXTENSION",
+        "CONFLICTING_PRIOR_ART",
+    }
+
+    # Targeted search can itself resolve an initially weak novelty status.
+    # In that case do not regenerate merely for the sake of regeneration.
+    RESOLVED_CANDIDATE_EXTERNAL = {
+        "PLAUSIBLY_NOVEL",
+        "NEW_COMBINATION_OF_KNOWN_EFFECTS",
+        "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP",
+    }
+
     SURVIVOR_DECISIONS = frozenset({
         "kept_original",
         "accepted_refinement",
+        "accepted_reaxis",
     })
 
     def __init__(
@@ -320,6 +348,106 @@ class TargetedNoveltyRefinementRuntime:
         destructive.
         """
         return targeted_status not in cls.REJECT_EXTERNAL
+
+    @staticmethod
+    def _fresh_reaxis_safe_unused_premise_ids(
+        dual: DualHypothesisContext,
+        original: HypothesisCard,
+    ) -> list[str]:
+        """Return conservative unused positive premises for fresh re-axis.
+
+        A fresh novelty re-axis is intentionally stricter than ordinary
+        hypothesis generation: provisional/verification-required or explicitly
+        restricted premises are not introduced merely to escape prior art.
+        """
+        original_ids = set(
+            map(str, original.premise_statement_ids)
+        )
+
+        return sorted(
+            str(row.statement_id)
+            for row in dual.grounded_context.evidence_statements
+            if (
+                row.eligible_as_premise
+                and not row.requires_verification
+                and not row.premise_restrictions
+                and row.epistemic_role
+                in {"reported", "evidence_synthesis"}
+                and str(row.statement_id)
+                not in original_ids
+            )
+        )
+
+    @classmethod
+    def _should_attempt_fresh_reaxis(
+        cls,
+        targeted_status: str,
+        unused_premise_ids: list[str],
+    ) -> bool:
+        return (
+            targeted_status in cls.REAXIS_EXTERNAL
+            and bool(unused_premise_ids)
+        )
+
+    @classmethod
+    def _fresh_reaxis_grounding_valid(
+        cls,
+        dual: DualHypothesisContext,
+        original: HypothesisCard,
+        candidate: HypothesisCard,
+    ) -> bool:
+        safe_unused = set(
+            cls._fresh_reaxis_safe_unused_premise_ids(
+                dual,
+                original,
+            )
+        )
+
+        original_ids = set(
+            map(str, original.premise_statement_ids)
+        )
+
+        allowed_premises = (
+            original_ids
+            | safe_unused
+        )
+
+        candidate_premises = set(
+            map(str, candidate.premise_statement_ids)
+        )
+
+        if not candidate_premises:
+            return False
+
+        if not candidate_premises.issubset(
+            allowed_premises
+        ):
+            return False
+
+        # A fresh re-axis must actually introduce at least one previously
+        # unused safe premise. Otherwise it is merely same-premise refinement.
+        if not (
+            candidate_premises
+            & safe_unused
+        ):
+            return False
+
+        allowed_gaps = {
+            str(row.statement_id)
+            for row in dual.grounded_context.evidence_statements
+            if row.eligible_as_gap
+        }
+
+        candidate_gaps = set(
+            map(str, candidate.gap_statement_ids)
+        )
+
+        if not candidate_gaps.issubset(
+            allowed_gaps
+        ):
+            return False
+
+        return True
 
     def _fresh_external(
         self,
@@ -530,12 +658,13 @@ class TargetedNoveltyRefinementRuntime:
                 )
             )
 
-            # If targeted search resolves an insufficient result into a positive
-            # novelty category, keep the original rather than optimizing it further.
+            # If targeted search already resolves the original into a
+            # search-bounded candidate category, do not regenerate merely for
+            # novelty optimization. This applies regardless of the initial
+            # status that triggered targeted search.
             if (
-                source_external.status == "INSUFFICIENT_SEARCH_EVIDENCE"
-                and targeted_card.status
-                in {"NEW_COMBINATION_OF_KNOWN_EFFECTS", "PLAUSIBLY_NOVEL"}
+                targeted_card.status
+                in self.RESOLVED_CANDIDATE_EXTERNAL
             ):
                 accepted_proposals.append(
                     _proposal_from_card(original, prefix=f"keep{index}")
@@ -552,13 +681,348 @@ class TargetedNoveltyRefinementRuntime:
                         final_external_status=targeted_card.status,
                         grounding_preserved=True,
                         refinement_generated=False,
+                        generation_mode="none",
+                        context_grounding_valid=True,
+                        reason_codes=[
+                            "targeted_search_resolved_candidate_status",
+                        ],
                         interpretation=(
-                            "Targeted search resolved the prior uncertainty without "
-                            "requiring hypothesis regeneration."
+                            "Targeted search resolved the candidate without "
+                            "requiring hypothesis regeneration; no additional "
+                            "novelty optimization is performed."
                         ),
                     )
                 )
                 continue
+
+            # ----------------------------------------------------------
+            # Fresh-context novelty re-axis
+            #
+            # This path is intentionally distinct from same-premise
+            # refinement. It may select a different subset of positive
+            # premises from the SAME grounded HypothesisContext, but it
+            # must introduce at least one previously unused, conservative
+            # eligible premise.
+            #
+            # At most one fresh re-axis generation is attempted here.
+            # If it fails, existing same-premise refinement remains the
+            # bounded fallback path.
+            # ----------------------------------------------------------
+
+            unused_reaxis_ids = (
+                self._fresh_reaxis_safe_unused_premise_ids(
+                    dual,
+                    original,
+                )
+            )
+
+            if self._should_attempt_fresh_reaxis(
+                targeted_card.status,
+                unused_reaxis_ids,
+            ):
+                allowed_reaxis_ids = sorted(
+                    set(
+                        map(
+                            str,
+                            original.premise_statement_ids,
+                        )
+                    )
+                    | set(unused_reaxis_ids)
+                )
+
+                reaxis_assembler = (
+                    FreshNoveltyReaxisPromptAssembler(
+                        original=original,
+                        gap=gap,
+                        targeted_card=targeted_card,
+                        allowed_premise_ids=allowed_reaxis_ids,
+                        required_unused_premise_ids=unused_reaxis_ids,
+                    )
+                )
+
+                reaxis_prompt = reaxis_assembler.build(
+                    dual.grounded_context
+                )
+
+                reaxis_generation = (
+                    self.hypothesis_backend.generate(
+                        reaxis_prompt
+                    )
+                )
+
+                reaxis_draft = (
+                    reaxis_generation.draft
+                )
+
+                reaxis_candidate_id = None
+                reaxis_context_grounding_valid = False
+                reaxis_internal_status = None
+                reaxis_final_status = None
+                reaxis_failure_decision = None
+                reaxis_reason_codes = [
+                    "fresh_context_reaxis",
+                ]
+                reaxis_failure_interpretation = ""
+
+                if not reaxis_draft.hypotheses:
+                    reaxis_failure_decision = "abstained"
+                    reaxis_reason_codes.append(
+                        "fresh_reaxis_abstained"
+                    )
+                    reaxis_failure_interpretation = (
+                        "Fresh-context novelty re-axis abstained."
+                    )
+
+                elif len(reaxis_draft.hypotheses) != 1:
+                    reaxis_failure_decision = (
+                        "validation_rejected"
+                    )
+                    reaxis_reason_codes.append(
+                        "fresh_reaxis_cardinality_violation"
+                    )
+                    reaxis_failure_interpretation = (
+                        "Fresh-context novelty re-axis returned "
+                        "more than one hypothesis."
+                    )
+
+                else:
+                    (
+                        reaxis_compiled,
+                        reaxis_issue_codes,
+                    ) = self._compile_one(
+                        dual,
+                        reaxis_draft,
+                    )
+
+                    if reaxis_compiled is None:
+                        reaxis_failure_decision = (
+                            "compile_rejected"
+                        )
+                        reaxis_reason_codes.extend(
+                            reaxis_issue_codes
+                        )
+                        reaxis_failure_interpretation = (
+                            "Fresh-context novelty re-axis failed "
+                            "deterministic compile/validation."
+                        )
+
+                    else:
+                        reaxis_card = (
+                            reaxis_compiled.hypotheses[0]
+                        )
+
+                        reaxis_candidate_id = (
+                            reaxis_card.hypothesis_id
+                        )
+
+                        reaxis_context_grounding_valid = (
+                            self._fresh_reaxis_grounding_valid(
+                                dual,
+                                original,
+                                reaxis_card,
+                            )
+                        )
+
+                        if not reaxis_context_grounding_valid:
+                            reaxis_failure_decision = (
+                                "grounding_drift_rejected"
+                            )
+                            reaxis_reason_codes.append(
+                                "fresh_reaxis_grounding_contract_failed"
+                            )
+                            reaxis_failure_interpretation = (
+                                "Fresh re-axis did not use only allowed "
+                                "same-context premises with at least one "
+                                "previously unused safe premise."
+                            )
+
+                        else:
+                            reaxis_internal = (
+                                self.internal_assessor.assess(
+                                    dual,
+                                    reaxis_compiled,
+                                    self.mapper,
+                                ).cards[0]
+                            )
+
+                            reaxis_internal_status = (
+                                reaxis_internal.status
+                            )
+
+                            if (
+                                reaxis_internal.status
+                                in self.REJECT_INTERNAL
+                            ):
+                                reaxis_failure_decision = (
+                                    "internal_novelty_rejected"
+                                )
+                                reaxis_reason_codes.extend(
+                                    reaxis_internal.reason_codes
+                                )
+                                reaxis_failure_interpretation = (
+                                    "Fresh-context re-axis reconstructed "
+                                    "existing internal corpus prior art. "
+                                    + reaxis_internal.interpretation
+                                )
+
+                            else:
+                                reaxis_fresh_external = (
+                                    self._fresh_external(
+                                        reaxis_compiled
+                                    )
+                                )
+
+                                final_external_artifacts.append(
+                                    reaxis_fresh_external
+                                )
+
+                                reaxis_final_card = (
+                                    reaxis_fresh_external
+                                    .report
+                                    .cards[0]
+                                )
+
+                                reaxis_final_status = (
+                                    reaxis_final_card.status
+                                )
+
+                                if (
+                                    reaxis_final_card.status
+                                    in self.REAXIS_REJECT_EXTERNAL
+                                ):
+                                    reaxis_failure_decision = (
+                                        "external_novelty_rejected"
+                                    )
+                                    reaxis_reason_codes.extend(
+                                        reaxis_final_card.reason_codes
+                                    )
+                                    reaxis_failure_interpretation = (
+                                        "Fresh-context re-axis remained "
+                                        "directly known/extension-like or "
+                                        "conflicted under a fresh external "
+                                        "search. "
+                                        + reaxis_final_card.interpretation
+                                    )
+
+                                else:
+                                    accepted_proposals.append(
+                                        _proposal_from_card(
+                                            reaxis_card,
+                                            prefix=f"reaxis{index}",
+                                        )
+                                    )
+
+                                    attempts.append(
+                                        RefinementAttempt(
+                                            original_hypothesis_id=(
+                                                original.hypothesis_id
+                                            ),
+                                            candidate_hypothesis_id=(
+                                                reaxis_card.hypothesis_id
+                                            ),
+                                            gap_id=gap.gap_id,
+                                            action=gap.action,
+                                            decision="accepted_reaxis",
+                                            original_external_status=(
+                                                source_external.status
+                                            ),
+                                            targeted_external_status=(
+                                                targeted_card.status
+                                            ),
+                                            final_external_status=(
+                                                reaxis_final_card.status
+                                            ),
+                                            axis_fidelity_status=(
+                                                "fresh_reaxis_context_bound"
+                                            ),
+                                            internal_novelty_status=(
+                                                reaxis_internal.status
+                                            ),
+                                            grounding_preserved=(
+                                                self._grounding_preserved(
+                                                    original,
+                                                    reaxis_card,
+                                                )
+                                            ),
+                                            refinement_generated=True,
+                                            generation_mode=(
+                                                "fresh_context_reaxis"
+                                            ),
+                                            context_grounding_valid=True,
+                                            reason_codes=[
+                                                "fresh_context_reaxis",
+                                                "used_unused_eligible_premise",
+                                            ],
+                                            interpretation=(
+                                                "One bounded fresh-context "
+                                                "re-axis used at least one "
+                                                "previously unused eligible "
+                                                "grounded premise, passed "
+                                                "deterministic validation and "
+                                                "internal novelty, and did not "
+                                                "remain WELL_ESTABLISHED, "
+                                                "LITERATURE_SUPPORTED_EXTENSION, "
+                                                "or CONFLICTING_PRIOR_ART under "
+                                                "its fresh external search. "
+                                                "INSUFFICIENT_SEARCH_EVIDENCE, "
+                                                "when present, is retained as "
+                                                "uncertainty rather than treated "
+                                                "as scientific rejection."
+                                            ),
+                                        )
+                                    )
+
+                                    continue
+
+                # Record the failed fresh re-axis attempt, then fall through
+                # to the existing same-premise refinement path.
+                attempts.append(
+                    RefinementAttempt(
+                        original_hypothesis_id=(
+                            original.hypothesis_id
+                        ),
+                        candidate_hypothesis_id=(
+                            reaxis_candidate_id
+                        ),
+                        gap_id=gap.gap_id,
+                        action=gap.action,
+                        decision=reaxis_failure_decision,
+                        original_external_status=(
+                            source_external.status
+                        ),
+                        targeted_external_status=(
+                            targeted_card.status
+                        ),
+                        final_external_status=(
+                            reaxis_final_status
+                        ),
+                        axis_fidelity_status=(
+                            "fresh_reaxis_context_bound"
+                            if reaxis_candidate_id is not None
+                            else None
+                        ),
+                        internal_novelty_status=(
+                            reaxis_internal_status
+                        ),
+                        grounding_preserved=False,
+                        refinement_generated=True,
+                        generation_mode=(
+                            "fresh_context_reaxis"
+                        ),
+                        context_grounding_valid=(
+                            reaxis_context_grounding_valid
+                        ),
+                        reason_codes=sorted(
+                            set(reaxis_reason_codes)
+                        ),
+                        interpretation=(
+                            reaxis_failure_interpretation
+                            + " Existing same-premise refinement "
+                              "remains available as the bounded "
+                              "fallback path."
+                        ),
+                    )
+                )
 
             assembler = NoveltyRefinementPromptAssembler(
                 original=original,
@@ -845,8 +1309,16 @@ class TargetedNoveltyRefinementRuntime:
         accepted_count = sum(
             x.decision == "accepted_refinement" for x in attempts
         )
+        accepted_reaxis_count = sum(
+            x.decision == "accepted_reaxis" for x in attempts
+        )
         kept_count = sum(x.decision == "kept_original" for x in attempts)
-        rejected_count = len(attempts) - accepted_count - kept_count
+        rejected_count = (
+            len(attempts)
+            - accepted_count
+            - accepted_reaxis_count
+            - kept_count
+        )
         report_id = _stable_id(
             "novelty_refinement_report",
             portfolio.portfolio_id,
@@ -865,11 +1337,13 @@ class TargetedNoveltyRefinementRuntime:
             "attempts": [x.model_dump(mode="json") for x in attempts],
             "targeted_searches": [x.model_dump(mode="json") for x in search_records],
             "accepted_refinement_count": accepted_count,
+            "accepted_reaxis_count": accepted_reaxis_count,
             "kept_original_count": kept_count,
             "rejected_count": rejected_count,
             "max_refinements_per_hypothesis": 1,
+            "max_reaxes_per_hypothesis": 1,
             "external_prior_art_can_be_positive_premise": False,
-            "policy_version": "novelty-refinement-policy-v1",
+            "policy_version": "novelty-refinement-policy-v2",
         }
         report = NoveltyRefinementReport(
             **body, report_sha256=_sha256_json(body)

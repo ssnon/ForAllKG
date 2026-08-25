@@ -290,6 +290,7 @@ def main() -> int:
     print("Provider plan:", provider_plan.plan_id)
     print("Final hypotheses:", len(outcome.portfolio.hypotheses))
     print("Accepted refinements:", outcome.report.accepted_refinement_count)
+    print("Accepted fresh re-axes:", outcome.report.accepted_reaxis_count)
     print("Kept originals:", outcome.report.kept_original_count)
     print("Rejected/abstained:", outcome.report.rejected_count)
     for i, row in enumerate(outcome.report.attempts, 1):
