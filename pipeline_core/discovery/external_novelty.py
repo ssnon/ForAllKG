@@ -39,6 +39,93 @@ def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
     return f"{prefix}:{hashlib.sha256(raw).hexdigest()[:length]}"
 
 
+def _lower_order_gap_annotation(
+    reviews: list[ClaimPriorArtReview],
+    coverage,
+) -> tuple[
+    str,
+    list[str],
+    list[str],
+    list[str],
+]:
+    """Summarize reviewed lower-order evidence without changing novelty status.
+
+    LOWER_ORDER_RELATION_PRIOR_ART already asserts that a reviewed record
+    establishes a nontrivial lower-order subrelation of the full claim.
+    This helper therefore consumes reviewer output directly rather than
+    re-inferring higher-order eligibility from claim kind or diagnostic
+    query metadata.
+
+    HIGHER_ORDER_RELATIONAL_GAP is search-bounded and is emitted only when:
+      * a core claim has abstract-backed lower-order prior art,
+      * that full claim remains COMPONENTS_ONLY, and
+      * hypothesis-level absence coverage is sufficient.
+
+    The annotation is descriptive only. It does not alter _status(),
+    rejection, re-axis, or refinement policy.
+    """
+
+    supported_core_claim_ids: list[str] = []
+    gap_claim_ids: list[str] = []
+
+    core_work_ids: list[str] = []
+    seen_core_work_ids: set[str] = set()
+
+    for review in reviews:
+        if review.importance != "core":
+            continue
+
+        lower_matches = [
+            match
+            for match in review.matches
+            if (
+                match.relationship
+                == "LOWER_ORDER_RELATION_PRIOR_ART"
+            )
+        ]
+
+        if not lower_matches:
+            continue
+
+        supported_core_claim_ids.append(
+            review.claim_id
+        )
+
+        for match in lower_matches:
+            if match.work_id in seen_core_work_ids:
+                continue
+
+            seen_core_work_ids.add(
+                match.work_id
+            )
+
+            core_work_ids.append(
+                match.work_id
+            )
+
+        if review.status == "COMPONENTS_ONLY":
+            gap_claim_ids.append(
+                review.claim_id
+            )
+
+    if (
+        gap_claim_ids
+        and coverage.sufficient_for_absence_based_novelty
+    ):
+        relational_gap_kind = (
+            "HIGHER_ORDER_RELATIONAL_GAP"
+        )
+    else:
+        relational_gap_kind = "NONE"
+
+    return (
+        relational_gap_kind,
+        supported_core_claim_ids,
+        gap_claim_ids,
+        core_work_ids,
+    )
+
+
 class ExternalNoveltyAssessor:
     """Search-bounded external prior-art assessor.
 
@@ -379,6 +466,15 @@ class ExternalNoveltyAssessor:
             rows = [review_by_id[claim_id] for claim_id in ordered_claim_ids]
             coverage = self._coverage(hypothesis, rows, packet, plan)
             status, reasons, interpretation = self._status(rows, coverage)
+            (
+                relational_gap_kind,
+                lower_order_supported_core_claim_ids,
+                higher_order_relational_gap_claim_ids,
+                lower_order_core_prior_art_work_ids,
+            ) = _lower_order_gap_annotation(
+                rows,
+                coverage,
+            )
 
             strongest: list[tuple[float, str]] = []
             for review in rows:
@@ -446,6 +542,14 @@ class ExternalNoveltyAssessor:
                     "directional_counterevidence_present"
                 )
 
+            if (
+                relational_gap_kind
+                == "HIGHER_ORDER_RELATIONAL_GAP"
+            ):
+                reasons.append(
+                    "higher_order_relational_gap_present"
+                )
+
             reasons = sorted(set(reasons))
 
             lineage_row = lineages.get(hypothesis.hypothesis_id)
@@ -466,6 +570,19 @@ class ExternalNoveltyAssessor:
                     strongest_prior_art_work_ids=strongest_ids,
                     contextual_conflict_work_ids=contextual_conflict_ids[:5],
                     lower_order_prior_art_work_ids=lower_order_ids[:5],
+                    lower_order_supported_core_claim_ids=(
+                        lower_order_supported_core_claim_ids
+                    ),
+                    higher_order_relational_gap_claim_ids=(
+                        higher_order_relational_gap_claim_ids
+                    ),
+                    lower_order_core_prior_art_work_ids=(
+                        lower_order_core_prior_art_work_ids
+                    ),
+                    lower_order_core_unique_work_count=(
+                        len(lower_order_core_prior_art_work_ids)
+                    ),
+                    relational_gap_kind=relational_gap_kind,
                     directional_counterevidence_work_ids=(
                         directional_counterevidence_ids[:5]
                     ),

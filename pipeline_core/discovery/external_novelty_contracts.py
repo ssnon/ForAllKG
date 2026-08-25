@@ -283,6 +283,12 @@ class ExternalNoveltyPolicy(StrictModel):
     min_catalyst_scope_for_conflict: float = 0.75
 
 
+RelationalGapKind = Literal[
+    "NONE",
+    "HIGHER_ORDER_RELATIONAL_GAP",
+]
+
+
 class ExternalNoveltyCard(StrictModel):
     hypothesis_id: str
     title: str
@@ -292,6 +298,11 @@ class ExternalNoveltyCard(StrictModel):
     strongest_prior_art_work_ids: list[str] = Field(default_factory=list)
     contextual_conflict_work_ids: list[str] = Field(default_factory=list)
     lower_order_prior_art_work_ids: list[str] = Field(default_factory=list)
+    lower_order_supported_core_claim_ids: list[str] = Field(default_factory=list)
+    higher_order_relational_gap_claim_ids: list[str] = Field(default_factory=list)
+    lower_order_core_prior_art_work_ids: list[str] = Field(default_factory=list)
+    lower_order_core_unique_work_count: int = 0
+    relational_gap_kind: RelationalGapKind = "NONE"
     directional_counterevidence_work_ids: list[str] = Field(default_factory=list)
     discovery_axis_id: str | None = None
     discovery_inspiration_id: str | None = None
