@@ -32,7 +32,15 @@ _HYPOTHESIS_PATTERNS = (
     re.compile(r"\bnovel catalyst\b", re.I),
 )
 
-_NUMBER_RE = re.compile(r"(?<![A-Za-z0-9_])[-+]?\d+(?:\.\d+)?(?:\s*(?:eV|meV|V|mV|A|mA|K|°C|C|%|nm|Å|pm|cm|mm|s|ms|h|mol|M|pH))?", re.I)
+_NUMBER_RE = re.compile(
+    r"(?<![A-Za-z0-9_])"
+    r"[-+]?\d+(?:\.\d+)?"
+    r"(?:\s*(?:"
+    r"meV|mV|mA|°C|nm|Å|pm|cm|mm|ms|mol|pH|"
+    r"eV|V|A|K|C|%|s|h|M"
+    r")(?![A-Za-z]))?",
+    re.I,
+)
 
 
 
