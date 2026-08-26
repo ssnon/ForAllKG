@@ -233,6 +233,50 @@ def _is_reference_integrity_issue(
     )
 
 
+_SAME_DIMENSION_TREATMENTS = (
+    "preserve",
+    "generalize",
+    "intentionally_vary",
+)
+
+
+def _is_same_dimension_contract_issue(
+    issue: object,
+) -> bool:
+    """Recognize only the strict same-dimension treatment invariant."""
+
+    text = str(issue)
+
+    if (
+        "cannot silently change context dimension"
+        not in text
+    ):
+        return False
+
+    return any(
+        f": {treatment} cannot silently change context dimension"
+        in text
+        for treatment
+        in _SAME_DIMENSION_TREATMENTS
+    )
+
+
+def _is_bounded_context_validation_issue(
+    issue: object,
+) -> bool:
+    """Issues eligible for the single replacement-generation lane."""
+
+    return (
+        _is_reference_integrity_issue(
+            issue
+        )
+        or
+        _is_same_dimension_contract_issue(
+            issue
+        )
+    )
+
+
 class SERSHypothesisContextInterpreter:
     def __init__(
         self,
@@ -302,16 +346,20 @@ class SERSHypothesisContextInterpreter:
         except (
             HypothesisContextInterpretationValidationError
         ) as exc:
-            # Only deterministic reference-integrity failures are
-            # eligible for one bounded replacement generation.
+            # Only narrowly enumerated context-contract failures are
+            # eligible for one bounded replacement generation:
             #
-            # Scientific/context-semantic failures such as silent
-            # dimension changes, invalid reattachment, or treatment
-            # misuse remain immediate fail-closed outcomes.
-            reference_only = (
+            #   1. deterministic reference-integrity failures;
+            #   2. same-dimension treatment violations for
+            #      preserve/generalize/intentionally_vary.
+            #
+            # Invalid reattachment, treatment misuse, conflation, and
+            # all other scientific/context-semantic failures remain
+            # immediate fail-closed outcomes.
+            repairable = (
                 bool(exc.issues)
                 and all(
-                    _is_reference_integrity_issue(
+                    _is_bounded_context_validation_issue(
                         issue
                     )
                     for issue
@@ -319,7 +367,7 @@ class SERSHypothesisContextInterpreter:
                 )
             )
 
-            if not reference_only:
+            if not repairable:
                 raise (
                     HypothesisContextInterpreterValidationError(
                         prompt=prompt,

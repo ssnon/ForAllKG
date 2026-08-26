@@ -17,7 +17,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 
 
 HYPOTHESIS_CONTEXT_PROMPT_VERSION = (
-    "sers-hypothesis-context-prompt-v1.2-reference-integrity"
+    "sers-hypothesis-context-prompt-v1.3-bounded-contract-repair"
 )
 
 
@@ -298,19 +298,44 @@ class SERSHypothesisContextPromptAssembler:
             SERSContextSignature
         ],
     ) -> HypothesisContextPrompt:
-        """Build one bounded reference-integrity repair prompt.
+        """Build one bounded context-contract validation repair.
 
-        This is not scientific hypothesis repair.  It only gives the
-        interpreter one opportunity to correct deterministic reference
-        errors while preserving the supplied assertions and context
-        fact surface.
+        This is not hypothesis repair and does not relax context
+        semantics. It gives the interpreter one opportunity to correct
+        a narrowly eligible reference or same-dimension contract error.
         """
-        valid_fact_ids = sorted({
-            fact.fact_id
-            for signature
-            in source_signatures
-            for fact in signature.facts
-        })
+        valid_facts = sorted(
+            (
+                {
+                    "fact_id":
+                        fact.fact_id,
+                    "dimension":
+                        fact.dimension,
+                    "scientific_role":
+                        fact.scientific_role,
+                    "knowledge_state":
+                        fact.knowledge_state,
+                    "value":
+                        fact.value,
+                    "binding":
+                        _binding_payload(
+                            fact.binding
+                        ),
+                }
+                for signature
+                in source_signatures
+                for fact
+                in signature.facts
+            ),
+            key=lambda row:
+                row["fact_id"],
+        )
+
+        valid_fact_ids = [
+            row["fact_id"]
+            for row
+            in valid_facts
+        ]
 
         repair_payload = {
             "validation_issues": [
@@ -319,6 +344,8 @@ class SERSHypothesisContextPromptAssembler:
             ],
             "valid_source_fact_ids":
                 valid_fact_ids,
+            "valid_source_facts":
+                valid_facts,
             "previous_draft":
                 previous_draft.model_dump(
                     mode="json"
@@ -332,16 +359,32 @@ class SERSHypothesisContextPromptAssembler:
 VALIDATION REPAIR MODE
 ======================
 The previous structured interpretation passed the response schema but
-failed deterministic source-reference validation.
+failed deterministic context-contract validation.
 
-This is a bounded reference-integrity repair, not a new interpretation
-task.
+This is one bounded context-contract repair, not a new interpretation
+task and not scientific hypothesis repair.
 
 - Preserve every assertion_id, assertion_kind, and assertion_text.
 - Do not add scientific claims or new hypothesis content.
 - Do not invent or synthesize source fact IDs.
 - Every source_fact_id in the replacement MUST be copied exactly from
   VALID_SOURCE_FACT_IDS.
+- VALID_SOURCE_FACTS gives the authoritative dimension, scientific role,
+  value, and attachment for those IDs.
+- preserve, generalize, and intentionally_vary MUST use source facts
+  whose dimension equals asserted_dimension.
+- Do not change asserted_dimension merely to make validation pass.
+  Choose it according to the actual meaning of the immutable
+  mention_text.
+- If the phrase truly refers to the source object itself rather than an
+  architecture/morphology/etc. property, use the corresponding source
+  context dimension instead of forcing a nearby dimension.
+- If scientific attachment genuinely changes, use the existing reattach
+  semantics rather than disguising the change as generalize.
+- If no supplied source fact appropriately supports the mention under
+  the chosen treatment, use introduce/uncertain where semantically
+  appropriate, or omit the mention when the phrase is not actually a
+  context variable.
 - Every mention_text must be copied as an exact contiguous span of its
   immutable assertion_text after ordinary whitespace normalization.
 - mention_id values must be globally unique across the complete

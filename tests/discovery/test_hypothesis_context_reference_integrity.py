@@ -208,7 +208,7 @@ def test_prompt_exposes_global_mention_id_contract() -> None:
         HYPOTHESIS_CONTEXT_PROMPT_VERSION
         == (
             "sers-hypothesis-context-prompt-"
-            "v1.2-reference-integrity"
+            "v1.3-bounded-contract-repair"
         )
     )
 
