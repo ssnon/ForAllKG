@@ -11,7 +11,9 @@ from pipeline_core.discovery.hypothesis_contracts import (
 )
 
 
-INFERENCE_PROMPT_VERSION = "axis-inference-critic-prompt-v1"
+INFERENCE_PROMPT_VERSION = (
+    "axis-inference-critic-prompt-v1.1-basis-references"
+)
 
 
 def _compact_json(value: object) -> str:
@@ -29,30 +31,98 @@ def _sha256(text: str) -> str:
     ).hexdigest()
 
 
-def allowed_axis_basis(
+def axis_basis_reference_map(
     axis: DiscoveryAxis,
-) -> tuple[str, ...]:
-    rows: list[str] = []
+) -> dict[str, str]:
+    """Stable LLM-facing references to authoritative axis semantics.
 
-    label = str(axis.label).strip()
+    The model selects short immutable reference IDs rather than
+    reproducing long axis strings. The compiler later resolves those
+    IDs back to the exact authoritative strings.
+    """
+
+    rows: dict[str, str] = {}
+
+    label = str(
+        axis.label
+    ).strip()
+
     if label:
-        rows.append(label)
+        rows[
+            "axis_basis:label"
+        ] = label
 
     pieces = [
-        str(axis.proposed_subject).strip(),
-        str(axis.proposed_relation).strip(),
-        str(axis.proposed_object).strip(),
+        str(
+            axis.proposed_subject
+        ).strip(),
+        str(
+            axis.proposed_relation
+        ).strip(),
+        str(
+            axis.proposed_object
+        ).strip(),
     ]
 
     if all(pieces):
-        rows.append(
-            " | ".join(pieces)
+        triple = (
+            " | ".join(
+                pieces
+            )
         )
 
-    # ordered dedupe
+        # Avoid exposing two different reference IDs for identical
+        # semantic text.
+        if triple not in rows.values():
+            rows[
+                "axis_basis:triple"
+            ] = triple
+
+    return rows
+
+
+def allowed_axis_basis(
+    axis: DiscoveryAxis,
+) -> tuple[str, ...]:
+    """Authoritative human-readable axis basis strings."""
+
     return tuple(
-        dict.fromkeys(rows)
+        axis_basis_reference_map(
+            axis
+        ).values()
     )
+
+
+def resolve_axis_basis_reference(
+    axis: DiscoveryAxis,
+    value: str,
+) -> str | None:
+    """Resolve a stable basis ID or a legacy exact-string reference.
+
+    Exact historical strings remain accepted for backward compatibility.
+    Abbreviations, paraphrases, translations, and fuzzy matches remain
+    invalid.
+    """
+
+    reference_map = (
+        axis_basis_reference_map(
+            axis
+        )
+    )
+
+    value = str(
+        value
+    ).strip()
+
+    if value in reference_map:
+        return reference_map[
+            value
+        ]
+
+    if value in reference_map.values():
+        return value
+
+    return None
 
 
 def expected_assertions(
@@ -214,8 +284,10 @@ Reference discipline:
 
 - grounded_statement_ids may contain ONLY IDs from the supplied
   allowed_grounded_statement_ids list.
-- axis_basis may contain ONLY exact strings from the supplied
-  allowed_axis_basis list.
+- axis_basis may contain ONLY basis_id values supplied in
+  axis_basis_references.
+- Do NOT copy, abbreviate, paraphrase, or regenerate the human-readable
+  axis text into axis_basis. Select its stable basis_id instead.
 - Copy assertion_id and assertion_text exactly from expected_assertions.
 - Review every expected assertion exactly once.
 - Never invent, abbreviate, translate, or infer an identifier.
@@ -276,11 +348,17 @@ class DiscoveryAxisInferencePromptAssembler:
                 )
             )
 
-        axis_basis = list(
-            allowed_axis_basis(axis)
+        axis_basis_map = (
+            axis_basis_reference_map(
+                axis
+            )
         )
 
-        if not axis_basis:
+        axis_basis = list(
+            axis_basis_map.values()
+        )
+
+        if not axis_basis_map:
             raise ValueError(
                 "discovery axis exposes no usable basis"
             )
@@ -336,8 +414,22 @@ class DiscoveryAxisInferencePromptAssembler:
                     axis.requires_verification,
             },
 
+            # Human-readable authoritative semantics.
             "allowed_axis_basis":
                 axis_basis,
+
+            # LLM-facing reference surface. axis_basis in the response
+            # should contain basis_id values from this table.
+            "axis_basis_references": [
+                {
+                    "basis_id":
+                        basis_id,
+                    "text":
+                        basis_text,
+                }
+                for basis_id, basis_text
+                in axis_basis_map.items()
+            ],
 
             "hypothesis": {
                 "hypothesis_id":
@@ -374,7 +466,7 @@ class DiscoveryAxisInferencePromptAssembler:
             "- Review every expected_assertion exactly once.\n"
             "- Use assertion_id, assertion_kind, and assertion_text exactly as supplied.\n"
             "- grounded_statement_ids may use only allowed_grounded_statement_ids.\n"
-            "- axis_basis may use only allowed_axis_basis exact strings.\n"
+            "- axis_basis may use only basis_id values from axis_basis_references.\n"
             "- G_GROUNDED requires direct selected-premise support.\n"
             "- A_AXIS requires explicit discovery-axis support.\n"
             "- S_BOUNDED_SYNTHESIS is allowed only for a bounded G+A connection.\n"

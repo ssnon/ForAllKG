@@ -21,6 +21,7 @@ from pipeline_core.discovery.discovery_axis_inference_prompt import (
     DiscoveryAxisInferencePromptAssembler,
     allowed_axis_basis,
     expected_assertions,
+    resolve_axis_basis_reference,
 )
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisCard,
@@ -132,8 +133,13 @@ class AxisInferenceReviewCompiler:
             card.premise_statement_ids
         )
 
+        # Human-readable axis strings remain authoritative. The
+        # LLM-facing draft may refer to them through stable basis IDs,
+        # which are resolved deterministically below.
         allowed_basis = set(
-            allowed_axis_basis(axis)
+            allowed_axis_basis(
+                axis
+            )
         )
 
         for assertion_id, row in actual.items():
@@ -180,10 +186,18 @@ class AxisInferenceReviewCompiler:
                     f"{unknown_statements}"
                 )
 
-            unknown_axis_basis = sorted(
-                set(row.axis_basis)
-                - allowed_basis
-            )
+            unknown_axis_basis = sorted({
+                value
+                for value
+                in row.axis_basis
+                if (
+                    resolve_axis_basis_reference(
+                        axis,
+                        value,
+                    )
+                    is None
+                )
+            })
 
             if unknown_axis_basis:
                 issues.append(
@@ -236,13 +250,56 @@ class AxisInferenceReviewCompiler:
                 )
             )
 
+        canonical_assertions = []
+
+        for row in draft.assertions:
+            resolved_basis = []
+
+            for value in row.axis_basis:
+                resolved = (
+                    resolve_axis_basis_reference(
+                        axis,
+                        value,
+                    )
+                )
+
+                # Unknown values cannot reach this branch because the
+                # strict validation above has already rejected them.
+                if resolved is None:
+                    raise AssertionError(
+                        "validated axis basis failed resolution"
+                    )
+
+                if resolved not in resolved_basis:
+                    resolved_basis.append(
+                        resolved
+                    )
+
+            canonical_assertions.append(
+                row.model_copy(
+                    update={
+                        "axis_basis":
+                            resolved_basis,
+                    }
+                )
+            )
+
+        canonical_draft = (
+            draft.model_copy(
+                update={
+                    "assertions":
+                        canonical_assertions,
+                }
+            )
+        )
+
         status = inference_review_status(
-            draft.assertions
+            canonical_draft.assertions
         )
 
         reason_codes: list[str] = []
 
-        for row in draft.assertions:
+        for row in canonical_draft.assertions:
             if (
                 row.source_class
                 == "X_UNSUPPORTED_SPECIFICITY"
@@ -276,7 +333,9 @@ class AxisInferenceReviewCompiler:
             axis.axis_id,
             card.hypothesis_id,
             prompt.prompt_sha256,
-            _canonical_json(draft),
+            _canonical_json(
+                canonical_draft
+            ),
         )
 
         return AxisInferenceReview(
@@ -294,7 +353,9 @@ class AxisInferenceReviewCompiler:
                 prompt.prompt_sha256,
             status=status,
             assertions=
-                list(draft.assertions),
+                list(
+                    canonical_draft.assertions
+                ),
             overall_risk=
                 draft.overall_risk,
             reason_codes=
