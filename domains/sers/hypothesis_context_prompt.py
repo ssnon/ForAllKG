@@ -17,7 +17,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 
 
 HYPOTHESIS_CONTEXT_PROMPT_VERSION = (
-    "sers-hypothesis-context-prompt-v1.1"
+    "sers-hypothesis-context-prompt-v1.2-reference-integrity"
 )
 
 
@@ -145,6 +145,8 @@ Output requirements:
 1. Return every expected assertion exactly once, with the supplied
    assertion_id, assertion_kind, and assertion_text unchanged.
 2. An assertion may have zero or more context mentions.
+   mention_id values must be globally unique across the complete
+   interpretation, not merely unique within one assertion.
 3. mention_text must be an exact contiguous span of assertion_text
    after ordinary whitespace normalization.
 4. source_fact_ids may reference only supplied source facts.
@@ -340,6 +342,10 @@ task.
 - Do not invent or synthesize source fact IDs.
 - Every source_fact_id in the replacement MUST be copied exactly from
   VALID_SOURCE_FACT_IDS.
+- Every mention_text must be copied as an exact contiguous span of its
+  immutable assertion_text after ordinary whitespace normalization.
+- mention_id values must be globally unique across the complete
+  replacement interpretation.
 - Repair only the context mentions necessary to resolve the listed
   deterministic issues.
 - If no supplied source fact appropriately supports a context mention,

@@ -72,7 +72,7 @@ def _canonicalize_interpretation_draft(
 ) -> HypothesisContextInterpretationDraft:
     """Canonicalize orchestration/citation noise without semantic repair.
 
-    Three operations are permitted:
+    Four operations are permitted:
 
     1. hypothesis_id comes from the authoritative HypothesisCard
        identity rather than model reproduction.
@@ -80,7 +80,12 @@ def _canonicalize_interpretation_draft(
     2. source_signature_ids comes from the authoritative supplied
        signature set rather than model reproduction.
 
-    3. For treatments whose semantics require dimension preservation,
+    3. mention_id is orchestration identity rather than scientific
+       content. It is deterministically namespaced by assertion_id and
+       mention position so IDs are globally unique without changing
+       mention semantics, text, source facts, treatment, or attachment.
+
+    4. For treatments whose semantics require dimension preservation,
        remove *known* source facts from other dimensions only when at
        least one known source fact of the asserted dimension remains.
 
@@ -114,8 +119,19 @@ def _canonicalize_interpretation_draft(
     for assertion in draft.assertions:
         canonical_mentions = []
 
-        for mention in assertion.mentions:
-            canonical_mention = mention
+        for mention_index, mention in enumerate(
+            assertion.mentions
+        ):
+            canonical_mention = (
+                mention.model_copy(
+                    update={
+                        "mention_id": (
+                            f"{assertion.assertion_id}:"
+                            f"mention:{mention_index}"
+                        ),
+                    }
+                )
+            )
 
             if (
                 mention.treatment
@@ -162,7 +178,7 @@ def _canonicalize_interpretation_draft(
                             )
 
                     canonical_mention = (
-                        mention.model_copy(
+                        canonical_mention.model_copy(
                             update={
                                 "source_fact_ids":
                                     projected,
@@ -192,6 +208,28 @@ def _canonicalize_interpretation_draft(
             "assertions":
                 canonical_assertions,
         }
+    )
+
+
+_REFERENCE_INTEGRITY_ISSUE_MARKERS = (
+    "unknown source fact ",
+    "duplicate global mention_id:",
+    (
+        "mention_text is not an exact assertion "
+        "span after whitespace normalization"
+    ),
+)
+
+
+def _is_reference_integrity_issue(
+    issue: object,
+) -> bool:
+    text = str(issue)
+
+    return any(
+        marker in text
+        for marker
+        in _REFERENCE_INTEGRITY_ISSUE_MARKERS
     )
 
 
@@ -264,15 +302,20 @@ class SERSHypothesisContextInterpreter:
         except (
             HypothesisContextInterpretationValidationError
         ) as exc:
-            # Only source-reference hallucination is eligible for
-            # automatic repair. Scientific/context-semantic validation
-            # failures remain immediate fail-closed outcomes.
+            # Only deterministic reference-integrity failures are
+            # eligible for one bounded replacement generation.
+            #
+            # Scientific/context-semantic failures such as silent
+            # dimension changes, invalid reattachment, or treatment
+            # misuse remain immediate fail-closed outcomes.
             reference_only = (
                 bool(exc.issues)
                 and all(
-                    "unknown source fact "
-                    in str(issue)
-                    for issue in exc.issues
+                    _is_reference_integrity_issue(
+                        issue
+                    )
+                    for issue
+                    in exc.issues
                 )
             )
 
