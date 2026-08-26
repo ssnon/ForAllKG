@@ -36,6 +36,23 @@ _CLAIM_NODE_TYPES = frozenset({
 })
 
 
+# Direct scientific-owner relations that bind a paper-local entity to an
+# accepted/reified BridgeConcept. Grounded-context compilation may follow
+# only these incoming edges by one hop. Corpus-level pattern-mention edges
+# remain excluded so this cannot become whole-paper or corpus inheritance.
+_BRIDGE_OWNER_RELATIONS = frozenset({
+    "EXPRESSES_PATTERN",
+    "INVOLVES_PHENOMENON",
+    "DESCRIBES_INTERFACE",
+    "EXHIBITS_DYNAMIC_STATE",
+    "SUGGESTS_DESIGN_PRINCIPLE",
+    "HAS_FAILURE_MODE",
+    "USES_MECHANISTIC_ANALOGY",
+    "RAISES_OPEN_QUESTION",
+    "GROUNDS_BRIDGE_PATTERN",
+})
+
+
 _STRUCTURAL_RELATIONS = frozenset({
     "HAS_COMPONENT",
     "HAS_SUPPORT",
@@ -1405,6 +1422,76 @@ class SERSContextCompiler:
                     "grounded_support_node"
                 )
 
+            # A grounded statement can legitimately cite a BridgeConcept
+            # whose experimental context lives on its exact paper-local
+            # scientific owner rather than on the bridge node itself.
+            #
+            # Follow only a direct, whitelisted owner edge. This is a
+            # bounded one-hop closure: HAS_PATTERN_MENTION,
+            # EXPRESSES_CORPUS_PATTERN, arbitrary same-paper neighbors,
+            # and whole-paper inheritance are deliberately excluded.
+            if support_type == "BridgeConcept":
+                for owner_edge in _incoming_edges(
+                    self.graph,
+                    support_id,
+                ):
+                    if (
+                        owner_edge["relation"]
+                        not in _BRIDGE_OWNER_RELATIONS
+                    ):
+                        continue
+
+                    owner_id = owner_edge[
+                        "source"
+                    ]
+
+                    self._require_node(
+                        owner_id
+                    )
+
+                    owner_type = _node_type(
+                        self.graph,
+                        owner_id,
+                    )
+
+                    if (
+                        owner_type
+                        not in _CLAIM_NODE_TYPES
+                    ):
+                        context_roots[
+                            owner_id
+                        ] = (
+                            "grounded_bridge_owner"
+                        )
+
+                    # If an exact bridge owner is itself claim-like, retain
+                    # the existing claim-local APPLIES_TO discipline rather
+                    # than treating the claim node as experimental context.
+                    for edge in _outgoing_edges(
+                        self.graph,
+                        owner_id,
+                    ):
+                        if (
+                            edge["relation"]
+                            != "APPLIES_TO"
+                        ):
+                            continue
+
+                        target_id = edge[
+                            "target"
+                        ]
+
+                        self._require_node(
+                            target_id
+                        )
+
+                        context_roots[
+                            target_id
+                        ] = (
+                            "grounded_bridge_owner_applies_to"
+                        )
+
+            # Existing direct claim-local ownership remains valid.
             for edge in _outgoing_edges(
                 self.graph,
                 support_id,

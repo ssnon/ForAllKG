@@ -176,6 +176,33 @@ def _selected_alternative(
     return candidates[0]
 
 
+def _step_relation_matches_evidence(
+    *,
+    step_relation: str,
+    evidence_relation: str,
+) -> bool:
+    """Check relation provenance without conflating aggregate navigation
+    markers with the exact selected scientific edge.
+
+    MULTI_RELATION represents an aggregated navigation edge. Its
+    selected_original_edge_id still resolves to one exact evidence row,
+    whose scientific relation may therefore be HAS_ARCHITECTURE,
+    HAS_COMPONENT, or another concrete relation. Source, target, and
+    selected edge identity remain validated separately.
+    """
+
+    if not evidence_relation:
+        return True
+
+    if step_relation == "MULTI_RELATION":
+        return True
+
+    return (
+        step_relation
+        == evidence_relation
+    )
+
+
 def _is_alignment_edge(
     *,
     edge_class: str = "",
@@ -531,7 +558,18 @@ class GraphExplorerPacketBuilder:
                             f"Scientific target mismatch for {original_edge_id}: "
                             f"step={scientific_target!r}, evidence={row_target!r}"
                         )
-                    if self.strict_provenance and row_relation and row_relation != str(step.get("relation", "")):
+                    if (
+                        self.strict_provenance
+                        and not _step_relation_matches_evidence(
+                            step_relation=str(
+                                step.get(
+                                    "relation",
+                                    "",
+                                )
+                            ),
+                            evidence_relation=row_relation,
+                        )
+                    ):
                         raise ValueError(
                             f"Relation mismatch for {original_edge_id}: "
                             f"step={step.get('relation')!r}, evidence={row_relation!r}"

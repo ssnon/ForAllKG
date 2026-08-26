@@ -72,6 +72,8 @@ SERSContextProvenanceKind = Literal[
     "axis_direct_claim",
     "grounded_support_node",
     "grounded_applies_to_target",
+    "grounded_bridge_owner",
+    "grounded_bridge_owner_applies_to",
     "grounded_structural_edge",
     "hypothesis_assertion",
     "question",
