@@ -397,6 +397,10 @@ def test_invented_assertion_is_rejected() -> None:
                 pred(
                     assertion_id=
                         "prediction:invented",
+                    text=(
+                        "Invented prediction that does "
+                        "not exactly match the source card."
+                    ),
                 ),
             ])
         )
@@ -605,4 +609,338 @@ def test_prompt_limits_synthesis_to_minimum_connection_or_direct_test() -> None:
     assert (
         "secondary mechanistic or descriptor consequence"
         in SYSTEM_PROMPT
+    )
+
+
+class SequenceBackend:
+    backend_name = "sequence_axis_inference"
+    model_name = "fake-model"
+
+    def __init__(
+        self,
+        values: list[AxisInferenceReviewDraft],
+    ) -> None:
+        self.values = list(values)
+        self.calls = 0
+
+    def review(self, prompt):
+        index = min(
+            self.calls,
+            len(self.values) - 1,
+        )
+
+        value = self.values[index]
+        self.calls += 1
+
+        return AxisInferenceGeneration(
+            draft=value,
+        )
+
+
+def test_exact_kind_and_text_canonicalize_assertion_id_typo() -> None:
+    wrong_central_id = (
+        central().model_copy(
+            update={
+                "assertion_id":
+                    "central:hypothesis:test-extra-digit",
+            }
+        )
+    )
+
+    review = compile_review(
+        draft([
+            wrong_central_id,
+            pred(),
+        ])
+    )
+
+    ids = {
+        row.assertion_id
+        for row in review.assertions
+    }
+
+    assert (
+        "central:hypothesis:test"
+        in ids
+    )
+
+    assert (
+        "central:hypothesis:test-extra-digit"
+        not in ids
+    )
+
+
+def test_assertion_id_canonicalization_never_fuzzy_matches_text() -> None:
+    wrong = (
+        central(
+            text=(
+                "Copper context may alter the Au-Ag response."
+            )
+        ).model_copy(
+            update={
+                "assertion_id":
+                    "central:hypothesis:typo",
+            }
+        )
+    )
+
+    with pytest.raises(
+        AxisInferenceReviewValidationError,
+        match=(
+            "missing inference assertions"
+            "|unknown inference assertions"
+        ),
+    ):
+        compile_review(
+            draft([
+                wrong,
+                pred(),
+            ])
+        )
+
+
+def test_compiler_rejects_invalid_source_action_pair() -> None:
+    invalid_prediction = pred(
+        source_class=
+            "X_UNSUPPORTED_SPECIFICITY",
+        action="OPEN_DIRECTION",
+    )
+
+    with pytest.raises(
+        AxisInferenceReviewValidationError,
+        match="inference source/action mismatch",
+    ):
+        compile_review(
+            draft([
+                central(),
+                invalid_prediction,
+            ])
+        )
+
+
+def test_critic_repairs_missing_synthesis_ground_once() -> None:
+    invalid = draft([
+        central(),
+        pred(
+            grounds=[],
+        ),
+    ])
+
+    repaired = draft([
+        central(),
+        pred(
+            grounds=[
+                "stmt:1",
+            ],
+        ),
+    ])
+
+    backend = SequenceBackend([
+        invalid,
+        repaired,
+    ])
+
+    critic = DiscoveryAxisInferenceCritic(
+        backend,
+        max_validation_repairs=1,
+    )
+
+    outcome = critic.review(
+        context(),
+        axis(),
+        card(),
+    )
+
+    assert backend.calls == 2
+    assert (
+        outcome.validation_repair_attempts
+        == 1
+    )
+    assert outcome.review.status == "pass"
+
+
+def test_critic_repairs_nonselected_ground_reference_once() -> None:
+    invalid = draft([
+        central(),
+        pred(
+            grounds=[
+                "stmt:1",
+                "stmt:other",
+            ],
+        ),
+    ])
+
+    repaired = draft([
+        central(),
+        pred(
+            grounds=[
+                "stmt:1",
+            ],
+        ),
+    ])
+
+    backend = SequenceBackend([
+        invalid,
+        repaired,
+    ])
+
+    outcome = (
+        DiscoveryAxisInferenceCritic(
+            backend,
+            max_validation_repairs=1,
+        )
+        .review(
+            context(),
+            axis(),
+            card(),
+        )
+    )
+
+    assert backend.calls == 2
+    assert (
+        outcome.validation_repair_attempts
+        == 1
+    )
+
+
+def test_critic_repairs_source_action_serialization_once() -> None:
+    invalid = draft([
+        central(),
+        pred(
+            source_class=
+                "X_UNSUPPORTED_SPECIFICITY",
+            action="OPEN_DIRECTION",
+        ),
+    ])
+
+    repaired = draft([
+        central(),
+        pred(
+            source_class=
+                "X_UNSUPPORTED_SPECIFICITY",
+            action="REFRAME",
+        ),
+    ])
+
+    backend = SequenceBackend([
+        invalid,
+        repaired,
+    ])
+
+    outcome = (
+        DiscoveryAxisInferenceCritic(
+            backend,
+            max_validation_repairs=1,
+        )
+        .review(
+            context(),
+            axis(),
+            card(),
+        )
+    )
+
+    assert backend.calls == 2
+    assert (
+        outcome.validation_repair_attempts
+        == 1
+    )
+    assert (
+        outcome.review.status
+        == "reframe_required"
+    )
+
+
+def test_contract_repair_remains_fail_closed_after_one_attempt() -> None:
+    invalid = draft([
+        central(),
+        pred(
+            grounds=[],
+        ),
+    ])
+
+    backend = SequenceBackend([
+        invalid,
+        invalid,
+    ])
+
+    critic = DiscoveryAxisInferenceCritic(
+        backend,
+        max_validation_repairs=1,
+    )
+
+    with pytest.raises(
+        AxisInferenceReviewValidationError,
+        match=(
+            "S_BOUNDED_SYNTHESIS requires "
+            "grounded_statement_ids"
+        ),
+    ):
+        critic.review(
+            context(),
+            axis(),
+            card(),
+        )
+
+    assert backend.calls == 2
+
+
+def test_contract_repair_can_be_disabled() -> None:
+    invalid = draft([
+        central(),
+        pred(
+            grounds=[],
+        ),
+    ])
+
+    backend = SequenceBackend([
+        invalid,
+    ])
+
+    critic = DiscoveryAxisInferenceCritic(
+        backend,
+        max_validation_repairs=0,
+    )
+
+    with pytest.raises(
+        AxisInferenceReviewValidationError,
+    ):
+        critic.review(
+            context(),
+            axis(),
+            card(),
+        )
+
+    assert backend.calls == 1
+
+
+def test_contract_repair_classifier_is_narrow() -> None:
+    from pipeline_core.discovery.discovery_axis_inference_critic import (
+        is_inference_contract_repair_issue,
+    )
+
+    assert is_inference_contract_repair_issue(
+        "prediction:1: "
+        "S_BOUNDED_SYNTHESIS requires "
+        "grounded_statement_ids"
+    )
+
+    assert is_inference_contract_repair_issue(
+        "prediction:1: "
+        "unknown or non-selected grounded statement IDs: "
+        "['stmt:x']"
+    )
+
+    assert is_inference_contract_repair_issue(
+        "prediction:1: "
+        "inference source/action mismatch: "
+        "source_class='X_UNSUPPORTED_SPECIFICITY'"
+    )
+
+    # Scientific/context semantic failures do not enter this repair lane.
+    assert not is_inference_contract_repair_issue(
+        "generalize cannot silently change context dimension"
+    )
+
+    assert not is_inference_contract_repair_issue(
+        "unsupported scientific mechanism"
     )

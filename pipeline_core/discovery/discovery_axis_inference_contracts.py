@@ -53,7 +53,7 @@ _REPAIR_ACTIONS = {
 }
 
 
-def _allowed_actions(
+def allowed_inference_actions(
     source_class: str,
 ) -> set[str]:
     return {
@@ -116,23 +116,7 @@ class AxisInferenceAssertionDraft(StrictModel):
 
     rationale: str = Field(min_length=1)
 
-    @model_validator(mode="after")
-    def _source_action_consistency(
-        self,
-    ) -> "AxisInferenceAssertionDraft":
-        allowed = _allowed_actions(
-            self.source_class
-        )
 
-        if self.action not in allowed:
-            raise ValueError(
-                "inference source/action mismatch: "
-                f"source_class={self.source_class!r}, "
-                f"action={self.action!r}, "
-                f"allowed={sorted(allowed)!r}"
-            )
-
-        return self
 
 
 class AxisInferenceReviewDraft(StrictModel):
@@ -232,6 +216,19 @@ class AxisInferenceReview(StrictModel):
                 "compiled inference review must contain "
                 "exactly one central_hypothesis assertion"
             )
+
+        for row in self.assertions:
+            allowed = allowed_inference_actions(
+                row.source_class
+            )
+
+            if row.action not in allowed:
+                raise ValueError(
+                    "inference source/action mismatch: "
+                    f"source_class={row.source_class!r}, "
+                    f"action={row.action!r}, "
+                    f"allowed={sorted(allowed)!r}"
+                )
 
         actions = {
             row.action

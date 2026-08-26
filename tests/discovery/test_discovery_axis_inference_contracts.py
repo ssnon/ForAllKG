@@ -64,17 +64,28 @@ def test_valid_source_action_pairs(
         ("X_UNSUPPORTED_SPECIFICITY", "OPEN_DIRECTION"),
     ],
 )
-def test_invalid_source_action_pairs_are_rejected(
+def test_invalid_source_action_pairs_are_rejected_at_compiled_boundary(
     source_class: str,
     action: str,
 ) -> None:
+    # Raw LLM-facing assertions intentionally remain parseable so a
+    # bounded contract-repair pass can see the invalid serialization.
+    row = assertion(
+        source_class=source_class,
+        action=action,
+    )
+
+    assert row.source_class == source_class
+    assert row.action == action
+
+    # Final compiled review remains strict.
     with pytest.raises(
         ValidationError,
         match="inference source/action mismatch",
     ):
-        assertion(
-            source_class=source_class,
-            action=action,
+        compiled_review(
+            assertions=[row],
+            status="pass",
         )
 
 

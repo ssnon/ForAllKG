@@ -116,7 +116,7 @@ def test_prompt_contract_uses_reference_ids() -> None:
         INFERENCE_PROMPT_VERSION
         == (
             "axis-inference-critic-prompt-"
-            "v1.1-basis-references"
+            "v1.2-contract-repair"
         )
     )
 

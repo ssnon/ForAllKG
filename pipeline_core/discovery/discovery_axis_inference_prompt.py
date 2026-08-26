@@ -12,7 +12,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
 
 
 INFERENCE_PROMPT_VERSION = (
-    "axis-inference-critic-prompt-v1.1-basis-references"
+    "axis-inference-critic-prompt-v1.2-contract-repair"
 )
 
 
@@ -477,4 +477,78 @@ class DiscoveryAxisInferencePromptAssembler:
         return AxisInferencePrompt.create(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
+        )
+
+    def build_validation_repair(
+        self,
+        *,
+        original_prompt: AxisInferencePrompt,
+        previous_draft: object,
+        issues: list[str],
+    ) -> AxisInferencePrompt:
+        """One bounded repair of reference/contract serialization.
+
+        Scientific policy is unchanged. The replacement draft must
+        still pass the same strict deterministic compiler.
+        """
+
+        if not hasattr(
+            previous_draft,
+            "model_dump_json",
+        ):
+            raise TypeError(
+                "previous inference draft is not serializable"
+            )
+
+        issue_lines = [
+            f"- {issue}"
+            for issue in issues
+        ]
+
+        repair_request = (
+            "\n\nCONTRACT VALIDATION REPAIR\n"
+            "==========================\n"
+            "The previous inference review failed deterministic "
+            "reference/contract validation.\n"
+            "\n"
+            "Repair ONLY the listed contract failures.\n"
+            "- Return a complete replacement review draft.\n"
+            "- Do not add scientific claims or outside knowledge.\n"
+            "- Do not weaken the source/action policy.\n"
+            "- Copy every expected assertion_id, assertion_kind, "
+            "and assertion_text exactly.\n"
+            "- grounded_statement_ids may contain ONLY selected "
+            "allowed_grounded_statement_ids.\n"
+            "- Do not invent a grounded statement merely to satisfy "
+            "S_BOUNDED_SYNTHESIS. If no selected premise supports "
+            "that source classification, reconsider the source class "
+            "and action under the existing policy.\n"
+            "- axis_basis may contain ONLY supplied basis_id values.\n"
+            "- G_GROUNDED requires grounded_statement_ids.\n"
+            "- A_AXIS requires axis_basis.\n"
+            "- S_BOUNDED_SYNTHESIS requires both grounded_statement_ids "
+            "and axis_basis.\n"
+            "- Valid action mapping remains: "
+            "G_GROUNDED->KEEP; "
+            "A_AXIS->KEEP_HYPOTHETICAL; "
+            "S_BOUNDED_SYNTHESIS->KEEP or OPEN_DIRECTION; "
+            "X_UNSUPPORTED_SPECIFICITY->REFRAME or REMOVE.\n"
+            "\n"
+            "VALIDATION ISSUES\n"
+            "-----------------\n"
+            + "\n".join(issue_lines)
+            + "\n\nPREVIOUS DRAFT\n"
+            "--------------\n"
+            + previous_draft.model_dump_json(
+                indent=2
+            )
+        )
+
+        return AxisInferencePrompt.create(
+            system_prompt=
+                original_prompt.system_prompt,
+            user_prompt=(
+                original_prompt.user_prompt
+                + repair_request
+            ),
         )

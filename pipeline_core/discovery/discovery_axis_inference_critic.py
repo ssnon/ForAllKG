@@ -10,6 +10,7 @@ from pipeline_core.discovery.discovery_axis_contracts import (
 from pipeline_core.discovery.discovery_axis_inference_contracts import (
     AxisInferenceReview,
     AxisInferenceReviewDraft,
+    allowed_inference_actions,
     inference_review_status,
 )
 from pipeline_core.discovery.discovery_axis_inference_llm import (
@@ -72,6 +73,123 @@ class AxisInferenceReviewValidationError(
         )
 
 
+_INFERENCE_CONTRACT_REPAIR_MARKERS = (
+    "missing inference assertions:",
+    "unknown inference assertions:",
+    "assertion_kind does not match source hypothesis",
+    "assertion_text does not match source hypothesis",
+    "unknown or non-selected grounded statement IDs:",
+    "unknown axis basis:",
+    "G_GROUNDED requires grounded_statement_ids",
+    "A_AXIS requires axis_basis",
+    "S_BOUNDED_SYNTHESIS requires grounded_statement_ids",
+    "S_BOUNDED_SYNTHESIS requires axis_basis",
+    "inference source/action mismatch:",
+)
+
+
+def is_inference_contract_repair_issue(
+    issue: object,
+) -> bool:
+    text = str(issue)
+
+    return any(
+        marker in text
+        for marker
+        in _INFERENCE_CONTRACT_REPAIR_MARKERS
+    )
+
+
+def canonicalize_inference_assertion_ids(
+    *,
+    card: HypothesisCard,
+    draft: AxisInferenceReviewDraft,
+) -> AxisInferenceReviewDraft:
+    """Repair only an unambiguous orchestration pointer.
+
+    If an unknown assertion_id has exactly one authoritative assertion
+    with the SAME assertion_kind and EXACT assertion_text, replace only
+    the ID. No fuzzy matching and no scientific text rewrite.
+    """
+
+    expected_rows = list(
+        expected_assertions(
+            card
+        )
+    )
+
+    expected_by_id = {
+        row["assertion_id"]: row
+        for row in expected_rows
+    }
+
+    used_authoritative_ids = {
+        row.assertion_id
+        for row in draft.assertions
+        if row.assertion_id
+        in expected_by_id
+    }
+
+    canonical_rows = []
+
+    for row in draft.assertions:
+
+        if row.assertion_id in expected_by_id:
+            canonical_rows.append(
+                row
+            )
+            continue
+
+        candidates = [
+            expected_row
+            for expected_row
+            in expected_rows
+            if (
+                expected_row[
+                    "assertion_kind"
+                ]
+                == row.assertion_kind
+                and expected_row[
+                    "assertion_text"
+                ]
+                == row.assertion_text
+                and expected_row[
+                    "assertion_id"
+                ]
+                not in used_authoritative_ids
+            )
+        ]
+
+        if len(candidates) == 1:
+            authoritative_id = (
+                candidates[0][
+                    "assertion_id"
+                ]
+            )
+
+            used_authoritative_ids.add(
+                authoritative_id
+            )
+
+            row = row.model_copy(
+                update={
+                    "assertion_id":
+                        authoritative_id,
+                }
+            )
+
+        canonical_rows.append(
+            row
+        )
+
+    return draft.model_copy(
+        update={
+            "assertions":
+                canonical_rows,
+        }
+    )
+
+
 class AxisInferenceReviewCompiler:
     """Bind the LLM review to exact hypothesis/axis provenance."""
 
@@ -103,6 +221,13 @@ class AxisInferenceReviewCompiler:
             row["assertion_id"]: row
             for row in expected_assertions(card)
         }
+
+        draft = (
+            canonicalize_inference_assertion_ids(
+                card=card,
+                draft=draft,
+            )
+        )
 
         actual = {
             row.assertion_id: row
@@ -170,6 +295,21 @@ class AxisInferenceReviewCompiler:
                 issues.append(
                     f"{assertion_id}: assertion_text "
                     "does not match source hypothesis"
+                )
+
+            allowed_actions = (
+                allowed_inference_actions(
+                    row.source_class
+                )
+            )
+
+            if row.action not in allowed_actions:
+                issues.append(
+                    f"{assertion_id}: "
+                    "inference source/action mismatch: "
+                    f"source_class={row.source_class!r}, "
+                    f"action={row.action!r}, "
+                    f"allowed={sorted(allowed_actions)!r}"
                 )
 
             unknown_statements = sorted(
@@ -370,6 +510,7 @@ class AxisInferenceCriticOutcome:
     prompt: AxisInferencePrompt
     generation: AxisInferenceGeneration
     review: AxisInferenceReview
+    validation_repair_attempts: int = 0
 
 
 class DiscoveryAxisInferenceCritic:
@@ -389,7 +530,17 @@ class DiscoveryAxisInferenceCritic:
         compiler:
             AxisInferenceReviewCompiler
             | None = None,
+        max_validation_repairs: int = 1,
     ) -> None:
+        if max_validation_repairs not in {
+            0,
+            1,
+        }:
+            raise ValueError(
+                "Axis inference contract validation supports "
+                "max_validation_repairs of 0 or 1 only."
+            )
+
         self.backend = backend
 
         self.prompt_assembler = (
@@ -400,6 +551,10 @@ class DiscoveryAxisInferenceCritic:
         self.compiler = (
             compiler
             or AxisInferenceReviewCompiler()
+        )
+
+        self.max_validation_repairs = int(
+            max_validation_repairs
         )
 
     def review(
@@ -414,20 +569,77 @@ class DiscoveryAxisInferenceCritic:
             card,
         )
 
+        active_prompt = prompt
+
         generation = self.backend.review(
-            prompt
+            active_prompt
         )
 
-        review = self.compiler.compile(
-            context=context,
-            axis=axis,
-            card=card,
-            prompt=prompt,
-            draft=generation.draft,
-        )
+        validation_repair_attempts = 0
+
+        try:
+            review = self.compiler.compile(
+                context=context,
+                axis=axis,
+                card=card,
+                prompt=active_prompt,
+                draft=generation.draft,
+            )
+
+        except (
+            AxisInferenceReviewValidationError
+        ) as exc:
+
+            repairable = (
+                bool(exc.issues)
+                and all(
+                    is_inference_contract_repair_issue(
+                        issue
+                    )
+                    for issue
+                    in exc.issues
+                )
+            )
+
+            if (
+                not repairable
+                or self.max_validation_repairs
+                < 1
+            ):
+                raise
+
+            active_prompt = (
+                self.prompt_assembler
+                .build_validation_repair(
+                    original_prompt=prompt,
+                    previous_draft=
+                        generation.draft,
+                    issues=list(
+                        exc.issues
+                    ),
+                )
+            )
+
+            generation = self.backend.review(
+                active_prompt
+            )
+
+            validation_repair_attempts = 1
+
+            # Same strict compiler. A second failure propagates
+            # fail-closed; there is no repair loop.
+            review = self.compiler.compile(
+                context=context,
+                axis=axis,
+                card=card,
+                prompt=active_prompt,
+                draft=generation.draft,
+            )
 
         return AxisInferenceCriticOutcome(
-            prompt=prompt,
+            prompt=active_prompt,
             generation=generation,
             review=review,
+            validation_repair_attempts=
+                validation_repair_attempts,
         )
