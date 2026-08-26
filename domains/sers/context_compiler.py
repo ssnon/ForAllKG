@@ -762,8 +762,10 @@ class SERSContextCompiler:
 
     Axis source:
         BridgeConcept
-        <- GROUNDS_SEMANTIC_CANDIDATE <- anchors
-        -> direct context from each anchor
+        <- GROUNDS_SEMANTIC_CANDIDATE <- exact anchors
+        -> direct context from non-claim anchors
+        -> direct APPLIES_TO targets from claim anchors
+        -> direct context from those targets
 
     Grounded source:
         scientific_support_node_ids
@@ -1271,12 +1273,66 @@ class SERSContextCompiler:
             inspiration.candidate_unit_id
         ) else []
 
+        context_roots: dict[
+            str,
+            str,
+        ] = {}
+
         for anchor_id in anchor_ids:
+            anchor_type = _node_type(
+                self.graph,
+                anchor_id,
+            )
+
+            # Non-claim semantic anchors already carry context directly.
+            # Claim anchors instead expose their scientific owner through
+            # the same direct APPLIES_TO closure used by grounded-premise
+            # compilation.
+            if anchor_type not in _CLAIM_NODE_TYPES:
+                context_roots[
+                    anchor_id
+                ] = "axis_anchor"
+
+            for edge in _outgoing_edges(
+                self.graph,
+                anchor_id,
+            ):
+                if (
+                    edge["relation"]
+                    != "APPLIES_TO"
+                ):
+                    continue
+
+                target_id = edge[
+                    "target"
+                ]
+
+                self._require_node(
+                    target_id
+                )
+
+                # This remains strictly claim-local: only a direct
+                # APPLIES_TO target of an exact candidate-grounding
+                # anchor is admitted. Whole-paper inheritance remains
+                # forbidden.
+                context_roots[
+                    target_id
+                ] = "axis_direct_claim"
+
+        for root_id in sorted(
+            context_roots
+        ):
+            root_kind = (
+                context_roots[
+                    root_id
+                ]
+            )
+
             self._add_node_fact(
                 accumulator=accumulator,
-                node_id=anchor_id,
+                node_id=root_id,
                 provenance_kind=(
-                    "axis_anchor"
+                    root_kind
                 ),
                 candidate_unit_ids=(
                     candidate_unit_ids
@@ -1285,7 +1341,7 @@ class SERSContextCompiler:
 
             self._add_direct_context_edges(
                 accumulator=accumulator,
-                source_node_id=anchor_id,
+                source_node_id=root_id,
                 provenance_kind=(
                     "axis_structural_edge"
                 ),
