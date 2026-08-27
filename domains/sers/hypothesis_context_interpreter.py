@@ -10,6 +10,7 @@ from domains.sers.hypothesis_context_contracts import (
     HypothesisContextInterpretationCompiler,
     HypothesisContextInterpretationDraft,
     HypothesisContextInterpretationValidationError,
+    expected_hypothesis_context_assertions,
 )
 from domains.sers.hypothesis_context_llm import (
     HypothesisContextBackend,
@@ -65,10 +66,11 @@ class HypothesisContextInterpreterValidationError(
 def _canonicalize_interpretation_draft(
     *,
     draft: HypothesisContextInterpretationDraft,
-    authoritative_hypothesis_id: str,
     source_signatures: list[
         SERSContextSignature
     ],
+    authoritative_hypothesis_id: str | None = None,
+    card: HypothesisCard | None = None,
 ) -> HypothesisContextInterpretationDraft:
     """Canonicalize orchestration/citation noise without semantic repair.
 
@@ -97,6 +99,34 @@ def _canonicalize_interpretation_draft(
     dimension-projected here.
     """
 
+    if (
+        card is None
+        and not str(
+            authoritative_hypothesis_id or ""
+        ).strip()
+    ):
+        raise ValueError(
+            "either card or authoritative_hypothesis_id "
+            "must be supplied"
+        )
+
+    if (
+        card is not None
+        and authoritative_hypothesis_id is not None
+        and authoritative_hypothesis_id
+        != card.hypothesis_id
+    ):
+        raise ValueError(
+            "card hypothesis_id and "
+            "authoritative_hypothesis_id disagree"
+        )
+
+    resolved_hypothesis_id = (
+        card.hypothesis_id
+        if card is not None
+        else str(authoritative_hypothesis_id)
+    )
+
     canonical_signature_ids = sorted({
         signature.signature_id
         for signature in source_signatures
@@ -114,9 +144,78 @@ def _canonicalize_interpretation_draft(
         "intentionally_vary",
     }
 
+    expected_assertions = (
+        expected_hypothesis_context_assertions(
+            card
+        )
+        if card is not None
+        else ()
+    )
+
+    expected_ids_by_shape: dict[
+        tuple[str, str],
+        list[str],
+    ] = {}
+
+    for row in expected_assertions:
+        key = (
+            row["assertion_kind"],
+            row["assertion_text"],
+        )
+
+        expected_ids_by_shape.setdefault(
+            key,
+            [],
+        ).append(
+            row["assertion_id"]
+        )
+
+    consumed_by_shape: dict[
+        tuple[str, str],
+        int,
+    ] = {}
+
     canonical_assertions = []
 
     for assertion in draft.assertions:
+
+        shape = (
+            assertion.assertion_kind,
+            assertion.assertion_text,
+        )
+
+        candidates = (
+            expected_ids_by_shape.get(
+                shape,
+                []
+            )
+        )
+
+        consumed = (
+            consumed_by_shape.get(
+                shape,
+                0,
+            )
+        )
+
+        # Identity-only repair:
+        #
+        # Canonicalize only when the model assertion has an exact
+        # authoritative semantic counterpart.
+        #
+        # If no such counterpart exists, preserve the original ID so
+        # the deterministic compiler continues to fail closed.
+        canonical_assertion_id = (
+            candidates[consumed]
+            if consumed < len(candidates)
+            else assertion.assertion_id
+        )
+
+        if consumed < len(candidates):
+            consumed_by_shape[
+                shape
+            ] = consumed + 1
+
         canonical_mentions = []
 
         for mention_index, mention in enumerate(
@@ -126,7 +225,7 @@ def _canonicalize_interpretation_draft(
                 mention.model_copy(
                     update={
                         "mention_id": (
-                            f"{assertion.assertion_id}:"
+                            f"{canonical_assertion_id}:"
                             f"mention:{mention_index}"
                         ),
                     }
@@ -193,6 +292,8 @@ def _canonicalize_interpretation_draft(
         canonical_assertions.append(
             assertion.model_copy(
                 update={
+                    "assertion_id":
+                        canonical_assertion_id,
                     "mentions":
                         canonical_mentions,
                 }
@@ -202,7 +303,7 @@ def _canonicalize_interpretation_draft(
     return draft.model_copy(
         update={
             "hypothesis_id":
-                authoritative_hypothesis_id,
+                resolved_hypothesis_id,
             "source_signature_ids":
                 canonical_signature_ids,
             "assertions":
@@ -325,8 +426,8 @@ class SERSHypothesisContextInterpreter:
             _canonicalize_interpretation_draft(
                 draft=
                     generation.draft,
-                authoritative_hypothesis_id=
-                    card.hypothesis_id,
+                card=
+                    card,
                 source_signatures=
                     source_signatures,
             )
@@ -402,8 +503,8 @@ class SERSHypothesisContextInterpreter:
                 _canonicalize_interpretation_draft(
                     draft=
                         repair_generation.draft,
-                    authoritative_hypothesis_id=
-                        card.hypothesis_id,
+                    card=
+                        card,
                     source_signatures=
                         source_signatures,
                 )
