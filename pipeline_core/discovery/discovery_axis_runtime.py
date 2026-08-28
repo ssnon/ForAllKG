@@ -16,6 +16,7 @@ from pipeline_core.discovery.discovery_axis_contracts import (
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from pipeline_core.discovery.discovery_axis_context_runtime import (
     AxisContextReviewRecord,
+    AxisContextReviewUnavailableError,
     DiscoveryAxisContextReviewer,
     validate_context_review_shape,
 )
@@ -774,21 +775,48 @@ class DiscoveryAxisSynthesisRuntime:
                     continue
 
             # S1 context review: observational here; G1 owns action policy.
+            #
+            # A domain reviewer may fail closed because the assigned axis
+            # cannot produce domain-valid local scientific context. That is
+            # an axis-local eligibility failure, not a stage-level process
+            # failure; preserve strict reviewer semantics while isolating the
+            # rejected axis.
             if self.context_reviewer is not None:
-                context_review = self._review_context(
-                    dual=dual,
-                    axis=axis,
-                    card=card,
-                    stage=(
-                        "inference_repair"
-                        if inference_repaired
-                        else "fidelity_repair"
-                        if fidelity_repaired
-                        else "initial"
-                    ),
-                    generation_index=generation_index,
-                    history=context_review_history,
+                context_stage = (
+                    "inference_repair"
+                    if inference_repaired
+                    else "fidelity_repair"
+                    if fidelity_repaired
+                    else "initial"
                 )
+                try:
+                    context_review = self._review_context(
+                        dual=dual,
+                        axis=axis,
+                        card=card,
+                        stage=context_stage,
+                        generation_index=generation_index,
+                        history=context_review_history,
+                    )
+                except AxisContextReviewUnavailableError as exc:
+                    attempts.append(
+                        AxisAttemptRecord(
+                            axis_id=axis.axis_id,
+                            stage=context_stage,
+                            generation_index=generation_index,
+                            decision="context_rejected",
+                            hypothesis_id=card.hypothesis_id,
+                            title=card.title,
+                            fidelity_status=fidelity.status,
+                            inference_status=(
+                                inference.status
+                                if inference is not None
+                                else "not_assessed"
+                            ),
+                            repair_reason=str(exc),
+                        )
+                    )
+                    continue
 
             novelty = self._novelty_card(dual, portfolio)
             if novelty.status in self.reject_novelty_statuses and self.max_novelty_repairs:
@@ -900,14 +928,34 @@ class DiscoveryAxisSynthesisRuntime:
                         continue
 
                 if self.context_reviewer is not None:
-                    context_review = self._review_context(
-                        dual=dual,
-                        axis=axis,
-                        card=card,
-                        stage="novelty_repair",
-                        generation_index=generation_index,
-                        history=context_review_history,
-                    )
+                    try:
+                        context_review = self._review_context(
+                            dual=dual,
+                            axis=axis,
+                            card=card,
+                            stage="novelty_repair",
+                            generation_index=generation_index,
+                            history=context_review_history,
+                        )
+                    except AxisContextReviewUnavailableError as exc:
+                        attempts.append(
+                            AxisAttemptRecord(
+                                axis_id=axis.axis_id,
+                                stage="novelty_repair",
+                                generation_index=generation_index,
+                                decision="context_rejected",
+                                hypothesis_id=card.hypothesis_id,
+                                title=card.title,
+                                fidelity_status=fidelity.status,
+                                inference_status=(
+                                    inference.status
+                                    if inference is not None
+                                    else "not_assessed"
+                                ),
+                                repair_reason=str(exc),
+                            )
+                        )
+                        continue
 
                 novelty = self._novelty_card(dual, portfolio)
 

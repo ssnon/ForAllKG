@@ -731,6 +731,1411 @@ def _run_scientific_novelty_action_shadow_chain(
     return action_batch
 
 
+def _run_realization_candidate_chain(
+    *,
+    runner: PipelineRunner,
+    args: argparse.Namespace,
+    slot_index: int,
+    slot_run: Path,
+    dual_context: Path,
+    frozen_axis_plan: Path,
+    domain_profile_id: str,
+    literature_provider_plan_path: Path,
+    context_review_enabled: bool,
+) -> dict[str, object]:
+    """Run one independent realization over an already frozen axis plan.
+
+    This helper deliberately does not perform production winner
+    selection.  It materializes one independent candidate trajectory:
+
+        frozen axis plan
+            -> Alpha4 synthesis
+            -> generic semantic critic
+            -> external novelty
+            -> scientific distinctiveness
+            -> two semantic-distinctiveness passes
+
+    A zero-hypothesis Alpha4 result is a valid realization-level
+    failure and is returned as data rather than terminating the parent
+    best-of-k search.
+
+    The axis plan is never rebuilt here.
+    """
+
+    if slot_index < 0:
+        raise ValueError(
+            "realization slot_index must be non-negative"
+        )
+
+    if not frozen_axis_plan.is_file():
+        raise FileNotFoundError(
+            "Frozen realization-search axis plan missing: "
+            f"{frozen_axis_plan}"
+        )
+
+    slot_run.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    axis_prefix = (
+        slot_run
+        / "hypothesis_axis_a4"
+    )
+
+    axis_portfolio = Path(
+        str(axis_prefix)
+        + ".portfolio.json"
+    )
+
+    axis_plan_copy = Path(
+        str(axis_prefix)
+        + ".axis_plan.json"
+    )
+
+    lineage = Path(
+        str(axis_prefix)
+        + ".lineage.json"
+    )
+
+    axis_inference = Path(
+        str(axis_prefix)
+        + ".inference.json"
+    )
+
+    axis_context = Path(
+        str(axis_prefix)
+        + ".context.json"
+    )
+
+    axis_evidence_diversity = Path(
+        str(axis_prefix)
+        + ".evidence_diversity.json"
+    )
+
+    stage8_expected = [
+        axis_portfolio,
+        axis_plan_copy,
+        lineage,
+        axis_inference,
+        axis_evidence_diversity,
+    ]
+
+    if context_review_enabled:
+        stage8_expected.append(
+            axis_context
+        )
+
+    runner.run_stage(
+        (
+            "[R/Alpha4] Realization "
+            f"{slot_index}: discovery-axis synthesis"
+        ),
+        (
+            "scripts.discovery."
+            "run_discovery_axis_hypothesis_maker"
+        ),
+        [
+            "--dual-context",
+            str(dual_context),
+            *_base_model_args(args),
+            *_mechanism_index_args(args),
+            "--max-axes",
+            str(args.max_axes),
+            "--min-candidate-unit-score",
+            str(
+                args.min_candidate_unit_score
+            ),
+            "--parse-retries",
+            str(
+                args.hypothesis_parse_retries
+            ),
+            "--inference-critic-model",
+            str(args.critic_model),
+            *(
+                [
+                    "--context-critic-model",
+                    str(args.critic_model),
+                ]
+                if context_review_enabled
+                else []
+            ),
+            "--axis-plan-input",
+            str(frozen_axis_plan),
+            "--output-prefix",
+            str(axis_prefix),
+            "--save-prompts",
+        ],
+        expected=stage8_expected,
+    )
+
+    hypothesis_count = (
+        _hypothesis_count(
+            axis_portfolio
+        )
+    )
+
+    result: dict[str, object] = {
+        "slot_index":
+            slot_index,
+
+        "status":
+            (
+                "ALPHA4_EMPTY"
+                if hypothesis_count == 0
+                else "ALPHA4_GENERATED"
+            ),
+
+        "hypothesis_count":
+            hypothesis_count,
+
+        "frozen_axis_plan":
+            str(frozen_axis_plan),
+
+        "materialized_axis_plan":
+            str(axis_plan_copy),
+
+        "portfolio":
+            str(axis_portfolio),
+
+        "lineage":
+            str(lineage),
+
+        "semantic_review":
+            None,
+
+        "external_report":
+            None,
+
+        "external_plan":
+            None,
+
+        "external_prior_art":
+            None,
+
+        "scientific_action_batch":
+            None,
+
+        "reached_two_pass_semantic":
+            False,
+    }
+
+    # A realization may fail closed independently.  Best-of-k
+    # orchestration must still allow the other realization slots to
+    # execute.
+    if hypothesis_count == 0:
+        return result
+
+    semantic_prefix = (
+        slot_run
+        / "semantic_axis_a4"
+    )
+
+    semantic_review = Path(
+        str(semantic_prefix)
+        + ".review.json"
+    )
+
+    runner.run_stage(
+        (
+            "[R/Semantic] Realization "
+            f"{slot_index}: Alpha4 semantic critic"
+        ),
+        (
+            "scripts.discovery."
+            "run_hypothesis_semantic_critic"
+        ),
+        [
+            "--context",
+            str(
+                slot_run.parent.parent
+                / "hypothesis.context.json"
+            ),
+            "--portfolio",
+            str(axis_portfolio),
+            *_base_model_args(
+                args,
+                critic=True,
+            ),
+            "--output-prefix",
+            str(semantic_prefix),
+            "--save-prompt",
+        ],
+        expected=[
+            semantic_review
+        ],
+    )
+
+    external_prefix = (
+        slot_run
+        / "external_novelty_a52"
+    )
+
+    external_report = Path(
+        str(external_prefix)
+        + ".report.json"
+    )
+
+    external_plan = Path(
+        str(external_prefix)
+        + ".claims_queries.json"
+    )
+
+    external_prior = Path(
+        str(external_prefix)
+        + ".prior_art.json"
+    )
+
+    runner.run_stage(
+        (
+            "[R/External] Realization "
+            f"{slot_index}: external novelty"
+        ),
+        (
+            "scripts.discovery."
+            "run_external_novelty"
+        ),
+        [
+            "--portfolio",
+            str(axis_portfolio),
+            "--domain-profile",
+            domain_profile_id,
+            "--lineage",
+            str(lineage),
+            *_base_model_args(
+                args,
+                critic=True,
+            ),
+            "--provider-plan",
+            str(
+                literature_provider_plan_path
+            ),
+            "--results-per-query",
+            str(args.results_per_query),
+            "--output-prefix",
+            str(external_prefix),
+            "--save-prompts",
+        ],
+        expected=[
+            external_report,
+            external_plan,
+            external_prior,
+        ],
+    )
+
+    current_portfolio_id = (
+        _portfolio_id(
+            axis_portfolio
+        )
+    )
+
+    external_source_id = (
+        _external_source_portfolio_id(
+            external_report
+        )
+    )
+
+    if (
+        external_source_id
+        != current_portfolio_id
+    ):
+        raise RuntimeError(
+            "Realization-search external novelty provenance "
+            "mismatch: "
+            f"slot={slot_index}, "
+            f"portfolio={current_portfolio_id}, "
+            f"report_source={external_source_id}"
+        )
+
+    action_batch = (
+        _run_scientific_novelty_action_shadow_chain(
+            runner=runner,
+            args=args,
+            run=slot_run,
+            external_report=external_report,
+            external_plan=external_plan,
+            external_prior=external_prior,
+        )
+    )
+
+    result.update(
+        {
+            "status":
+                "TWO_PASS_SEMANTIC_EVALUATED",
+
+            "semantic_review":
+                str(semantic_review),
+
+            "external_report":
+                str(external_report),
+
+            "external_plan":
+                str(external_plan),
+
+            "external_prior_art":
+                str(external_prior),
+
+            "scientific_action_batch":
+                str(action_batch),
+
+            "reached_two_pass_semantic":
+                True,
+        }
+    )
+
+    return result
+
+
+
+def _write_realization_json(
+    path: Path,
+    value,
+) -> None:
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if hasattr(
+        value,
+        "model_dump",
+    ):
+        value = value.model_dump(
+            mode="json"
+        )
+
+    path.write_text(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _realization_semantic_observations(
+    *,
+    slot_index: int,
+    slot_run: Path,
+):
+    from pipeline_core.discovery.semantic_distinctiveness_contracts import (
+        SemanticDistinctivenessReview,
+    )
+    from pipeline_core.discovery.realization_search_shadow import (
+        RealizationSemanticObservation,
+    )
+
+    paths = sorted(
+        slot_run.glob(
+            "semantic_distinctiveness_a10."
+            "h*.pass_*.shadow.json"
+        )
+    )
+
+    grouped = {}
+
+    for path in paths:
+        review = (
+            SemanticDistinctivenessReview
+            .model_validate_json(
+                path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+
+        grouped.setdefault(
+            review.hypothesis_id,
+            {},
+        )[
+            review.review_pass_index
+        ] = review
+
+    result = {}
+
+    for (
+        hypothesis_id,
+        passes,
+    ) in grouped.items():
+        if (
+            set(
+                passes
+            )
+            != {
+                1,
+                2,
+            }
+        ):
+            raise RuntimeError(
+                "Realization hypothesis requires exactly "
+                "semantic pass 1 and pass 2: "
+                f"slot={slot_index}, "
+                f"hypothesis={hypothesis_id}, "
+                f"passes={sorted(passes)}"
+            )
+
+        first = passes[1]
+        second = passes[2]
+
+        result[
+            hypothesis_id
+        ] = (
+            RealizationSemanticObservation(
+                slot_index=(
+                    slot_index
+                ),
+                hypothesis_id=(
+                    hypothesis_id
+                ),
+                pass_tiers=(
+                    first.overall_tier,
+                    second.overall_tier,
+                ),
+                pass_aggregation_versions=(
+                    first
+                    .overall_tier_aggregation_version,
+
+                    second
+                    .overall_tier_aggregation_version,
+                ),
+                pass_served_models=(
+                    first.served_model,
+                    second.served_model,
+                ),
+                pass_diagnostic_only=(
+                    first.diagnostic_only,
+                    second.diagnostic_only,
+                ),
+                pass_action_policy_applied=(
+                    first.action_policy_applied,
+                    second.action_policy_applied,
+                ),
+                pass_scientific_selection_changed=(
+                    first.scientific_selection_changed,
+                    second.scientific_selection_changed,
+                ),
+            )
+        )
+
+    return result
+
+
+def _materialize_realization_review_artifact(
+    *,
+    artifact_kind: str,
+    output_path: Path,
+    winner_portfolio_id: str,
+    plan,
+    selections_by_axis: dict,
+    slot_paths: dict,
+) -> None:
+    """Rebind already-computed inference/context reviews to winners."""
+
+    payloads = {
+        slot:
+            _load_json(
+                artifact_path
+            )
+        for (
+            slot,
+            artifact_path,
+        ) in slot_paths.items()
+    }
+
+    if not payloads:
+        raise RuntimeError(
+            f"{artifact_kind} materialization received "
+            "zero slot artifacts."
+        )
+
+    template = dict(
+        payloads[
+            min(
+                payloads
+            )
+        ]
+    )
+
+    records = []
+    review_history = []
+
+    for axis in plan.axes:
+        selection = (
+            selections_by_axis[
+                axis.axis_id
+            ]
+        )
+
+        if (
+            selection.status
+            != "WINNER_SELECTED"
+        ):
+            continue
+
+        slot = (
+            selection
+            .winner_slot_index
+        )
+
+        hypothesis_id = (
+            selection
+            .winner_hypothesis_id
+        )
+
+        if (
+            slot is None
+            or not hypothesis_id
+        ):
+            raise RuntimeError(
+                f"{artifact_kind} winner lacks "
+                "slot/hypothesis metadata."
+            )
+
+        payload = payloads[
+            slot
+        ]
+
+        matching_records = [
+            row
+            for row
+            in payload.get(
+                "records",
+                [],
+            )
+            if (
+                str(
+                    row.get(
+                        "final_hypothesis_id"
+                    )
+                )
+                == hypothesis_id
+            )
+        ]
+
+        if (
+            len(
+                matching_records
+            )
+            != 1
+        ):
+            raise RuntimeError(
+                f"Selected {artifact_kind} winner "
+                "requires exactly one final record: "
+                f"axis={axis.axis_id}, "
+                f"slot={slot}, "
+                f"hypothesis={hypothesis_id}, "
+                f"records={len(matching_records)}"
+            )
+
+        records.append(
+            matching_records[0]
+        )
+
+        review_history.extend(
+            row
+            for row
+            in payload.get(
+                "review_history",
+                [],
+            )
+            if (
+                str(
+                    row.get(
+                        "axis_id"
+                    )
+                )
+                == axis.axis_id
+            )
+        )
+
+    template[
+        "portfolio_id"
+    ] = winner_portfolio_id
+
+    template[
+        "records"
+    ] = records
+
+    template[
+        "review_history"
+    ] = review_history
+
+    template[
+        "final_record_count"
+    ] = len(
+        records
+    )
+
+    template[
+        "review_history_count"
+    ] = len(
+        review_history
+    )
+
+    _write_realization_json(
+        output_path,
+        template,
+    )
+
+
+def _run_realization_search_production_stage8(
+    *,
+    runner: PipelineRunner,
+    args: argparse.Namespace,
+    run: Path,
+    dual_context: Path,
+    axis_prefix: Path,
+    axis_portfolio: Path,
+    axis_plan: Path,
+    lineage: Path,
+    axis_inference: Path,
+    axis_context: Path,
+    axis_evidence_diversity: Path,
+    literature_provider_plan_path: Path,
+    domain_profile_id: str,
+    context_review_enabled: bool,
+) -> None:
+    """Production-authoritative width-3 search over one frozen axis plan."""
+
+    from pipeline_core.discovery.discovery_axis_contracts import (
+        DiscoveryAxisPlan,
+        DiscoveryAxisSynthesisReport,
+    )
+    from pipeline_core.discovery.dual_hypothesis_context import (
+        DualHypothesisContext,
+    )
+    from pipeline_core.discovery.hypothesis_contracts import (
+        HypothesisPortfolio,
+    )
+    from pipeline_core.discovery.hypothesis_evidence_diversity import (
+        HypothesisEvidenceDiversityAssessor,
+    )
+    from pipeline_core.discovery.realization_search_shadow import (
+        RealizationSearchPolicy,
+    )
+    from pipeline_core.discovery.realization_search_cohort import (
+        build_axis_realization_cohort,
+    )
+    from pipeline_core.discovery.realization_search_production import (
+        select_axis_realization_production_winner,
+    )
+    from pipeline_core.discovery.realization_search_materialize import (
+        materialize_realization_winners,
+    )
+    from pipeline_core.discovery.realization_search_task_aware import (
+        select_axis_task_aware_production_winner,
+    )
+    from pipeline_core.discovery.question_axis_responsiveness_llm import (
+        OpenRouterQuestionAxisResponsivenessBackend,
+    )
+    from pipeline_core.discovery.question_hypothesis_responsiveness import (
+        evaluate_hypothesis_task_preservation,
+    )
+
+    policy = (
+        RealizationSearchPolicy(
+            search_width=3,
+            retained_hypotheses_per_axis=1,
+        )
+    )
+
+    dual = (
+        DualHypothesisContext
+        .model_validate_json(
+            dual_context.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    task_responsiveness_backend = (
+        OpenRouterQuestionAxisResponsivenessBackend(
+            model=args.critic_model,
+            temperature=0.0,
+            reasoning_effort="medium",
+            telemetry_context={
+                "stage":
+                    (
+                        "realization_search_"
+                        "task_preservation"
+                    ),
+            },
+        )
+    )
+
+    # --------------------------------------------------------------
+    # A. Freeze one discovery-axis plan.
+    # --------------------------------------------------------------
+
+    runner.run_stage(
+        (
+            "[8R-plan/13] Freeze discovery-axis plan "
+            "for realization search"
+        ),
+        (
+            "scripts.discovery."
+            "run_discovery_axis_hypothesis_maker"
+        ),
+        [
+            "--dual-context",
+            str(
+                dual_context
+            ),
+            "--max-axes",
+            str(
+                args.max_axes
+            ),
+            "--min-candidate-unit-score",
+            str(
+                args.min_candidate_unit_score
+            ),
+            "--output-prefix",
+            str(
+                axis_prefix
+            ),
+            "--dry-run-plan",
+        ],
+        expected=[
+            axis_plan
+        ],
+    )
+
+    plan = (
+        DiscoveryAxisPlan
+        .model_validate_json(
+            axis_plan.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    if not plan.axes:
+        raise RuntimeError(
+            "Production realization search received "
+            "zero frozen discovery axes."
+        )
+
+    # --------------------------------------------------------------
+    # B. Run R0 / R1 / R2 independently on that exact plan.
+    # --------------------------------------------------------------
+
+    realization_root = (
+        run
+        / "realization_search"
+    )
+
+    slot_portfolios = {}
+    slot_lineages = {}
+    slot_payloads = []
+
+    slot_inference_paths = {}
+    slot_context_paths = {}
+
+    task_assessments_by_slot_hypothesis = {}
+
+    for slot_index in range(
+        policy.search_width
+    ):
+        slot_run = (
+            realization_root
+            / f"slot_{slot_index}"
+        )
+
+        result = (
+            _run_realization_candidate_chain(
+                runner=runner,
+                args=args,
+                slot_index=(
+                    slot_index
+                ),
+                slot_run=(
+                    slot_run
+                ),
+                dual_context=(
+                    dual_context
+                ),
+                frozen_axis_plan=(
+                    axis_plan
+                ),
+                domain_profile_id=(
+                    domain_profile_id
+                ),
+                literature_provider_plan_path=(
+                    literature_provider_plan_path
+                ),
+                context_review_enabled=(
+                    context_review_enabled
+                ),
+            )
+        )
+
+        portfolio_path = Path(
+            str(
+                result[
+                    "portfolio"
+                ]
+            )
+        )
+
+        lineage_path = Path(
+            str(
+                result[
+                    "lineage"
+                ]
+            )
+        )
+
+        portfolio = (
+            HypothesisPortfolio
+            .model_validate_json(
+                portfolio_path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+
+        lineage_report = (
+            DiscoveryAxisSynthesisReport
+            .model_validate_json(
+                lineage_path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+
+        slot_portfolios[
+            slot_index
+        ] = portfolio
+
+        slot_lineages[
+            slot_index
+        ] = lineage_report
+
+        task_artifact_rows = []
+
+        for card in (
+            portfolio.hypotheses
+        ):
+            debug_prefix = str(
+                slot_run
+                / (
+                    "question_task_preservation."
+                    + card.hypothesis_id.split(":")[-1]
+                )
+            )
+
+            (
+                task_assessment,
+                _task_stability,
+            ) = (
+                evaluate_hypothesis_task_preservation(
+                    question=(
+                        dual
+                        .grounded_context
+                        .question
+                    ),
+                    hypothesis=card,
+                    backend=(
+                        task_responsiveness_backend
+                    ),
+                    debug_path_prefix=(
+                        debug_prefix
+                    ),
+                )
+            )
+
+            task_key = (
+                slot_index,
+                card.hypothesis_id,
+            )
+
+            if (
+                task_key
+                in task_assessments_by_slot_hypothesis
+            ):
+                raise RuntimeError(
+                    "Duplicate realization task-assessment key"
+                )
+
+            task_assessments_by_slot_hypothesis[
+                task_key
+            ] = task_assessment
+
+            task_artifact_rows.append(
+                {
+                    "slot_index":
+                        slot_index,
+
+                    "hypothesis_id":
+                        card.hypothesis_id,
+
+                    "task_class":
+                        task_assessment.task_class,
+
+                    "decision_stable":
+                        task_assessment.decision_stable,
+
+                    "source_decision_stable":
+                        (
+                            task_assessment
+                            .source_decision_stable
+                        ),
+
+                    "quality_eligible":
+                        task_assessment.quality_eligible,
+
+                    "winner_ranking_eligible":
+                        (
+                            task_assessment.quality_eligible
+                            and
+                            task_assessment.decision_stable
+                            and
+                            task_assessment.task_class
+                            in {
+                                "DIRECT",
+                                "SUBORDINATE",
+                            }
+                        ),
+                }
+            )
+
+        _write_realization_json(
+            (
+                slot_run
+                / (
+                    "question_task_preservation."
+                    "realization.json"
+                )
+            ),
+            {
+                "schema_version":
+                    (
+                        "realization-task-"
+                        "preservation-audit-v1"
+                    ),
+
+                "slot_index":
+                    slot_index,
+
+                "question":
+                    (
+                        dual
+                        .grounded_context
+                        .question
+                    ),
+
+                "records":
+                    task_artifact_rows,
+
+                "production_winner_eligibility":
+                    True,
+
+                "semantic_evaluation_removed":
+                    False,
+            },
+        )
+
+        hypothesis_by_axis = {
+            row.axis_id:
+                row.hypothesis_id
+            for row
+            in lineage_report.lineages
+        }
+
+        if (
+            len(
+                hypothesis_by_axis
+            )
+            != len(
+                lineage_report.lineages
+            )
+        ):
+            raise RuntimeError(
+                "A realization produced multiple accepted "
+                "hypotheses for the same frozen axis."
+            )
+
+        semantic_by_hypothesis = {}
+
+        if bool(
+            result[
+                "reached_two_pass_semantic"
+            ]
+        ):
+            semantic_by_hypothesis = (
+                _realization_semantic_observations(
+                    slot_index=(
+                        slot_index
+                    ),
+                    slot_run=(
+                        slot_run
+                    ),
+                )
+            )
+
+            expected_ids = {
+                card.hypothesis_id
+                for card
+                in portfolio.hypotheses
+            }
+
+            if (
+                set(
+                    semantic_by_hypothesis
+                )
+                != expected_ids
+            ):
+                raise RuntimeError(
+                    "Realization semantic observation IDs "
+                    "do not match its Alpha4 portfolio: "
+                    f"slot={slot_index}"
+                )
+
+        slot_payloads.append(
+            {
+                "slot_index":
+                    slot_index,
+
+                "alpha4_empty":
+                    (
+                        len(
+                            portfolio.hypotheses
+                        )
+                        == 0
+                    ),
+
+                "hypothesis_by_axis":
+                    hypothesis_by_axis,
+
+                "semantic_by_hypothesis":
+                    semantic_by_hypothesis,
+            }
+        )
+
+        inference_path = (
+            slot_run
+            / "hypothesis_axis_a4.inference.json"
+        )
+
+        if not (
+            inference_path.is_file()
+        ):
+            raise RuntimeError(
+                "Realization missing inference artifact: "
+                f"slot={slot_index}"
+            )
+
+        slot_inference_paths[
+            slot_index
+        ] = inference_path
+
+        if context_review_enabled:
+            context_path = (
+                slot_run
+                / "hypothesis_axis_a4.context.json"
+            )
+
+            if not (
+                context_path.is_file()
+            ):
+                raise RuntimeError(
+                    "Context-capable realization missing "
+                    "context artifact: "
+                    f"slot={slot_index}"
+                )
+
+            slot_context_paths[
+                slot_index
+            ] = context_path
+
+    # --------------------------------------------------------------
+    # C. Axis-wise cohort and production selection.
+    # --------------------------------------------------------------
+
+    cohort_report = (
+        build_axis_realization_cohort(
+            axis_ids=[
+                axis.axis_id
+                for axis
+                in plan.axes
+            ],
+            search_width=(
+                policy.search_width
+            ),
+            slot_payloads=(
+                slot_payloads
+            ),
+        )
+    )
+
+    task_selection_by_axis = {
+        axis_cohort.axis_id:
+            (
+                select_axis_task_aware_production_winner(
+                    axis_cohort,
+                    task_assessments_by_slot_hypothesis=(
+                        task_assessments_by_slot_hypothesis
+                    ),
+                    policy=policy,
+                )
+            )
+        for axis_cohort
+        in cohort_report.axes
+    }
+
+    selections_by_axis = {
+        axis_id:
+            report.selection
+        for (
+            axis_id,
+            report,
+        ) in task_selection_by_axis.items()
+    }
+
+    # --------------------------------------------------------------
+    # D. Materialize production-authoritative winners.
+    # --------------------------------------------------------------
+
+    materialized = (
+        materialize_realization_winners(
+            plan=plan,
+            slot_portfolios=(
+                slot_portfolios
+            ),
+            slot_lineage_reports=(
+                slot_lineages
+            ),
+            cohort_report=(
+                cohort_report
+            ),
+            selections_by_axis=(
+                selections_by_axis
+            ),
+        )
+    )
+
+    _write_realization_json(
+        axis_portfolio,
+        materialized.portfolio,
+    )
+
+    _write_realization_json(
+        lineage,
+        materialized.lineage_report,
+    )
+
+    # --------------------------------------------------------------
+    # E. Preserve canonical Stage-8 reviewer contracts.
+    # --------------------------------------------------------------
+
+    _materialize_realization_review_artifact(
+        artifact_kind="inference",
+        output_path=(
+            axis_inference
+        ),
+        winner_portfolio_id=(
+            materialized
+            .portfolio
+            .portfolio_id
+        ),
+        plan=plan,
+        selections_by_axis=(
+            selections_by_axis
+        ),
+        slot_paths=(
+            slot_inference_paths
+        ),
+    )
+
+    if context_review_enabled:
+        _materialize_realization_review_artifact(
+            artifact_kind="context",
+            output_path=(
+                axis_context
+            ),
+            winner_portfolio_id=(
+                materialized
+                .portfolio
+                .portfolio_id
+            ),
+            plan=plan,
+            selections_by_axis=(
+                selections_by_axis
+            ),
+            slot_paths=(
+                slot_context_paths
+            ),
+        )
+
+    # --------------------------------------------------------------
+    # F. Recompute evidence diversity on winner portfolio.
+    # --------------------------------------------------------------
+
+    dual = (
+        DualHypothesisContext
+        .model_validate_json(
+            dual_context.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    winner_diversity = (
+        HypothesisEvidenceDiversityAssessor()
+        .assess(
+            dual.grounded_context,
+            materialized.portfolio,
+        )
+    )
+
+    _write_realization_json(
+        axis_evidence_diversity,
+        winner_diversity,
+    )
+
+    # --------------------------------------------------------------
+    # G. Durable selection artifacts.
+    # --------------------------------------------------------------
+
+    cohort_path = (
+        run
+        / "realization_search.cohort.production.json"
+    )
+
+    selection_path = (
+        run
+        / "realization_search.selection.production.json"
+    )
+
+    materialization_path = (
+        run
+        / "realization_search.materialization.production.json"
+    )
+
+    _write_realization_json(
+        cohort_path,
+        cohort_report,
+    )
+
+    _write_realization_json(
+        selection_path,
+        {
+            "schema_version":
+                (
+                    "realization-search-"
+                    "production-selections-v1"
+                ),
+
+            "search_width":
+                policy.search_width,
+
+            "selections":
+                [
+                    {
+                        "axis_id":
+                            axis.axis_id,
+
+                        "selection":
+                            selections_by_axis[
+                                axis.axis_id
+                            ].model_dump(
+                                mode="json"
+                            ),
+
+                        "task_aware_selection":
+                            task_selection_by_axis[
+                                axis.axis_id
+                            ].model_dump(
+                                mode="json"
+                            ),
+                    }
+                    for axis
+                    in plan.axes
+                ],
+
+            "production_selection_applied":
+                True,
+
+            "production_selection_changed":
+                True,
+        },
+    )
+
+    _write_realization_json(
+        materialization_path,
+        materialized.report,
+    )
+
+    runner.manifest[
+        "realization_search"
+    ] = {
+        "status":
+            "production_enforced",
+
+        "search_width":
+            policy.search_width,
+
+        "retained_hypotheses_per_axis":
+            policy.retained_hypotheses_per_axis,
+
+        "frozen_axis_plan":
+            str(
+                axis_plan
+            ),
+
+        "cohort_artifact":
+            str(
+                cohort_path
+            ),
+
+        "selection_artifact":
+            str(
+                selection_path
+            ),
+
+        "materialization_artifact":
+            str(
+                materialization_path
+            ),
+
+        "materialized_winner_count":
+            (
+                materialized
+                .report
+                .materialized_winner_count
+            ),
+
+        "production_selection_applied":
+            True,
+
+        "task_preservation_before_winner_ranking":
+            True,
+
+        "task_eligible_classes":
+            [
+                "DIRECT",
+                "SUBORDINATE",
+            ],
+
+        "task_ineligible_classes":
+            [
+                "TASK_REPLACING",
+                "UNRESOLVED",
+            ],
+
+        "semantic_evaluation_preserved_for_task_ineligible":
+            True,
+
+        "production_selection_changed":
+            True,
+    }
+
+    runner._save_manifest()
+
+
 def run_pipeline(args: argparse.Namespace) -> int:
     runner = PipelineRunner(args)
     runner.prepare()
@@ -1242,31 +2647,52 @@ def run_pipeline(args: argparse.Namespace) -> int:
             axis_context
         )
 
-    runner.run_stage(
-        "[8/13] Discovery-axis hypothesis synthesis",
-        "scripts.discovery.run_discovery_axis_hypothesis_maker",
-        [
-            "--dual-context", str(dual_context),
-            *_base_model_args(args),
-            *_mechanism_index_args(args),
-            "--max-axes", str(args.max_axes),
-            "--min-candidate-unit-score",
-            str(args.min_candidate_unit_score),
-            "--parse-retries", str(args.hypothesis_parse_retries),
-            "--inference-critic-model", str(args.critic_model),
-            *(
-                [
-                    "--context-critic-model",
-                    str(args.critic_model),
-                ]
-                if context_review_adapter is not None
-                else []
+    if args.realization_search_enforce:
+        _run_realization_search_production_stage8(
+            runner=runner,
+            args=args,
+            run=run,
+            dual_context=dual_context,
+            axis_prefix=axis_prefix,
+            axis_portfolio=axis_portfolio,
+            axis_plan=axis_plan,
+            lineage=lineage,
+            axis_inference=axis_inference,
+            axis_context=axis_context,
+            axis_evidence_diversity=axis_evidence_diversity,
+            literature_provider_plan_path=literature_provider_plan_path,
+            domain_profile_id=domain_profile.profile_id,
+            context_review_enabled=(
+                context_review_adapter
+                is not None
             ),
-            "--output-prefix", str(axis_prefix),
-            "--save-prompts",
-        ],
-        expected=stage8_expected,
-    )
+        )
+    else:
+        runner.run_stage(
+            "[8/13] Discovery-axis hypothesis synthesis",
+            "scripts.discovery.run_discovery_axis_hypothesis_maker",
+            [
+                "--dual-context", str(dual_context),
+                *_base_model_args(args),
+                *_mechanism_index_args(args),
+                "--max-axes", str(args.max_axes),
+                "--min-candidate-unit-score",
+                str(args.min_candidate_unit_score),
+                "--parse-retries", str(args.hypothesis_parse_retries),
+                "--inference-critic-model", str(args.critic_model),
+                *(
+                    [
+                        "--context-critic-model",
+                        str(args.critic_model),
+                    ]
+                    if context_review_adapter is not None
+                    else []
+                ),
+                "--output-prefix", str(axis_prefix),
+                "--save-prompts",
+            ],
+            expected=stage8_expected,
+        )
 
     initial_hypotheses = _hypothesis_count(
         axis_portfolio
@@ -1816,6 +3242,13 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 if args.question_task_preservation_enforce
                 else []
             ),
+            *(
+                [
+                    "--post-generation-scientific-novelty-enforce",
+                ]
+                if args.post_generation_scientific_novelty_enforce
+                else []
+            ),
             *_mechanism_index_args(args),
             "--model", args.model,
             "--critic-model", args.critic_model,
@@ -1994,6 +3427,16 @@ def parse_args() -> argparse.Namespace:
         ),
     )
 
+    parser.add_argument(
+        "--post-generation-scientific-novelty-enforce",
+        action="store_true",
+        help=(
+            "Require Alpha6-generated candidates to pass the frozen "
+            "post-generation scientific/semantic novelty action policy "
+            "before final acceptance."
+        ),
+    )
+
     parser.add_argument("--objective", default="explain_connection")
     parser.add_argument(
         "--title",
@@ -2068,6 +3511,18 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Delete the specified run directory before starting. Without this flag, "
             "the runner refuses non-empty directories to prevent stale-artifact mixing."
+        ),
+    )
+    parser.add_argument(
+        "--realization-search-enforce",
+        action="store_true",
+        help=(
+            "Production-authoritative width-3 realization search. "
+            "Freeze one discovery-axis plan, generate three independent "
+            "realizations per axis, evaluate each through external prior-art "
+            "and two-pass semantic distinctiveness, retain the best stable "
+            "determinate realization per axis, then continue downstream "
+            "from the materialized winner portfolio."
         ),
     )
     args = parser.parse_args()

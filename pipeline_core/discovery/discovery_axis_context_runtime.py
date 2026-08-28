@@ -18,6 +18,10 @@ AxisContextReviewStatus = Literal[
 ]
 
 
+class AxisContextReviewUnavailableError(RuntimeError):
+    """A domain reviewer cannot produce a valid review for one axis."""
+
+
 class DiscoveryAxisContextReviewer(Protocol):
     """Optional domain-aware scientific-context review capability.
 

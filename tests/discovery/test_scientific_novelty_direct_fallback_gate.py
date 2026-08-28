@@ -42,9 +42,13 @@ def test_all_direct_kept_original_paths_are_gate_aware():
         == 10
     )
 
+    # This test owns only the two original-fallback bypass closures.
+    # Post-generation scientific novelty adds additional legitimate
+    # scientific_novelty_rejected paths, so a global decision count is
+    # no longer a valid invariant.
     assert (
         text.count(
-            'decision="scientific_novelty_rejected"'
+            "scientific_novelty_gate_blocked_original_fallback"
         )
         == 2
     )

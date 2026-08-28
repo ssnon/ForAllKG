@@ -47,6 +47,8 @@ Epistemic rules:
 6. Never claim novelty, priority, first report, or literature-wide absence.
 7. Return exactly ONE hypothesis, or abstain if a grounded refinement is not possible.
 
+8. For every falsification criterion, its observable MUST copy verbatim one observable from predicted_observations. Put the contrary or falsifying result in falsifying_outcome; do NOT create, rename, paraphrase, or specialize the observable in the falsifier.
+
 A useful refinement introduces a more precise moderator, mediator, conditional dependency, pathway competition, descriptor interaction, or distinctive prediction while staying supported by the same grounded premises.
 """
         reviews = []

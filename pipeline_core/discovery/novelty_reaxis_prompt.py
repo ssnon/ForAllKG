@@ -120,6 +120,8 @@ Rules specific to this re-axis:
 9. Do not claim novelty or literature-wide absence.
 10. Return exactly ONE fresh hypothesis or abstain.
 
+11. For every falsification criterion, its observable MUST copy verbatim one observable from predicted_observations. Put the contrary or falsifying result in falsifying_outcome; do NOT create, rename, paraphrase, or specialize the observable in the falsifier.
+
 The new hypothesis must be grounded because its positive evidence comes from
 the supplied context; the inferential relation itself remains a hypothesis.
 """

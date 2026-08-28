@@ -37,6 +37,7 @@ AxisAttemptDecision = Literal[
     "validation_rejected",
     "fidelity_rejected",
     "inference_rejected",
+    "context_rejected",
     "novelty_rejected",
 ]
 

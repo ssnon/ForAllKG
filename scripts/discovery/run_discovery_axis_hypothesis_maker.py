@@ -14,7 +14,10 @@ from domains.context_review_registry import (
 )
 
 from pipeline_core.discovery.discovery_axis_planner import DiscoveryAxisPlanner
-from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlannerPolicy
+from pipeline_core.discovery.discovery_axis_contracts import (
+    DiscoveryAxisPlan,
+    DiscoveryAxisPlannerPolicy,
+)
 from pipeline_core.discovery.discovery_axis_runtime import DiscoveryAxisSynthesisRuntime
 from pipeline_core.discovery.discovery_axis_inference_critic import (
     DiscoveryAxisInferenceCritic,
@@ -236,10 +239,101 @@ def parse_args() -> argparse.Namespace:
         ),
     )
 
+    parser.add_argument(
+        "--axis-plan-input",
+        type=Path,
+        default=None,
+        help=(
+            "Reuse an existing DiscoveryAxisPlan instead of rebuilding "
+            "the plan from the dual context. This is intended for "
+            "independent realization search over the exact same frozen "
+            "discovery axes."
+        ),
+    )
     parser.add_argument("--output-prefix", type=Path, required=True)
     parser.add_argument("--save-prompts", action="store_true")
     parser.add_argument("--dry-run-plan", action="store_true")
     return parser.parse_args()
+
+
+def _resolve_axis_plan(
+    *,
+    args,
+    dual: DualHypothesisContext,
+) -> tuple[DiscoveryAxisPlan, str]:
+    """Build or reuse the exact discovery-axis plan.
+
+    Realization search must vary hypothesis realization while keeping
+    the discovery-axis search space fixed.  When ``--axis-plan-input``
+    is supplied, the plan is loaded verbatim and its dual-context
+    provenance must match the active dual context.
+    """
+
+    if args.axis_plan_input is not None:
+        plan_path = Path(
+            args.axis_plan_input
+        )
+
+        if not plan_path.is_file():
+            raise FileNotFoundError(
+                "Frozen discovery-axis plan does not exist: "
+                f"{plan_path}"
+            )
+
+        plan = (
+            DiscoveryAxisPlan
+            .model_validate_json(
+                plan_path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+
+        if (
+            plan.source_dual_context_id
+            != dual.dual_context_id
+        ):
+            raise ValueError(
+                "Frozen discovery-axis plan dual_context_id mismatch: "
+                f"plan={plan.source_dual_context_id}, "
+                f"dual={dual.dual_context_id}"
+            )
+
+        if (
+            plan.source_dual_context_sha256
+            != dual.dual_context_sha256
+        ):
+            raise ValueError(
+                "Frozen discovery-axis plan dual_context_sha256 mismatch"
+            )
+
+        return (
+            plan,
+            "reused_frozen_plan",
+        )
+
+    planner = DiscoveryAxisPlanner(
+        DiscoveryAxisPlannerPolicy(
+            max_axes=args.max_axes,
+            require_candidate_unit=(
+                not args.allow_non_candidate_axes
+            ),
+            min_exploration_score=(
+                args.min_exploration_score
+            ),
+            min_candidate_unit_score=(
+                args.min_candidate_unit_score
+            ),
+            max_reaction_domain_switch_penalty=(
+                args.max_reaction_switch_penalty
+            ),
+        )
+    )
+
+    return (
+        planner.build(dual),
+        "planned_from_dual",
+    )
 
 
 def main() -> int:
@@ -272,20 +366,19 @@ def main() -> int:
             len(family_hierarchy.groups),
         )
 
-    planner = DiscoveryAxisPlanner(
-        DiscoveryAxisPlannerPolicy(
-            max_axes=args.max_axes,
-            require_candidate_unit=not args.allow_non_candidate_axes,
-            min_exploration_score=args.min_exploration_score,
-            min_candidate_unit_score=args.min_candidate_unit_score,
-            max_reaction_domain_switch_penalty=args.max_reaction_switch_penalty,
-        )
+    plan, plan_mode = _resolve_axis_plan(
+        args=args,
+        dual=dual,
     )
-    plan = planner.build(dual)
-    plan_path = Path(str(args.output_prefix) + ".axis_plan.json")
+
+    plan_path = Path(
+        str(args.output_prefix)
+        + ".axis_plan.json"
+    )
     _write_json(plan_path, plan)
 
-    print("DiscoveryAxisPlan built")
+    print("DiscoveryAxisPlan ready")
+    print("Plan mode:", plan_mode)
     print("Plan ID:", plan.plan_id)
     print("Axes:", len(plan.axes))
     for axis in plan.axes:

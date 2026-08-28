@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 
+from pipeline_core.discovery.semantic_distinctiveness_llm import OpenRouterSemanticDistinctivenessBackend
 from pipeline_core.discovery.question_axis_responsiveness_llm import (
     OpenRouterQuestionAxisResponsivenessBackend,
 )
@@ -83,6 +84,15 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Require stable Question-to-fresh-reaxis task preservation "
             "before Alpha6 may accept a fresh-context re-axis."
+        ),
+    )
+    p.add_argument(
+        "--post-generation-scientific-novelty-enforce",
+        action="store_true",
+        help=(
+            "Run authoritative two-pass semantic scientific novelty "
+            "assessment over each fresh Alpha6 candidate before final "
+            "acceptance."
         ),
     )
     p.add_argument("--model", default=os.getenv("OPENROUTER_AGENT_MODEL"))
@@ -283,6 +293,36 @@ def main() -> int:
         else None
     )
 
+    post_generation_scientific_novelty_model = (
+        args.critic_model
+        or args.model
+    )
+
+    if (
+        args.post_generation_scientific_novelty_enforce
+        and not post_generation_scientific_novelty_model
+    ):
+        raise RuntimeError(
+            "--post-generation-scientific-novelty-enforce "
+            "requires --critic-model or --model"
+        )
+
+    post_generation_scientific_novelty_backend = (
+        OpenRouterSemanticDistinctivenessBackend(
+            model=post_generation_scientific_novelty_model,
+            temperature=0.0,
+            reasoning_effort="medium",
+            telemetry_context={
+                "stage":
+                    "alpha6_post_generation_scientific_novelty",
+                "production_authority":
+                    True,
+            },
+        )
+        if args.post_generation_scientific_novelty_enforce
+        else None
+    )
+
     runtime = TargetedNoveltyRefinementRuntime(
         hypothesis_backend=hypothesis_backend,
         external_assessor=external_assessor,
@@ -291,6 +331,9 @@ def main() -> int:
         gap_analyzer=gap_analyzer,
         task_responsiveness_backend=(
             task_responsiveness_backend
+        ),
+        post_generation_scientific_novelty_backend=(
+            post_generation_scientific_novelty_backend
         ),
     )
     outcome = runtime.run(

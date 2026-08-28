@@ -7,6 +7,7 @@ from domains.sers.context_comparator import (
     SERSHypothesisContextComparator,
 )
 from domains.sers.context_compiler import (
+    SERSContextCompilationError,
     SERSContextCompiler,
 )
 from domains.sers.hypothesis_context_interpreter import (
@@ -17,6 +18,9 @@ from domains.sers.hypothesis_context_llm import (
 )
 from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxis,
+)
+from pipeline_core.discovery.discovery_axis_context_runtime import (
+    AxisContextReviewUnavailableError,
 )
 from pipeline_core.discovery.dual_hypothesis_context import (
     DualHypothesisContext,
@@ -282,11 +286,22 @@ class SERSDiscoveryAxisContextReviewer:
         # Inspiration remains inspiration-only. It is compiled separately
         # from positive-premise context and appended as exactly one axis
         # signature.
-        source_signatures.append(
-            self.axis_compiler
-            .compile_axis_inspiration(
-                inspiration
+        try:
+            axis_signature = (
+                self.axis_compiler
+                .compile_axis_inspiration(
+                    inspiration
+                )
             )
+        except SERSContextCompilationError as exc:
+            raise AxisContextReviewUnavailableError(
+                "assigned discovery inspiration cannot produce "
+                "claim-local SERS scientific context: "
+                f"{axis.inspiration_id}: {exc}"
+            ) from exc
+
+        source_signatures.append(
+            axis_signature
         )
 
         interpretation_outcome = (

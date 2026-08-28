@@ -126,6 +126,19 @@ class RefinementAttempt(StrictModel):
     final_external_status: ExternalNoveltyStatus | None = None
     axis_fidelity_status: str | None = None
     internal_novelty_status: str | None = None
+
+    # Observability only. These fields record an already-computed
+    # authoritative post-generation scientific novelty assessment.
+    # None means that this attempt never reached that assessment.
+    post_generation_semantic_pass_1: str | None = None
+    post_generation_semantic_pass_2: str | None = None
+    post_generation_semantic_stable: bool | None = None
+    post_generation_scientific_action: str | None = None
+    post_generation_selection_class: str | None = None
+    post_generation_scientific_reason_codes: list[str] = Field(
+        default_factory=list
+    )
+
     grounding_preserved: bool = False
     refinement_generated: bool = False
     generation_mode: GenerationMode = "none"

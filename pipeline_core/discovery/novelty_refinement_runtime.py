@@ -40,6 +40,9 @@ from pipeline_core.discovery.novelty_refinement_contracts import (
     TargetedSearchRecord,
 )
 from pipeline_core.discovery.novelty_refinement_prompt import NoveltyRefinementPromptAssembler
+from pipeline_core.discovery.post_generation_scientific_novelty import (
+    evaluate_post_generation_scientific_novelty,
+)
 from pipeline_core.discovery.novelty_reaxis_prompt import (
     FreshNoveltyReaxisPromptAssembler,
 )
@@ -100,6 +103,36 @@ class PerHypothesisExternalArtifacts:
     query_plan: LiteratureQueryPlan
     prior_art: PriorArtPacket
     report: ExternalNoveltyReport
+
+
+def _post_generation_novelty_observability(
+    assessment: Any,
+) -> dict[str, Any]:
+    """Serialize an already-computed post-generation novelty assessment.
+
+    This function is observability-only. It must not make or alter any
+    scientific selection decision.
+    """
+    pass_1 = assessment.semantic_pass_1.overall_tier
+    pass_2 = assessment.semantic_pass_2.overall_tier
+    decision = assessment.action_decision
+
+    return {
+        "post_generation_semantic_pass_1":
+            pass_1,
+        "post_generation_semantic_pass_2":
+            pass_2,
+        "post_generation_semantic_stable":
+            pass_1 == pass_2,
+        "post_generation_scientific_action":
+            decision.action,
+        "post_generation_selection_class":
+            decision.selection_class,
+        "post_generation_scientific_reason_codes":
+            list(
+                decision.reason_codes
+            ),
+    }
 
 
 @dataclass(frozen=True)
@@ -173,6 +206,7 @@ class TargetedNoveltyRefinementRuntime:
             HypothesisResponsivenessBackendProtocol
             | None
         ) = None,
+        post_generation_scientific_novelty_backend: Any | None = None,
     ) -> None:
         self.hypothesis_backend = hypothesis_backend
         self.external_assessor = external_assessor
@@ -184,6 +218,9 @@ class TargetedNoveltyRefinementRuntime:
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
         self.internal_assessor = internal_assessor or InternalNoveltyAssessor()
         self.task_responsiveness_backend = task_responsiveness_backend
+        self.post_generation_scientific_novelty_backend = (
+            post_generation_scientific_novelty_backend
+        )
 
     def _compile_one(
         self,
@@ -634,6 +671,11 @@ class TargetedNoveltyRefinementRuntime:
         search_records: list[TargetedSearchRecord] = []
         targeted_artifacts: list[PerHypothesisExternalArtifacts] = []
         final_external_artifacts: list[PerHypothesisExternalArtifacts] = []
+
+        post_generation_observability_by_candidate_id: dict[
+            str,
+            dict[str, Any],
+        ] = {}
 
         for index, gap in enumerate(gap_plan.gaps, start=1):
             original = cards[gap.hypothesis_id]
@@ -1109,6 +1151,55 @@ class TargetedNoveltyRefinementRuntime:
                                         )
                                     )
 
+                                reaxis_post_generation_scientific_assessment = None
+
+                                if (
+                                    self.post_generation_scientific_novelty_backend
+                                    is not None
+                                    and reaxis_final_card.status
+                                    not in self.REAXIS_REJECT_EXTERNAL
+                                    and (
+                                        reaxis_task_assessment is None
+                                        or reaxis_task_assessment.task_class
+                                        in {
+                                            "DIRECT",
+                                            "SUBORDINATE",
+                                        }
+                                    )
+                                ):
+                                    reaxis_post_generation_scientific_assessment = (
+                                        evaluate_post_generation_scientific_novelty(
+                                            hypothesis_id=(
+                                                reaxis_card.hypothesis_id
+                                            ),
+                                            report=(
+                                                reaxis_fresh_external.report
+                                            ),
+                                            plan=(
+                                                reaxis_fresh_external.query_plan
+                                            ),
+                                            packet=(
+                                                reaxis_fresh_external.prior_art
+                                            ),
+                                            backend=(
+                                                self
+                                                .post_generation_scientific_novelty_backend
+                                            ),
+                                        )
+                                    )
+
+                                if (
+                                    reaxis_post_generation_scientific_assessment
+                                    is not None
+                                ):
+                                    post_generation_observability_by_candidate_id[
+                                        reaxis_card.hypothesis_id
+                                    ] = (
+                                        _post_generation_novelty_observability(
+                                            reaxis_post_generation_scientific_assessment
+                                        )
+                                    )
+
                                 if (
                                     reaxis_final_card.status
                                     in self.REAXIS_REJECT_EXTERNAL
@@ -1162,6 +1253,50 @@ class TargetedNoveltyRefinementRuntime:
                                         "preserve the original question. "
                                         "Task class: "
                                         + reaxis_task_assessment.task_class
+                                        + "."
+                                    )
+
+                                elif (
+                                    reaxis_post_generation_scientific_assessment
+                                    is not None
+                                    and
+                                    reaxis_post_generation_scientific_assessment
+                                    .action_decision.selection_class
+                                    == "INELIGIBLE"
+                                ):
+                                    reaxis_failure_decision = (
+                                        "scientific_novelty_rejected"
+                                    )
+
+                                    reaxis_reason_codes.extend(
+                                        [
+                                            (
+                                                "post_generation_scientific_"
+                                                "novelty_gate_rejected"
+                                            ),
+                                            *(
+                                                reaxis_post_generation_scientific_assessment
+                                                .action_decision.reason_codes
+                                            ),
+                                        ]
+                                    )
+
+                                    reaxis_failure_interpretation = (
+                                        "Fresh-context re-axis was rejected "
+                                        "by authoritative post-generation "
+                                        "scientific novelty assessment. "
+                                        "Action: "
+                                        + reaxis_post_generation_scientific_assessment
+                                        .action_decision.action
+                                        + "; selection class: "
+                                        + reaxis_post_generation_scientific_assessment
+                                        .action_decision.selection_class
+                                        + "; semantic tiers: "
+                                        + reaxis_post_generation_scientific_assessment
+                                        .semantic_pass_1.overall_tier
+                                        + "/"
+                                        + reaxis_post_generation_scientific_assessment
+                                        .semantic_pass_2.overall_tier
                                         + "."
                                     )
 
@@ -1538,6 +1673,104 @@ class TargetedNoveltyRefinementRuntime:
                     )
                 continue
 
+            refined_post_generation_scientific_assessment = None
+
+            if (
+                self.post_generation_scientific_novelty_backend
+                is not None
+            ):
+                refined_post_generation_scientific_assessment = (
+                    evaluate_post_generation_scientific_novelty(
+                        hypothesis_id=refined.hypothesis_id,
+                        report=fresh.report,
+                        plan=fresh.query_plan,
+                        packet=fresh.prior_art,
+                        backend=(
+                            self
+                            .post_generation_scientific_novelty_backend
+                        ),
+                    )
+                )
+
+            if (
+                refined_post_generation_scientific_assessment
+                is not None
+            ):
+                post_generation_observability_by_candidate_id[
+                    refined.hypothesis_id
+                ] = (
+                    _post_generation_novelty_observability(
+                        refined_post_generation_scientific_assessment
+                    )
+                )
+
+            if (
+                refined_post_generation_scientific_assessment
+                is not None
+                and
+                refined_post_generation_scientific_assessment
+                .action_decision.selection_class
+                == "INELIGIBLE"
+            ):
+                attempts.append(
+                    RefinementAttempt(
+                        original_hypothesis_id=(
+                            original.hypothesis_id
+                        ),
+                        candidate_hypothesis_id=(
+                            refined.hypothesis_id
+                        ),
+                        gap_id=gap.gap_id,
+                        action=gap.action,
+                        decision="scientific_novelty_rejected",
+                        original_external_status=(
+                            source_external.status
+                        ),
+                        targeted_external_status=(
+                            targeted_card.status
+                        ),
+                        final_external_status=(
+                            final_card.status
+                        ),
+                        axis_fidelity_status=(
+                            fidelity_status
+                        ),
+                        internal_novelty_status=(
+                            internal.status
+                        ),
+                        grounding_preserved=True,
+                        refinement_generated=True,
+                        reason_codes=[
+                            (
+                                "post_generation_scientific_"
+                                "novelty_gate_rejected"
+                            ),
+                            *(
+                                refined_post_generation_scientific_assessment
+                                .action_decision.reason_codes
+                            ),
+                        ],
+                        interpretation=(
+                            "Bounded refinement was rejected by "
+                            "authoritative post-generation scientific "
+                            "novelty assessment. Action: "
+                            + refined_post_generation_scientific_assessment
+                            .action_decision.action
+                            + "; selection class: "
+                            + refined_post_generation_scientific_assessment
+                            .action_decision.selection_class
+                            + "; semantic tiers: "
+                            + refined_post_generation_scientific_assessment
+                            .semantic_pass_1.overall_tier
+                            + "/"
+                            + refined_post_generation_scientific_assessment
+                            .semantic_pass_2.overall_tier
+                            + "."
+                        ),
+                    )
+                )
+                continue
+
             accepted_proposals.append(
                 _proposal_from_card(refined, prefix=f"refine{index}")
             )
@@ -1594,6 +1827,26 @@ class TargetedNoveltyRefinementRuntime:
             attempts,
             final_portfolio,
         )
+
+        # POST_GENERATION_OBSERVABILITY_BINDING
+        # Reporting only: selection decisions were already finalized above.
+        attempts = [
+            (
+                attempt.model_copy(
+                    update=(
+                        post_generation_observability_by_candidate_id[
+                            attempt.candidate_hypothesis_id
+                        ]
+                    )
+                )
+                if (
+                    attempt.candidate_hypothesis_id
+                    in post_generation_observability_by_candidate_id
+                )
+                else attempt
+            )
+            for attempt in attempts
+        ]
 
         accepted_count = sum(
             x.decision == "accepted_refinement" for x in attempts
