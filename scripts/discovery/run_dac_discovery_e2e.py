@@ -402,6 +402,335 @@ def _candidate_unit_correction_contract(
     )
 
 
+
+def _run_question_task_preservation_shadow_chain(
+    *,
+    runner: PipelineRunner,
+    args: argparse.Namespace,
+    run: Path,
+    semantic_conflict_shadow: Path,
+    final_traversal: Path,
+    candidate_traversal: Path,
+) -> tuple[Path, Path]:
+    """Run the complete question-task preservation chain in shadow mode.
+
+    This helper produces diagnostics only. It does not mutate DiscoveryBundle
+    inspirations, discovery axes, hypotheses, or any production selection.
+    """
+
+    responsiveness_shadow = (
+        run
+        / "question_task_preservation."
+          "responsiveness.shadow.json"
+    )
+
+    pair_proposals_shadow = (
+        run
+        / "question_task_preservation."
+          "pair_proposals.shadow.json"
+    )
+
+    responsiveness_telemetry = (
+        run
+        / "question_task_preservation."
+          "responsiveness.telemetry.jsonl"
+    )
+
+    responsiveness_debug_dir = (
+        run
+        / "question_task_preservation."
+          "responsiveness_debug"
+    )
+
+    responsiveness_model = (
+        args.critic_model
+        or args.model
+    )
+
+    if not responsiveness_model:
+        raise RuntimeError(
+            "--question-task-preservation-shadow "
+            "requires --critic-model or --model."
+        )
+
+    task_preservation_group = (
+        run.name
+        or "runtime"
+    )
+
+    runner.run_stage(
+        "[6S-a/13] Question-task conflict responsiveness shadow",
+        "scripts.discovery."
+        "run_question_task_conflict_responsiveness",
+        [
+            "--raw-conflicts",
+            str(
+                semantic_conflict_shadow
+            ),
+            "--traversal",
+            str(
+                final_traversal
+            ),
+            "--traversal",
+            str(
+                candidate_traversal
+            ),
+            "--group",
+            task_preservation_group,
+            "--question",
+            args.question,
+            "--model",
+            str(
+                responsiveness_model
+            ),
+            "--reasoning-effort",
+            "medium",
+            "--temperature",
+            "0",
+            "--telemetry-path",
+            str(
+                responsiveness_telemetry
+            ),
+            "--debug-dir",
+            str(
+                responsiveness_debug_dir
+            ),
+            "--output",
+            str(
+                responsiveness_shadow
+            ),
+        ],
+        expected=[
+            responsiveness_shadow
+        ],
+    )
+
+    runner.run_stage(
+        "[6S-b/13] Question-task pair arbitration shadow",
+        "scripts.discovery."
+        "build_question_task_preservation_shadow",
+        [
+            "--raw-conflicts",
+            str(
+                semantic_conflict_shadow
+            ),
+            "--responsiveness-audit",
+            str(
+                responsiveness_shadow
+            ),
+            "--group",
+            task_preservation_group,
+            "--output",
+            str(
+                pair_proposals_shadow
+            ),
+        ],
+        expected=[
+            pair_proposals_shadow
+        ],
+    )
+
+    return (
+        responsiveness_shadow,
+        pair_proposals_shadow,
+    )
+
+
+
+def _run_scientific_novelty_action_shadow_chain(
+    *,
+    runner: PipelineRunner,
+    args: argparse.Namespace,
+    run: Path,
+    external_report: Path,
+    external_plan: Path,
+    external_prior: Path,
+) -> Path:
+    """Materialize the complete N1 novelty-action signal chain.
+
+    This chain is observational only. It creates deterministic scientific
+    distinctiveness, two semantic-distinctiveness passes per hypothesis,
+    and N1 action decisions. It does not modify Alpha6 inputs or production
+    selection.
+    """
+
+    scientific_report = (
+        run
+        / "scientific_distinctiveness_a10.shadow.json"
+    )
+
+    runner.run_stage(
+        "[10S-a/13] Scientific distinctiveness shadow",
+        "scripts.discovery."
+        "run_scientific_distinctiveness_diagnostic",
+        [
+            "--external-report",
+            str(external_report),
+            "--external-query-plan",
+            str(external_plan),
+            "--external-prior-art",
+            str(external_prior),
+            "--output",
+            str(scientific_report),
+        ],
+        expected=[
+            scientific_report
+        ],
+    )
+
+    external_payload = _load_json(
+        external_report
+    )
+
+    cards = external_payload.get(
+        "cards"
+    )
+
+    if not isinstance(cards, list):
+        raise RuntimeError(
+            "External novelty report cards must be a list "
+            "for scientific novelty action shadow."
+        )
+
+    hypothesis_ids: list[str] = []
+    seen_ids: set[str] = set()
+
+    for card in cards:
+        if not isinstance(card, dict):
+            raise RuntimeError(
+                "External novelty report card must be an object."
+            )
+
+        hypothesis_id = str(
+            card.get(
+                "hypothesis_id"
+            )
+            or ""
+        ).strip()
+
+        if not hypothesis_id:
+            raise RuntimeError(
+                "External novelty report card is missing hypothesis_id."
+            )
+
+        if hypothesis_id in seen_ids:
+            raise RuntimeError(
+                "Duplicate external novelty hypothesis_id: "
+                f"{hypothesis_id}"
+            )
+
+        seen_ids.add(
+            hypothesis_id
+        )
+        hypothesis_ids.append(
+            hypothesis_id
+        )
+
+    if not hypothesis_ids:
+        raise RuntimeError(
+            "Scientific novelty action shadow received zero hypotheses."
+        )
+
+    semantic_model = (
+        args.critic_model
+        or args.model
+    )
+
+    if not semantic_model:
+        raise RuntimeError(
+            "--scientific-novelty-action-shadow requires "
+            "--critic-model or --model."
+        )
+
+    semantic_paths: list[Path] = []
+
+    for index, hypothesis_id in enumerate(
+        hypothesis_ids,
+        start=1,
+    ):
+        for pass_index in (1, 2):
+            semantic_path = (
+                run
+                / (
+                    "semantic_distinctiveness_a10."
+                    f"h{index:02d}.pass_{pass_index}.shadow.json"
+                )
+            )
+
+            semantic_paths.append(
+                semantic_path
+            )
+
+            runner.run_stage(
+                (
+                    "[10S-b/13] Semantic distinctiveness shadow "
+                    f"h{index:02d} pass {pass_index}"
+                ),
+                "scripts.discovery."
+                "run_semantic_distinctiveness_review",
+                [
+                    "--scientific-report",
+                    str(scientific_report),
+                    "--external-report",
+                    str(external_report),
+                    "--external-prior-art",
+                    str(external_prior),
+                    "--hypothesis-id",
+                    hypothesis_id,
+                    "--output",
+                    str(semantic_path),
+                    "--model",
+                    str(semantic_model),
+                    "--review-pass-index",
+                    str(pass_index),
+                    "--temperature",
+                    "0",
+                    "--reasoning-effort",
+                    "medium",
+                ],
+                expected=[
+                    semantic_path
+                ],
+            )
+
+    action_batch = (
+        run
+        / "scientific_novelty_actions_a10.shadow.json"
+    )
+
+    action_args = [
+        "--external-report",
+        str(external_report),
+    ]
+
+    for semantic_path in semantic_paths:
+        action_args.extend(
+            [
+                "--semantic-review",
+                str(semantic_path),
+            ]
+        )
+
+    action_args.extend(
+        [
+            "--output",
+            str(action_batch),
+        ]
+    )
+
+    runner.run_stage(
+        "[10S-c/13] Scientific novelty action shadow",
+        "scripts.discovery."
+        "build_scientific_novelty_action_shadow",
+        action_args,
+        expected=[
+            action_batch
+        ],
+    )
+
+    return action_batch
+
+
 def run_pipeline(args: argparse.Namespace) -> int:
     runner = PipelineRunner(args)
     runner.prepare()
@@ -818,20 +1147,56 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
 
     bundle = run / "discovery.bundle.a3.json"
+
+    semantic_conflict_shadow = (
+        run
+        / "question_task_preservation."
+          "semantic_conflicts.shadow.json"
+    )
+
+    bundle_stage_args = [
+        "--traversal", str(final_traversal),
+        "--traversal", str(candidate_traversal),
+        "--domain-profile", domain_profile.profile_id,
+        "--top-k", str(args.discovery_top_k),
+        "--min-reserved-candidate-unit-score",
+        str(args.min_candidate_unit_score),
+        "--output", str(bundle),
+    ]
+
+    bundle_expected = [
+        bundle
+    ]
+
+    if args.question_task_preservation_shadow:
+        bundle_stage_args += [
+            "--semantic-conflict-shadow-output",
+            str(
+                semantic_conflict_shadow
+            ),
+        ]
+
+        bundle_expected.append(
+            semantic_conflict_shadow
+        )
+
     runner.run_stage(
         "[6/13] DiscoveryBundle",
         "scripts.discovery.build_discovery_bundle",
-        [
-            "--traversal", str(final_traversal),
-            "--traversal", str(candidate_traversal),
-            "--domain-profile", domain_profile.profile_id,
-            "--top-k", str(args.discovery_top_k),
-            "--min-reserved-candidate-unit-score",
-            str(args.min_candidate_unit_score),
-            "--output", str(bundle),
-        ],
-        expected=[bundle],
+        bundle_stage_args,
+        expected=bundle_expected,
     )
+
+    if args.question_task_preservation_shadow:
+        _run_question_task_preservation_shadow_chain(
+            runner=runner,
+            args=args,
+            run=run,
+            semantic_conflict_shadow=semantic_conflict_shadow,
+            final_traversal=final_traversal,
+            candidate_traversal=candidate_traversal,
+        )
+
     bundle_payload = _load_json(bundle)
     inspirations = bundle_payload.get("inspirations", [])
     if not isinstance(inspirations, list) or not inspirations:
@@ -1369,6 +1734,55 @@ def run_pipeline(args: argparse.Namespace) -> int:
             f"portfolio={current_portfolio_id}, report_source={external_source_id}"
         )
 
+    scientific_novelty_action_batch = None
+    scientific_novelty_gate = None
+
+    if (
+        args.scientific_novelty_action_shadow
+        or args.scientific_novelty_action_enforce
+    ):
+        scientific_novelty_action_batch = (
+            _run_scientific_novelty_action_shadow_chain(
+                runner=runner,
+                args=args,
+                run=run,
+                external_report=external_report,
+                external_plan=external_plan,
+                external_prior=external_prior,
+            )
+        )
+
+    if args.scientific_novelty_action_enforce:
+        if scientific_novelty_action_batch is None:
+            raise RuntimeError(
+                "Scientific novelty enforcement requires "
+                "the action batch to exist."
+            )
+
+        scientific_novelty_gate = (
+            run
+            / "scientific_novelty_fallback_gate_a10.production.json"
+        )
+
+        runner.run_stage(
+            "[10P/13] Scientific novelty production fallback gate",
+            "scripts.discovery."
+            "build_scientific_novelty_production_gate",
+            [
+                "--action-batch",
+                str(
+                    scientific_novelty_action_batch
+                ),
+                "--output",
+                str(
+                    scientific_novelty_gate
+                ),
+            ],
+            expected=[
+                scientific_novelty_gate
+            ],
+        )
+
     # ------------------------------------------------------------------
     # 11. Alpha6 targeted novelty refinement
     # ------------------------------------------------------------------
@@ -1387,6 +1801,21 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--external-report", str(external_report),
             "--external-query-plan", str(external_plan),
             "--external-prior-art", str(external_prior),
+            *(
+                [
+                    "--scientific-novelty-gate",
+                    str(scientific_novelty_gate),
+                ]
+                if scientific_novelty_gate is not None
+                else []
+            ),
+            *(
+                [
+                    "--question-task-preservation-enforce",
+                ]
+                if args.question_task_preservation_enforce
+                else []
+            ),
             *_mechanism_index_args(args),
             "--model", args.model,
             "--critic-model", args.critic_model,
@@ -1525,6 +1954,46 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stop", default=None)
     parser.add_argument("--target", required=True)
     parser.add_argument("--question", required=True)
+    parser.add_argument(
+        "--question-task-preservation-shadow",
+        action="store_true",
+        help=(
+            "Enable the shadow-only question-task-preservation chain: "
+            "collect DiscoveryBundle semantic conflicts, review conflict "
+            "candidates for question responsiveness, and emit pair-level "
+            "arbitration proposals. Production selection remains unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--scientific-novelty-action-shadow",
+        action="store_true",
+        help=(
+            "Materialize scientific distinctiveness, two-pass semantic "
+            "distinctiveness, and deterministic scientific-novelty action "
+            "decisions after external novelty. Shadow only; Alpha6 and "
+            "production selection remain unchanged."
+        ),
+    )
+
+    parser.add_argument(
+        "--scientific-novelty-action-enforce",
+        action="store_true",
+        help=(
+            "Grant scientific-novelty action decisions production "
+            "authority over Alpha6 original fallback. Automatically "
+            "materializes the frozen scientific/semantic signal chain."
+        ),
+    )
+
+    parser.add_argument(
+        "--question-task-preservation-enforce",
+        action="store_true",
+        help=(
+            "Require stable Question-to-fresh-reaxis task "
+            "preservation before Alpha6 may accept a fresh re-axis."
+        ),
+    )
+
     parser.add_argument("--objective", default="explain_connection")
     parser.add_argument(
         "--title",

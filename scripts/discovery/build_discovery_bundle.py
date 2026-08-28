@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import argparse
 from pathlib import Path
 
@@ -102,6 +104,17 @@ def main() -> int:
             "and the extraction adapter default."
         ),
     )
+    parser.add_argument(
+        "--semantic-conflict-shadow-output",
+        type=Path,
+        default=None,
+        help=(
+            "Optional shadow-only JSON output for semantic-diversity "
+            "conflicts observed during DiscoveryBundle selection. "
+            "Does not modify Bundle selection."
+        ),
+    )
+
     args = parser.parse_args()
 
     if not 0.0 <= args.semantic_similarity_threshold <= 1.0:
@@ -159,6 +172,8 @@ def main() -> int:
             if index is not None:
                 semantic_indexes[source_name] = index
 
+    semantic_conflict_observations = []
+
     bundle = DiscoveryBundleBuilder(
         DiscoveryPolicy(
             top_k=args.top_k,
@@ -176,10 +191,77 @@ def main() -> int:
             force_fill=args.force_fill,
         ),
         domain_profile=domain_profile,
+        semantic_conflict_observer=(
+            semantic_conflict_observations.append
+            if args.semantic_conflict_shadow_output
+            is not None
+            else None
+        ),
     ).build(
         payloads,
         semantic_indexes=semantic_indexes,
     )
+
+    if args.semantic_conflict_shadow_output is not None:
+        shadow_path = Path(
+            args.semantic_conflict_shadow_output
+        )
+
+        shadow_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        shadow_payload = {
+            "schema_version":
+                "semantic-conflict-observations-shadow-v1",
+
+            "observation_count":
+                len(
+                    semantic_conflict_observations
+                ),
+
+            "observations": [
+                {
+                    "incumbent_id":
+                        item.incumbent_id,
+
+                    "challenger_id":
+                        item.challenger_id,
+
+                    "semantic_overlap":
+                        item.semantic_overlap,
+
+                    "phase":
+                        item.phase,
+
+                    "incumbent_bundle_rank":
+                        item.incumbent_bundle_rank,
+
+                    "challenger_candidate_rank":
+                        item.challenger_candidate_rank,
+                }
+                for item
+                in semantic_conflict_observations
+            ],
+
+            "shadow_only":
+                True,
+
+            "production_selection_changed":
+                False,
+        }
+
+        shadow_path.write_text(
+            json.dumps(
+                shadow_payload,
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(bundle.model_dump_json(indent=2) + "\n", encoding="utf-8")

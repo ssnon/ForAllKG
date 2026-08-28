@@ -5,6 +5,9 @@ import json
 import os
 from pathlib import Path
 
+from pipeline_core.discovery.question_axis_responsiveness_llm import (
+    OpenRouterQuestionAxisResponsivenessBackend,
+)
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
 from domains.registry import get_domain_profile
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
@@ -65,6 +68,23 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--external-report", required=True, type=Path)
     p.add_argument("--external-query-plan", required=True, type=Path)
     p.add_argument("--external-prior-art", required=True, type=Path)
+    p.add_argument(
+        "--scientific-novelty-gate",
+        type=Path,
+        default=None,
+        help=(
+            "Optional authoritative Alpha6 original-fallback gate "
+            "compiled from scientific novelty action decisions."
+        ),
+    )
+    p.add_argument(
+        "--question-task-preservation-enforce",
+        action="store_true",
+        help=(
+            "Require stable Question-to-fresh-reaxis task preservation "
+            "before Alpha6 may accept a fresh-context re-axis."
+        ),
+    )
     p.add_argument("--model", default=os.getenv("OPENROUTER_AGENT_MODEL"))
     p.add_argument(
         "--critic-model",
@@ -249,12 +269,29 @@ def main() -> int:
         temperature=0.0,
         parse_retries=1,
     )
+    task_responsiveness_backend = (
+        OpenRouterQuestionAxisResponsivenessBackend(
+            model=args.critic_model,
+            temperature=0.0,
+            reasoning_effort="medium",
+            telemetry_context={
+                "stage":
+                    "alpha6_fresh_reaxis_task_preservation",
+            },
+        )
+        if args.question_task_preservation_enforce
+        else None
+    )
+
     runtime = TargetedNoveltyRefinementRuntime(
         hypothesis_backend=hypothesis_backend,
         external_assessor=external_assessor,
         targeted_retriever=targeted_retriever,
         mapper=mapper,
         gap_analyzer=gap_analyzer,
+        task_responsiveness_backend=(
+            task_responsiveness_backend
+        ),
     )
     outcome = runtime.run(
         dual=dual,
@@ -264,6 +301,15 @@ def main() -> int:
         external_report=external,
         external_query_plan=query_plan,
         external_prior_art=prior_art,
+        scientific_novelty_gate=(
+            json.loads(
+                args.scientific_novelty_gate.read_text(
+                    encoding="utf-8"
+                )
+            )
+            if args.scientific_novelty_gate
+            else None
+        ),
     )
 
     prefix = args.output_prefix

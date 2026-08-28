@@ -29,6 +29,10 @@ from pipeline_core.discovery.hypothesis_validation import HypothesisValidator
 from pipeline_core.discovery.internal_novelty import InternalNoveltyAssessor
 from pipeline_core.discovery.novelty_claim_decomposition import LiteratureQueryPlanner
 from pipeline_core.discovery.novelty_gap_analysis import NoveltyGapAnalyzer
+from pipeline_core.discovery.question_hypothesis_responsiveness import (
+    HypothesisResponsivenessBackendProtocol,
+    evaluate_hypothesis_task_preservation,
+)
 from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGapPlan,
     NoveltyRefinementReport,
@@ -165,6 +169,10 @@ class TargetedNoveltyRefinementRuntime:
         gap_analyzer: NoveltyGapAnalyzer,
         fidelity_critic: DiscoveryAxisFidelityCritic | None = None,
         internal_assessor: InternalNoveltyAssessor | None = None,
+        task_responsiveness_backend: (
+            HypothesisResponsivenessBackendProtocol
+            | None
+        ) = None,
     ) -> None:
         self.hypothesis_backend = hypothesis_backend
         self.external_assessor = external_assessor
@@ -175,6 +183,7 @@ class TargetedNoveltyRefinementRuntime:
         self.gap_analyzer = gap_analyzer
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
         self.internal_assessor = internal_assessor or InternalNoveltyAssessor()
+        self.task_responsiveness_backend = task_responsiveness_backend
 
     def _compile_one(
         self,
@@ -337,17 +346,135 @@ class TargetedNoveltyRefinementRuntime:
             }
         )
 
-    @classmethod
-    def _original_fallback_allowed(cls, targeted_status: str) -> bool:
-        """Whether a failed optional refinement may keep the original.
+    @staticmethod
+    def _validate_scientific_novelty_gate(
+        scientific_novelty_gate: dict[str, Any] | None,
+        portfolio: HypothesisPortfolio,
+    ) -> dict[str, dict[str, Any]] | None:
+        if scientific_novelty_gate is None:
+            return None
 
-        INSFFICIENT_SEARCH_EVIDENCE and LITERATURE_SUPPORTED_EXTENSION are not
-        scientific rejection states. A refinement failure must not destroy an
-        otherwise grounded candidate. Only a targeted assessment that finds the
-        original WELL_ESTABLISHED or CONFLICTING_PRIOR_ART makes refinement
-        destructive.
-        """
-        return targeted_status not in cls.REJECT_EXTERNAL
+        if (
+            scientific_novelty_gate.get("schema_version")
+            != "scientific-novelty-fallback-gate-v1"
+        ):
+            raise RuntimeError(
+                "Unexpected scientific novelty fallback gate schema."
+            )
+
+        if (
+            scientific_novelty_gate.get("production_authority")
+            is not True
+        ):
+            raise RuntimeError(
+                "Scientific novelty fallback gate lacks production authority."
+            )
+
+        rows = scientific_novelty_gate.get("gates")
+
+        if not isinstance(rows, list):
+            raise RuntimeError(
+                "Scientific novelty fallback gates must be a list."
+            )
+
+        by_id: dict[str, dict[str, Any]] = {}
+
+        for row in rows:
+            if not isinstance(row, dict):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate row must be an object."
+                )
+
+            hypothesis_id = str(
+                row.get("hypothesis_id") or ""
+            ).strip()
+
+            if not hypothesis_id:
+                raise RuntimeError(
+                    "Scientific novelty fallback gate row lacks hypothesis_id."
+                )
+
+            if hypothesis_id in by_id:
+                raise RuntimeError(
+                    "Duplicate scientific novelty fallback gate: "
+                    f"{hypothesis_id}"
+                )
+
+            selection_class = str(
+                row.get("selection_class") or ""
+            )
+
+            expected_allowed = (
+                selection_class
+                in {
+                    "ELIGIBLE",
+                    "CONDITIONAL",
+                }
+            )
+
+            if (
+                row.get("fallback_allowed")
+                is not expected_allowed
+            ):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate is internally "
+                    f"inconsistent for {hypothesis_id}."
+                )
+
+            by_id[hypothesis_id] = row
+
+        portfolio_ids = {
+            card.hypothesis_id
+            for card in portfolio.hypotheses
+        }
+
+        if set(by_id) != portfolio_ids:
+            raise RuntimeError(
+                "Scientific novelty fallback gate hypothesis set "
+                "does not match Alpha6 source portfolio."
+            )
+
+        return by_id
+
+    @classmethod
+    def _original_fallback_allowed(
+        cls,
+        targeted_status: str,
+        *,
+        hypothesis_id: str | None = None,
+        scientific_gate_by_id: (
+            dict[str, dict[str, Any]]
+            | None
+        ) = None,
+    ) -> bool:
+        """Whether Alpha6 may retain the original after failed refinement."""
+
+        if targeted_status in cls.REJECT_EXTERNAL:
+            return False
+
+        if scientific_gate_by_id is None:
+            # Backward-compatible behavior when production gate is absent.
+            return True
+
+        if hypothesis_id is None:
+            raise RuntimeError(
+                "Scientific novelty fallback gate requires hypothesis_id."
+            )
+
+        gate = scientific_gate_by_id.get(
+            hypothesis_id
+        )
+
+        if gate is None:
+            raise RuntimeError(
+                "Missing scientific novelty fallback gate for "
+                f"{hypothesis_id}."
+            )
+
+        return bool(
+            gate["fallback_allowed"]
+        )
+
 
     @staticmethod
     def _fresh_reaxis_safe_unused_premise_ids(
@@ -485,7 +612,15 @@ class TargetedNoveltyRefinementRuntime:
         external_report: ExternalNoveltyReport,
         external_query_plan: LiteratureQueryPlan,
         external_prior_art: PriorArtPacket,
+        scientific_novelty_gate: dict[str, Any] | None = None,
     ) -> NoveltyRefinementOutcome:
+        scientific_gate_by_id = (
+            self._validate_scientific_novelty_gate(
+                scientific_novelty_gate,
+                portfolio,
+            )
+        )
+
         gap_plan = self.gap_analyzer.build(
             portfolio, external_report, external_query_plan
         )
@@ -505,30 +640,64 @@ class TargetedNoveltyRefinementRuntime:
             source_external = external_by_h[gap.hypothesis_id]
 
             if gap.action == "keep":
-                accepted_proposals.append(
-                    _proposal_from_card(original, prefix=f"keep{index}")
-                )
-                attempts.append(
-                    RefinementAttempt(
-                        original_hypothesis_id=original.hypothesis_id,
-                        candidate_hypothesis_id=original.hypothesis_id,
-                        gap_id=gap.gap_id,
-                        action=gap.action,
-                        decision="kept_original",
-                        original_external_status=source_external.status,
-                        targeted_external_status=source_external.status,
-                        final_external_status=source_external.status,
-                        grounding_preserved=True,
-                        refinement_generated=False,
-                        interpretation=(
-                            "The external novelty status did not require bounded refinement."
-                        ),
+                if self._original_fallback_allowed(
+                    source_external.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
+                    accepted_proposals.append(
+                        _proposal_from_card(
+                            original,
+                            prefix=f"keep{index}",
+                        )
                     )
-                )
+                    attempts.append(
+                        RefinementAttempt(
+                            original_hypothesis_id=original.hypothesis_id,
+                            candidate_hypothesis_id=original.hypothesis_id,
+                            gap_id=gap.gap_id,
+                            action=gap.action,
+                            decision="kept_original",
+                            original_external_status=source_external.status,
+                            targeted_external_status=source_external.status,
+                            final_external_status=source_external.status,
+                            grounding_preserved=True,
+                            refinement_generated=False,
+                            interpretation=(
+                                "The external novelty status did not require "
+                                "bounded refinement."
+                            ),
+                        )
+                    )
+                else:
+                    attempts.append(
+                        RefinementAttempt(
+                            original_hypothesis_id=original.hypothesis_id,
+                            gap_id=gap.gap_id,
+                            action=gap.action,
+                            decision="scientific_novelty_rejected",
+                            original_external_status=source_external.status,
+                            targeted_external_status=source_external.status,
+                            grounding_preserved=True,
+                            refinement_generated=False,
+                            reason_codes=[
+                                "scientific_novelty_gate_blocked_original_fallback",
+                            ],
+                            interpretation=(
+                                "External novelty alone would otherwise retain "
+                                "the original hypothesis, but the authoritative "
+                                "scientific-novelty gate disallows original fallback."
+                            ),
+                        )
+                    )
                 continue
 
             if not gap.targeted_queries:
-                if self._original_fallback_allowed(source_external.status):
+                if self._original_fallback_allowed(
+                    source_external.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     accepted_proposals.append(
                         _proposal_from_card(original, prefix=f"fallback{index}")
                     )
@@ -666,33 +835,66 @@ class TargetedNoveltyRefinementRuntime:
                 targeted_card.status
                 in self.RESOLVED_CANDIDATE_EXTERNAL
             ):
-                accepted_proposals.append(
-                    _proposal_from_card(original, prefix=f"keep{index}")
-                )
-                attempts.append(
-                    RefinementAttempt(
-                        original_hypothesis_id=original.hypothesis_id,
-                        candidate_hypothesis_id=original.hypothesis_id,
-                        gap_id=gap.gap_id,
-                        action=gap.action,
-                        decision="kept_original",
-                        original_external_status=source_external.status,
-                        targeted_external_status=targeted_card.status,
-                        final_external_status=targeted_card.status,
-                        grounding_preserved=True,
-                        refinement_generated=False,
-                        generation_mode="none",
-                        context_grounding_valid=True,
-                        reason_codes=[
-                            "targeted_search_resolved_candidate_status",
-                        ],
-                        interpretation=(
-                            "Targeted search resolved the candidate without "
-                            "requiring hypothesis regeneration; no additional "
-                            "novelty optimization is performed."
-                        ),
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
+                    accepted_proposals.append(
+                        _proposal_from_card(
+                            original,
+                            prefix=f"keep{index}",
+                        )
                     )
-                )
+                    attempts.append(
+                        RefinementAttempt(
+                            original_hypothesis_id=original.hypothesis_id,
+                            candidate_hypothesis_id=original.hypothesis_id,
+                            gap_id=gap.gap_id,
+                            action=gap.action,
+                            decision="kept_original",
+                            original_external_status=source_external.status,
+                            targeted_external_status=targeted_card.status,
+                            final_external_status=targeted_card.status,
+                            grounding_preserved=True,
+                            refinement_generated=False,
+                            generation_mode="none",
+                            context_grounding_valid=True,
+                            reason_codes=[
+                                "targeted_search_resolved_candidate_status",
+                            ],
+                            interpretation=(
+                                "Targeted search resolved the candidate without "
+                                "requiring hypothesis regeneration; no additional "
+                                "novelty optimization is performed."
+                            ),
+                        )
+                    )
+                else:
+                    attempts.append(
+                        RefinementAttempt(
+                            original_hypothesis_id=original.hypothesis_id,
+                            gap_id=gap.gap_id,
+                            action=gap.action,
+                            decision="scientific_novelty_rejected",
+                            original_external_status=source_external.status,
+                            targeted_external_status=targeted_card.status,
+                            grounding_preserved=True,
+                            refinement_generated=False,
+                            generation_mode="none",
+                            context_grounding_valid=True,
+                            reason_codes=[
+                                "targeted_search_resolved_candidate_status",
+                                "scientific_novelty_gate_blocked_original_fallback",
+                            ],
+                            interpretation=(
+                                "Targeted search reached an externally acceptable "
+                                "candidate status, but the authoritative scientific-"
+                                "novelty gate disallows retention of the original "
+                                "hypothesis."
+                            ),
+                        )
+                    )
                 continue
 
             # ----------------------------------------------------------
@@ -886,6 +1088,27 @@ class TargetedNoveltyRefinementRuntime:
                                     reaxis_final_card.status
                                 )
 
+                                reaxis_task_assessment = None
+
+                                if (
+                                    self.task_responsiveness_backend
+                                    is not None
+                                ):
+                                    (
+                                        reaxis_task_assessment,
+                                        _reaxis_task_stability,
+                                    ) = (
+                                        evaluate_hypothesis_task_preservation(
+                                            question=(
+                                                dual.grounded_context.question
+                                            ),
+                                            hypothesis=reaxis_card,
+                                            backend=(
+                                                self.task_responsiveness_backend
+                                            ),
+                                        )
+                                    )
+
                                 if (
                                     reaxis_final_card.status
                                     in self.REAXIS_REJECT_EXTERNAL
@@ -902,6 +1125,44 @@ class TargetedNoveltyRefinementRuntime:
                                         "conflicted under a fresh external "
                                         "search. "
                                         + reaxis_final_card.interpretation
+                                    )
+
+                                elif (
+                                    reaxis_task_assessment
+                                    is not None
+                                    and reaxis_task_assessment.task_class
+                                    not in {
+                                        "DIRECT",
+                                        "SUBORDINATE",
+                                    }
+                                ):
+                                    reaxis_failure_decision = (
+                                        "question_task_rejected"
+                                    )
+
+                                    reaxis_reason_codes.extend(
+                                        [
+                                            (
+                                                "fresh_reaxis_question_"
+                                                "task_preservation_failed"
+                                            ),
+                                            (
+                                                "question_task_class_"
+                                                + reaxis_task_assessment
+                                                .task_class
+                                                .lower()
+                                            ),
+                                        ]
+                                    )
+
+                                    reaxis_failure_interpretation = (
+                                        "Fresh-context novelty re-axis was "
+                                        "rejected because its primary "
+                                        "scientific task did not stably "
+                                        "preserve the original question. "
+                                        "Task class: "
+                                        + reaxis_task_assessment.task_class
+                                        + "."
                                     )
 
                                 else:
@@ -1033,7 +1294,11 @@ class TargetedNoveltyRefinementRuntime:
             generation = self.hypothesis_backend.generate(prompt)
             draft = generation.draft
             if not draft.hypotheses:
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "abstained",
                         failure_interpretation="The bounded refinement model abstained.",
@@ -1054,7 +1319,11 @@ class TargetedNoveltyRefinementRuntime:
                     )
                 continue
             if len(draft.hypotheses) != 1:
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "validation_rejected",
                         reason_codes=["per_hypothesis_cardinality_violation"],
@@ -1082,7 +1351,11 @@ class TargetedNoveltyRefinementRuntime:
             draft = self._lock_refinement_provenance(original, draft)
             compiled, issue_codes = self._compile_one(dual, draft)
             if compiled is None:
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "compile_rejected",
                         reason_codes=issue_codes,
@@ -1111,7 +1384,11 @@ class TargetedNoveltyRefinementRuntime:
             refined = compiled.hypotheses[0]
 
             if not self._grounding_preserved(original, refined):
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "grounding_drift_rejected",
                         reason_codes=["premise_gap_or_type_changed_after_provenance_lock"],
@@ -1150,7 +1427,11 @@ class TargetedNoveltyRefinementRuntime:
                 )
                 fidelity_status = fidelity.status
                 if fidelity.status == "fail":
-                    if self._original_fallback_allowed(targeted_card.status):
+                    if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                         keep_original_after_failed_refinement(
                             "axis_fidelity_rejected",
                             reason_codes=list(fidelity.reason_codes),
@@ -1184,7 +1465,11 @@ class TargetedNoveltyRefinementRuntime:
                 dual, compiled, self.mapper
             ).cards[0]
             if internal.status in self.REJECT_INTERNAL:
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "internal_novelty_rejected",
                         reason_codes=list(internal.reason_codes),
@@ -1216,7 +1501,11 @@ class TargetedNoveltyRefinementRuntime:
             final_external_artifacts.append(fresh)
             final_card = fresh.report.cards[0]
             if final_card.status in self.REJECT_EXTERNAL:
-                if self._original_fallback_allowed(targeted_card.status):
+                if self._original_fallback_allowed(
+                    targeted_card.status,
+                    hypothesis_id=original.hypothesis_id,
+                    scientific_gate_by_id=scientific_gate_by_id,
+                ):
                     keep_original_after_failed_refinement(
                         "external_novelty_rejected",
                         reason_codes=list(final_card.reason_codes),

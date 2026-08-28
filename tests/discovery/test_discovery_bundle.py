@@ -303,3 +303,239 @@ def test_alpha2_semantic_diversity_removes_near_duplicate_routes() -> None:
     assert selected in ({"p1", "p3"}, {"p2", "p3"})
     assert bundle.semantic_diversity_mode == "node_embedding"
     assert max(item.max_semantic_similarity_to_selected for item in bundle.inspirations) < 0.88
+
+
+def test_semantic_conflict_observer_is_strictly_non_interfering() -> None:
+    g = nx.DiGraph()
+
+    for node_id in [
+        "a1",
+        "a2",
+        "b1",
+        "b2",
+        "c1",
+        "c2",
+    ]:
+        g.add_node(
+            node_id,
+            label=node_id,
+            type="Mechanism",
+            source_paper_id=node_id[0].upper(),
+        )
+
+    def candidate_path(
+        path_id: str,
+        unit_id: str,
+        left: str,
+        right: str,
+        edge_id: str,
+    ) -> dict:
+        return {
+            "path_id": path_id,
+            "candidate_unit_id": unit_id,
+            "candidate_unit_count": 1,
+            "candidate_unit_selection": {
+                "total": 0.50,
+            },
+            "nodes": [
+                left,
+                right,
+            ],
+            "steps": [
+                _step(
+                    left,
+                    right,
+                    "MODULATES",
+                    edge_id,
+                )
+            ],
+            "visited_paper_ids": [
+                left[0].upper()
+            ],
+            "path_quality": {
+                "path_type":
+                    "CANDIDATE_EXPLORATION",
+                "mechanistic_content":
+                    "high",
+                "mechanistic_edge_density":
+                    1.0,
+                "mechanistic_node_density":
+                    1.0,
+                "navigation_edge_fraction":
+                    0.0,
+                "reverse_fraction":
+                    0.0,
+                "candidate_fraction":
+                    0.0,
+                "endpoint_pair_score":
+                    0.72,
+            },
+        }
+
+    p1 = candidate_path(
+        "p1",
+        "candidate_unit:u1",
+        "a1",
+        "a2",
+        "e1",
+    )
+
+    p2 = candidate_path(
+        "p2",
+        "candidate_unit:u2",
+        "b1",
+        "b2",
+        "e2",
+    )
+
+    p3 = candidate_path(
+        "p3",
+        "candidate_unit:u3",
+        "c1",
+        "c2",
+        "e3",
+    )
+
+    payload = {
+        "corpus_id": "c1",
+        "mode": "mechanism",
+        "source_query": "x",
+        "target_query": "y",
+        "semantic_stop_query": None,
+        "paths": [],
+        "candidate_paths": [
+            p1,
+            p2,
+            p3,
+        ],
+    }
+
+    # p1 and p2 are near-identical in embedding space.
+    # p3 is orthogonal.
+    semantic_index = _FakeSemanticIndex(
+        records=[
+            {"node_id": x}
+            for x in [
+                "a1",
+                "a2",
+                "b1",
+                "b2",
+                "c1",
+                "c2",
+            ]
+        ],
+        embeddings=[
+            [1.0, 0.0],
+            [0.98, 0.02],
+            [0.99, 0.01],
+            [0.97, 0.03],
+            [0.0, 1.0],
+            [0.02, 0.98],
+        ],
+    )
+
+    policy = DiscoveryPolicy(
+        top_k=2,
+        cross_paper_mechanistic_reserve=0,
+        candidate_exploration_reserve=2,
+        min_reserved_candidate_unit_score=0.30,
+        semantic_similarity_threshold=0.88,
+        semantic_relaxed_threshold=0.94,
+    )
+
+    baseline = DiscoveryBundleBuilder(
+        policy,
+        domain_profile=DAC_HER_PROFILE,
+    ).build(
+        [
+            (
+                "traversal.json",
+                payload,
+                g,
+            )
+        ],
+        semantic_indexes={
+            "traversal.json":
+                semantic_index,
+        },
+    )
+
+    observations = []
+
+    observed = DiscoveryBundleBuilder(
+        policy,
+        domain_profile=DAC_HER_PROFILE,
+        semantic_conflict_observer=(
+            observations.append
+        ),
+    ).build(
+        [
+            (
+                "traversal.json",
+                payload,
+                g,
+            )
+        ],
+        semantic_indexes={
+            "traversal.json":
+                semantic_index,
+        },
+    )
+
+    # Strongest possible non-interference assertion available at
+    # the DiscoveryBundle contract level.
+    assert observed == baseline
+
+    assert [
+        item.source_path_id
+        for item in observed.inspirations
+    ] == [
+        item.source_path_id
+        for item in baseline.inspirations
+    ]
+
+    assert len(observations) >= 1
+
+    candidate_conflicts = [
+        item
+        for item in observations
+        if (
+            item.incumbent_id.startswith(
+                "candidate_unit:"
+            )
+            and item.challenger_id.startswith(
+                "candidate_unit:"
+            )
+        )
+    ]
+
+    assert candidate_conflicts
+
+    assert any(
+        item.semantic_overlap > 0.88
+        for item in candidate_conflicts
+    )
+
+    # The observer reports only; it must not make both members of the
+    # rejected near-duplicate pair appear in the production Bundle.
+    #
+    # DiscoveryInspiration does not currently expose the raw traversal
+    # candidate_unit_id, so selection identity is asserted through the
+    # existing source_path_id contract instead.
+    selected_path_ids = {
+        item.source_path_id
+        for item in observed.inspirations
+    }
+
+    conflicting_path_ids = {
+        "p1",
+        "p2",
+    }
+
+    assert (
+        len(
+            selected_path_ids
+            & conflicting_path_ids
+        )
+        == 1
+    )

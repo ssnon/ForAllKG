@@ -45,6 +45,8 @@ RefinementDecision = Literal[
     "internal_novelty_rejected",
     "external_novelty_rejected",
     "search_insufficient",
+    "scientific_novelty_rejected",
+    "question_task_rejected",
 ]
 
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pipeline_core.discovery.question_task_preservation_shadow import SemanticConflictObservation
+
 import hashlib
 import json
 import math
@@ -576,10 +578,16 @@ class DiscoveryBundleBuilder:
         policy: DiscoveryPolicy | None = None,
         *,
         domain_profile: ScientificDomainProfile,
+        semantic_conflict_observer: Any | None = None,
     ) -> None:
         self.policy = policy or DiscoveryPolicy()
         self.domain_profile = domain_profile
         self.discovery_semantics = self.domain_profile.discovery
+
+        # Shadow-only observer. The observer is never consulted when making a
+        # Bundle selection decision and therefore cannot promote or reject a
+        # candidate.
+        self.semantic_conflict_observer = semantic_conflict_observer
 
     def _score(
         self,
@@ -950,14 +958,71 @@ class DiscoveryBundleBuilder:
                 str(right.get("_discovery_semantic_text", right.get("_discovery_rendered", ""))),
             )
 
-        def max_selected_semantic(row: dict[str, Any]) -> float:
-            return max((semantic_similarity(row, other) for other in selected), default=0.0)
+        def candidate_unit_id(row: dict[str, Any]) -> str:
+            direct = str(
+                row.get(
+                    "candidate_unit_id",
+                    "",
+                )
+                or ""
+            ).strip()
+
+            if direct:
+                return direct
+
+            unit = row.get(
+                "candidate_unit"
+            )
+
+            if isinstance(
+                unit,
+                dict,
+            ):
+                return str(
+                    unit.get(
+                        "unit_id",
+                        "",
+                    )
+                    or unit.get(
+                        "candidate_unit_id",
+                        "",
+                    )
+                    or ""
+                ).strip()
+
+            return ""
+
+        def max_selected_semantic_match(
+            row: dict[str, Any],
+        ) -> tuple[
+            float,
+            dict[str, Any] | None,
+        ]:
+            matches = [
+                (
+                    semantic_similarity(
+                        row,
+                        other,
+                    ),
+                    other,
+                )
+                for other in selected
+            ]
+
+            if not matches:
+                return 0.0, None
+
+            return max(
+                matches,
+                key=lambda item: item[0],
+            )
 
         def eligible(
             row: dict[str, Any],
             *,
             enforce_structure: bool,
             semantic_threshold: float | None,
+            phase: str,
         ) -> tuple[bool, float]:
             key = (str(row.get("_discovery_mode", "")), str(row.get("path_id", "")))
             if key in selected_keys:
@@ -969,9 +1034,82 @@ class DiscoveryBundleBuilder:
                     return False, 0.0
                 if selected_edges and max(_edge_jaccard(own_edges, other) for other in selected_edges) > self.policy.max_edge_jaccard:
                     return False, 0.0
-            semantic_overlap = max_selected_semantic(row)
-            if semantic_threshold is not None and semantic_overlap > semantic_threshold:
+            (
+                semantic_overlap,
+                semantic_blocker,
+            ) = max_selected_semantic_match(
+                row
+            )
+
+            if (
+                semantic_threshold is not None
+                and semantic_overlap
+                > semantic_threshold
+            ):
+                observer = (
+                    self.semantic_conflict_observer
+                )
+
+                if (
+                    observer is not None
+                    and semantic_blocker
+                    is not None
+                ):
+                    incumbent_id = (
+                        candidate_unit_id(
+                            semantic_blocker
+                        )
+                    )
+
+                    challenger_id = (
+                        candidate_unit_id(
+                            row
+                        )
+                    )
+
+                    if (
+                        incumbent_id
+                        and challenger_id
+                    ):
+                        incumbent_rank = next(
+                            (
+                                index
+                                for index, selected_row
+                                in enumerate(
+                                    selected,
+                                    start=1,
+                                )
+                                if selected_row
+                                is semantic_blocker
+                            ),
+                            None,
+                        )
+
+                        try:
+                            observer(
+                                SemanticConflictObservation(
+                                    incumbent_id=(
+                                        incumbent_id
+                                    ),
+                                    challenger_id=(
+                                        challenger_id
+                                    ),
+                                    semantic_overlap=(
+                                        semantic_overlap
+                                    ),
+                                    phase=phase,
+                                    incumbent_bundle_rank=(
+                                        incumbent_rank
+                                    ),
+                                )
+                            )
+                        except Exception:
+                            # A shadow observer must never affect
+                            # production Bundle selection.
+                            pass
+
                 return False, semantic_overlap
+
             return True, semantic_overlap
 
         def add(row: dict[str, Any], semantic_overlap: float) -> None:
@@ -1008,7 +1146,12 @@ class DiscoveryBundleBuilder:
         for row in candidate_reserved:
             if len(selected) >= min(self.policy.candidate_exploration_reserve, self.policy.top_k):
                 break
-            ok, overlap = eligible(row, enforce_structure=True, semantic_threshold=strict_threshold)
+            ok, overlap = eligible(
+                row,
+                enforce_structure=True,
+                semantic_threshold=strict_threshold,
+                phase="CANDIDATE_RESERVE",
+            )
             if ok:
                 add(row, overlap)
 
@@ -1024,7 +1167,12 @@ class DiscoveryBundleBuilder:
         for row in reserved:
             if len(selected) >= min(self.policy.cross_paper_mechanistic_reserve, self.policy.top_k):
                 break
-            ok, overlap = eligible(row, enforce_structure=True, semantic_threshold=strict_threshold)
+            ok, overlap = eligible(
+                row,
+                enforce_structure=True,
+                semantic_threshold=strict_threshold,
+                phase="CROSS_PAPER_RESERVE",
+            )
             if ok:
                 add(row, overlap)
 
@@ -1033,15 +1181,38 @@ class DiscoveryBundleBuilder:
         # duplicates (selected_sem up to 1.00). Alpha2.1 intentionally allows
         # fewer than top_k inspirations.
         selection_passes = [
-            (True, strict_threshold),
-            (True, relaxed_threshold),
-            (False, relaxed_threshold),
+            (
+                "GENERAL_STRICT",
+                True,
+                strict_threshold,
+            ),
+            (
+                "GENERAL_RELAXED",
+                True,
+                relaxed_threshold,
+            ),
+            (
+                "GENERAL_RELAXED_NO_STRUCTURE",
+                False,
+                relaxed_threshold,
+            ),
         ]
+
         if self.policy.force_fill:
             # Diagnostic ablation only: restore alpha2-style final fill.
-            selection_passes.append((False, None))
+            selection_passes.append(
+                (
+                    "GENERAL_FORCE_FILL",
+                    False,
+                    None,
+                )
+            )
 
-        for enforce_structure, semantic_threshold in selection_passes:
+        for (
+            phase,
+            enforce_structure,
+            semantic_threshold,
+        ) in selection_passes:
             if len(selected) >= self.policy.top_k:
                 break
             for row in (candidates if self.policy.force_fill else quality_candidates):
@@ -1051,6 +1222,7 @@ class DiscoveryBundleBuilder:
                     row,
                     enforce_structure=enforce_structure,
                     semantic_threshold=semantic_threshold,
+                    phase=phase,
                 )
                 if ok:
                     add(row, overlap)
