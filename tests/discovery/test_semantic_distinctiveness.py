@@ -756,6 +756,25 @@ def test_semantic_reference_repair_prompt_is_bounded() -> None:
         in repair.user_prompt
     )
 
+    assert (
+        "ALLOWED CLAIM IDS — COPY EXACTLY\n"
+        "--------------------------------\n"
+        "- claim:c1"
+        in repair.user_prompt
+    )
+
+    assert (
+        "ALLOWED WORK IDS — COPY EXACTLY\n"
+        "-------------------------------\n"
+        "- work:known"
+        in repair.user_prompt
+    )
+
+    assert (
+        "opaque provenance keys"
+        in repair.user_prompt
+    )
+
 
 def test_semantic_compiler_records_reference_repair_provenance() -> None:
     (

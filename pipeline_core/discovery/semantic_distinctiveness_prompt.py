@@ -793,6 +793,37 @@ class SemanticDistinctivenessPromptAssembler:
             for issue in issues
         ]
 
+        allowlist_block = (
+            "\n\nALLOWED CLAIM IDS — COPY EXACTLY\n"
+            "--------------------------------\n"
+            + (
+                "\n".join(
+                    f"- {value}"
+                    for value
+                    in original_prompt.allowed_claim_ids
+                )
+                if original_prompt.allowed_claim_ids
+                else "- <NONE>"
+            )
+            + "\n\nALLOWED WORK IDS — COPY EXACTLY\n"
+            "-------------------------------\n"
+            + (
+                "\n".join(
+                    f"- {value}"
+                    for value
+                    in original_prompt.allowed_work_ids
+                )
+                if original_prompt.allowed_work_ids
+                else "- <NONE>"
+            )
+            + (
+                "\n\nThese identifiers are opaque provenance keys. "
+                "Copy them character-for-character. Do not shorten, "
+                "extend, normalize, autocomplete, transform, or "
+                "regenerate them."
+            )
+        )
+
         repair_request = (
             "\n\nREFERENCE-CONTRACT VALIDATION REPAIR\n"
             "====================================\n"
@@ -821,8 +852,8 @@ class SemanticDistinctivenessPromptAssembler:
             "overall_tier, confidence, and rationale internally consistent "
             "with the corrected evidence-bounded assessments.\n"
             "- HIGH remains diagnostic only; LOW remains diagnostic only.\n"
-            "\n"
-            "VALIDATION ISSUES\n"
+            + allowlist_block
+            + "\n\nVALIDATION ISSUES\n"
             "-----------------\n"
             + "\n".join(
                 issue_lines
