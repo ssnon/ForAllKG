@@ -10,6 +10,7 @@ from domains.registry import get_domain_profile
 from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
+    ExternalNoveltyReport,
     LiteratureQueryPlan,
     PriorArtPacket,
 )
@@ -35,6 +36,11 @@ from pipeline_core.discovery.novelty_claim_decomposition import (
 from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
+)
+from pipeline_core.discovery.prior_art_memory import (
+    PriorArtMemoryMatcher,
+    augment_prior_art_packet_with_memory,
+    build_prior_art_memory,
 )
 
 
@@ -85,6 +91,30 @@ def parse_args() -> argparse.Namespace:
         help="Reuse an existing .claims_queries.json for an exact alpha5 -> alpha5.1 A/B rerun.",
     )
     parser.add_argument("--reuse-prior-art", default=None)
+    parser.add_argument(
+        "--prior-art-memory-query-plan",
+        default=None,
+        help=(
+            "Optional historical LiteratureQueryPlan whose reviewed "
+            "prior art may be re-exposed to compatible current claims."
+        ),
+    )
+    parser.add_argument(
+        "--prior-art-memory-report",
+        default=None,
+        help=(
+            "Historical ExternalNoveltyReport corresponding to "
+            "--prior-art-memory-query-plan."
+        ),
+    )
+    parser.add_argument(
+        "--prior-art-memory-packet",
+        default=None,
+        help=(
+            "Historical PriorArtPacket containing works referenced "
+            "by --prior-art-memory-report."
+        ),
+    )
     parser.add_argument("--output-prefix", required=True)
     parser.add_argument("--save-prompts", action="store_true")
     return parser.parse_args()
@@ -102,6 +132,22 @@ def _write(path: Path, value: object) -> None:
 
 def main() -> None:
     args = parse_args()
+
+    memory_args = (
+        args.prior_art_memory_query_plan,
+        args.prior_art_memory_report,
+        args.prior_art_memory_packet,
+    )
+    memory_enabled = any(memory_args)
+
+    if memory_enabled and not all(memory_args):
+        raise ValueError(
+            "Prior-art memory requires all three inputs: "
+            "--prior-art-memory-query-plan, "
+            "--prior-art-memory-report, and "
+            "--prior-art-memory-packet."
+        )
+
     domain_profile = get_domain_profile(args.domain_profile)
     portfolio = HypothesisPortfolio.model_validate_json(
         Path(args.portfolio).read_text(encoding="utf-8")
@@ -200,9 +246,105 @@ def main() -> None:
             providers,
             results_per_query=args.results_per_query,
         ).retrieve(plan).packet
+    encoder = SentenceTransformerEncoder(
+        args.embed_model,
+        device=args.device,
+    )
+
+    if memory_enabled:
+        memory_plan = LiteratureQueryPlan.model_validate_json(
+            Path(
+                args.prior_art_memory_query_plan
+            ).read_text(encoding="utf-8")
+        )
+        memory_report = ExternalNoveltyReport.model_validate_json(
+            Path(
+                args.prior_art_memory_report
+            ).read_text(encoding="utf-8")
+        )
+        memory_packet = PriorArtPacket.model_validate_json(
+            Path(
+                args.prior_art_memory_packet
+            ).read_text(encoding="utf-8")
+        )
+
+        if (
+            memory_report.source_portfolio_id
+            != memory_plan.source_portfolio_id
+        ):
+            raise ValueError(
+                "prior-art memory plan/report portfolio mismatch"
+            )
+
+        if (
+            memory_packet.source_portfolio_id
+            != memory_plan.source_portfolio_id
+        ):
+            raise ValueError(
+                "prior-art memory plan/packet portfolio mismatch"
+            )
+
+        if (
+            memory_report.source_prior_art_packet_id
+            != memory_packet.packet_id
+        ):
+            raise ValueError(
+                "prior-art memory report/packet mismatch"
+            )
+
+        if (
+            memory_packet.source_query_plan_id
+            != memory_plan.plan_id
+        ):
+            raise ValueError(
+                "prior-art memory packet/query-plan mismatch"
+            )
+
+        memory = build_prior_art_memory(
+            memory_plan,
+            memory_report,
+        )
+
+        packet, memory_matches = (
+            augment_prior_art_packet_with_memory(
+                current_plan=plan,
+                current_packet=packet,
+                memory=memory,
+                memory_packet=memory_packet,
+                matcher=PriorArtMemoryMatcher(
+                    encoder
+                ),
+            )
+        )
+
+        _write(
+            prefix.with_suffix(
+                ".prior_art_memory.json"
+            ),
+            {
+                "enabled": True,
+                "historical_query_plan_id": (
+                    memory_plan.plan_id
+                ),
+                "historical_report_id": (
+                    memory_report.report_id
+                ),
+                "historical_prior_art_packet_id": (
+                    memory_packet.packet_id
+                ),
+                "memory_entry_count": len(memory),
+                "reexposed_work_ids_by_claim": {
+                    claim_id: list(work_ids)
+                    for claim_id, work_ids
+                    in sorted(
+                        memory_matches.items()
+                    )
+                },
+            },
+        )
+
     _write(prefix.with_suffix(".prior_art.json"), packet)
 
-    encoder = SentenceTransformerEncoder(args.embed_model, device=args.device)
     ranker = PriorArtRanker(
         encoder,
         max_ranked_works_per_claim=policy.max_ranked_works_per_claim,

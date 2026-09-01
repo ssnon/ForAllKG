@@ -3329,6 +3329,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             *_base_model_args(args, critic=True),
             "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),
+            *_prior_art_memory_cli_args(args),
             "--output-prefix", str(external_prefix),
             "--save-prompts",
         ],
@@ -3340,6 +3341,76 @@ def run_pipeline(args: argparse.Namespace) -> int:
         raise RuntimeError(
             "External novelty provenance mismatch immediately after stage 10: "
             f"portfolio={current_portfolio_id}, report_source={external_source_id}"
+        )
+
+    nonobviousness_shadow = None
+
+    if (
+        args.nonobviousness_shadow
+        or args.nonobviousness_full_shadow
+    ):
+        nonobviousness_shadow = (
+            run
+            / "nonobviousness_n9.shadow.json"
+        )
+
+        runner.run_stage(
+            "[10N9-a/13] Non-obviousness shadow intake",
+            "scripts.discovery.build_nonobviousness_shadow",
+            [
+                "--query-plan",
+                str(external_plan),
+                "--external-report",
+                str(external_report),
+                "--output",
+                str(nonobviousness_shadow),
+            ],
+            expected=[
+                nonobviousness_shadow,
+            ],
+        )
+
+    nonobviousness_full_shadow = None
+
+    if args.nonobviousness_full_shadow:
+        if nonobviousness_shadow is None:
+            raise RuntimeError(
+                "N9 full shadow requires the intake shadow artifact."
+            )
+
+        nonobviousness_full_shadow = (
+            run
+            / "nonobviousness_n9.full_shadow.json"
+        )
+
+        runner.run_stage(
+            "[10N9-b/13] Non-obviousness full closure shadow",
+            "scripts.discovery.run_nonobviousness_full_shadow",
+            [
+                "--query-plan",
+                str(external_plan),
+                "--external-report",
+                str(external_report),
+                "--external-prior-art",
+                str(external_prior),
+                "--intake-shadow",
+                str(nonobviousness_shadow),
+                "--provider-plan",
+                str(literature_provider_plan_path),
+                "--domain-profile",
+                domain_profile.profile_id,
+                *_base_model_args(
+                    args,
+                    critic=True,
+                ),
+                "--results-per-query",
+                str(args.results_per_query),
+                "--output",
+                str(nonobviousness_full_shadow),
+            ],
+            expected=[
+                nonobviousness_full_shadow,
+            ],
         )
 
     scientific_novelty_action_batch = None
@@ -3541,6 +3612,36 @@ def run_pipeline(args: argparse.Namespace) -> int:
     return 0
 
 
+
+def _prior_art_memory_cli_args(
+    args: argparse.Namespace,
+) -> list[str]:
+    values = (
+        getattr(args, "prior_art_memory_query_plan", None),
+        getattr(args, "prior_art_memory_report", None),
+        getattr(args, "prior_art_memory_packet", None),
+    )
+
+    if not any(values):
+        return []
+
+    if not all(values):
+        raise ValueError(
+            "Prior-art memory requires all three E2E inputs: "
+            "--prior-art-memory-query-plan, "
+            "--prior-art-memory-report, and "
+            "--prior-art-memory-packet."
+        )
+
+    return [
+        "--prior-art-memory-query-plan",
+        str(values[0]),
+        "--prior-art-memory-report",
+        str(values[1]),
+        "--prior-art-memory-packet",
+        str(values[2]),
+    ]
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -3579,6 +3680,30 @@ def parse_args() -> argparse.Namespace:
             "arbitration proposals. Production selection remains unchanged."
         ),
     )
+    parser.add_argument(
+        "--nonobviousness-shadow",
+        action="store_true",
+        help=(
+            "Materialize the N9 non-obviousness shadow intake "
+            "after external novelty: atomic residue plus "
+            "branch-specification gating only. No targeted closure, "
+            "adjudication, refinement, or production selection is changed."
+        ),
+    )
+
+    parser.add_argument(
+        "--nonobviousness-full-shadow",
+        action="store_true",
+        help=(
+            "Materialize the full N9 shadow chain after the intake "
+            "artifact: targeted closure retrieval, slot review, "
+            "evidence closure, structural/readiness gates, and only "
+            "deterministic final dispositions. READY candidates remain "
+            "pending an independent adjudicator. Production selection "
+            "remains unchanged."
+        ),
+    )
+
     parser.add_argument(
         "--scientific-novelty-action-shadow",
         action="store_true",
@@ -3729,6 +3854,30 @@ def parse_args() -> argparse.Namespace:
             "continue downstream from the materialized winner portfolio."
         ),
     )
+    parser.add_argument(
+        "--prior-art-memory-query-plan",
+        default=None,
+        help=(
+            "Optional historical LiteratureQueryPlan for "
+            "cross-claim prior-art continuity."
+        ),
+    )
+    parser.add_argument(
+        "--prior-art-memory-report",
+        default=None,
+        help=(
+            "Historical ExternalNoveltyReport corresponding "
+            "to the memory query plan."
+        ),
+    )
+    parser.add_argument(
+        "--prior-art-memory-packet",
+        default=None,
+        help=(
+            "Historical PriorArtPacket containing memory works."
+        ),
+    )
+
     args = parser.parse_args()
 
     if (

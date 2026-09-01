@@ -106,3 +106,81 @@ def test_direct_prior_art_dominates():
     )
 
     assert result.status == "DIRECTLY_KNOWN"
+
+
+def test_threshold_structure_stops_when_full_relation_is_unassessed():
+    closure = NonObviousnessEvidenceClosure(
+        base_relation="ESTABLISHED",
+        distinguishing_factor_effect="NOT_FOUND",
+        bridge_relation="NOT_FOUND",
+        full_relation="UNASSESSED",
+        bridge_kind="NONE",
+        scope_compatible=True,
+    )
+
+    structure = ResidualClaimStructure(
+        claim_kind="distinctive_prediction",
+        introduces_threshold=True,
+        introduces_regime_change=True,
+    )
+
+    result = assess_structural_nonobviousness(
+        closure,
+        structure,
+    )
+
+    assert result.status == "INSUFFICIENT_CLOSURE"
+    assert (
+        "full_residual_relation_unassessed"
+        in result.reason_codes
+    )
+
+
+def test_interaction_structure_stops_when_full_relation_is_unassessed():
+    closure = NonObviousnessEvidenceClosure(
+        base_relation="ESTABLISHED",
+        distinguishing_factor_effect="ESTABLISHED",
+        bridge_relation="ESTABLISHED",
+        full_relation="UNASSESSED",
+        bridge_kind="MEDIATION_CHAIN",
+        scope_compatible=True,
+    )
+
+    structure = ResidualClaimStructure(
+        claim_kind="moderator_interaction",
+    )
+
+    result = assess_structural_nonobviousness(
+        closure,
+        structure,
+    )
+
+    assert result.status == "INSUFFICIENT_CLOSURE"
+    assert (
+        "full_residual_relation_unassessed"
+        in result.reason_codes
+    )
+
+
+def test_threshold_structure_can_proceed_after_bounded_full_not_found():
+    closure = NonObviousnessEvidenceClosure(
+        base_relation="ESTABLISHED",
+        distinguishing_factor_effect="NOT_FOUND",
+        bridge_relation="NOT_FOUND",
+        full_relation="NOT_FOUND",
+        bridge_kind="NONE",
+        scope_compatible=True,
+    )
+
+    structure = ResidualClaimStructure(
+        claim_kind="distinctive_prediction",
+        introduces_threshold=True,
+        introduces_regime_change=True,
+    )
+
+    result = assess_structural_nonobviousness(
+        closure,
+        structure,
+    )
+
+    assert result.status == "REGIME_OR_THRESHOLD_LEAP"

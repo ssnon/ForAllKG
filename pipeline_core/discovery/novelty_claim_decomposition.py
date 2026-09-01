@@ -67,6 +67,130 @@ def _clean_diagnostic_terms(
     return rows
 
 
+def _clean_branch_specific_specification(
+    text: str,
+    identity_terms: list[str],
+) -> str:
+    """Preserve a specification only when it names this atomic branch.
+
+    This is deliberately conservative. An umbrella hypothesis-level
+    statement such as "laser excitation conditions ..." must not be
+    silently instantiated as a "laser power" or "excitation wavelength"
+    bridge unless that branch identity is explicitly represented.
+
+    Empty identity terms retain the cleaned text for backward
+    compatibility; claims with a usable branch identity are guarded.
+    """
+
+    cleaned = " ".join(
+        str(text or "").split()
+    )
+
+    if not cleaned:
+        return ""
+
+    identities = _clean_diagnostic_terms(
+        identity_terms
+    )
+
+    if not identities:
+        return cleaned
+
+    normalized_text = _clean_query(
+        cleaned,
+        limit=2000,
+    ).lower()
+
+    for identity in identities:
+        normalized_identity = _clean_query(
+            identity,
+            limit=120,
+        ).lower()
+
+        if (
+            normalized_identity
+            and normalized_identity
+            in normalized_text
+        ):
+            return cleaned
+
+    return ""
+
+
+def _clean_branch_specific_bridge(
+    text: str,
+    identity_terms: list[str],
+    source_texts: list[str],
+) -> str:
+    """Preserve only an extractively supported branch-specific bridge.
+
+    A bridge is stronger than a branch-specific prediction/falsifier:
+    it asserts the scientific proposition connecting the atomic factor
+    to the residual relation.
+
+    Therefore it must satisfy BOTH:
+      1. the atomic branch identity is explicitly named; and
+      2. the proposed bridge is an extractive span of the original
+         hypothesis inferential bridge or assumptions.
+
+    Paraphrasing an umbrella bridge into a new branch-specific
+    proposition is intentionally rejected.
+    """
+
+    cleaned = " ".join(
+        str(text or "").split()
+    )
+
+    if not cleaned:
+        return ""
+
+    identities = _clean_diagnostic_terms(
+        identity_terms
+    )
+
+    if not identities:
+        return ""
+
+    normalized_bridge = _clean_query(
+        cleaned,
+        limit=4000,
+    ).lower()
+
+    identity_present = False
+
+    for identity in identities:
+        normalized_identity = _clean_query(
+            identity,
+            limit=120,
+        ).lower()
+
+        if (
+            normalized_identity
+            and normalized_identity
+            in normalized_bridge
+        ):
+            identity_present = True
+            break
+
+    if not identity_present:
+        return ""
+
+    for source in source_texts:
+        normalized_source = _clean_query(
+            source,
+            limit=8000,
+        ).lower()
+
+        if (
+            normalized_bridge
+            and normalized_bridge
+            in normalized_source
+        ):
+            return cleaned
+
+    return ""
+
+
 def _assemble_diagnostic_relation_query(
     structural_terms: list[str],
     relation_terms: list[str],
@@ -171,6 +295,18 @@ class NoveltyClaimDecomposer:
                 fallback=diagnostic_source_query,
             )
 
+            prior_art_identity_terms = (
+                _clean_diagnostic_terms(
+                    row.prior_art_identity_terms
+                )
+            )
+
+            relation_nucleus_terms = (
+                _clean_diagnostic_terms(
+                    row.relation_nucleus_terms
+                )
+            )
+
             rows.append(
                 NoveltyClaim(
                     claim_id=_stable_id(
@@ -190,6 +326,34 @@ class NoveltyClaimDecomposer:
                     search_queries=queries[: self.max_queries],
                     distinguishing_terms=_clean_diagnostic_terms(
                         row.distinguishing_terms
+                    ),
+                    prior_art_identity_terms=(
+                        prior_art_identity_terms
+                    ),
+                    relation_nucleus_terms=(
+                        relation_nucleus_terms
+                    ),
+                    required_bridge=(
+                        _clean_branch_specific_bridge(
+                            row.required_bridge,
+                            prior_art_identity_terms,
+                            [
+                                hypothesis.inferential_bridge,
+                                *hypothesis.assumptions,
+                            ],
+                        )
+                    ),
+                    predicted_observation=(
+                        _clean_branch_specific_specification(
+                            row.predicted_observation,
+                            prior_art_identity_terms,
+                        )
+                    ),
+                    falsification_condition=(
+                        _clean_branch_specific_specification(
+                            row.falsification_condition,
+                            prior_art_identity_terms,
+                        )
                     ),
                     diagnostic_query_kind=diagnostic_kind,
                     diagnostic_search_query=(

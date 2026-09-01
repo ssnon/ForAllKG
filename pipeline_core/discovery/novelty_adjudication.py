@@ -322,6 +322,42 @@ def compile_nonobviousness_adjudication(
     art positively reconstructs the claim.
     """
 
+    # Positive evidence that the residual claim is already known or
+    # structurally routine takes precedence over non-obviousness readiness.
+    #
+    # Readiness answers whether a candidate may enter NON-OBVIOUSNESS
+    # review. It must not suppress a positive ROUTINE determination that
+    # has already been established by prior-art closure.
+    if (
+        packet.direct_full_claim_prior_art
+        or packet.structural_status == "DIRECTLY_KNOWN"
+    ):
+        return CompiledNonObviousnessAdjudication(
+            verdict="ROUTINE_FROM_PRIOR_ART",
+            reason_codes=(
+                "full_claim_prior_art_already_established",
+            ),
+            required_additional_assumptions=(),
+            interpretation=(
+                "The full residual claim is already positively represented "
+                "in the reviewed prior art."
+            ),
+        )
+
+    if packet.structural_status == "ROUTINE_COMPOSITION":
+        return CompiledNonObviousnessAdjudication(
+            verdict="ROUTINE_FROM_PRIOR_ART",
+            reason_codes=(
+                "structural_routine_composition_established",
+            ),
+            required_additional_assumptions=(),
+            interpretation=(
+                "The reviewed, scope-compatible prior-art closure "
+                "structurally reconstructs the residual claim as a routine "
+                "composition of established relations."
+            ),
+        )
+
     if readiness.readiness != "READY_FOR_NONOBVIOUSNESS_REVIEW":
         return CompiledNonObviousnessAdjudication(
             verdict="INSUFFICIENT_FOR_JUDGMENT",
@@ -332,19 +368,6 @@ def compile_nonobviousness_adjudication(
             interpretation=(
                 "The candidate has not passed the structural/specification "
                 "gate required for scientific non-obviousness adjudication."
-            ),
-        )
-
-    if packet.direct_full_claim_prior_art:
-        return CompiledNonObviousnessAdjudication(
-            verdict="ROUTINE_FROM_PRIOR_ART",
-            reason_codes=(
-                "full_claim_prior_art_already_established",
-            ),
-            required_additional_assumptions=(),
-            interpretation=(
-                "The full residual claim is already positively represented "
-                "in the reviewed prior art."
             ),
         )
 

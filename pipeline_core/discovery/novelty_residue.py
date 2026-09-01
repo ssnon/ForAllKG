@@ -78,6 +78,12 @@ class NoveltyResidueClaim:
     is_residue: bool
 
     distinguishing_terms: tuple[str, ...]
+    prior_art_identity_terms: tuple[str, ...]
+    relation_nucleus_terms: tuple[str, ...]
+
+    required_bridge: str
+    predicted_observation: str
+    falsification_condition: str
 
     direct_or_partial_work_ids: tuple[str, ...]
     lower_order_work_ids: tuple[str, ...]
@@ -130,6 +136,97 @@ class HypothesisNoveltyResidue:
             for row in self.claims
             if row.disposition == "UNRESOLVED"
         )
+
+
+ResidualSpecificationStatus = Literal[
+    "NOT_APPLICABLE",
+    "NEEDS_REFINEMENT",
+    "READY_FOR_CLOSURE",
+]
+
+
+@dataclass(frozen=True)
+class ResidualSpecificationAssessment:
+    status: ResidualSpecificationStatus
+    missing_fields: tuple[str, ...]
+    reason_codes: tuple[str, ...]
+    interpretation: str
+
+
+def assess_residual_specification(
+    claim: NoveltyResidueClaim,
+) -> ResidualSpecificationAssessment:
+    """Gate one prior-art residue before evidence-closure search.
+
+    A search-bounded prior-art residue is not automatically eligible
+    for scientific non-obviousness analysis. The original hypothesis
+    must independently specify the residual branch's bridge,
+    prediction, and falsifier.
+
+    Empty fields intentionally fail closed. This function never
+    invents missing scientific content.
+    """
+
+    if claim.disposition != "RESIDUAL":
+        return ResidualSpecificationAssessment(
+            status="NOT_APPLICABLE",
+            missing_fields=(),
+            reason_codes=(
+                "claim_is_not_active_novelty_residue",
+            ),
+            interpretation=(
+                "Only active novelty residues require branch-level "
+                "specification before evidence-closure search."
+            ),
+        )
+
+    required = {
+        "required_bridge": claim.required_bridge,
+        "predicted_observation": (
+            claim.predicted_observation
+        ),
+        "falsification_condition": (
+            claim.falsification_condition
+        ),
+    }
+
+    missing = tuple(
+        name
+        for name, value in required.items()
+        if not str(value or "").strip()
+    )
+
+    if missing:
+        return ResidualSpecificationAssessment(
+            status="NEEDS_REFINEMENT",
+            missing_fields=missing,
+            reason_codes=(
+                "atomic_residue_under_specified",
+                *tuple(
+                    f"missing_{name}"
+                    for name in missing
+                ),
+            ),
+            interpretation=(
+                "The atomic prior-art residue is not independently "
+                "specified strongly enough for evidence-closure or "
+                "non-obviousness review. Missing scientific content "
+                "must not be invented by retrieval or adjudication."
+            ),
+        )
+
+    return ResidualSpecificationAssessment(
+        status="READY_FOR_CLOSURE",
+        missing_fields=(),
+        reason_codes=(
+            "branch_bridge_prediction_falsifier_present",
+        ),
+        interpretation=(
+            "The original hypothesis supplies a branch-specific "
+            "bridge, prediction, and falsification condition. The "
+            "residue may proceed to bounded evidence-closure search."
+        ),
+    )
 
 
 def extract_novelty_residue(
@@ -213,6 +310,21 @@ def extract_novelty_residue(
                     ),
                     distinguishing_terms=tuple(
                         claim.distinguishing_terms
+                    ),
+                    prior_art_identity_terms=tuple(
+                        claim.prior_art_identity_terms
+                    ),
+                    relation_nucleus_terms=tuple(
+                        claim.relation_nucleus_terms
+                    ),
+                    required_bridge=(
+                        claim.required_bridge
+                    ),
+                    predicted_observation=(
+                        claim.predicted_observation
+                    ),
+                    falsification_condition=(
+                        claim.falsification_condition
                     ),
                     direct_or_partial_work_ids=(
                         tuple(

@@ -73,6 +73,29 @@ CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
 - Example: prefer claim text "Excitation wavelength moderates the dependence of SERS enhancement on interparticle spacing." Do not write "Excitation wavelength moderates ... because spacing-dependent plasmon coupling changes resonance overlap" as one claim.
 - Likewise, prefer a separate claim "Laser power moderates the dependence of SERS enhancement on interparticle spacing." Any proposed power-dependent heating, geometry change, localized-field sampling, or resonance mechanism belongs in rationale or in its own independently reviewable mechanistic claim.
 
+PRIOR-ART IDENTITY / RELATION-NUCLEUS CONTRACT:
+- Populate prior_art_identity_terms and relation_nucleus_terms for every novelty-bearing claim whenever the scientific relation permits it.
+- prior_art_identity_terms identify the minimum scientific factor(s) that determine which prior-art family should be eligible for cross-claim re-exposure. They are NOT the complete novelty claim.
+- Example: for wavelength-conditioned spacing-to-SERS claims, use "excitation wavelength"; for power-conditioned claims, use "laser power".
+- relation_nucleus_terms represent the underlying scientific relation being compared across claims: the principal input/descriptor, outcome, and dependence/interaction vocabulary needed to identify the same base relation.
+- Do not put a novelty-specific predicted consequence such as "relative ordering", "threshold", or "reversal" into relation_nucleus_terms unless that feature is itself part of the base relation being matched.
+- For a distinctive_prediction built on a moderator relation, prior_art_identity_terms should preserve the moderator/context identity, while distinguishing_terms should describe the prediction-specific feature that may remain novel.
+- Example: "Changing excitation wavelength changes the relative ordering of SERS across spacings" may use prior_art_identity_terms=["excitation wavelength"], distinguishing_terms=["relative ordering"], and relation_nucleus_terms=["interparticle spacing", "SERS enhancement", "dependence"].
+- A prior-art memory match only makes a historical work eligible for re-review. It never implies that the historical work establishes the current distinguishing prediction.
+
+ATOMIC SPECIFICATION PROVENANCE CONTRACT:
+- For every atomic novelty-bearing claim, preserve branch-specific scientific specification only when it can be grounded in the supplied hypothesis.
+- required_bridge is the minimum inferential or mechanistic bridge already stated by the hypothesis for THIS atomic branch.
+- predicted_observation is the observation from the supplied hypothesis that independently tests THIS branch.
+- falsification_condition is the supplied falsifying outcome that independently challenges THIS branch.
+- You may split a coordinated prediction or falsifier such as "wavelength or power" into branch-specific versions when doing so only removes the sibling alternative and does not add a new direction, mechanism, threshold, regime, or scientific proposition.
+- Bridge attribution is stricter: an umbrella bridge for "laser conditions" must NOT be assigned to a wavelength or power branch if the hypothesis does not make clear how that specific branch supplies the bridge.
+- In particular, do not invent power-dependent heating, geometry change, field saturation, nonlinear response, threshold behavior, or any other mechanism unless that scientific proposition is already present in the supplied hypothesis.
+- Do not borrow a bridge, prediction, or falsifier whose scientific meaning belongs only to a sibling branch.
+- If a branch-specific bridge, prediction, or falsification condition cannot be extracted without inventing or choosing new scientific content, return the corresponding field as an empty string.
+- Empty specification fields are valid and are preferred over unsupported completion.
+- These fields record hypothesis specification provenance; they are not prior-art evidence.
+
 DISTINGUISHING-FACET CONTRACT:
 - Populate distinguishing_terms for every novelty-bearing claim.
 - distinguishing_terms identify the minimum scientific factor or relation feature whose identity makes this claim different from nearby alternatives and therefore may give it a different prior-art status.
@@ -232,6 +255,10 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             f"- {row.observable} => {row.expected_direction}; rationale={row.rationale}"
             for row in hypothesis.predicted_observations
         ]
+        falsifier_lines = [
+            f"- {row.observable} => falsified_by={row.falsifying_outcome}"
+            for row in hypothesis.falsification_criteria
+        ]
         user = "\n".join(
             [
                 "HYPOTHESIS",
@@ -242,6 +269,8 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
                 f"inferential_bridge: {hypothesis.inferential_bridge}",
                 "predictions:",
                 *(prediction_lines or ["- NONE"]),
+                "falsification_criteria:",
+                *(falsifier_lines or ["- NONE"]),
                 "assumptions:",
                 *([f"- {x}" for x in hypothesis.assumptions] or ["- NONE"]),
                 "",

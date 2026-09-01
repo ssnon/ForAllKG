@@ -109,6 +109,32 @@ def assess_structural_nonobviousness(
             ),
         )
 
+    # A residual claim cannot enter structural non-obviousness
+    # analysis while its FULL relation remains unassessed.
+    #
+    # This is deliberately asymmetric:
+    #   ESTABLISHED -> directly known
+    #   NOT_FOUND   -> search-bounded negative closure may proceed
+    #   UNASSESSED  -> insufficient closure
+    #
+    # In particular, a threshold/regime structure must not become
+    # REGIME_OR_THRESHOLD_LEAP merely because the base relation is
+    # established while the full higher-order relation has not been
+    # adequately searched.
+    if closure.full_relation == "UNASSESSED":
+        return StructuralNonObviousnessAssessment(
+            status="INSUFFICIENT_CLOSURE",
+            reason_codes=(
+                "full_residual_relation_unassessed",
+            ),
+            interpretation=(
+                "The full residual relation has not received sufficient "
+                "prior-art closure. Structural non-obviousness analysis "
+                "must stop until that relation is positively established "
+                "or reaches a search-bounded NOT_FOUND state."
+            ),
+        )
+
     if not closure.scope_compatible:
         return StructuralNonObviousnessAssessment(
             status="INSUFFICIENT_CLOSURE",

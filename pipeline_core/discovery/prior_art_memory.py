@@ -102,8 +102,25 @@ def _normalize_vector(value) -> np.ndarray:
     return array / norm
 
 
-def _facet_corpus(claim: NoveltyClaim) -> list[str]:
+def _prior_art_identity_terms(
+    claim: NoveltyClaim,
+) -> list[str]:
+    # New claims explicitly separate prior-art identity from the
+    # novelty-specific distinguishing facet. Legacy claims fall back
+    # conservatively to their old distinguishing terms.
+    source = list(claim.prior_art_identity_terms)
+
+    if not source:
+        source = list(claim.distinguishing_terms)
+
+    return source
+
+
+def _memory_identity_corpus(
+    claim: NoveltyClaim,
+) -> list[str]:
     return [
+        *claim.prior_art_identity_terms,
         *claim.distinguishing_terms,
         *claim.search_concepts,
         claim.text,
@@ -114,21 +131,27 @@ def _distinguishing_facets_match(
     new_claim: NoveltyClaim,
     memory_claim: NoveltyClaim,
 ) -> bool:
-    # Memory propagation is intentionally conservative.
-    # Claims without an explicit new distinguishing facet do not
-    # receive cross-claim memory.
-    if not new_claim.distinguishing_terms:
+    # Historical work is re-exposed only when the current claim's
+    # prior-art identity is represented by the historical claim.
+    # Distinguishing prediction facets are intentionally NOT required
+    # here: the current reviewer decides whether the old work also
+    # establishes those stronger features.
+    identity_terms = _prior_art_identity_terms(
+        new_claim
+    )
+
+    if not identity_terms:
         return False
 
     corpus = [
         _norm_text(value)
-        for value in _facet_corpus(
+        for value in _memory_identity_corpus(
             memory_claim
         )
         if _norm_text(value)
     ]
 
-    for raw_term in new_claim.distinguishing_terms:
+    for raw_term in identity_terms:
         term = _norm_text(raw_term)
 
         if not term:
@@ -147,12 +170,15 @@ def _distinguishing_facets_match(
 def _relation_tokens(
     claim: NoveltyClaim,
 ) -> set[str]:
-    # diagnostic_relation_terms intentionally omit the
-    # higher-order moderator, so they are preferred as the
-    # base-relation signature.
-    source = list(
-        claim.diagnostic_relation_terms
-    )
+    # relation_nucleus_terms are the canonical base-relation
+    # representation for cross-claim prior-art continuity.
+    source = list(claim.relation_nucleus_terms)
+
+    # Backward compatibility for historical artifacts.
+    if not source:
+        source = list(
+            claim.diagnostic_relation_terms
+        )
 
     if not source:
         source = list(
@@ -161,8 +187,11 @@ def _relation_tokens(
 
     tokens = _tokens(source)
 
-    # Do not allow the distinguishing facet itself to make
-    # two otherwise unrelated relations look compatible.
+    # Neither prior-art identity nor novelty-specific prediction
+    # facets may manufacture base-relation compatibility.
+    tokens -= _tokens(
+        _prior_art_identity_terms(claim)
+    )
     tokens -= _tokens(
         claim.distinguishing_terms
     )
