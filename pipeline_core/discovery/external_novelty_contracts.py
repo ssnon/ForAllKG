@@ -70,6 +70,7 @@ class NoveltyClaimDraft(StrictModel):
     rationale: str = Field(min_length=1)
     search_concepts: list[str] = Field(default_factory=list)
     search_queries: list[str] = Field(default_factory=list)
+    distinguishing_terms: list[str] = Field(default_factory=list)
     diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
     diagnostic_search_query: str | None = None
     diagnostic_structural_terms: list[str] = Field(default_factory=list)
@@ -98,6 +99,7 @@ class NoveltyClaim(StrictModel):
     rationale: str
     search_concepts: list[str] = Field(default_factory=list)
     search_queries: list[str] = Field(default_factory=list)
+    distinguishing_terms: list[str] = Field(default_factory=list)
     diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
     diagnostic_search_query: str | None = None
     diagnostic_execution_query: str | None = None

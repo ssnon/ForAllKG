@@ -188,6 +188,9 @@ class NoveltyClaimDecomposer:
                     rationale=row.rationale,
                     search_concepts=concepts,
                     search_queries=queries[: self.max_queries],
+                    distinguishing_terms=_clean_diagnostic_terms(
+                        row.distinguishing_terms
+                    ),
                     diagnostic_query_kind=diagnostic_kind,
                     diagnostic_search_query=(
                         diagnostic_source_query or None

@@ -59,6 +59,30 @@ RELATION-FIRST DIAGNOSTIC ASSEMBLY CONTRACT:
 - Do not provide paper titles, DOI values, authors, years, or literature conclusions unless they were already present in the hypothesis.
 - The deterministic decomposer may assemble a diagnostic execution candidate by concatenating normalized structural terms followed by normalized relation terms. This candidate is preserved for provenance or a future bounded diagnostic pass and is not automatically inserted into first-pass search_queries. It will not invent synonyms or add scientific concepts.
 
+CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
+- Each returned claim must contain one novelty-bearing scientific relation nucleus.
+- If the hypothesis coordinates scientifically separable alternatives that could have different prior-art status, emit them as separate claims.
+- In particular, independent moderators such as "excitation wavelength or laser power" must not be hidden inside one umbrella claim such as "laser excitation conditions"; emit one claim for wavelength moderation and one claim for power moderation.
+- Apply the same rule to independent mechanisms, contexts, regimes, or predictions joined by "or", "and/or", or an equivalent coordination when each branch could independently be established or contradicted by prior art.
+- Do NOT split alternative states or values of the same scientific variable merely because they are contrasted. For example, presence versus absence of one moderator, or higher versus lower temperature, may remain one claim when they define a single comparison.
+- If the maximum claim count forces prioritization, preserve separate core novelty-bearing branches before generic background or explanatory claims.
+- A hypothesis-level umbrella statement may be described in decomposition_notes, but it must not replace the atomic branch claims used for prior-art assessment.
+- The claim text itself must contain ONE relation nucleus. Do not append a second mechanistic assertion using "because", "through", "by", "via", "consistent with", or an equivalent causal/explanatory tail when that assertion could have a different prior-art status.
+- Put explanatory scientific context in rationale when it only explains why the claim is plausible.
+- If a proposed mediator or mechanism is itself a novelty-bearing assertion that requires independent prior-art assessment, emit it as a separate mediator or mechanistic_link claim.
+- Example: prefer claim text "Excitation wavelength moderates the dependence of SERS enhancement on interparticle spacing." Do not write "Excitation wavelength moderates ... because spacing-dependent plasmon coupling changes resonance overlap" as one claim.
+- Likewise, prefer a separate claim "Laser power moderates the dependence of SERS enhancement on interparticle spacing." Any proposed power-dependent heating, geometry change, localized-field sampling, or resonance mechanism belongs in rationale or in its own independently reviewable mechanistic claim.
+
+DISTINGUISHING-FACET CONTRACT:
+- Populate distinguishing_terms for every novelty-bearing claim.
+- distinguishing_terms identify the minimum scientific factor or relation feature whose identity makes this claim different from nearby alternatives and therefore may give it a different prior-art status.
+- For moderator_interaction, include the moderator itself, for example "excitation wavelength" or "laser power". Do not replace a specific moderator with an umbrella phrase such as "laser conditions".
+- For context_condition, include the conditioning context or regime.
+- For pathway_competition or mechanistic_link, include the specific competing pathway or mechanism when that mechanism is the differentiating feature.
+- For distinctive_prediction, include the specific condition, contrast, threshold, reversal, or other feature that makes the prediction distinctive.
+- Do not place the base input and outcome in distinguishing_terms merely because they appear in the claim; those belong in the relation/search representation unless they themselves are the novelty-bearing distinction.
+- Keep distinguishing_terms concise and literal. Do not add synonyms or literature-derived concepts not present in the supplied hypothesis.
+
 Do not decompose generic background facts unless they are necessary to distinguish the generated hypothesis. Return only the structured NoveltyClaimDecompositionDraft requested by the caller."""
 
 

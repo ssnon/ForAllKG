@@ -1,0 +1,241 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Literal
+
+from pipeline_core.discovery.external_novelty_contracts import (
+    ExternalNoveltyReport,
+    LiteratureQueryPlan,
+)
+
+
+NoveltyResidueDisposition = Literal[
+    "SATURATED",
+    "UNRESOLVED_PARTIAL",
+    "RESIDUAL",
+    "UNRESOLVED",
+]
+
+
+_SATURATED = {
+    "DIRECT_PRIOR_ART",
+}
+
+_PARTIAL = {
+    "PARTIAL_PRIOR_ART",
+}
+
+_RESIDUAL = {
+    "COMPONENTS_ONLY",
+    "NO_DIRECT_MATCH_FOUND",
+}
+
+
+def classify_prior_art_disposition(
+    status: str,
+) -> NoveltyResidueDisposition:
+    """Map claim-level prior-art status to novelty-residue handling.
+
+    DIRECT_PRIOR_ART:
+        The atomic relation nucleus is already represented and is
+        therefore removed from the novelty residue.
+
+    PARTIAL_PRIOR_ART:
+        The claim must not be silently removed. Partial overlap may
+        mean that some scientific content remains unresolved, or that
+        the claim itself still requires finer decomposition.
+
+    COMPONENTS_ONLY / NO_DIRECT_MATCH_FOUND:
+        The relation nucleus remains a candidate novelty residue.
+        This does not imply scientific non-obviousness.
+
+    Other statuses:
+        Search/evidence resolution is insufficient for residue
+        adjudication.
+    """
+
+    if status in _SATURATED:
+        return "SATURATED"
+
+    if status in _PARTIAL:
+        return "UNRESOLVED_PARTIAL"
+
+    if status in _RESIDUAL:
+        return "RESIDUAL"
+
+    return "UNRESOLVED"
+
+
+@dataclass(frozen=True)
+class NoveltyResidueClaim:
+    hypothesis_id: str
+    claim_id: str
+    claim_text: str
+    claim_kind: str
+    prior_art_status: str
+
+    disposition: NoveltyResidueDisposition
+    is_residue: bool
+
+    distinguishing_terms: tuple[str, ...]
+
+    direct_or_partial_work_ids: tuple[str, ...]
+    lower_order_work_ids: tuple[str, ...]
+    component_work_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class HypothesisNoveltyResidue:
+    hypothesis_id: str
+    external_status: str
+    claims: tuple[NoveltyResidueClaim, ...]
+
+    @property
+    def residual_claims(
+        self,
+    ) -> tuple[NoveltyResidueClaim, ...]:
+        return tuple(
+            row
+            for row in self.claims
+            if row.disposition == "RESIDUAL"
+        )
+
+    @property
+    def saturated_claims(
+        self,
+    ) -> tuple[NoveltyResidueClaim, ...]:
+        return tuple(
+            row
+            for row in self.claims
+            if row.disposition == "SATURATED"
+        )
+
+    @property
+    def partial_claims(
+        self,
+    ) -> tuple[NoveltyResidueClaim, ...]:
+        return tuple(
+            row
+            for row in self.claims
+            if row.disposition
+            == "UNRESOLVED_PARTIAL"
+        )
+
+    @property
+    def unresolved_claims(
+        self,
+    ) -> tuple[NoveltyResidueClaim, ...]:
+        return tuple(
+            row
+            for row in self.claims
+            if row.disposition == "UNRESOLVED"
+        )
+
+
+def extract_novelty_residue(
+    plan: LiteratureQueryPlan,
+    report: ExternalNoveltyReport,
+) -> list[HypothesisNoveltyResidue]:
+    planned = {
+        claim.claim_id: claim
+        for group in plan.claims
+        for claim in group.claims
+    }
+
+    results: list[
+        HypothesisNoveltyResidue
+    ] = []
+
+    for card in report.cards:
+        rows: list[
+            NoveltyResidueClaim
+        ] = []
+
+        for review in card.claim_reviews:
+            claim = planned.get(
+                review.claim_id
+            )
+
+            if claim is None:
+                raise ValueError(
+                    "missing planned claim "
+                    f"{review.claim_id}"
+                )
+
+            direct_or_partial = sorted({
+                match.work_id
+                for match in review.matches
+                if match.relationship in {
+                    "DIRECT_PRIOR_ART",
+                    "PARTIAL_PRIOR_ART",
+                }
+            })
+
+            lower_order = sorted({
+                match.work_id
+                for match in review.matches
+                if (
+                    match.relationship
+                    == "LOWER_ORDER_RELATION_PRIOR_ART"
+                )
+            })
+
+            components = sorted({
+                match.work_id
+                for match in review.matches
+                if match.relationship in {
+                    "COMPONENT_ONLY",
+                    "CONTEXTUAL_CONFLICT",
+                }
+            })
+
+            disposition = (
+                classify_prior_art_disposition(
+                    review.status
+                )
+            )
+
+            rows.append(
+                NoveltyResidueClaim(
+                    hypothesis_id=(
+                        card.hypothesis_id
+                    ),
+                    claim_id=review.claim_id,
+                    claim_text=review.claim_text,
+                    claim_kind=claim.kind,
+                    prior_art_status=(
+                        review.status
+                    ),
+                    disposition=disposition,
+                    is_residue=(
+                        disposition
+                        == "RESIDUAL"
+                    ),
+                    distinguishing_terms=tuple(
+                        claim.distinguishing_terms
+                    ),
+                    direct_or_partial_work_ids=(
+                        tuple(
+                            direct_or_partial
+                        )
+                    ),
+                    lower_order_work_ids=tuple(
+                        lower_order
+                    ),
+                    component_work_ids=tuple(
+                        components
+                    ),
+                )
+            )
+
+        results.append(
+            HypothesisNoveltyResidue(
+                hypothesis_id=(
+                    card.hypothesis_id
+                ),
+                external_status=card.status,
+                claims=tuple(rows),
+            )
+        )
+
+    return results
