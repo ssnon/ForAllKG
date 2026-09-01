@@ -73,6 +73,55 @@ class DiscoveryAxisPlanner:
         )
         return max(0.0, float(score))
 
+    def _materialize_axis(
+        self,
+        *,
+        dual_context_sha256: str,
+        item: object,
+        planner_score: float,
+        axis_rank: int,
+    ) -> DiscoveryAxis:
+        """Materialize one already-selected inspiration as a DiscoveryAxis."""
+        label = str(item.candidate_unit_label or item.rendered_path)
+        axis_id = _stable_id(
+            "discovery_axis",
+            dual_context_sha256,
+            item.inspiration_id,
+            item.candidate_unit_id,
+            axis_rank,
+        )
+        return DiscoveryAxis(
+            axis_id=axis_id,
+            axis_rank=axis_rank,
+            inspiration_id=str(item.inspiration_id),
+            source_path_id=str(item.source_path_id),
+            candidate_unit_id=str(item.candidate_unit_id),
+            label=label,
+            entry_anchor_id=str(item.candidate_entry_anchor_id),
+            entry_anchor_label=str(item.candidate_entry_anchor_label),
+            exit_anchor_id=str(item.candidate_exit_anchor_id),
+            exit_anchor_label=str(item.candidate_exit_anchor_label),
+            proposed_subject=str(item.candidate_proposed_subject),
+            proposed_relation=str(item.candidate_proposed_relation),
+            proposed_object=str(item.candidate_proposed_object),
+            rendered_path=str(item.rendered_path),
+            source_mode=str(item.source_mode),
+            exploration_score=float(item.exploration_score),
+            candidate_unit_score=float(item.candidate_unit_score),
+            planner_score=float(planner_score),
+            mechanistic_continuity_band=str(item.mechanistic_continuity_band),
+            generic_entity_fraction=float(item.generic_entity_fraction),
+            registry_hop_fraction=float(item.registry_hop_fraction),
+            grounding_semantic_overlap=float(
+                item.semantic_similarity_to_grounding
+            ),
+            reaction_domain_switch_penalty=float(
+                item.reaction_domain_switch_penalty
+            ),
+            requires_verification=bool(item.requires_verification),
+            reason_codes=list(item.reason_codes),
+        )
+
     def build(self, dual: DualHypothesisContext) -> DiscoveryAxisPlan:
         bundle = dual.discovery_bundle
         if dual.grounded_context.corpus_id != bundle.corpus_id:
@@ -112,44 +161,16 @@ class DiscoveryAxisPlanner:
         excluded.extend(str(row[2].inspiration_id) for row in eligible[self.policy.max_axes :])
 
         axes: list[DiscoveryAxis] = []
-        for rank, (planner_score, _index, item) in enumerate(selected, start=1):
-            label = str(item.candidate_unit_label or item.rendered_path)
-            axis_id = _stable_id(
-                "discovery_axis",
-                dual.dual_context_sha256,
-                item.inspiration_id,
-                item.candidate_unit_id,
-                rank,
-            )
+        for rank, (planner_score, _index, item) in enumerate(
+            selected,
+            start=1,
+        ):
             axes.append(
-                DiscoveryAxis(
-                    axis_id=axis_id,
+                self._materialize_axis(
+                    dual_context_sha256=dual.dual_context_sha256,
+                    item=item,
+                    planner_score=planner_score,
                     axis_rank=rank,
-                    inspiration_id=str(item.inspiration_id),
-                    source_path_id=str(item.source_path_id),
-                    candidate_unit_id=str(item.candidate_unit_id),
-                    label=label,
-                    entry_anchor_id=str(item.candidate_entry_anchor_id),
-                    entry_anchor_label=str(item.candidate_entry_anchor_label),
-                    exit_anchor_id=str(item.candidate_exit_anchor_id),
-                    exit_anchor_label=str(item.candidate_exit_anchor_label),
-                    proposed_subject=str(item.candidate_proposed_subject),
-                    proposed_relation=str(item.candidate_proposed_relation),
-                    proposed_object=str(item.candidate_proposed_object),
-                    rendered_path=str(item.rendered_path),
-                    source_mode=str(item.source_mode),
-                    exploration_score=float(item.exploration_score),
-                    candidate_unit_score=float(item.candidate_unit_score),
-                    planner_score=float(planner_score),
-                    mechanistic_continuity_band=str(item.mechanistic_continuity_band),
-                    generic_entity_fraction=float(item.generic_entity_fraction),
-                    registry_hop_fraction=float(item.registry_hop_fraction),
-                    grounding_semantic_overlap=float(item.semantic_similarity_to_grounding),
-                    reaction_domain_switch_penalty=float(
-                        item.reaction_domain_switch_penalty
-                    ),
-                    requires_verification=bool(item.requires_verification),
-                    reason_codes=list(item.reason_codes),
                 )
             )
 

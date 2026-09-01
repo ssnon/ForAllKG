@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pydantic import Field
+from pipeline_core.discovery.discovery_contracts import DiscoveryInspiration
+
 import hashlib
 import json
 from typing import Any, Literal
@@ -43,6 +46,7 @@ class DualHypothesisContext(StrictModel):
     domain_profile_id: str
     grounded_context: HypothesisContext
     discovery_bundle: DiscoveryBundle
+    task_lane_inspirations: list[DiscoveryInspiration] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _lineage_consistency(self) -> "DualHypothesisContext":
@@ -68,6 +72,7 @@ class DualHypothesisContext(StrictModel):
         cls,
         grounded_context: HypothesisContext,
         discovery_bundle: DiscoveryBundle,
+        task_lane_inspirations: list[DiscoveryInspiration] | None = None,
     ) -> "DualHypothesisContext":
         if grounded_context.corpus_id != discovery_bundle.corpus_id:
             raise ValueError(
@@ -94,5 +99,9 @@ class DualHypothesisContext(StrictModel):
             "domain_profile_id": domain_profile_id,
             "grounded_context": grounded_context.model_dump(mode="json"),
             "discovery_bundle": discovery_bundle.model_dump(mode="json"),
+            "task_lane_inspirations": [
+                item.model_dump(mode="json")
+                for item in (task_lane_inspirations or [])
+            ],
         }
         return cls(**payload, dual_context_sha256=_sha256_json(payload))

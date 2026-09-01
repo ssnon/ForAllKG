@@ -88,6 +88,7 @@ class AxisWinnerMaterializationRecord(
 
     status: Literal[
         "WINNER_MATERIALIZED",
+        "ELIGIBLE_NOT_GLOBALLY_SELECTED",
         "NO_ELIGIBLE_REALIZATION",
     ]
 
@@ -187,6 +188,8 @@ def materialize_realization_winners(
         str,
         ProductionRealizationSelectionReport,
     ],
+    global_selection_enforced: bool = False,
+    global_winner_axis_id: str | None = None,
 ) -> RealizationWinnerMaterialization:
     """Materialize authoritative per-axis best-of-k winners.
 
@@ -469,6 +472,48 @@ def materialize_realization_winners(
 
             continue
 
+        if global_selection_enforced:
+            if global_winner_axis_id is None:
+                raise ValueError(
+                    "global production selection has no winner, "
+                    "but an axis-local eligible winner exists"
+                )
+
+            if axis_id != global_winner_axis_id:
+                if (
+                    selection.status
+                    != "WINNER_SELECTED"
+                    or selection.winner_slot_index
+                    is None
+                    or not selection.winner_hypothesis_id
+                    or selection.winner_tier
+                    is None
+                ):
+                    raise ValueError(
+                        "axis-local eligible winner lacks complete "
+                        "winner metadata before global filtering"
+                    )
+
+                materialization_records.append(
+                    AxisWinnerMaterializationRecord(
+                        axis_id=axis_id,
+                        status=(
+                            "ELIGIBLE_NOT_GLOBALLY_SELECTED"
+                        ),
+                        winner_slot_index=(
+                            selection.winner_slot_index
+                        ),
+                        winner_hypothesis_id=(
+                            selection.winner_hypothesis_id
+                        ),
+                        winner_tier=(
+                            selection.winner_tier
+                        ),
+                    )
+                )
+
+                continue
+
         winner_slot = (
             selection.winner_slot_index
         )
@@ -638,6 +683,30 @@ def materialize_realization_winners(
             == "WINNER_MATERIALIZED"
         )
     )
+
+    if global_selection_enforced:
+        if (
+            global_winner_axis_id
+            is not None
+            and global_winner_axis_id
+            not in plan_axis_ids
+        ):
+            raise ValueError(
+                "global_winner_axis_id is not present "
+                "in the frozen discovery-axis plan"
+            )
+
+        if global_winner_axis_id is None:
+            if selected_cards:
+                raise ValueError(
+                    "global winner is null but canonical "
+                    "winner cards were materialized"
+                )
+        elif len(selected_cards) != 1:
+            raise ValueError(
+                "global production selection must materialize "
+                "exactly one canonical winner"
+            )
 
     winner_portfolio_id = (
         _stable_id(

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import inspect
 
 from scripts.discovery import (
@@ -19,15 +21,28 @@ def test_helper_exists():
     )
 
 
-def test_width_three_and_retain_one():
+def test_configurable_width_and_retain_one():
     src = helper()
 
-    assert "search_width=3" in src
-
+    assert (
+        "search_width=args.realization_search_width"
+        in src
+    )
     assert (
         "retained_hypotheses_per_axis=1"
         in src
     )
+
+
+def test_realization_search_width_cli_defaults_to_three():
+    src = Path(
+        "scripts/discovery/run_dac_discovery_e2e.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"--realization-search-width"' in src
+    assert "type=int" in src
+    assert "choices=range(1, 5)" in src
+    assert "default=3" in src
 
 
 def test_plan_is_frozen_before_realization_loop():
@@ -233,4 +248,102 @@ def test_task_preservation_filters_before_production_winner_ranking():
     assert (
         "semantic_evaluation_preserved_for_task_ineligible"
         in src
+    )
+
+def test_cross_axis_global_selection_is_explicit_opt_in():
+    full_src = Path(
+        "scripts/discovery/run_dac_discovery_e2e.py"
+    ).read_text(encoding="utf-8")
+
+    helper_src = helper()
+
+    assert (
+        '"--cross-axis-global-selection-enforce"'
+        in full_src
+    )
+
+    assert (
+        "select_global_axis_production_winner"
+        in helper_src
+    )
+
+    assert (
+        "global_selection_enforced"
+        in helper_src
+    )
+
+    assert (
+        "global_winner_axis_id=("
+        in helper_src
+    )
+
+    assert (
+        '"global_selection":'
+        in helper_src
+    )
+
+def test_global_selection_filters_companion_review_artifacts():
+    import ast
+
+    full_src = Path(
+        "scripts/discovery/run_dac_discovery_e2e.py"
+    ).read_text(encoding="utf-8")
+
+    tree = ast.parse(full_src)
+
+    review_helper = None
+
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.FunctionDef)
+            and node.name
+            == "_materialize_realization_review_artifact"
+        ):
+            review_helper = ast.get_source_segment(
+                full_src,
+                node,
+            )
+            break
+
+    assert review_helper is not None
+
+    assert (
+        "global_selection_enforced: bool = False"
+        in review_helper
+    )
+
+    assert (
+        "global_winner_axis_id: str | None = None"
+        in review_helper
+    )
+
+    assert (
+        "axis.axis_id"
+        in review_helper
+    )
+
+    assert (
+        "!= global_winner_axis_id"
+        in review_helper
+    )
+
+    assert (
+        "exactly one materialized review record"
+        in review_helper
+    )
+
+    stage8 = helper()
+
+    assert (
+        stage8.count(
+            "global_selection_enforced=("
+        )
+        >= 3
+    )
+
+    assert (
+        stage8.count(
+            "global_winner_axis_id=("
+        )
+        >= 3
     )

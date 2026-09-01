@@ -1231,6 +1231,8 @@ def _materialize_realization_review_artifact(
     plan,
     selections_by_axis: dict,
     slot_paths: dict,
+    global_selection_enforced: bool = False,
+    global_winner_axis_id: str | None = None,
 ) -> None:
     """Rebind already-computed inference/context reviews to winners."""
 
@@ -1272,6 +1274,13 @@ def _materialize_realization_review_artifact(
         if (
             selection.status
             != "WINNER_SELECTED"
+        ):
+            continue
+
+        if (
+            global_selection_enforced
+            and axis.axis_id
+            != global_winner_axis_id
         ):
             continue
 
@@ -1351,6 +1360,20 @@ def _materialize_realization_review_artifact(
             )
         )
 
+    if global_selection_enforced:
+        if global_winner_axis_id is None:
+            if records:
+                raise RuntimeError(
+                    f"{artifact_kind} global selection has no "
+                    "winner but materialized review records."
+                )
+        elif len(records) != 1:
+            raise RuntimeError(
+                f"{artifact_kind} global selection requires "
+                "exactly one materialized review record: "
+                f"records={len(records)}"
+            )
+
     template[
         "portfolio_id"
     ] = winner_portfolio_id
@@ -1397,6 +1420,7 @@ def _run_realization_search_production_stage8(
     literature_provider_plan_path: Path,
     domain_profile_id: str,
     context_review_enabled: bool,
+    frozen_axis_plan_input: Path | None = None,
 ) -> None:
     """Production-authoritative width-3 search over one frozen axis plan."""
 
@@ -1428,6 +1452,9 @@ def _run_realization_search_production_stage8(
     from pipeline_core.discovery.realization_search_task_aware import (
         select_axis_task_aware_production_winner,
     )
+    from pipeline_core.discovery.realization_search_global import (
+        select_global_axis_production_winner,
+    )
     from pipeline_core.discovery.question_axis_responsiveness_llm import (
         OpenRouterQuestionAxisResponsivenessBackend,
     )
@@ -1437,7 +1464,7 @@ def _run_realization_search_production_stage8(
 
     policy = (
         RealizationSearchPolicy(
-            search_width=3,
+            search_width=args.realization_search_width,
             retained_hypotheses_per_axis=1,
         )
     )
@@ -1470,38 +1497,59 @@ def _run_realization_search_production_stage8(
     # A. Freeze one discovery-axis plan.
     # --------------------------------------------------------------
 
-    runner.run_stage(
-        (
-            "[8R-plan/13] Freeze discovery-axis plan "
-            "for realization search"
-        ),
-        (
-            "scripts.discovery."
-            "run_discovery_axis_hypothesis_maker"
-        ),
-        [
-            "--dual-context",
-            str(
-                dual_context
+    if frozen_axis_plan_input is None:
+        runner.run_stage(
+            (
+                "[8R-plan/13] Freeze discovery-axis plan "
+                "for realization search"
             ),
-            "--max-axes",
-            str(
-                args.max_axes
+            (
+                "scripts.discovery."
+                "run_discovery_axis_hypothesis_maker"
             ),
-            "--min-candidate-unit-score",
-            str(
-                args.min_candidate_unit_score
-            ),
-            "--output-prefix",
-            str(
-                axis_prefix
-            ),
-            "--dry-run-plan",
-        ],
-        expected=[
-            axis_plan
-        ],
-    )
+            [
+                "--dual-context",
+                str(
+                    dual_context
+                ),
+                "--max-axes",
+                str(
+                    args.max_axes
+                ),
+                "--min-candidate-unit-score",
+                str(
+                    args.min_candidate_unit_score
+                ),
+                "--output-prefix",
+                str(
+                    axis_prefix
+                ),
+                "--dry-run-plan",
+            ],
+            expected=[
+                axis_plan
+            ],
+        )
+    else:
+        if not frozen_axis_plan_input.is_file():
+            raise FileNotFoundError(
+                "Precomputed frozen discovery-axis plan missing: "
+                f"{frozen_axis_plan_input}"
+            )
+
+        axis_plan.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        if (
+            frozen_axis_plan_input.resolve()
+            !=
+            axis_plan.resolve()
+        ):
+            axis_plan.write_bytes(
+                frozen_axis_plan_input.read_bytes()
+            )
 
     plan = (
         DiscoveryAxisPlan
@@ -1895,6 +1943,30 @@ def _run_realization_search_production_stage8(
         ) in task_selection_by_axis.items()
     }
 
+    global_selection_enforced = bool(
+        getattr(
+            args,
+            "cross_axis_global_selection_enforce",
+            False,
+        )
+    )
+
+    global_selection = None
+
+    if global_selection_enforced:
+        global_selection = (
+            select_global_axis_production_winner(
+                axis_order=[
+                    axis.axis_id
+                    for axis
+                    in plan.axes
+                ],
+                task_aware_selections_by_axis=(
+                    task_selection_by_axis
+                ),
+            )
+        )
+
     # --------------------------------------------------------------
     # D. Materialize production-authoritative winners.
     # --------------------------------------------------------------
@@ -1913,6 +1985,14 @@ def _run_realization_search_production_stage8(
             ),
             selections_by_axis=(
                 selections_by_axis
+            ),
+            global_selection_enforced=(
+                global_selection_enforced
+            ),
+            global_winner_axis_id=(
+                None
+                if global_selection is None
+                else global_selection.winner_axis_id
             ),
         )
     )
@@ -1948,6 +2028,14 @@ def _run_realization_search_production_stage8(
         slot_paths=(
             slot_inference_paths
         ),
+        global_selection_enforced=(
+            global_selection_enforced
+        ),
+        global_winner_axis_id=(
+            None
+            if global_selection is None
+            else global_selection.winner_axis_id
+        ),
     )
 
     if context_review_enabled:
@@ -1967,6 +2055,14 @@ def _run_realization_search_production_stage8(
             ),
             slot_paths=(
                 slot_context_paths
+            ),
+            global_selection_enforced=(
+                global_selection_enforced
+            ),
+            global_winner_axis_id=(
+                None
+                if global_selection is None
+                else global_selection.winner_axis_id
             ),
         )
 
@@ -2032,6 +2128,18 @@ def _run_realization_search_production_stage8(
             "search_width":
                 policy.search_width,
 
+            "global_selection_enforced":
+                global_selection_enforced,
+
+            "global_selection":
+                (
+                    None
+                    if global_selection is None
+                    else global_selection.model_dump(
+                        mode="json"
+                    )
+                ),
+
             "selections":
                 [
                     {
@@ -2080,6 +2188,30 @@ def _run_realization_search_production_stage8(
 
         "retained_hypotheses_per_axis":
             policy.retained_hypotheses_per_axis,
+
+        "cross_axis_global_selection_enforced":
+            global_selection_enforced,
+
+        "global_winner_axis_id":
+            (
+                None
+                if global_selection is None
+                else global_selection.winner_axis_id
+            ),
+
+        "global_winner_hypothesis_id":
+            (
+                None
+                if global_selection is None
+                else global_selection.winner_hypothesis_id
+            ),
+
+        "global_winner_tier":
+            (
+                None
+                if global_selection is None
+                else global_selection.winner_tier
+            ),
 
         "frozen_axis_plan":
             str(
@@ -2621,6 +2753,51 @@ def run_pipeline(args: argparse.Namespace) -> int:
         expected=[dual_context],
     )
 
+    task_conditioned_dual_context = (
+        run
+        / "hypothesis.task_conditioned.dual_context.a3.json"
+    )
+
+    task_conditioned_axis_plan = (
+        run
+        / "hypothesis_axis_a4.task_conditioned.axis_plan.json"
+    )
+
+    task_conditioned_axis_report = (
+        run
+        / "hypothesis_axis_a4.task_conditioned.report.json"
+    )
+
+    runner.run_stage(
+        "[7.5/13] Task-conditioned discovery-axis plan",
+        "scripts.discovery.build_task_conditioned_axis_plan",
+        [
+            "--question", str(args.question),
+            "--final-traversal", str(final_traversal),
+            "--candidate-traversal", str(candidate_traversal),
+            "--discovery-bundle", str(bundle),
+            "--dual-context", str(dual_context),
+            "--domain-profile", domain_profile.profile_id,
+            "--discovery-top-k", str(args.discovery_top_k),
+            "--min-candidate-unit-score",
+            str(args.min_candidate_unit_score),
+            "--max-axes", str(args.max_axes),
+            "--output-dual-context",
+            str(task_conditioned_dual_context),
+            "--output-axis-plan",
+            str(task_conditioned_axis_plan),
+            "--output-report",
+            str(task_conditioned_axis_report),
+        ],
+        expected=[
+            task_conditioned_dual_context,
+            task_conditioned_axis_plan,
+            task_conditioned_axis_report,
+        ],
+    )
+
+    dual_context = task_conditioned_dual_context
+
     # ------------------------------------------------------------------
     # 8-9. Alpha4 generation and semantic gate
     # ------------------------------------------------------------------
@@ -2666,6 +2843,9 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 context_review_adapter
                 is not None
             ),
+            frozen_axis_plan_input=(
+                task_conditioned_axis_plan
+            ),
         )
     else:
         runner.run_stage(
@@ -2688,6 +2868,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
                     if context_review_adapter is not None
                     else []
                 ),
+                "--axis-plan-input",
+                str(task_conditioned_axis_plan),
                 "--output-prefix", str(axis_prefix),
                 "--save-prompts",
             ],
@@ -3514,18 +3696,50 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--realization-search-width",
+        type=int,
+        choices=range(1, 5),
+        default=3,
+        help=(
+            "Number of independent hypothesis realizations generated "
+            "per discovery axis when production realization search is "
+            "enabled. Default: 3. N7 budget-matched multi-axis search "
+            "uses 1."
+        ),
+    )
+    parser.add_argument(
+        "--cross-axis-global-selection-enforce",
+        action="store_true",
+        help=(
+            "After task-aware per-axis realization selection, "
+            "collapse axis-local winners to one global canonical "
+            "winner using stable semantic tier and frozen axis-plan "
+            "order. Default: disabled."
+        ),
+    )
+    parser.add_argument(
         "--realization-search-enforce",
         action="store_true",
         help=(
-            "Production-authoritative width-3 realization search. "
-            "Freeze one discovery-axis plan, generate three independent "
-            "realizations per axis, evaluate each through external prior-art "
-            "and two-pass semantic distinctiveness, retain the best stable "
-            "determinate realization per axis, then continue downstream "
-            "from the materialized winner portfolio."
+            "Production-authoritative realization search. "
+            "Freeze one discovery-axis plan, generate the configured number "
+            "of independent realizations per axis, evaluate each through "
+            "external prior-art and two-pass semantic distinctiveness, "
+            "retain the best stable determinate realization per axis, then "
+            "continue downstream from the materialized winner portfolio."
         ),
     )
     args = parser.parse_args()
+
+    if (
+        args.cross_axis_global_selection_enforce
+        and not args.realization_search_enforce
+    ):
+        parser.error(
+            "--cross-axis-global-selection-enforce requires "
+            "--realization-search-enforce"
+        )
+
     if not 0.0 <= args.min_candidate_unit_score <= 1.0:
         parser.error(
             "--min-candidate-unit-score must be between 0 and 1"

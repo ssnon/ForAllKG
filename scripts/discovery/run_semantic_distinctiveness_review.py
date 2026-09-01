@@ -101,6 +101,161 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+
+def _sanitize_reference_contract_draft(
+    *,
+    draft,
+    prompt,
+):
+    """Fail closed on residual hallucinated provenance references.
+
+    This function never guesses or maps one identifier to another.
+    Any claim/work reference outside the frozen prompt allowlist is
+    removed, and only the affected semantic dimension is downgraded to
+    INDETERMINATE.
+    """
+
+    allowed_claim_ids = set(
+        prompt.allowed_claim_ids
+    )
+    allowed_work_ids = set(
+        prompt.allowed_work_ids
+    )
+
+    draft_updates = {}
+    issues = []
+
+    model_fields = getattr(
+        draft.__class__,
+        "model_fields",
+        {},
+    )
+
+    for field_name in model_fields:
+        assessment = getattr(
+            draft,
+            field_name,
+            None,
+        )
+
+        if assessment is None:
+            continue
+
+        if not (
+            hasattr(assessment, "claim_ids")
+            and
+            hasattr(assessment, "work_ids")
+            and
+            hasattr(assessment, "model_copy")
+        ):
+            continue
+
+        original_claim_ids = list(
+            assessment.claim_ids
+        )
+
+        original_work_ids = list(
+            assessment.work_ids
+        )
+
+        valid_claim_ids = [
+            value
+            for value in original_claim_ids
+            if value in allowed_claim_ids
+        ]
+
+        valid_work_ids = [
+            value
+            for value in original_work_ids
+            if value in allowed_work_ids
+        ]
+
+        unknown_claim_ids = sorted(
+            set(original_claim_ids)
+            - allowed_claim_ids
+        )
+
+        unknown_work_ids = sorted(
+            set(original_work_ids)
+            - allowed_work_ids
+        )
+
+        if not (
+            unknown_claim_ids
+            or
+            unknown_work_ids
+        ):
+            continue
+
+        updates = {
+            "claim_ids":
+                valid_claim_ids,
+
+            "work_ids":
+                valid_work_ids,
+        }
+
+        if hasattr(
+            assessment,
+            "level",
+        ):
+            updates[
+                "level"
+            ] = "INDETERMINATE"
+
+        if hasattr(
+            assessment,
+            "rationale",
+        ):
+            updates[
+                "rationale"
+            ] = (
+                "INDETERMINATE under the frozen evidence: "
+                "the generated assessment contained "
+                "out-of-allowlist provenance references. "
+                "No identifier substitution or fuzzy correction "
+                "was performed."
+            )
+
+        draft_updates[
+            field_name
+        ] = assessment.model_copy(
+            update=updates
+        )
+
+        issues.append(
+            {
+                "dimension":
+                    field_name,
+
+                "unknown_claim_ids":
+                    unknown_claim_ids,
+
+                "unknown_work_ids":
+                    unknown_work_ids,
+            }
+        )
+
+    if not draft_updates:
+        return draft, []
+
+    sanitized = draft.model_copy(
+        update=draft_updates
+    )
+
+    # Revalidate the full object rather than trusting model_copy updates.
+    sanitized = (
+        draft.__class__
+        .model_validate(
+            sanitized.model_dump(
+                mode="python"
+            )
+        )
+    )
+
+    return sanitized, issues
+
+
 def main() -> int:
     args = parse_args()
 
@@ -440,8 +595,33 @@ def main() -> int:
 
         active_prompt = repair_prompt
 
-        # Deliberately no second catch:
-        # a second invalid reference remains fail-closed.
+        final_draft, deterministic_reference_issues = (
+            _sanitize_reference_contract_draft(
+                draft=generation.draft,
+                prompt=active_prompt,
+            )
+        )
+
+        if deterministic_reference_issues:
+            print(
+                "REFERENCE_CONTRACT_DETERMINISTIC_SANITIZE_USED=True"
+            )
+            print(
+                "REFERENCE_CONTRACT_DETERMINISTIC_SANITIZE_ISSUES=",
+                deterministic_reference_issues,
+            )
+
+            repair_issues.extend(
+                [
+                    (
+                        "deterministic_fail_closed:"
+                        + str(value)
+                    )
+                    for value
+                    in deterministic_reference_issues
+                ]
+            )
+
         result = (
             compile_semantic_distinctiveness_review(
                 scientific_report=
@@ -454,7 +634,7 @@ def main() -> int:
                     active_prompt,
 
                 draft=
-                    generation.draft,
+                    final_draft,
 
                 backend_name=
                     backend.backend_name,

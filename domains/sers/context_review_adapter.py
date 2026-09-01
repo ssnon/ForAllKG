@@ -214,9 +214,10 @@ class SERSDiscoveryAxisContextReviewer:
             )
 
         inspirations = self._index_unique(
-            list(
-                dual.discovery_bundle.inspirations
-            ),
+            [
+                *dual.discovery_bundle.inspirations,
+                *dual.task_lane_inspirations,
+            ],
             attribute="inspiration_id",
             label="discovery inspiration",
         )

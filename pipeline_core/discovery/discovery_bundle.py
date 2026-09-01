@@ -731,6 +731,307 @@ class DiscoveryBundleBuilder:
             generic,
         )
 
+
+    def _enrich_candidate_path(
+        self,
+        *,
+        source_name: str,
+        row: dict[str, Any],
+        graph: nx.DiGraph,
+        mode: str,
+        semantic_index: Any | None,
+        semantic_mode: str,
+        grounding_representations: list[tuple[str, np.ndarray | None]],
+        grounding_edge_sets: list[frozenset[str]],
+        community_by_node: dict[str, int],
+        relation_counts: Counter[str],
+    ) -> dict[str, Any]:
+        rendered = _render_path(graph, row)
+        semantic_text = _semantic_text(graph, row)
+        vector = (
+            _path_embedding(row, semantic_index)
+            if semantic_mode == "node_embedding"
+            else None
+        )
+
+        if semantic_mode == "disabled":
+            semantic_grounding = 0.0
+        elif semantic_mode == "node_embedding" and vector is not None:
+            semantic_grounding = max(
+                (
+                    _cosine(vector, other_vector)
+                    for _, other_vector in grounding_representations
+                ),
+                default=0.0,
+            )
+        else:
+            semantic_grounding = max(
+                (
+                    _lexical_similarity(semantic_text, other_text)
+                    for other_text, _ in grounding_representations
+                ),
+                default=0.0,
+            )
+
+        score, reasons, continuity, generic = self._score(
+            row=row,
+            mode=mode,
+            graph=graph,
+            community_by_node=community_by_node,
+            relation_counts=relation_counts,
+            grounding_edge_sets=grounding_edge_sets,
+            semantic_grounding_redundancy=semantic_grounding,
+        )
+
+        copied = dict(row)
+        copied["_discovery_source_file"] = source_name
+        copied["_discovery_mode"] = mode
+        copied["_discovery_graph"] = graph
+        copied["_discovery_score"] = score
+        copied["_discovery_reasons"] = reasons
+        copied["_discovery_rendered"] = rendered
+        copied["_discovery_semantic_text"] = semantic_text
+        copied["_discovery_semantic_vector"] = vector
+        copied["_discovery_semantic_grounding"] = semantic_grounding
+        copied["_discovery_continuity"] = continuity
+        copied["_discovery_generic"] = generic
+        return copied
+
+    def _materialize_inspiration(
+        self,
+        *,
+        corpus_id: str,
+        rank: int,
+        row: dict[str, Any],
+        semantic_mode: str,
+    ) -> DiscoveryInspiration:
+        """Materialize one already-enriched selected path as an inspiration."""
+
+        quality = (
+            row.get("path_quality")
+            if isinstance(row.get("path_quality"), dict)
+            else {}
+        )
+
+        steps = [
+            step
+            for step in row.get("steps", [])
+            if isinstance(step, dict)
+        ]
+
+        path_id = str(row.get("path_id", ""))
+        mode = str(row.get("_discovery_mode", ""))
+
+        inspiration_id = _stable_id(
+            "discovery_inspiration",
+            corpus_id,
+            mode,
+            path_id,
+        )
+
+        reasons = list(row["_discovery_reasons"])
+
+        selected_semantic = float(
+            row.get(
+                "_discovery_max_selected_semantic",
+                0.0,
+            )
+            or 0.0
+        )
+
+        if (
+            selected_semantic
+            >= self.policy.semantic_similarity_threshold
+        ):
+            reasons.append(
+                "semantic_diversity_relaxed"
+            )
+
+        reasons.append(
+            f"bundle_rank:{rank}"
+        )
+
+        continuity: MechanisticContinuity = (
+            row["_discovery_continuity"]
+        )
+
+        generic: GenericHopDiagnostics = (
+            row["_discovery_generic"]
+        )
+
+        candidate_unit = (
+            row.get("candidate_unit")
+            if isinstance(
+                row.get("candidate_unit"),
+                dict,
+            )
+            else {}
+        )
+
+        candidate_selection = (
+            row.get("candidate_unit_selection")
+            if isinstance(
+                row.get("candidate_unit_selection"),
+                dict,
+            )
+            else {}
+        )
+
+        return DiscoveryInspiration(
+            inspiration_id=inspiration_id,
+            source_path_id=path_id,
+            source_corpus_id=corpus_id,
+            source_mode=mode,
+            path_type=str(
+                quality.get(
+                    "path_type",
+                    "UNKNOWN",
+                )
+            ),
+            paper_ids=_paper_ids(row),
+            node_ids=[
+                str(x)
+                for x in row.get("nodes", [])
+            ],
+            edge_ids=[
+                _edge_id(step, i)
+                for i, step in enumerate(steps)
+            ],
+            relation_sequence=[
+                str(
+                    step.get(
+                        "relation",
+                        "RELATED_TO",
+                    )
+                )
+                for step in steps
+            ],
+            rendered_path=str(
+                row.get(
+                    "_discovery_rendered",
+                    "",
+                )
+            ),
+            exploration_score=float(
+                row["_discovery_score"].total
+            ),
+            score_breakdown=row["_discovery_score"],
+            reason_codes=sorted(set(reasons)),
+            requires_verification=(
+                _candidate_requires_verification(row)
+            ),
+            mechanism_before_alignment=(
+                continuity.mechanism_before_alignment
+            ),
+            mechanism_after_alignment=(
+                continuity.mechanism_after_alignment
+            ),
+            mechanistic_continuity_band=(
+                continuity.band
+            ),
+            generic_entity_fraction=(
+                generic.generic_entity_fraction
+            ),
+            max_generic_run_length=(
+                generic.max_generic_run_length
+            ),
+            registry_hop_fraction=(
+                generic.registry_hop_fraction
+            ),
+            semantic_similarity_to_grounding=float(
+                row.get(
+                    "_discovery_semantic_grounding",
+                    0.0,
+                )
+                or 0.0
+            ),
+            max_semantic_similarity_to_selected=(
+                selected_semantic
+            ),
+            semantic_diversity_mode=semantic_mode,
+            candidate_unit_id=str(
+                candidate_unit.get(
+                    "unit_id",
+                    "",
+                )
+            ),
+            candidate_unit_label=str(
+                candidate_unit.get(
+                    "label",
+                    "",
+                )
+            ),
+            candidate_entry_anchor_id=str(
+                candidate_unit.get(
+                    "entry_anchor_id",
+                    "",
+                )
+            ),
+            candidate_entry_anchor_label=str(
+                candidate_unit.get(
+                    "entry_anchor_label",
+                    "",
+                )
+            ),
+            candidate_exit_anchor_id=str(
+                candidate_unit.get(
+                    "exit_anchor_id",
+                    "",
+                )
+            ),
+            candidate_exit_anchor_label=str(
+                candidate_unit.get(
+                    "exit_anchor_label",
+                    "",
+                )
+            ),
+            candidate_proposed_subject=str(
+                candidate_unit.get(
+                    "proposed_subject",
+                    "",
+                )
+            ),
+            candidate_proposed_relation=str(
+                candidate_unit.get(
+                    "proposed_relation",
+                    "",
+                )
+            ),
+            candidate_proposed_object=str(
+                candidate_unit.get(
+                    "proposed_object",
+                    "",
+                )
+            ),
+            candidate_unit_score=float(
+                candidate_selection.get(
+                    "total",
+                    0.0,
+                )
+                or 0.0
+            ),
+            context_switch_penalty=float(
+                candidate_selection.get(
+                    "context_switch_penalty",
+                    candidate_selection.get(
+                        "reaction_switch_penalty",
+                        0.0,
+                    ),
+                )
+                or 0.0
+            ),
+            reaction_domain_switch_penalty=float(
+                candidate_selection.get(
+                    "context_switch_penalty",
+                    candidate_selection.get(
+                        "reaction_switch_penalty",
+                        0.0,
+                    ),
+                )
+                or 0.0
+            ),
+        )
+
     def build(
         self,
         traversal_payloads: Iterable[tuple[str, dict[str, Any], nx.DiGraph]],
@@ -827,17 +1128,6 @@ class DiscoveryBundleBuilder:
                         )
                     )
 
-        def semantic_similarity_to_grounding(
-            *,
-            text: str,
-            vector: np.ndarray | None,
-        ) -> float:
-            if semantic_mode == "disabled":
-                return 0.0
-            if semantic_mode == "node_embedding" and vector is not None:
-                return max((_cosine(vector, other_vector) for _, other_vector in grounding_representations), default=0.0)
-            return max((_lexical_similarity(text, other_text) for other_text, _ in grounding_representations), default=0.0)
-
         candidate_rows: list[dict[str, Any]] = []
         used_candidate_pool = True
         for source_name, payload, graph in payloads:
@@ -856,32 +1146,20 @@ class DiscoveryBundleBuilder:
             for row in rows:
                 if not isinstance(row, dict):
                     continue
-                rendered = _render_path(graph, row)
-                semantic_text = _semantic_text(graph, row)
-                vector = _path_embedding(row, semantic_index) if semantic_mode == "node_embedding" else None
-                semantic_grounding = semantic_similarity_to_grounding(text=semantic_text, vector=vector)
-                score, reasons, continuity, generic = self._score(
-                    row=row,
-                    mode=mode,
-                    graph=graph,
-                    community_by_node=communities,
-                    relation_counts=relation_counts,
-                    grounding_edge_sets=grounding_edge_sets,
-                    semantic_grounding_redundancy=semantic_grounding,
+                candidate_rows.append(
+                    self._enrich_candidate_path(
+                        source_name=source_name,
+                        row=row,
+                        graph=graph,
+                        mode=mode,
+                        semantic_index=semantic_index,
+                        semantic_mode=semantic_mode,
+                        grounding_representations=grounding_representations,
+                        grounding_edge_sets=grounding_edge_sets,
+                        community_by_node=communities,
+                        relation_counts=relation_counts,
+                    )
                 )
-                copied = dict(row)
-                copied["_discovery_source_file"] = source_name
-                copied["_discovery_mode"] = mode
-                copied["_discovery_graph"] = graph
-                copied["_discovery_score"] = score
-                copied["_discovery_reasons"] = reasons
-                copied["_discovery_rendered"] = rendered
-                copied["_discovery_semantic_text"] = semantic_text
-                copied["_discovery_semantic_vector"] = vector
-                copied["_discovery_semantic_grounding"] = semantic_grounding
-                copied["_discovery_continuity"] = continuity
-                copied["_discovery_generic"] = generic
-                candidate_rows.append(copied)
 
         # Deduplicate stable path IDs across repeated traversal files; keep highest exploration score.
         best_by_path: dict[tuple[str, str], dict[str, Any]] = {}
@@ -1244,73 +1522,12 @@ class DiscoveryBundleBuilder:
 
         inspirations: list[DiscoveryInspiration] = []
         for rank, row in enumerate(selected, start=1):
-            quality = row.get("path_quality") if isinstance(row.get("path_quality"), dict) else {}
-            steps = [step for step in row.get("steps", []) if isinstance(step, dict)]
-            path_id = str(row.get("path_id", ""))
-            mode = str(row.get("_discovery_mode", ""))
-            inspiration_id = _stable_id("discovery_inspiration", corpus_id, mode, path_id)
-            reasons = list(row["_discovery_reasons"])
-            selected_semantic = float(row.get("_discovery_max_selected_semantic", 0.0) or 0.0)
-            if selected_semantic >= self.policy.semantic_similarity_threshold:
-                reasons.append("semantic_diversity_relaxed")
-            reasons.append(f"bundle_rank:{rank}")
-            continuity: MechanisticContinuity = row["_discovery_continuity"]
-            generic: GenericHopDiagnostics = row["_discovery_generic"]
-            candidate_unit = row.get("candidate_unit") if isinstance(row.get("candidate_unit"), dict) else {}
-            candidate_selection = (
-                row.get("candidate_unit_selection")
-                if isinstance(row.get("candidate_unit_selection"), dict)
-                else {}
-            )
             inspirations.append(
-                DiscoveryInspiration(
-                    inspiration_id=inspiration_id,
-                    source_path_id=path_id,
-                    source_corpus_id=corpus_id,
-                    source_mode=mode,
-                    path_type=str(quality.get("path_type", "UNKNOWN")),
-                    paper_ids=_paper_ids(row),
-                    node_ids=[str(x) for x in row.get("nodes", [])],
-                    edge_ids=[_edge_id(step, i) for i, step in enumerate(steps)],
-                    relation_sequence=[str(step.get("relation", "RELATED_TO")) for step in steps],
-                    rendered_path=str(row.get("_discovery_rendered", "")),
-                    exploration_score=float(row["_discovery_score"].total),
-                    score_breakdown=row["_discovery_score"],
-                    reason_codes=sorted(set(reasons)),
-                    requires_verification=_candidate_requires_verification(row),
-                    mechanism_before_alignment=continuity.mechanism_before_alignment,
-                    mechanism_after_alignment=continuity.mechanism_after_alignment,
-                    mechanistic_continuity_band=continuity.band,  # type: ignore[arg-type]
-                    generic_entity_fraction=generic.generic_entity_fraction,
-                    max_generic_run_length=generic.max_generic_run_length,
-                    registry_hop_fraction=generic.registry_hop_fraction,
-                    semantic_similarity_to_grounding=float(row.get("_discovery_semantic_grounding", 0.0) or 0.0),
-                    max_semantic_similarity_to_selected=selected_semantic,
-                    semantic_diversity_mode=semantic_mode,  # type: ignore[arg-type]
-                    candidate_unit_id=str(candidate_unit.get("unit_id", "")),
-                    candidate_unit_label=str(candidate_unit.get("label", "")),
-                    candidate_entry_anchor_id=str(candidate_unit.get("entry_anchor_id", "")),
-                    candidate_entry_anchor_label=str(candidate_unit.get("entry_anchor_label", "")),
-                    candidate_exit_anchor_id=str(candidate_unit.get("exit_anchor_id", "")),
-                    candidate_exit_anchor_label=str(candidate_unit.get("exit_anchor_label", "")),
-                    candidate_proposed_subject=str(candidate_unit.get("proposed_subject", "")),
-                    candidate_proposed_relation=str(candidate_unit.get("proposed_relation", "")),
-                    candidate_proposed_object=str(candidate_unit.get("proposed_object", "")),
-                    candidate_unit_score=float(candidate_selection.get("total", 0.0) or 0.0),
-                    context_switch_penalty=float(
-                        candidate_selection.get(
-                            "context_switch_penalty",
-                            candidate_selection.get("reaction_switch_penalty", 0.0),
-                        )
-                        or 0.0
-                    ),
-                    reaction_domain_switch_penalty=float(
-                        candidate_selection.get(
-                            "context_switch_penalty",
-                            candidate_selection.get("reaction_switch_penalty", 0.0),
-                        )
-                        or 0.0
-                    ),
+                self._materialize_inspiration(
+                    corpus_id=corpus_id,
+                    rank=rank,
+                    row=row,
+                    semantic_mode=semantic_mode,
                 )
             )
 
