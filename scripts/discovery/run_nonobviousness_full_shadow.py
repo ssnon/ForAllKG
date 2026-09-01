@@ -27,6 +27,10 @@ from pipeline_core.discovery.novelty_adjudication import (
     NonObviousnessEvidencePacket,
     assess_adjudication_readiness,
 )
+from pipeline_core.discovery.novelty_adjudication_llm import (
+    InstructorOpenAICompatibleNonObviousnessAdjudicationBackend,
+    review_and_compile_nonobviousness_adjudication,
+)
 from pipeline_core.discovery.novelty_closure_compiler import (
     compile_nonobviousness_evidence_closure,
 )
@@ -38,6 +42,10 @@ from pipeline_core.discovery.novelty_closure_execution import (
 from pipeline_core.discovery.novelty_closure_llm import (
     InstructorOpenAICompatibleClosureReviewBackend,
     review_and_compile_closure_target,
+)
+from pipeline_core.discovery.novelty_closure_relationships_llm import (
+    InstructorOpenAICompatibleClosureRelationshipBackend,
+    review_and_compile_closure_relationships,
 )
 from pipeline_core.discovery.novelty_closure_planner import (
     build_closure_retrieval_plan,
@@ -67,8 +75,8 @@ def parse_args() -> argparse.Namespace:
         description=(
             "Run the N9 full non-obviousness shadow after intake: "
             "targeted closure, evidence compilation, structural gate, "
-            "readiness, and deterministic forced final dispositions. "
-            "READY candidates remain pending an independent adjudicator."
+            "readiness, independent adjudication for READY candidates, "
+            "and deterministic final compilation."
         )
     )
 
@@ -507,6 +515,28 @@ def main() -> int:
         )
     )
 
+    relationship_backend = (
+        InstructorOpenAICompatibleClosureRelationshipBackend(
+            model=args.model,
+            api_key_env=args.api_key_env,
+            base_url=args.base_url,
+            temperature=0.0,
+            parse_retries=1,
+            capture_prompts=True,
+        )
+    )
+
+    adjudication_backend = (
+        InstructorOpenAICompatibleNonObviousnessAdjudicationBackend(
+            model=args.model,
+            api_key_env=args.api_key_env,
+            base_url=args.base_url,
+            temperature=0.0,
+            parse_retries=1,
+            capture_prompts=True,
+        )
+    )
+
     detail_dir = (
         args.output.parent
         / (
@@ -584,14 +614,33 @@ def main() -> int:
                 )
             )
 
+        targets_by_slot = {
+            target.slot: target
+            for target
+            in expanded_plan.targets
+        }
+
+        relationship_outcome = (
+            review_and_compile_closure_relationships(
+                backend=relationship_backend,
+                reviews=reviews,
+                packet=packet,
+                targets_by_slot=targets_by_slot,
+            )
+        )
+
         closure_compilation = (
             compile_nonobviousness_evidence_closure(
                 reviews=reviews,
                 bridge_kind=(
-                    inputs.bridge_kind
+                    relationship_outcome
+                    .compiled
+                    .bridge_kind
                 ),
                 scope_compatible=(
-                    inputs.scope_compatible
+                    relationship_outcome
+                    .compiled
+                    .scope_compatible
                 ),
             )
         )
@@ -616,12 +665,6 @@ def main() -> int:
             )
         )
 
-        targets_by_slot = {
-            target.slot: target
-            for target
-            in expanded_plan.targets
-        }
-
         established_relations = tuple(
             EstablishedPriorArtRelation(
                 relation_statement=(
@@ -636,10 +679,21 @@ def main() -> int:
                     review.positive_work_ids
                 ),
                 scope_note=(
-                    "N9 closure slot "
+                    "N10 closure slot "
                     + review.slot
-                    + "; cross-slot scope "
-                    "compatibility not independently assessed."
+                    + "; compiled cross-slot scope_compatible="
+                    + str(
+                        relationship_outcome
+                        .compiled
+                        .scope_compatible
+                    )
+                    + "; bridge_kind="
+                    + str(
+                        relationship_outcome
+                        .compiled
+                        .bridge_kind
+                    )
+                    + "."
                 ),
             )
             for review in reviews
@@ -672,15 +726,38 @@ def main() -> int:
             )
         )
 
-        (
-            adjudication_status,
-            final_adjudication,
-        ) = (
-            compile_forced_adjudication_if_determined(
-                readiness=readiness,
-                packet=evidence_packet,
+        if (
+            readiness.readiness
+            == "READY_FOR_NONOBVIOUSNESS_REVIEW"
+        ):
+            independent_adjudication = (
+                review_and_compile_nonobviousness_adjudication(
+                    backend=adjudication_backend,
+                    readiness=readiness,
+                    packet=evidence_packet,
+                    prior_art=packet,
+                )
             )
-        )
+
+            adjudication_status = (
+                "INDEPENDENT_ADJUDICATION_COMPILED"
+            )
+
+            final_adjudication = (
+                independent_adjudication.compiled
+            )
+        else:
+            independent_adjudication = None
+
+            (
+                adjudication_status,
+                final_adjudication,
+            ) = (
+                compile_forced_adjudication_if_determined(
+                    readiness=readiness,
+                    packet=evidence_packet,
+                )
+            )
 
         if final_adjudication is not None:
             full_state = (
@@ -732,10 +809,18 @@ def main() -> int:
 
         write_json(
             detail_root
+            / "closure_relationships.json",
+            relationship_outcome,
+        )
+
+        write_json(
+            detail_root
             / "structural_and_adjudication.json",
             {
                 "conservative_inputs":
                     inputs,
+                "closure_relationships":
+                    relationship_outcome,
                 "closure_compilation":
                     closure_compilation,
                 "structural_assessment":
@@ -744,6 +829,8 @@ def main() -> int:
                     readiness,
                 "evidence_packet":
                     evidence_packet,
+                "independent_adjudication":
+                    independent_adjudication,
                 "adjudication_status":
                     adjudication_status,
                 "final_adjudication":
@@ -776,6 +863,22 @@ def main() -> int:
                         closure.full_relation,
                 },
 
+                "relationship_review_performed":
+                    relationship_outcome.review_performed,
+
+                "bridge_kind":
+                    relationship_outcome.compiled.bridge_kind,
+
+                "scope_compatible":
+                    relationship_outcome.compiled.scope_compatible,
+
+                "relationship_reason_codes":
+                    list(
+                        relationship_outcome
+                        .compiled
+                        .reason_codes
+                    ),
+
                 "structural_status":
                     structural.status,
 
@@ -791,6 +894,23 @@ def main() -> int:
                     list(
                         readiness.reason_codes
                     ),
+
+                "independent_adjudication_performed": (
+                    independent_adjudication.review_performed
+                    if independent_adjudication
+                    is not None
+                    else False
+                ),
+
+                "adjudication_sanitizer_reason_codes": (
+                    list(
+                        independent_adjudication
+                        .sanitizer_reason_codes
+                    )
+                    if independent_adjudication
+                    is not None
+                    else []
+                ),
 
                 "adjudication_status":
                     adjudication_status,
@@ -914,7 +1034,19 @@ def main() -> int:
             "scope_compatibility_unassessed_fails_closed":
                 True,
 
+            "cross_slot_relationship_review_uses_established_positive_evidence_only":
+                True,
+
+            "cross_slot_relationship_review_skipped_until_lower_order_closure_complete":
+                True,
+
             "ready_candidate_requires_independent_adjudicator":
+                True,
+
+            "independent_adjudicator_uses_established_positive_evidence_only":
+                True,
+
+            "adjudicator_cannot_invent_additional_scientific_assumptions":
                 True,
 
             "production_selection_unchanged":
@@ -931,6 +1063,18 @@ def main() -> int:
         detail_dir
         / "closure_review_prompts.json",
         backend.prompt_records,
+    )
+
+    write_json(
+        detail_dir
+        / "closure_relationship_review_prompts.json",
+        relationship_backend.prompt_records,
+    )
+
+    write_json(
+        detail_dir
+        / "nonobviousness_adjudication_prompts.json",
+        adjudication_backend.prompt_records,
     )
 
     print(

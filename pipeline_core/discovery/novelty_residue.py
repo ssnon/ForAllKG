@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     LiteratureQueryPlan,
+    NoveltyClaimScientificStructure,
 )
 
 
@@ -88,6 +89,11 @@ class NoveltyResidueClaim:
     direct_or_partial_work_ids: tuple[str, ...]
     lower_order_work_ids: tuple[str, ...]
     component_work_ids: tuple[str, ...]
+
+    scientific_structure: NoveltyClaimScientificStructure = field(
+        default_factory=NoveltyClaimScientificStructure
+    )
+    scientific_structure_reason_codes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -336,6 +342,12 @@ def extract_novelty_residue(
                     ),
                     component_work_ids=tuple(
                         components
+                    ),
+                    scientific_structure=(
+                        claim.scientific_structure
+                    ),
+                    scientific_structure_reason_codes=tuple(
+                        claim.scientific_structure_reason_codes
                     ),
                 )
             )

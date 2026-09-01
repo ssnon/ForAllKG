@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict
+from dataclasses import asdict, is_dataclass
 
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
@@ -12,6 +12,46 @@ from pipeline_core.discovery.novelty_residue import (
     assess_residual_specification,
     extract_novelty_residue,
 )
+
+
+def _json_safe(
+    value: object,
+) -> object:
+    """Recursively convert artifact values to JSON-native objects.
+
+    N10 residue dataclasses may contain nested Pydantic scientific-
+    structure contracts. dataclasses.asdict() alone does not convert
+    those nested BaseModel instances.
+    """
+
+    if hasattr(value, "model_dump"):
+        return _json_safe(
+            value.model_dump(
+                mode="json"
+            )
+        )
+
+    if is_dataclass(value):
+        return _json_safe(
+            asdict(value)
+        )
+
+    if isinstance(value, dict):
+        return {
+            str(key): _json_safe(item)
+            for key, item in value.items()
+        }
+
+    if isinstance(
+        value,
+        (list, tuple, set),
+    ):
+        return [
+            _json_safe(item)
+            for item in value
+        ]
+
+    return value
 
 
 def compile_shadow_claim(
@@ -53,8 +93,8 @@ def compile_shadow_claim(
         next_action = "REVIEW_EVIDENCE_STATE"
 
     return {
-        "claim": asdict(claim),
-        "specification": asdict(specification),
+        "claim": _json_safe(claim),
+        "specification": _json_safe(specification),
         "shadow_state": shadow_state,
         "next_action": next_action,
 

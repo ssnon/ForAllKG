@@ -1,0 +1,606 @@
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+from pipeline_core.discovery.external_novelty_contracts import (
+    ExternalNoveltyReport,
+    LiteratureQueryPlan,
+    PriorArtPacket,
+)
+from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisPortfolio,
+)
+from pipeline_core.discovery.nonobviousness_post_generation import (
+    filter_alpha6_portfolio_by_nonobviousness,
+)
+from pipeline_core.discovery.novelty_refinement_contracts import (
+    NoveltyRefinementReport,
+)
+
+
+_GENERATED = {
+    "accepted_refinement",
+    "accepted_reaxis",
+}
+
+
+def _write_json(
+    path: Path,
+    value: object,
+) -> None:
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if hasattr(
+        value,
+        "model_dump",
+    ):
+        value = value.model_dump(
+            mode="json"
+        )
+
+    path.write_text(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _run(
+    module: str,
+    args: list[str],
+) -> None:
+    cmd = [
+        sys.executable,
+        "-m",
+        module,
+        *args,
+    ]
+
+    subprocess.run(
+        cmd,
+        check=True,
+    )
+
+
+def generated_candidate_ids(
+    report: NoveltyRefinementReport,
+) -> tuple[str, ...]:
+    ids = []
+
+    for attempt in report.attempts:
+        if (
+            attempt.decision
+            not in _GENERATED
+        ):
+            continue
+
+        candidate_id = str(
+            attempt.candidate_hypothesis_id
+            or ""
+        ).strip()
+
+        if not candidate_id:
+            raise ValueError(
+                "accepted generated Alpha6 attempt "
+                "missing candidate_hypothesis_id"
+            )
+
+        ids.append(
+            candidate_id
+        )
+
+    if len(ids) != len(set(ids)):
+        raise ValueError(
+            "duplicate accepted Alpha6 candidate ID"
+        )
+
+    return tuple(ids)
+
+
+def find_final_external_triplet(
+    *,
+    external_dir: Path,
+    candidate_id: str,
+) -> tuple[
+    Path,
+    Path,
+    Path,
+]:
+    suffix = (
+        candidate_id
+        .split(":")[-1]
+    )
+
+    plans = sorted(
+        external_dir.glob(
+            "final_*_"
+            + suffix
+            + ".claims_queries.json"
+        )
+    )
+
+    if len(plans) != 1:
+        raise ValueError(
+            "expected exactly one fresh final external "
+            "query plan for candidate "
+            + candidate_id
+            + f"; found={len(plans)}"
+        )
+
+    plan = plans[0]
+
+    base = Path(
+        str(plan)[
+            :-len(
+                ".claims_queries.json"
+            )
+        ]
+    )
+
+    prior = Path(
+        str(base)
+        + ".prior_art.json"
+    )
+
+    report = Path(
+        str(base)
+        + ".report.json"
+    )
+
+    if not prior.is_file():
+        raise ValueError(
+            "missing fresh final prior-art artifact: "
+            + str(prior)
+        )
+
+    if not report.is_file():
+        raise ValueError(
+            "missing fresh final report artifact: "
+            + str(report)
+        )
+
+    # Validate the actual candidate/artifact binding.
+    parsed_plan = (
+        LiteratureQueryPlan
+        .model_validate_json(
+            plan.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    planned_ids = {
+        group.hypothesis_id
+        for group
+        in parsed_plan.claims
+    }
+
+    if candidate_id not in planned_ids:
+        raise ValueError(
+            "fresh final query plan does not contain "
+            "expected candidate "
+            + candidate_id
+        )
+
+    parsed_report = (
+        ExternalNoveltyReport
+        .model_validate_json(
+            report.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    report_ids = {
+        card.hypothesis_id
+        for card
+        in parsed_report.cards
+    }
+
+    if candidate_id not in report_ids:
+        raise ValueError(
+            "fresh final external report does not contain "
+            "expected candidate "
+            + candidate_id
+        )
+
+    PriorArtPacket.model_validate_json(
+        prior.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    return (
+        plan,
+        prior,
+        report,
+    )
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description=(
+            "Run fresh N10 non-obviousness adjudication over "
+            "Alpha6 accepted refinement/re-axis candidates and "
+            "filter the Alpha6 portfolio accordingly."
+        )
+    )
+
+    p.add_argument(
+        "--portfolio",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--refinement-report",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--external-dir",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--provider-plan",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--domain-profile",
+        required=True,
+    )
+
+    p.add_argument(
+        "--model",
+        required=True,
+    )
+
+    p.add_argument(
+        "--base-url",
+        default=None,
+    )
+
+    p.add_argument(
+        "--api-key-env",
+        default="OPENAI_API_KEY",
+    )
+
+    p.add_argument(
+        "--device",
+        default=None,
+    )
+
+    p.add_argument(
+        "--results-per-query",
+        type=int,
+        default=12,
+    )
+
+    p.add_argument(
+        "--max-ranked-works",
+        type=int,
+        default=8,
+    )
+
+    p.add_argument(
+        "--work-dir",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--output-portfolio",
+        required=True,
+        type=Path,
+    )
+
+    p.add_argument(
+        "--output-report",
+        required=True,
+        type=Path,
+    )
+
+    return p.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+
+    portfolio = (
+        HypothesisPortfolio
+        .model_validate_json(
+            args.portfolio.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    refinement = (
+        NoveltyRefinementReport
+        .model_validate_json(
+            args.refinement_report
+            .read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    candidate_ids = (
+        generated_candidate_ids(
+            refinement
+        )
+    )
+
+    gates = {}
+    artifact_audit = []
+
+    for index, candidate_id in enumerate(
+        candidate_ids,
+        1,
+    ):
+        (
+            query_plan,
+            prior_art,
+            external_report,
+        ) = find_final_external_triplet(
+            external_dir=args.external_dir,
+            candidate_id=candidate_id,
+        )
+
+        candidate_dir = (
+            args.work_dir
+            / (
+                f"{index:02d}_"
+                + candidate_id
+                .replace(
+                    ":",
+                    "_",
+                )
+            )
+        )
+
+        candidate_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        intake = (
+            candidate_dir
+            / "intake_shadow.json"
+        )
+
+        full = (
+            candidate_dir
+            / "full_shadow.json"
+        )
+
+        gate_path = (
+            candidate_dir
+            / "production_gate.json"
+        )
+
+        _run(
+            "scripts.discovery."
+            "build_nonobviousness_shadow",
+            [
+                "--query-plan",
+                str(query_plan),
+                "--external-report",
+                str(external_report),
+                "--output",
+                str(intake),
+            ],
+        )
+
+        intake_payload = json.loads(
+            intake.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        ready_count = sum(
+            len(
+                row.get(
+                    "ready_for_closure_claim_ids",
+                    [],
+                )
+            )
+            for row
+            in intake_payload.get(
+                "hypotheses",
+                [],
+            )
+        )
+
+        full_args = [
+            "--query-plan",
+            str(query_plan),
+            "--external-report",
+            str(external_report),
+            "--external-prior-art",
+            str(prior_art),
+            "--intake-shadow",
+            str(intake),
+            "--provider-plan",
+            str(args.provider_plan),
+            "--domain-profile",
+            args.domain_profile,
+            "--model",
+            args.model,
+            "--api-key-env",
+            args.api_key_env,
+            "--results-per-query",
+            str(
+                args.results_per_query
+            ),
+            "--max-ranked-works",
+            str(
+                args.max_ranked_works
+            ),
+            "--max-ready-claims",
+            str(
+                max(
+                    1,
+                    ready_count,
+                )
+            ),
+            "--output",
+            str(full),
+        ]
+
+        if args.base_url:
+            full_args.extend(
+                [
+                    "--base-url",
+                    args.base_url,
+                ]
+            )
+
+        if args.device:
+            full_args.extend(
+                [
+                    "--device",
+                    args.device,
+                ]
+            )
+
+        _run(
+            "scripts.discovery."
+            "run_nonobviousness_full_shadow",
+            full_args,
+        )
+
+        _run(
+            "scripts.discovery."
+            "build_nonobviousness_production_gate",
+            [
+                "--intake-shadow",
+                str(intake),
+                "--full-shadow",
+                str(full),
+                "--output",
+                str(gate_path),
+            ],
+        )
+
+        gate_payload = json.loads(
+            gate_path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        gates[
+            candidate_id
+        ] = gate_payload
+
+        matching = [
+            row
+            for row
+            in gate_payload.get(
+                "gates",
+                [],
+            )
+            if (
+                row.get(
+                    "hypothesis_id"
+                )
+                == candidate_id
+            )
+        ]
+
+        if len(matching) != 1:
+            raise ValueError(
+                "fresh N10 gate does not contain exactly "
+                "one candidate row for "
+                + candidate_id
+            )
+
+        artifact_audit.append(
+            {
+                "candidate_id":
+                    candidate_id,
+                "query_plan":
+                    str(query_plan),
+                "prior_art":
+                    str(prior_art),
+                "external_report":
+                    str(external_report),
+                "intake_shadow":
+                    str(intake),
+                "full_shadow":
+                    str(full),
+                "production_gate":
+                    str(gate_path),
+                "ready_claim_count":
+                    ready_count,
+                "selection_class":
+                    matching[0].get(
+                        "selection_class"
+                    ),
+                "fallback_allowed":
+                    matching[0].get(
+                        "fallback_allowed"
+                    ),
+            }
+        )
+
+    filtered, audit = (
+        filter_alpha6_portfolio_by_nonobviousness(
+            portfolio=portfolio,
+            refinement_report=refinement,
+            gates_by_candidate_id=gates,
+        )
+    )
+
+    audit[
+        "candidate_artifacts"
+    ] = artifact_audit
+
+    _write_json(
+        args.output_portfolio,
+        filtered,
+    )
+
+    _write_json(
+        args.output_report,
+        audit,
+    )
+
+    print(
+        "Alpha6 fresh-candidate N10 enforcement complete"
+    )
+    print(
+        "Generated candidates:",
+        len(candidate_ids),
+    )
+    print(
+        "Alpha6 survivors:",
+        len(portfolio.hypotheses),
+    )
+    print(
+        "Final N10 survivors:",
+        len(filtered.hypotheses),
+    )
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

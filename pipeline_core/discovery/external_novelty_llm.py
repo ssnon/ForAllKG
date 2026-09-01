@@ -59,6 +59,16 @@ RELATION-FIRST DIAGNOSTIC ASSEMBLY CONTRACT:
 - Do not provide paper titles, DOI values, authors, years, or literature conclusions unless they were already present in the hypothesis.
 - The deterministic decomposer may assemble a diagnostic execution candidate by concatenating normalized structural terms followed by normalized relation terms. This candidate is preserved for provenance or a future bounded diagnostic pass and is not automatically inserted into first-pass search_queries. It will not invent synonyms or add scientific concepts.
 
+CLAIM IMPORTANCE CONTRACT:
+- Every decomposition MUST contain at least one importance=core claim.
+- A core claim is an atomic scientific relation whose direct prior-art saturation, routine reconstruction, or failure would materially undermine the hypothesis's claimed scientific distinctiveness.
+- If the hypothesis contains multiple independent novelty-bearing branches, mark EACH scientifically central branch as core. One apparently stronger branch must not hide another central branch.
+- Use importance=supporting only for genuinely auxiliary claims whose prior-art status does not by itself determine whether the hypothesis remains scientifically distinctive.
+- A distinctive_prediction may be core when that prediction is itself the central higher-order scientific proposition.
+- Generic background relations, already-assumed lower-order components, or explanatory context should normally be supporting or omitted rather than promoted to core.
+- Do not mark every claim supporting merely to avoid committing to which relation carries the hypothesis's distinctiveness.
+- importance is a hypothesis-level selection role. It is NOT a novelty verdict and does not imply that the claim is new.
+
 CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
 - Each returned claim must contain one novelty-bearing scientific relation nucleus.
 - If the hypothesis coordinates scientifically separable alternatives that could have different prior-art status, emit them as separate claims.
@@ -95,6 +105,58 @@ ATOMIC SPECIFICATION PROVENANCE CONTRACT:
 - If a branch-specific bridge, prediction, or falsification condition cannot be extracted without inventing or choosing new scientific content, return the corresponding field as an empty string.
 - Empty specification fields are valid and are preferred over unsupported completion.
 - These fields record hypothesis specification provenance; they are not prior-art evidence.
+
+ATOMIC SCIENTIFIC-STRUCTURE CONTRACT:
+- scientific_structure describes the inferential structure of THIS atomic claim. It is a claim specification, not a novelty verdict and not prior-art evidence.
+- Do not infer a strong structure merely because it would make the hypothesis more interesting.
+- Every non-default strong structure must already be explicitly supported by the supplied hypothesis statement, inferential bridge, assumptions, predicted observations, or falsification criteria.
+- For every strong structure/category, add one or more scientific_structure.basis entries.
+- basis.source_text MUST be copied as an exact contiguous span from the supplied hypothesis material. Do not paraphrase, summarize, normalize, or invent basis text.
+- When prior_art_identity_terms identifies an atomic branch, every basis span used for a strong structure must explicitly name that branch identity. Do not use a wavelength statement as basis for a laser-power structure or vice versa.
+- If no valid branch-specific source span exists, keep the corresponding structure at its conservative default.
+
+BOOLEAN STRUCTURE FLAGS:
+- introduces_new_mechanism=true only when THIS atomic claim explicitly proposes a new mechanistic bridge rather than merely reusing or mentioning a known mechanism.
+- introduces_threshold=true only when an explicit critical value, boundary, onset, cutoff, or threshold relation is part of THIS claim.
+- introduces_regime_change=true only when the hypothesis explicitly distinguishes scientific regimes whose relation/behavior differs.
+- introduces_reversal=true only when an explicit reversal, sign/order inversion, or opposite ordering across conditions is proposed.
+- introduces_mechanism_switch=true only when different mechanisms are explicitly proposed to dominate in different conditions/regimes.
+
+CATEGORICAL STRUCTURE:
+- inferential_distance:
+  LOCAL_REPHRASE = no explicit structural leap beyond restatement;
+  SINGLE_KNOWN_STEP = one explicitly proposed ordinary inferential step;
+  MULTI_STEP_COMPOSITION = explicit composition of multiple relations;
+  NEW_RELATIONAL_FORM = a new interaction/mediation/conditional relational form is explicitly proposed;
+  NEW_REGIME_STRUCTURE = an explicit threshold/regime/reversal/mechanism-switch structure is proposed.
+- mechanistic_necessity:
+  NO_NEW_MECHANISM = no new bridge is required;
+  KNOWN_MECHANISM_REUSED = the supplied hypothesis explicitly reuses an already stated mechanism;
+  NEW_BRIDGE_REQUIRED = the claim explicitly requires an additional mechanistic/inferential bridge;
+  MECHANISM_SWITCH_REQUIRED = the claim explicitly requires a mechanism switch.
+- regime_specificity:
+  NONE, CONDITIONED, THRESHOLD, REVERSAL, HYSTERESIS, or MECHANISM_SWITCH. Use a strong category only when explicitly stated by the hypothesis.
+- counterintuitiveness:
+  EXPECTED by default. NONTRIVIAL or COUNTER_TO_BASELINE requires an explicit supplied comparison, expectation, or baseline tension; do not infer surprise from your own scientific knowledge.
+- testable_distinctiveness:
+  GENERIC by default;
+  COMPARATIVE when the supplied hypothesis gives a specific comparison;
+  QUANTITATIVE when it gives a quantitatively discriminating observable/relation without inventing unsupported numbers;
+  DISCRIMINATING_SIGNATURE when it gives an observation that specifically distinguishes the proposed explanation from a routine alternative.
+
+BASIS FEATURE NAMES:
+- new_mechanism
+- threshold
+- regime_change
+- reversal
+- mechanism_switch
+- inferential_distance
+- mechanistic_necessity
+- regime_specificity
+- counterintuitiveness
+- testable_distinctiveness
+
+A basis span proves only that the structure was stated by the generated hypothesis. It does NOT prove that the structure is scientifically correct, novel, or non-obvious.
 
 DISTINGUISHING-FACET CONTRACT:
 - Populate distinguishing_terms for every novelty-bearing claim.

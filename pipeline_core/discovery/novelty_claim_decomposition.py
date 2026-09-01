@@ -13,6 +13,9 @@ from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimDecompositionDraft,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisPortfolio
+from pipeline_core.discovery.novelty_structure_validation import (
+    compile_claim_scientific_structure,
+)
 
 
 def _canonical_json(value: object) -> str:
@@ -307,6 +310,38 @@ class NoveltyClaimDecomposer:
                 )
             )
 
+            scientific_structure, structure_reason_codes = (
+                compile_claim_scientific_structure(
+                    row.scientific_structure,
+                    identity_terms=prior_art_identity_terms,
+                    source_texts=[
+                        hypothesis.hypothesis_statement,
+                        hypothesis.inferential_bridge,
+                        *hypothesis.assumptions,
+                        *[
+                            item.observable
+                            for item
+                            in hypothesis.predicted_observations
+                        ],
+                        *[
+                            item.rationale
+                            for item
+                            in hypothesis.predicted_observations
+                        ],
+                        *[
+                            item.observable
+                            for item
+                            in hypothesis.falsification_criteria
+                        ],
+                        *[
+                            item.falsifying_outcome
+                            for item
+                            in hypothesis.falsification_criteria
+                        ],
+                    ],
+                )
+            )
+
             rows.append(
                 NoveltyClaim(
                     claim_id=_stable_id(
@@ -355,6 +390,7 @@ class NoveltyClaimDecomposer:
                             prior_art_identity_terms,
                         )
                     ),
+                    scientific_structure=scientific_structure,
                     diagnostic_query_kind=diagnostic_kind,
                     diagnostic_search_query=(
                         diagnostic_source_query or None
@@ -367,6 +403,9 @@ class NoveltyClaimDecomposer:
                     ),
                     diagnostic_relation_terms=(
                         diagnostic_relation_terms
+                    ),
+                    scientific_structure_reason_codes=list(
+                        structure_reason_codes
                     ),
                 )
             )

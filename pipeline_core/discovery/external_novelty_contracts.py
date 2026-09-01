@@ -38,6 +38,77 @@ NoveltyDiagnosticQueryKind = Literal[
     "DIRECTIONAL_BOUNDARY",
 ]
 
+NoveltyInferentialDistance = Literal[
+    "LOCAL_REPHRASE",
+    "SINGLE_KNOWN_STEP",
+    "MULTI_STEP_COMPOSITION",
+    "NEW_RELATIONAL_FORM",
+    "NEW_REGIME_STRUCTURE",
+]
+
+NoveltyMechanisticNecessity = Literal[
+    "NO_NEW_MECHANISM",
+    "KNOWN_MECHANISM_REUSED",
+    "NEW_BRIDGE_REQUIRED",
+    "MECHANISM_SWITCH_REQUIRED",
+]
+
+NoveltyRegimeSpecificity = Literal[
+    "NONE",
+    "CONDITIONED",
+    "THRESHOLD",
+    "REVERSAL",
+    "HYSTERESIS",
+    "MECHANISM_SWITCH",
+]
+
+NoveltyCounterintuitiveness = Literal[
+    "EXPECTED",
+    "NONTRIVIAL",
+    "COUNTER_TO_BASELINE",
+]
+
+NoveltyTestableDistinctiveness = Literal[
+    "GENERIC",
+    "COMPARATIVE",
+    "QUANTITATIVE",
+    "DISCRIMINATING_SIGNATURE",
+]
+
+NoveltyStructureFeature = Literal[
+    "new_mechanism",
+    "threshold",
+    "regime_change",
+    "reversal",
+    "mechanism_switch",
+    "inferential_distance",
+    "mechanistic_necessity",
+    "regime_specificity",
+    "counterintuitiveness",
+    "testable_distinctiveness",
+]
+
+
+class NoveltyStructureBasis(StrictModel):
+    feature: NoveltyStructureFeature
+    source_text: str = Field(min_length=1)
+
+
+class NoveltyClaimScientificStructure(StrictModel):
+    introduces_new_mechanism: bool = False
+    introduces_threshold: bool = False
+    introduces_regime_change: bool = False
+    introduces_reversal: bool = False
+    introduces_mechanism_switch: bool = False
+
+    inferential_distance: NoveltyInferentialDistance = "LOCAL_REPHRASE"
+    mechanistic_necessity: NoveltyMechanisticNecessity = "NO_NEW_MECHANISM"
+    regime_specificity: NoveltyRegimeSpecificity = "NONE"
+    counterintuitiveness: NoveltyCounterintuitiveness = "EXPECTED"
+    testable_distinctiveness: NoveltyTestableDistinctiveness = "GENERIC"
+
+    basis: list[NoveltyStructureBasis] = Field(default_factory=list)
+
 PriorArtRelationship = Literal[
     "DIRECT_PRIOR_ART",
     "PARTIAL_PRIOR_ART",
@@ -76,6 +147,9 @@ class NoveltyClaimDraft(StrictModel):
     required_bridge: str = ""
     predicted_observation: str = ""
     falsification_condition: str = ""
+    scientific_structure: NoveltyClaimScientificStructure = Field(
+        default_factory=NoveltyClaimScientificStructure
+    )
     diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
     diagnostic_search_query: str | None = None
     diagnostic_structural_terms: list[str] = Field(default_factory=list)
@@ -87,10 +161,23 @@ class NoveltyClaimDecompositionDraft(StrictModel):
     decomposition_notes: str = ""
 
     @model_validator(mode="after")
-    def _unique_local_ids(self) -> "NoveltyClaimDecompositionDraft":
+    def _validate_claim_set(self) -> "NoveltyClaimDecompositionDraft":
         ids = [row.local_id for row in self.claims]
+
         if len(ids) != len(set(ids)):
-            raise ValueError("duplicate novelty-claim local_id")
+            raise ValueError(
+                "duplicate novelty-claim local_id"
+            )
+
+        if not any(
+            row.importance == "core"
+            for row in self.claims
+        ):
+            raise ValueError(
+                "novelty-claim decomposition must contain "
+                "at least one core claim"
+            )
+
         return self
 
 
@@ -110,11 +197,15 @@ class NoveltyClaim(StrictModel):
     required_bridge: str = ""
     predicted_observation: str = ""
     falsification_condition: str = ""
+    scientific_structure: NoveltyClaimScientificStructure = Field(
+        default_factory=NoveltyClaimScientificStructure
+    )
     diagnostic_query_kind: NoveltyDiagnosticQueryKind = "NONE"
     diagnostic_search_query: str | None = None
     diagnostic_execution_query: str | None = None
     diagnostic_structural_terms: list[str] = Field(default_factory=list)
     diagnostic_relation_terms: list[str] = Field(default_factory=list)
+    scientific_structure_reason_codes: list[str] = Field(default_factory=list)
 
 
 class HypothesisNoveltyClaims(StrictModel):

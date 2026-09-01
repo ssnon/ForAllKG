@@ -3348,6 +3348,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     if (
         args.nonobviousness_shadow
         or args.nonobviousness_full_shadow
+        or args.nonobviousness_original_fallback_enforce
     ):
         nonobviousness_shadow = (
             run
@@ -3372,7 +3373,10 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     nonobviousness_full_shadow = None
 
-    if args.nonobviousness_full_shadow:
+    if (
+        args.nonobviousness_full_shadow
+        or args.nonobviousness_original_fallback_enforce
+    ):
         if nonobviousness_shadow is None:
             raise RuntimeError(
                 "N9 full shadow requires the intake shadow artifact."
@@ -3381,6 +3385,22 @@ def run_pipeline(args: argparse.Namespace) -> int:
         nonobviousness_full_shadow = (
             run
             / "nonobviousness_n9.full_shadow.json"
+        )
+
+        nonobviousness_ready_count = sum(
+            len(
+                row.get(
+                    "ready_for_closure_claim_ids",
+                    [],
+                )
+            )
+            for row
+            in _load_json(
+                nonobviousness_shadow
+            ).get(
+                "hypotheses",
+                [],
+            )
         )
 
         runner.run_stage(
@@ -3405,6 +3425,19 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 ),
                 "--results-per-query",
                 str(args.results_per_query),
+                *(
+                    [
+                        "--max-ready-claims",
+                        str(
+                            max(
+                                1,
+                                nonobviousness_ready_count,
+                            )
+                        ),
+                    ]
+                    if args.nonobviousness_original_fallback_enforce
+                    else []
+                ),
                 "--output",
                 str(nonobviousness_full_shadow),
             ],
@@ -3415,6 +3448,17 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     scientific_novelty_action_batch = None
     scientific_novelty_gate = None
+
+    if (
+        args.nonobviousness_original_fallback_enforce
+        and args.scientific_novelty_action_enforce
+    ):
+        raise RuntimeError(
+            "N10 non-obviousness original-fallback authority "
+            "and legacy scientific-novelty action authority "
+            "are mutually exclusive. Use "
+            "--scientific-novelty-action-shadow for comparison."
+        )
 
     if (
         args.scientific_novelty_action_shadow
@@ -3460,6 +3504,60 @@ def run_pipeline(args: argparse.Namespace) -> int:
             expected=[
                 scientific_novelty_gate
             ],
+        )
+
+    elif args.nonobviousness_original_fallback_enforce:
+        if (
+            nonobviousness_shadow is None
+            or nonobviousness_full_shadow is None
+        ):
+            raise RuntimeError(
+                "N10 original-fallback enforcement requires "
+                "both intake and full non-obviousness artifacts."
+            )
+
+        scientific_novelty_gate = (
+            run
+            / "nonobviousness_n10."
+              "fallback_gate.production.json"
+        )
+
+        runner.run_stage(
+            "[10N10-P/13] N10 non-obviousness "
+            "original-fallback production gate",
+            "scripts.discovery."
+            "build_nonobviousness_production_gate",
+            [
+                "--intake-shadow",
+                str(nonobviousness_shadow),
+                "--full-shadow",
+                str(nonobviousness_full_shadow),
+                "--output",
+                str(scientific_novelty_gate),
+            ],
+            expected=[
+                scientific_novelty_gate,
+            ],
+        )
+
+    if (
+        args.nonobviousness_post_generation_enforce
+        and not args.nonobviousness_original_fallback_enforce
+    ):
+        raise RuntimeError(
+            "N10 post-generation enforcement requires "
+            "--nonobviousness-original-fallback-enforce so "
+            "original and generated candidates share the same "
+            "non-obviousness authority."
+        )
+
+    if (
+        args.nonobviousness_post_generation_enforce
+        and args.post_generation_scientific_novelty_enforce
+    ):
+        raise RuntimeError(
+            "N10 and legacy post-generation scientific novelty "
+            "authorities are mutually exclusive."
         )
 
     # ------------------------------------------------------------------
@@ -3513,6 +3611,98 @@ def run_pipeline(args: argparse.Namespace) -> int:
         ],
         expected=[refined_portfolio, refined_report],
     )
+
+    if args.nonobviousness_post_generation_enforce:
+        post_n10_portfolio = (
+            run
+            / "novelty_refinement_a6."
+              "n10.portfolio.json"
+        )
+
+        post_n10_report = (
+            run
+            / "novelty_refinement_a6."
+              "n10.enforcement.json"
+        )
+
+        post_n10_details = (
+            run
+            / "novelty_refinement_a6."
+              "n10.details"
+        )
+
+        runner.run_stage(
+            "[11N10/13] Fresh Alpha6 candidate "
+            "non-obviousness enforcement",
+            "scripts.discovery."
+            "enforce_alpha6_nonobviousness",
+            [
+                "--portfolio",
+                str(refined_portfolio),
+                "--refinement-report",
+                str(refined_report),
+                "--external-dir",
+                str(
+                    Path(
+                        str(
+                            refinement_prefix
+                        )
+                        + ".external"
+                    )
+                ),
+                "--provider-plan",
+                str(
+                    literature_provider_plan_path
+                ),
+                "--domain-profile",
+                domain_profile.profile_id,
+                "--model",
+                (
+                    args.critic_model
+                    or args.model
+                ),
+                *(
+                    [
+                        "--base-url",
+                        args.base_url,
+                    ]
+                    if args.base_url
+                    else []
+                ),
+                "--api-key-env",
+                args.api_key_env,
+                *(
+                    [
+                        "--device",
+                        getattr(args, "device"),
+                    ]
+                    if getattr(args, "device", None)
+                    else []
+                ),
+                "--results-per-query",
+                str(
+                    args.results_per_query
+                ),
+                "--work-dir",
+                str(post_n10_details),
+                "--output-portfolio",
+                str(post_n10_portfolio),
+                "--output-report",
+                str(post_n10_report),
+            ],
+            expected=[
+                post_n10_portfolio,
+                post_n10_report,
+            ],
+        )
+
+        # Stage 12/13 now consume the N10-filtered
+        # selection artifact, while the original Alpha6
+        # portfolio/report remain intact for lineage audit.
+        refined_portfolio = (
+            post_n10_portfolio
+        )
+
     final_hypotheses = _hypothesis_count(refined_portfolio)
     runner.manifest["final_hypothesis_count"] = final_hypotheses
     runner._save_manifest()
@@ -3695,12 +3885,44 @@ def parse_args() -> argparse.Namespace:
         "--nonobviousness-full-shadow",
         action="store_true",
         help=(
-            "Materialize the full N9 shadow chain after the intake "
-            "artifact: targeted closure retrieval, slot review, "
-            "evidence closure, structural/readiness gates, and only "
-            "deterministic final dispositions. READY candidates remain "
-            "pending an independent adjudicator. Production selection "
-            "remains unchanged."
+            'Materialize the full N9 shadow chain after the intake artifact: targeted closure retrieval, slot review, evidence closure, structural/readiness gates, and only deterministic final dispositions. READY candidates receive independent adjudication. Production selection remains unchanged.'
+        ),
+    )
+
+    parser.add_argument(
+        "--nonobviousness-enforce",
+        action="store_true",
+        help=(
+            "Enable full N10 scientific non-obviousness production "
+            "enforcement. Original hypotheses must pass N10 before "
+            "Alpha6 fallback, and every accepted Alpha6 refinement "
+            "or re-axis candidate must pass a fresh external N10 "
+            "closure and adjudication before downstream selection."
+        ),
+    )
+
+    parser.add_argument(
+        "--nonobviousness-original-fallback-enforce",
+        action="store_true",
+        help=(
+            "Grant N10 atomic non-obviousness adjudication "
+            "production authority over Alpha6 ORIGINAL fallback. "
+            "Automatically materializes intake/full N10 closure and "
+            "evaluates all READY atomic claims. This flag does not yet "
+            "claim post-generation candidate enforcement; use only for "
+            "the D2b staged integration path."
+        ),
+    )
+
+    parser.add_argument(
+        "--nonobviousness-post-generation-enforce",
+        action="store_true",
+        help=(
+            "Require each Alpha6 accepted refinement or fresh "
+            "re-axis candidate to pass a fresh N10 external "
+            "closure and non-obviousness adjudication before "
+            "stage 12/13 selection. Requires "
+            "--nonobviousness-original-fallback-enforce."
         ),
     )
 
@@ -3879,6 +4101,19 @@ def parse_args() -> argparse.Namespace:
     )
 
     args = parser.parse_args()
+
+    # Final N10 production mode.
+    #
+    # Keep the two staged flags as internal/debug controls, but the
+    # public --nonobviousness-enforce switch activates BOTH sides of
+    # the production authority:
+    #
+    #   1. original fallback enforcement;
+    #   2. fresh post-generation candidate enforcement.
+    #
+    if args.nonobviousness_enforce:
+        args.nonobviousness_original_fallback_enforce = True
+        args.nonobviousness_post_generation_enforce = True
 
     if (
         args.cross_axis_global_selection_enforce
