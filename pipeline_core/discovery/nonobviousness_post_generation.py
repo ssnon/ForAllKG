@@ -352,6 +352,11 @@ def filter_alpha6_portfolio_by_nonobviousness(
 
     if selected_cards:
         abstention_reason = None
+    elif not portfolio.hypotheses:
+        # Alpha6 had already abstained before post-generation N10.
+        # Preserve that upstream scientific/runtime explanation rather
+        # than falsely attributing the empty portfolio to N10 removal.
+        abstention_reason = portfolio.abstention_reason
     else:
         abstention_reason = (
             "All Alpha6 survivors were removed by fresh "

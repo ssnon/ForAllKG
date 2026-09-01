@@ -374,3 +374,48 @@ def test_mixed_original_and_generated_candidate_filter_independently():
     ] == [
         "hypothesis:final-original"
     ]
+
+
+
+def test_zero_alpha6_survivors_preserve_upstream_abstention_reason():
+    upstream_reason = (
+        "Alpha6 produced no surviving hypotheses."
+    )
+
+    portfolio = HypothesisPortfolio(
+        portfolio_id="portfolio:alpha6",
+        domain_profile_id="sers_au_ag",
+        source_context_id="context:c",
+        source_context_sha256="ctxsha",
+        source_report_id="report:r",
+        source_report_sha256="rsha",
+        hypotheses=[],
+        abstention_reason=upstream_reason,
+    )
+
+    report = _report([])
+
+    filtered, audit = (
+        filter_alpha6_portfolio_by_nonobviousness(
+            portfolio=portfolio,
+            refinement_report=report,
+            gates_by_candidate_id={},
+        )
+    )
+
+    assert filtered.hypotheses == []
+    assert (
+        filtered.abstention_reason
+        == upstream_reason
+    )
+
+    assert audit["alpha6_survivor_count"] == 0
+    assert audit["final_survivor_count"] == 0
+    assert (
+        audit[
+            "removed_by_post_generation_n10_count"
+        ]
+        == 0
+    )
+    assert audit["generated_candidate_gate_count"] == 0
+    assert audit["decisions"] == []

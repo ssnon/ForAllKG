@@ -356,6 +356,11 @@ def test_diagnostic_metadata_does_not_replace_ordinary_second_query() -> None:
         SimpleNamespace(
             hypothesis_id="hypothesis:test",
             title="test",
+            hypothesis_statement="test hypothesis statement",
+            inferential_bridge="test inferential bridge",
+            assumptions=[],
+            predicted_observations=[],
+            falsification_criteria=[],
         )
     )
 
@@ -410,6 +415,10 @@ def test_first_pass_planner_labels_second_query_as_variant() -> None:
         hypothesis_statement=(
             "test hypothesis statement"
         ),
+        inferential_bridge="test inferential bridge",
+        assumptions=[],
+        predicted_observations=[],
+        falsification_criteria=[],
     )
 
     class Backend:
