@@ -194,6 +194,28 @@ def _clean_branch_specific_bridge(
     return ""
 
 
+def recover_required_bridge_from_hypothesis(
+    hypothesis: HypothesisCard,
+    identity_terms: list[str] | tuple[str, ...],
+) -> str:
+    """Recover only a branch-specific, exact-source hypothesis bridge.
+
+    This never invents or paraphrases scientific content. The canonical
+    hypothesis inferential bridge must itself satisfy the existing
+    branch-identity and extractive-support sanitizer.
+    """
+
+    return _clean_branch_specific_bridge(
+        hypothesis.inferential_bridge,
+        list(identity_terms),
+        [
+            hypothesis.inferential_bridge,
+            *hypothesis.assumptions,
+        ],
+    )
+
+
+
 def _assemble_diagnostic_relation_query(
     structural_terms: list[str],
     relation_terms: list[str],
@@ -370,7 +392,11 @@ class NoveltyClaimDecomposer:
                     ),
                     required_bridge=(
                         _clean_branch_specific_bridge(
-                            row.required_bridge,
+                            (
+                                row.required_bridge
+                                if str(row.required_bridge or "").strip()
+                                else hypothesis.inferential_bridge
+                            ),
                             prior_art_identity_terms,
                             [
                                 hypothesis.inferential_bridge,

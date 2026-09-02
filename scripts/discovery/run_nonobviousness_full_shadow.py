@@ -14,9 +14,15 @@ from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
     PriorArtPacket,
 )
+from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisPortfolio,
+)
 from pipeline_core.discovery.node_mapping import (
     DEFAULT_EMBED_MODEL,
     SentenceTransformerEncoder,
+)
+from pipeline_core.discovery.nonobviousness_shadow import (
+    reconcile_intake_required_bridge,
 )
 from pipeline_core.discovery.nonobviousness_full_shadow import (
     compile_forced_adjudication_if_determined,
@@ -94,6 +100,11 @@ def parse_args() -> argparse.Namespace:
         "--external-prior-art",
         required=True,
         type=Path,
+    )
+    parser.add_argument(
+        "--portfolio",
+        type=Path,
+        default=None,
     )
     parser.add_argument(
         "--intake-shadow",
@@ -230,6 +241,16 @@ def main() -> int:
         )
     )
 
+    source_portfolio = (
+        HypothesisPortfolio.model_validate_json(
+            args.portfolio.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.portfolio is not None
+        else None
+    )
+
     intake = json.loads(
         args.intake_shadow.read_text(
             encoding="utf-8"
@@ -243,6 +264,16 @@ def main() -> int:
         raise ValueError(
             "Full N9 shadow provenance mismatch: "
             "query plan and external report."
+        )
+
+    if (
+        source_portfolio is not None
+        and source_portfolio.portfolio_id
+        != report.source_portfolio_id
+    ):
+        raise ValueError(
+            "Full N9 shadow provenance mismatch: "
+            "canonical portfolio and external report."
         )
 
     if (
@@ -300,6 +331,46 @@ def main() -> int:
                     claim_id
                 )
 
+    intake_decisions_by_id: dict[
+        str,
+        dict[str, Any],
+    ] = {}
+
+    for hypothesis in intake.get(
+        "hypotheses",
+        [],
+    ):
+        for decision in hypothesis.get(
+            "claims",
+            [],
+        ):
+            intake_claim = decision.get(
+                "claim",
+                {},
+            )
+
+            claim_id = str(
+                intake_claim.get(
+                    "claim_id",
+                    "",
+                )
+            )
+
+            if not claim_id:
+                raise ValueError(
+                    "N10 intake claim is missing claim_id"
+                )
+
+            if claim_id in intake_decisions_by_id:
+                raise ValueError(
+                    "Duplicate N10 intake claim_id: "
+                    + claim_id
+                )
+
+            intake_decisions_by_id[
+                claim_id
+            ] = decision
+
     residues = extract_novelty_residue(
         plan,
         report,
@@ -322,6 +393,70 @@ def main() -> int:
             "Intake READY claim IDs are absent from "
             "current residue extraction: "
             + ", ".join(missing)
+        )
+
+    source_cards = {
+        card.hypothesis_id: card
+        for card in (
+            source_portfolio.hypotheses
+            if source_portfolio is not None
+            else []
+        )
+    }
+
+    for claim_id in ready_ids:
+        decision = intake_decisions_by_id.get(
+            claim_id
+        )
+
+        if decision is None:
+            raise ValueError(
+                "READY claim has no corresponding "
+                "N10 intake decision: "
+                + claim_id
+            )
+
+        intake_claim = decision.get(
+            "claim"
+        )
+
+        if not isinstance(
+            intake_claim,
+            dict,
+        ):
+            raise ValueError(
+                "READY N10 intake claim is malformed: "
+                + claim_id
+            )
+
+        provenance = decision.get(
+            "specification_provenance",
+            {},
+        )
+
+        if not isinstance(
+            provenance,
+            dict,
+        ):
+            raise ValueError(
+                "READY N10 specification provenance "
+                "is malformed: "
+                + claim_id
+            )
+
+        base_claim = claims_by_id[
+            claim_id
+        ]
+
+        claims_by_id[
+            claim_id
+        ] = reconcile_intake_required_bridge(
+            base_claim,
+            intake_claim=intake_claim,
+            specification_provenance=provenance,
+            hypothesis=source_cards.get(
+                base_claim.hypothesis_id
+            ),
         )
 
     selected_ids = ready_ids[

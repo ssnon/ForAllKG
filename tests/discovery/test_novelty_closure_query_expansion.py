@@ -141,3 +141,66 @@ def test_expanding_an_expanded_plan_is_idempotent():
         row.model_dump(mode="json")
         for row in twice.queries
     ]
+
+
+
+def test_bridge_structured_variants_are_identity_anchored_and_source_only():
+    from pipeline_core.discovery.novelty_closure_execution import (
+        ExecutableClosureTarget,
+        _source_preserving_variants_for_target,
+    )
+
+    target = ExecutableClosureTarget(
+        target_id="target:bridge",
+        slot="BRIDGE_RELATION",
+        source_claim_id="claim:test",
+        target_basis="EXTRACTIVE_REQUIRED_BRIDGE",
+        search_terms=(
+            "interparticle spacing",
+            "SERS response",
+            "electromagnetic enhancement",
+            "chemical enhancement",
+            "charge transfer enhancement",
+        ),
+        search_query=(
+            "Interparticle spacing changes electromagnetic "
+            "enhancement and chemical charge transfer "
+            "enhancement in the measured SERS response."
+        ),
+        source_text=(
+            "Interparticle spacing changes electromagnetic "
+            "enhancement and chemical charge transfer "
+            "enhancement in the measured SERS response."
+        ),
+        identity_anchor_terms=(
+            "interparticle spacing",
+        ),
+    )
+
+    variants = (
+        _source_preserving_variants_for_target(
+            target,
+            max_queries_per_target=3,
+        )
+    )
+
+    assert len(variants) == 3
+
+    assert variants[1] == (
+        "interparticle spacing "
+        "SERS response "
+        "electromagnetic enhancement"
+    )
+
+    assert variants[2] == (
+        "interparticle spacing "
+        "chemical enhancement "
+        "charge transfer enhancement"
+    )
+
+    source_tokens = _tokens(
+        target.source_text
+    )
+
+    for query in variants:
+        assert _tokens(query) <= source_tokens

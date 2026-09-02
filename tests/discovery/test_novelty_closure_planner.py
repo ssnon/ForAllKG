@@ -209,3 +209,171 @@ def test_missing_relation_nucleus_fails_closed():
         build_closure_retrieval_plan(
             claim
         )
+
+
+def test_moderator_identity_overlap_is_removed_from_base_only():
+    claim = ready_claim()
+
+    claim = NoveltyResidueClaim(
+        **{
+            **claim.__dict__,
+            "claim_kind": "moderator_interaction",
+            "claim_text": (
+                "Interparticle spacing changes the relative "
+                "electromagnetic and chemical contributions "
+                "to the measured SERS response."
+            ),
+            "prior_art_identity_terms": (
+                "interparticle spacing",
+            ),
+            "relation_nucleus_terms": (
+                "interparticle spacing",
+                "SERS response",
+                "electromagnetic enhancement",
+                "chemical enhancement",
+                "relative contribution",
+            ),
+        }
+    )
+
+    plan = build_closure_retrieval_plan(
+        claim
+    )
+
+    base = plan.targets[0]
+    factor = plan.targets[1]
+
+    assert base.search_terms == (
+        "SERS response",
+        "electromagnetic enhancement",
+        "chemical enhancement",
+        "relative contribution",
+    )
+
+    assert (
+        "interparticle spacing"
+        not in base.search_terms
+    )
+
+    assert factor.search_terms == (
+        "interparticle spacing",
+        "SERS response",
+        "electromagnetic enhancement",
+        "chemical enhancement",
+        "relative contribution",
+    )
+
+    assert factor.identity_anchor_terms == (
+        "interparticle spacing",
+    )
+
+    assert (
+        base.search_query
+        != factor.search_query
+    )
+
+
+def test_moderator_identity_normalization_uses_exact_equality_only():
+    claim = ready_claim()
+
+    claim = NoveltyResidueClaim(
+        **{
+            **claim.__dict__,
+            "claim_kind": "moderator_interaction",
+            "prior_art_identity_terms": (
+                "laser power",
+            ),
+            "relation_nucleus_terms": (
+                "critical laser power",
+                "SERS enhancement",
+                "dependence",
+            ),
+        }
+    )
+
+    plan = build_closure_retrieval_plan(
+        claim
+    )
+
+    base = plan.targets[0]
+
+    assert (
+        "critical laser power"
+        in base.search_terms
+    )
+
+
+def test_moderator_identity_cannot_exhaust_base_nucleus():
+    claim = ready_claim()
+
+    claim = NoveltyResidueClaim(
+        **{
+            **claim.__dict__,
+            "claim_kind": "moderator_interaction",
+            "prior_art_identity_terms": (
+                "interparticle spacing",
+            ),
+            "relation_nucleus_terms": (
+                "interparticle spacing",
+            ),
+        }
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="empty base relation nucleus",
+    ):
+        build_closure_retrieval_plan(
+            claim
+        )
+
+
+
+def test_bridge_and_full_terms_are_source_vocabulary_bounded():
+    claim = ready_claim()
+
+    plan = build_closure_retrieval_plan(
+        claim
+    )
+
+    bridge = plan.targets[2]
+    full = plan.targets[3]
+
+    # Scientific propositions remain exact.
+    assert (
+        bridge.source_text
+        == claim.required_bridge
+    )
+    assert (
+        bridge.search_query
+        == claim.required_bridge
+    )
+    assert (
+        full.source_text
+        == claim.claim_text
+    )
+
+    # Structured retrieval metadata may only use terms whose tokens
+    # occur in the exact slot source.
+    assert "laser power" in bridge.search_terms
+    assert (
+        "interparticle spacing"
+        in bridge.search_terms
+    )
+    assert (
+        "SERS enhancement"
+        in bridge.search_terms
+    )
+    assert "dependence" not in bridge.search_terms
+
+    assert "laser power" in full.search_terms
+    assert (
+        "interparticle spacing"
+        in full.search_terms
+    )
+    assert (
+        "critical laser power"
+        in full.search_terms
+    )
+    assert "two regimes" in full.search_terms
+    assert "SERS enhancement" not in full.search_terms

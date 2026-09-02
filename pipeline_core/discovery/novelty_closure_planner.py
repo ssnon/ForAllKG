@@ -44,8 +44,8 @@ class ClosureRetrievalPlan:
     claim_text: str
     targets: tuple[ClosureRetrievalTarget, ...]
     policy_version: Literal[
-        "n9-closure-retrieval-policy-v1"
-    ] = "n9-closure-retrieval-policy-v1"
+        "n9-closure-retrieval-policy-v3"
+    ] = "n9-closure-retrieval-policy-v3"
 
 
 def _normalize_text(
@@ -98,6 +98,103 @@ def _query_from_terms(
         " ".join(terms),
         limit=600,
     )
+
+
+def _remove_exact_identity_terms(
+    *,
+    nucleus: tuple[str, ...],
+    identity: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Remove exact normalized moderator identity from base terms.
+
+    This is intentionally narrower than semantic or substring
+    matching. It prevents an explicitly duplicated moderator identity
+    from contaminating the BASE_RELATION target without inventing or
+    reinterpreting scientific content.
+    """
+
+    identity_keys = {
+        _normalize_text(
+            term,
+            limit=140,
+        ).casefold()
+        for term in identity
+        if _normalize_text(
+            term,
+            limit=140,
+        )
+    }
+
+    return tuple(
+        term
+        for term in nucleus
+        if (
+            _normalize_text(
+                term,
+                limit=140,
+            ).casefold()
+            not in identity_keys
+        )
+    )
+
+
+def _source_token_keys(
+    text: str,
+) -> set[str]:
+    """Return normalized source vocabulary without semantic expansion."""
+
+    normalized = _normalize_text(
+        text,
+        limit=8000,
+    )
+
+    return {
+        token.casefold()
+        for token in re.findall(
+            r"\w+",
+            normalized,
+            flags=re.UNICODE,
+        )
+        if token
+    }
+
+
+def _source_supported_retrieval_terms(
+    *,
+    source_text: str,
+    candidates: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Keep only structured terms whose tokens occur in source text.
+
+    Terms are retrieval intent only. This function does not assert
+    that separated source tokens form an established scientific
+    relation, and it performs no synonym or semantic expansion.
+    """
+
+    source_keys = _source_token_keys(
+        source_text
+    )
+
+    output: list[str] = []
+
+    for term in _unique_terms(candidates):
+        term_tokens = {
+            token.casefold()
+            for token in re.findall(
+                r"\w+",
+                term,
+                flags=re.UNICODE,
+            )
+            if token
+        }
+
+        if (
+            term_tokens
+            and term_tokens <= source_keys
+        ):
+            output.append(term)
+
+    return tuple(output)
 
 
 def build_closure_retrieval_plan(
@@ -155,14 +252,37 @@ def build_closure_retrieval_plan(
             "relation_nucleus_terms."
         )
 
+    base_nucleus = nucleus
+
+    # For a moderator interaction, prior_art_identity_terms carries
+    # the moderator/factor while relation_nucleus_terms carries the
+    # underlying relation. LLM decomposition may occasionally repeat
+    # the exact moderator identity in both fields. Do not allow that
+    # duplication to collapse BASE_RELATION and
+    # DISTINGUISHING_FACTOR_EFFECT into the same retrieval target.
+    #
+    # Only exact normalized equality is removed. No substring,
+    # synonym, embedding, or scientific-semantic inference is used.
+    if claim.claim_kind == "moderator_interaction":
+        base_nucleus = _remove_exact_identity_terms(
+            nucleus=nucleus,
+            identity=identity,
+        )
+
+        if not base_nucleus:
+            raise ValueError(
+                "Moderator identity normalization leaves "
+                "an empty base relation nucleus."
+            )
+
     base_query = _query_from_terms(
-        nucleus
+        base_nucleus
     )
 
     factor_terms = _unique_terms(
         (
             *identity,
-            *nucleus,
+            *base_nucleus,
         )
     )
 
@@ -176,6 +296,28 @@ def build_closure_retrieval_plan(
 
     full_query = _normalize_text(
         claim.claim_text
+    )
+
+    structured_retrieval_terms = _unique_terms(
+        (
+            *identity,
+            *base_nucleus,
+            *claim.distinguishing_terms,
+        )
+    )
+
+    bridge_retrieval_terms = (
+        _source_supported_retrieval_terms(
+            source_text=claim.required_bridge,
+            candidates=structured_retrieval_terms,
+        )
+    )
+
+    full_retrieval_terms = (
+        _source_supported_retrieval_terms(
+            source_text=claim.claim_text,
+            candidates=structured_retrieval_terms,
+        )
     )
 
     if not all(
@@ -196,10 +338,10 @@ def build_closure_retrieval_plan(
             slot="BASE_RELATION",
             source_claim_id=claim.claim_id,
             target_basis="RELATION_NUCLEUS",
-            search_terms=nucleus,
+            search_terms=base_nucleus,
             search_query=base_query,
             identity_anchor_terms=(),
-            source_text=" | ".join(nucleus),
+            source_text=" | ".join(base_nucleus),
         ),
         ClosureRetrievalTarget(
             slot="DISTINGUISHING_FACTOR_EFFECT",
@@ -214,7 +356,7 @@ def build_closure_retrieval_plan(
                 "identity="
                 + " | ".join(identity)
                 + "; relation_context="
-                + " | ".join(nucleus)
+                + " | ".join(base_nucleus)
             ),
         ),
         ClosureRetrievalTarget(
@@ -223,7 +365,7 @@ def build_closure_retrieval_plan(
             target_basis=(
                 "EXTRACTIVE_REQUIRED_BRIDGE"
             ),
-            search_terms=(),
+            search_terms=bridge_retrieval_terms,
             search_query=bridge_query,
             identity_anchor_terms=identity,
             source_text=claim.required_bridge,
@@ -232,7 +374,7 @@ def build_closure_retrieval_plan(
             slot="FULL_RELATION",
             source_claim_id=claim.claim_id,
             target_basis="FULL_RESIDUAL_CLAIM",
-            search_terms=(),
+            search_terms=full_retrieval_terms,
             search_query=full_query,
             identity_anchor_terms=identity,
             source_text=claim.claim_text,

@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, is_dataclass, replace
 
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     LiteratureQueryPlan,
+)
+from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisCard,
+    HypothesisPortfolio,
+)
+from pipeline_core.discovery.novelty_claim_decomposition import (
+    recover_required_bridge_from_hypothesis,
 )
 from pipeline_core.discovery.novelty_residue import (
     NoveltyResidueClaim,
@@ -52,6 +59,119 @@ def _json_safe(
         ]
 
     return value
+
+
+
+_CANONICAL_BRIDGE_PROVENANCE = (
+    "CANONICAL_HYPOTHESIS_INFERENTIAL_BRIDGE"
+)
+
+
+def reconcile_intake_required_bridge(
+    claim: NoveltyResidueClaim,
+    *,
+    intake_claim: dict[str, object],
+    specification_provenance: dict[str, object] | None,
+    hypothesis: HypothesisCard | None,
+) -> NoveltyResidueClaim:
+    """Reconcile only a provenance-validated required_bridge.
+
+    The intake artifact may not alter claim identity, prior-art state,
+    branch identity, prediction, falsifier, or scientific structure.
+
+    If the query-plan residue lacks required_bridge, the only permitted
+    recovery is the exact canonical hypothesis inferential bridge after
+    the existing branch-specific extractive sanitizer accepts it.
+    """
+
+    expected = _json_safe(claim)
+
+    if not isinstance(expected, dict):
+        raise TypeError(
+            "NoveltyResidueClaim did not serialize to a dictionary"
+        )
+
+    incoming = dict(intake_claim)
+
+    expected_bridge = str(
+        expected.pop("required_bridge", "")
+        or ""
+    ).strip()
+
+    incoming_bridge = str(
+        incoming.pop("required_bridge", "")
+        or ""
+    ).strip()
+
+    if incoming != expected:
+        raise ValueError(
+            "N10 intake claim drift outside required_bridge"
+        )
+
+    # Existing query-plan bridge remains authoritative.
+    if expected_bridge:
+        if incoming_bridge != expected_bridge:
+            raise ValueError(
+                "N10 intake attempted to replace an existing "
+                "query-plan required_bridge"
+            )
+
+        return claim
+
+    # Nothing recovered: preserve the original fail-closed claim.
+    if not incoming_bridge:
+        return claim
+
+    provenance = str(
+        (
+            specification_provenance
+            or {}
+        ).get(
+            "required_bridge",
+            "",
+        )
+        or ""
+    )
+
+    if provenance != _CANONICAL_BRIDGE_PROVENANCE:
+        raise ValueError(
+            "Recovered N10 required_bridge lacks canonical "
+            "hypothesis provenance"
+        )
+
+    if hypothesis is None:
+        raise ValueError(
+            "Canonical hypothesis is required to verify "
+            "recovered N10 required_bridge"
+        )
+
+    if hypothesis.hypothesis_id != claim.hypothesis_id:
+        raise ValueError(
+            "Recovered N10 required_bridge hypothesis mismatch"
+        )
+
+    recovered = recover_required_bridge_from_hypothesis(
+        hypothesis,
+        claim.prior_art_identity_terms,
+    )
+
+    if not recovered:
+        raise ValueError(
+            "Canonical hypothesis bridge does not satisfy "
+            "branch-specific extractive requirements"
+        )
+
+    if recovered != incoming_bridge:
+        raise ValueError(
+            "Recovered N10 required_bridge does not exactly "
+            "match independently verified canonical bridge"
+        )
+
+    return replace(
+        claim,
+        required_bridge=recovered,
+    )
+
 
 
 def compile_shadow_claim(
@@ -114,6 +234,7 @@ def build_nonobviousness_shadow(
     *,
     plan: LiteratureQueryPlan,
     report: ExternalNoveltyReport,
+    source_portfolio: HypothesisPortfolio | None = None,
 ) -> dict[str, object]:
     """Build shadow-only N9 residue/specification artifact."""
 
@@ -126,6 +247,26 @@ def build_nonobviousness_shadow(
             "query plan and external report refer "
             "to different source portfolios."
         )
+
+    if (
+        source_portfolio is not None
+        and source_portfolio.portfolio_id
+        != report.source_portfolio_id
+    ):
+        raise ValueError(
+            "N9 shadow provenance mismatch: "
+            "source portfolio and external report refer "
+            "to different portfolios."
+        )
+
+    source_cards = {
+        card.hypothesis_id: card
+        for card in (
+            source_portfolio.hypotheses
+            if source_portfolio is not None
+            else []
+        )
+    }
 
     residues = extract_novelty_residue(
         plan,
@@ -143,10 +284,52 @@ def build_nonobviousness_shadow(
     for residue in residues:
         card = cards.get(residue.hypothesis_id)
 
-        decisions = [
-            compile_shadow_claim(claim)
-            for claim in residue.claims
-        ]
+        decisions: list[dict[str, object]] = []
+
+        for claim in residue.claims:
+            compiled_claim = claim
+
+            bridge_source = (
+                "QUERY_PLAN"
+                if str(claim.required_bridge or "").strip()
+                else "UNRESOLVED"
+            )
+
+            if (
+                not str(claim.required_bridge or "").strip()
+                and source_portfolio is not None
+            ):
+                hypothesis = source_cards.get(
+                    claim.hypothesis_id
+                )
+
+                if hypothesis is not None:
+                    recovered_bridge = (
+                        recover_required_bridge_from_hypothesis(
+                            hypothesis,
+                            claim.prior_art_identity_terms,
+                        )
+                    )
+
+                    if recovered_bridge:
+                        compiled_claim = replace(
+                            claim,
+                            required_bridge=recovered_bridge,
+                        )
+                        bridge_source = (
+                            "CANONICAL_HYPOTHESIS_"
+                            "INFERENTIAL_BRIDGE"
+                        )
+
+            decision = compile_shadow_claim(
+                compiled_claim
+            )
+
+            decision["specification_provenance"] = {
+                "required_bridge": bridge_source,
+            }
+
+            decisions.append(decision)
 
         for decision in decisions:
             states[str(decision["shadow_state"])] += 1

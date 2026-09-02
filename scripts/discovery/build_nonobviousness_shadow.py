@@ -8,6 +8,9 @@ from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     LiteratureQueryPlan,
 )
+from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisPortfolio,
+)
 from pipeline_core.discovery.nonobviousness_shadow import (
     build_nonobviousness_shadow,
 )
@@ -34,6 +37,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
     )
     parser.add_argument(
+        "--portfolio",
+        type=Path,
+        default=None,
+    )
+    parser.add_argument(
         "--output",
         required=True,
         type=Path,
@@ -57,9 +65,20 @@ def main() -> int:
         )
     )
 
+    source_portfolio = (
+        HypothesisPortfolio.model_validate_json(
+            args.portfolio.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.portfolio is not None
+        else None
+    )
+
     result = build_nonobviousness_shadow(
         plan=plan,
         report=report,
+        source_portfolio=source_portfolio,
     )
 
     args.output.parent.mkdir(

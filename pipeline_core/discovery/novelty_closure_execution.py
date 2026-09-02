@@ -128,6 +128,32 @@ def _source_query_tokens(
     )
 
 
+def _query_uses_only_source_vocabulary(
+    query: str,
+    source_text: str,
+) -> bool:
+    """Fail closed if a retrieval query adds source-external tokens."""
+
+    query_keys = {
+        token.casefold()
+        for token in _source_query_tokens(
+            query
+        )
+    }
+
+    source_keys = {
+        token.casefold()
+        for token in _source_query_tokens(
+            source_text
+        )
+    }
+
+    return bool(
+        query_keys
+        and query_keys <= source_keys
+    )
+
+
 def _dedupe_query_texts(
     rows: list[str],
 ) -> list[str]:
@@ -227,9 +253,12 @@ def _source_preserving_variants_for_target(
             )
 
     # BRIDGE / FULL:
-    # compress the exact source sentence by removing only grammatical
-    # stopwords and punctuation. A second bounded form keeps identity
-    # plus tokens from both ends of the source-preserved content.
+    # Prefer structured terms only when every token is already present
+    # in the exact slot source text. These are retrieval formulations,
+    # not reconstructed scientific propositions.
+    #
+    # If structured terms are unavailable, retain the older
+    # source-only compression as a fail-safe fallback.
     elif target.slot in {
         "BRIDGE_RELATION",
         "FULL_RELATION",
@@ -247,48 +276,125 @@ def _source_preserving_variants_for_target(
             not in _SOURCE_QUERY_STOPWORDS
         ]
 
-        if content_tokens:
-            candidates.append(
-                " ".join(content_tokens)
-            )
-
-        anchor_tokens = list(
-            _source_query_tokens(
-                " ".join(
-                    target.identity_anchor_terms
-                )
-            )
-        )
-
-        anchor_keys = {
-            token.casefold()
-            for token in anchor_tokens
+        identity_keys = {
+            str(term).strip().casefold()
+            for term
+            in target.identity_anchor_terms
+            if str(term).strip()
         }
 
-        remainder = [
-            token
-            for token in content_tokens
-            if token.casefold()
-            not in anchor_keys
+        structured_anchor_terms = [
+            term
+            for term in terms
+            if term.casefold()
+            in identity_keys
         ]
 
-        if anchor_tokens and remainder:
-            # Preserve both distinctive early tokens and the
-            # relation/outcome tail without introducing vocabulary.
-            head = remainder[:4]
-            tail = (
-                remainder[-4:]
-                if len(remainder) > 4
-                else []
+        structured_relation_terms = [
+            term
+            for term in terms
+            if term.casefold()
+            not in identity_keys
+        ]
+
+        if (
+            structured_anchor_terms
+            and structured_relation_terms
+        ):
+            identity_text = " ".join(
+                structured_anchor_terms
             )
 
-            candidates.append(
-                " ".join(
+            head_terms = (
+                structured_relation_terms[:2]
+            )
+
+            tail_terms = (
+                structured_relation_terms[-2:]
+                if len(
+                    structured_relation_terms
+                ) > 2
+                else structured_relation_terms
+            )
+
+            for relation_slice in (
+                head_terms,
+                tail_terms,
+            ):
+                structured_query = " ".join(
+                    [
+                        identity_text,
+                        *relation_slice,
+                    ]
+                )
+
+                if (
+                    _query_uses_only_source_vocabulary(
+                        structured_query,
+                        target.source_text,
+                    )
+                ):
+                    candidates.append(
+                        structured_query
+                    )
+
+        # Fill any remaining bounded retrieval slots using only the
+        # literal source sentence. This preserves behavior for older
+        # plans with no structured BRIDGE/FULL search terms.
+        if len(
+            _dedupe_query_texts(candidates)
+        ) < max_queries_per_target:
+            if content_tokens:
+                candidates.append(
+                    " ".join(content_tokens)
+                )
+
+        if len(
+            _dedupe_query_texts(candidates)
+        ) < max_queries_per_target:
+            anchor_tokens = list(
+                _source_query_tokens(
+                    " ".join(
+                        target.identity_anchor_terms
+                    )
+                )
+            )
+
+            anchor_keys = {
+                token.casefold()
+                for token in anchor_tokens
+            }
+
+            remainder = [
+                token
+                for token in content_tokens
+                if token.casefold()
+                not in anchor_keys
+            ]
+
+            if anchor_tokens and remainder:
+                head = remainder[:4]
+                tail = (
+                    remainder[-4:]
+                    if len(remainder) > 4
+                    else []
+                )
+
+                fallback_query = " ".join(
                     anchor_tokens
                     + head
                     + tail
                 )
-            )
+
+                if (
+                    _query_uses_only_source_vocabulary(
+                        fallback_query,
+                        target.source_text,
+                    )
+                ):
+                    candidates.append(
+                        fallback_query
+                    )
 
     return tuple(
         _dedupe_query_texts(
@@ -366,7 +472,7 @@ def expand_closure_query_plan_source_preserving(
             for row in plan.targets
         ],
         "policy_version":
-            "n9-closure-source-preserving-query-expansion-v1",
+            "n9-closure-source-preserving-query-expansion-v2",
     }
 
     plan_sha = _sha256_json(body)
