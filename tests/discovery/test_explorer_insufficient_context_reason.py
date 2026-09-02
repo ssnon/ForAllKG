@@ -49,7 +49,7 @@ def test_unresolved_reason_remains_fail_closed_for_unknown_value() -> None:
 def test_prompt_version_bumped_for_reason_contract() -> None:
     assert (
         PROMPT_VERSION
-        == "graph-explorer-prompt-v2.5.1.3"
+        == "graph-explorer-prompt-v2.5.1.4"
     )
 
 

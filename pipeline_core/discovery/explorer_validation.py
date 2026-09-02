@@ -113,6 +113,51 @@ def _label_has_grounded_causal_support(
     return False
 
 
+def _validate_unresolved_connection_roles(
+    report: ExplorationReport,
+    error,
+) -> None:
+    """Require unresolved connections to point to unresolved statements.
+
+    HypothesisContextBuilder exposes only epistemic_role='unresolved'
+    statements as hypothesis gaps. Without this contract an
+    ExplorationReport can contain unresolved_connections that disappear
+    from the downstream hypothesis gap surface.
+    """
+
+    statements = {
+        statement.statement_id: statement
+        for statement in report.statements
+    }
+
+    for index, unresolved in enumerate(
+        report.unresolved_connections
+    ):
+        statement = statements.get(
+            unresolved.statement_id
+        )
+
+        # Unknown references are handled separately by the ordinary
+        # report reference validator.
+        if statement is None:
+            continue
+
+        if statement.epistemic_role != "unresolved":
+            error(
+                "UNRESOLVED_CONNECTION_REQUIRES_UNRESOLVED_STATEMENT",
+                (
+                    f"unresolved_connections[{index}]"
+                    ".statement_id"
+                ),
+                (
+                    "An unresolved connection must reference a "
+                    "statement with epistemic_role='unresolved'; "
+                    f"got {statement.epistemic_role!r} for "
+                    f"{statement.statement_id}."
+                ),
+            )
+
+
 class ExplorationReportValidator:
     def __init__(self, semantics: DiscoverySemantics) -> None:
         self.semantics = semantics
@@ -165,6 +210,11 @@ class ExplorationReportValidator:
         for location, statement_id in referenced_section_ids:
             if statement_id not in statements:
                 error("UNKNOWN_STATEMENT_REF", location, f"Unknown statement ID: {statement_id}")
+
+        _validate_unresolved_connection_roles(
+            report,
+            error,
+        )
 
         for index, statement in enumerate(report.statements):
             location = f"statements[{index}]"

@@ -9,7 +9,7 @@ from pipeline_core.discovery.explorer_contracts import GraphExplorerPacket
 from pipeline_core.discovery.explorer_draft import ExplorationDraft
 
 
-PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.3"
+PROMPT_VERSION = "graph-explorer-prompt-v2.5.1.4"
 
 
 def _sha256(text: str) -> str:
@@ -79,6 +79,8 @@ Paper-specific absence is a strict extraction-completeness claim. If a paper has
 A graph path proves navigability, not causality.
 Cross-paper navigation through an alignment hub establishes a graph connection, not a reported cross-paper causal mechanism.
 Use epistemic_role='reported' only when the statement itself is directly source-grounded by cited node/edge evidence. Use epistemic_role='evidence_synthesis' when you organize evidence across paths/papers. Use 'navigation_note' for graph-structural observations and 'unresolved' for packet-scoped limitations.
+
+Every unresolved_connections entry MUST reference a dedicated statement whose epistemic_role is exactly 'unresolved'. Never point unresolved_connections at a 'reported', 'evidence_synthesis', or 'navigation_note' statement. Preserve reported evidence as reported evidence and create a separate packet-scoped unresolved statement when a missing relation or unresolved connection must be represented.
 
 Every substantive statement must cite exact packet IDs in its support_* fields. Never fabricate an ID. Prefer the smallest sufficient support set. If a scientific statement cites a path containing reverse navigation, also cite the original scientific node or edge that supports the assertion.
 
