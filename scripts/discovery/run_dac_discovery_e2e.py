@@ -2314,10 +2314,24 @@ def run_pipeline(args: argparse.Namespace) -> int:
     feasibility_adapter = _resolve_feasibility_capability(
         domain_profile
     )
-    context_review_adapter = (
+    context_review_mode = str(
+        getattr(
+            args,
+            "context_review_mode",
+            "auto",
+        )
+    ).strip().lower()
+
+    native_context_review_adapter = (
         _resolve_context_review_capability(
             domain_profile
         )
+    )
+
+    context_review_adapter = (
+        None
+        if context_review_mode == "off"
+        else native_context_review_adapter
     )
 
     runner.manifest["domain_profile_id"] = (
@@ -2329,6 +2343,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
             feasibility_adapter is not None,
         "context_review":
             context_review_adapter is not None,
+        "context_review_native_available":
+            native_context_review_adapter is not None,
     }
 
     runner.manifest["feasibility_status"] = (
@@ -2344,14 +2360,28 @@ def run_pipeline(args: argparse.Namespace) -> int:
     )
 
     runner.manifest["context_review_status"] = (
-        "available"
-        if context_review_adapter is not None
-        else "not_supported_for_domain"
+        "disabled_by_run_policy"
+        if context_review_mode == "off"
+        else (
+            "available"
+            if context_review_adapter is not None
+            else "not_supported_for_domain"
+        )
     )
 
     runner.manifest["context_review_adapter_id"] = (
         context_review_adapter.adapter_id
         if context_review_adapter is not None
+        else None
+    )
+
+    runner.manifest["context_review_mode"] = (
+        context_review_mode
+    )
+
+    runner.manifest["context_review_native_adapter_id"] = (
+        native_context_review_adapter.adapter_id
+        if native_context_review_adapter is not None
         else None
     )
 
@@ -3245,7 +3275,11 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "context_review"
         ] = {
             "status":
-                "not_supported_for_domain",
+                (
+                    "disabled_by_run_policy"
+                    if context_review_mode == "off"
+                    else "not_supported_for_domain"
+                ),
             "artifact":
                 None,
             "action_policy_applied":
@@ -3854,6 +3888,17 @@ def parse_args() -> argparse.Namespace:
         "--domain-profile",
         default="dac_her",
         help="Scientific domain profile propagated through discovery, novelty, refinement, and feasibility.",
+    )
+    parser.add_argument(
+        "--context-review-mode",
+        choices=("auto", "off"),
+        default="auto",
+        help=(
+            "Context-review capability policy. 'auto' uses a domain-owned "
+            "context reviewer when registered; 'off' disables context review "
+            "for common-denominator cross-domain evaluation without changing "
+            "other scientific gates."
+        ),
     )
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--source", required=True)

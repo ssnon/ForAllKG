@@ -10,6 +10,7 @@ from typing import Any
 
 from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxisPlan,
+    DiscoveryAxisPlannerPolicy,
 )
 from pipeline_core.discovery.discovery_axis_planner import (
     DiscoveryAxisPlanner,
@@ -449,7 +450,11 @@ def main() -> int:
         )
     )
 
-    planner = DiscoveryAxisPlanner()
+    planner = DiscoveryAxisPlanner(
+        DiscoveryAxisPlannerPolicy(
+            max_axes=args.max_axes,
+        )
+    )
 
     generic_plan = planner.build(
         old_dual
