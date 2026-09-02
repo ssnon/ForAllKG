@@ -11,7 +11,7 @@ from pipeline_core.discovery.nonobviousness_mechanism_semantics_contracts import
 
 
 MECHANISM_SEMANTIC_PROMPT_VERSION = (
-    "n11-mechanism-semantic-review-prompt-v1"
+    "n11-mechanism-semantic-review-prompt-v2-governing-mechanism"
 )
 
 
@@ -150,6 +150,108 @@ EPISTEMIC RULES
 10. Do not invent papers, mechanisms, causal links, moderators,
     thresholds, competition, switches, or relative-contribution
     effects.
+
+GOVERNING-MECHANISM IDENTITY
+============================
+
+Classify semantic mechanism identity at the level of the governing
+physical or chemical process, not at the level of its downstream
+observable, measurement, consequence, geometry, or application.
+
+11. A different downstream consequence does NOT by itself establish
+    a distinct mechanism.
+
+    Examples of downstream consequences include:
+    - plasmon spectral red shift;
+    - local electric-field magnitude;
+    - hotspot formation;
+    - Raman or SERS intensity;
+    - enhancement factor;
+    - detection sensitivity.
+
+12. When both supplied components describe the same plasmonic or
+    electromagnetic near-field process, differences such as
+
+        coupling -> spectral shift
+
+    versus
+
+        coupling / localized field -> hotspot / SERS enhancement
+
+    must not by themselves be counted as a distinct governing
+    mechanism.
+
+13. Near-field coupling, plasmonic coupling, plasmon hybridization,
+    electromagnetic-field localization, and plasmonic hotspot
+    behavior may describe different levels or consequences of one
+    electromagnetic/plasmonic mechanism family.
+
+    Do not call them distinct merely because one component emphasizes
+    coupling, another emphasizes local field enhancement, and another
+    emphasizes the resulting SERS response.
+
+14. Material identity, particle architecture, geometry, hotspot
+    location, polarization, fabrication route, or measurement
+    configuration are not separate governing mechanisms merely because
+    they differ between the supplied components.
+
+    They count as distinct mechanistic content only when the supplied
+    evidence explicitly introduces a different physical or chemical
+    pathway.
+
+15. Chemical enhancement, charge transfer, molecular resonance,
+    catalytic/electronic-state effects, or another explicitly reported
+    non-electromagnetic pathway may constitute a distinct mechanism
+    when that pathway is actually present in the supplied supplemental
+    evidence.
+
+16. Experimental uncertainty, laser positioning, dose stability,
+    fabrication history, or structural formation alone are not
+    governing SERS mechanisms.
+
+    If a supplemental component reports only such a factor and does
+    not establish a governing physical or chemical mechanism, prefer
+    INSUFFICIENT_FOR_JUDGMENT rather than DISTINCT_MECHANISMS.
+
+17. Use PARTIAL_OVERLAP_WITH_DISTINCT_COMPONENT only when the
+    supplemental evidence contains an additional GOVERNING mechanism,
+    not merely an additional consequence, readout, architecture,
+    localization pattern, or experimental condition.
+
+TASK-RELATION GROUNDING
+=======================
+
+18. task_relation_grounded concerns whether the supplied factor-local
+    scientific relation itself connects the task factor/feature to the
+    supplemental governing mechanism.
+
+19. Use the supplied grounded_factor_nodes as the authoritative
+    upstream resolution of task-factor identity.
+
+    Do not require the exact lexical phrase "interparticle spacing"
+    when an upstream-grounded factor node identifies an interparticle
+    gap, gap width, nanogap, or distance as the task-related factor.
+
+20. task_relation_grounded=true is allowed when the factor-local
+    relation explicitly states, for example:
+
+    - smaller/larger gaps change the mechanism;
+    - a distance or gap-size regime changes the mechanism;
+    - nanogaps create or enable the mechanism;
+    - the mechanism depends on interparticle distance or gap width.
+
+21. task_relation_grounded=false when the task factor is only a
+    location, anchor, or contextual object.
+
+    Examples:
+    - laser positioning on a nanogap changes the measurement;
+    - material identity changes a field located in a nanogap;
+    - polarization changes a field at a nanogap;
+    - a mechanism happens to be measured in a nanogap structure.
+
+22. Grounded factor identity does not repair relation direction.
+    The factor itself must participate in the reported scientific
+    relation.
 
 COMPONENT DECOMPOSITION
 =======================
