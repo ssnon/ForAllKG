@@ -103,6 +103,7 @@ class PerHypothesisExternalArtifacts:
     query_plan: LiteratureQueryPlan
     prior_art: PriorArtPacket
     report: ExternalNoveltyReport
+    source_portfolio: HypothesisPortfolio | None = None
 
 
 def _post_generation_novelty_observability(
@@ -637,6 +638,7 @@ class TargetedNoveltyRefinementRuntime:
             query_plan=plan,
             prior_art=packet,
             report=report,
+            source_portfolio=portfolio,
         )
 
     def run(

@@ -109,11 +109,12 @@ def generated_candidate_ids(
     return tuple(ids)
 
 
-def find_final_external_triplet(
+def find_final_external_bundle(
     *,
     external_dir: Path,
     candidate_id: str,
 ) -> tuple[
+    Path,
     Path,
     Path,
     Path,
@@ -149,6 +150,11 @@ def find_final_external_triplet(
         ]
     )
 
+    source_portfolio = Path(
+        str(base)
+        + ".portfolio.json"
+    )
+
     prior = Path(
         str(base)
         + ".prior_art.json"
@@ -158,6 +164,12 @@ def find_final_external_triplet(
         str(base)
         + ".report.json"
     )
+
+    if not source_portfolio.is_file():
+        raise ValueError(
+            "missing exact fresh candidate source-portfolio artifact: "
+            + str(source_portfolio)
+        )
 
     if not prior.is_file():
         raise ValueError(
@@ -171,7 +183,28 @@ def find_final_external_triplet(
             + str(report)
         )
 
-    # Validate the actual candidate/artifact binding.
+    parsed_portfolio = (
+        HypothesisPortfolio
+        .model_validate_json(
+            source_portfolio.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    candidate_portfolio_ids = {
+        card.hypothesis_id
+        for card
+        in parsed_portfolio.hypotheses
+    }
+
+    if candidate_portfolio_ids != {candidate_id}:
+        raise ValueError(
+            "fresh source portfolio does not contain exactly "
+            "the expected Alpha6 candidate: "
+            + candidate_id
+        )
+
     parsed_plan = (
         LiteratureQueryPlan
         .model_validate_json(
@@ -180,6 +213,14 @@ def find_final_external_triplet(
             )
         )
     )
+
+    if (
+        parsed_plan.source_portfolio_id
+        != parsed_portfolio.portfolio_id
+    ):
+        raise ValueError(
+            "fresh query-plan/source-portfolio provenance mismatch"
+        )
 
     planned_ids = {
         group.hypothesis_id
@@ -194,6 +235,31 @@ def find_final_external_triplet(
             + candidate_id
         )
 
+    parsed_prior = (
+        PriorArtPacket
+        .model_validate_json(
+            prior.read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+
+    if (
+        parsed_prior.source_portfolio_id
+        != parsed_portfolio.portfolio_id
+    ):
+        raise ValueError(
+            "fresh prior-art/source-portfolio provenance mismatch"
+        )
+
+    if (
+        parsed_prior.source_query_plan_id
+        != parsed_plan.plan_id
+    ):
+        raise ValueError(
+            "fresh prior-art/query-plan provenance mismatch"
+        )
+
     parsed_report = (
         ExternalNoveltyReport
         .model_validate_json(
@@ -202,6 +268,14 @@ def find_final_external_triplet(
             )
         )
     )
+
+    if (
+        parsed_report.source_portfolio_id
+        != parsed_portfolio.portfolio_id
+    ):
+        raise ValueError(
+            "fresh external-report/source-portfolio provenance mismatch"
+        )
 
     report_ids = {
         card.hypothesis_id
@@ -216,10 +290,33 @@ def find_final_external_triplet(
             + candidate_id
         )
 
-    PriorArtPacket.model_validate_json(
-        prior.read_text(
-            encoding="utf-8"
-        )
+    return (
+        source_portfolio,
+        plan,
+        prior,
+        report,
+    )
+
+
+def find_final_external_triplet(
+    *,
+    external_dir: Path,
+    candidate_id: str,
+) -> tuple[
+    Path,
+    Path,
+    Path,
+]:
+    """Backward-compatible non-authoritative artifact locator."""
+
+    (
+        _source_portfolio,
+        plan,
+        prior,
+        report,
+    ) = find_final_external_bundle(
+        external_dir=external_dir,
+        candidate_id=candidate_id,
     )
 
     return (
@@ -242,6 +339,16 @@ def parse_args() -> argparse.Namespace:
         "--portfolio",
         required=True,
         type=Path,
+    )
+
+    p.add_argument(
+        "--hypothesis-context",
+        required=True,
+        type=Path,
+        help=(
+            "Canonical grounded HypothesisContext inherited by "
+            "all Alpha6 candidate portfolios."
+        ),
     )
 
     p.add_argument(
@@ -356,10 +463,11 @@ def main() -> int:
         1,
     ):
         (
+            source_portfolio,
             query_plan,
             prior_art,
             external_report,
-        ) = find_final_external_triplet(
+        ) = find_final_external_bundle(
             external_dir=args.external_dir,
             candidate_id=candidate_id,
         )
@@ -436,6 +544,10 @@ def main() -> int:
             str(external_report),
             "--external-prior-art",
             str(prior_art),
+            "--portfolio",
+            str(source_portfolio),
+            "--hypothesis-context",
+            str(args.hypothesis_context),
             "--intake-shadow",
             str(intake),
             "--provider-plan",
@@ -536,6 +648,10 @@ def main() -> int:
             {
                 "candidate_id":
                     candidate_id,
+                "source_portfolio":
+                    str(source_portfolio),
+                "hypothesis_context":
+                    str(args.hypothesis_context),
                 "query_plan":
                     str(query_plan),
                 "prior_art":

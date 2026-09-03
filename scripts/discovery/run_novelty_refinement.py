@@ -368,6 +368,17 @@ def main() -> int:
         _write(Path(str(stem) + ".report.json"), row.report)
     for i, row in enumerate(outcome.final_external_artifacts, 1):
         stem = detail_dir / f"final_{i:02d}_{row.hypothesis_id.split(':')[-1]}"
+
+        if row.source_portfolio is None:
+            raise RuntimeError(
+                "Fresh final external artifact is missing its "
+                "exact source portfolio."
+            )
+
+        _write(
+            Path(str(stem) + ".portfolio.json"),
+            row.source_portfolio,
+        )
         _write(Path(str(stem) + ".claims_queries.json"), row.query_plan)
         _write(Path(str(stem) + ".prior_art.json"), row.prior_art)
         _write(Path(str(stem) + ".report.json"), row.report)
