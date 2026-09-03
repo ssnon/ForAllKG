@@ -11,6 +11,9 @@ from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaim,
     NoveltyClaimDecompositionDraft,
 )
+from pipeline_core.discovery.diagnostic_prior_art_review import (
+    DiagnosticPriorArtReviewDraft,
+)
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard
 from pipeline_core.llm.llm_telemetry import run_instructor_structured_call
 from pipeline_core.discovery.prior_art_review_audit import (
@@ -194,6 +197,59 @@ DISTINGUISHING-FACET CONTRACT:
 - Keep distinguishing_terms concise and literal. Do not add synonyms or literature-derived concepts not present in the supplied hypothesis.
 
 Do not decompose generic background facts unless they are necessary to distinguish the generated hypothesis. Return only the structured NoveltyClaimDecompositionDraft requested by the caller."""
+
+
+
+_DIAGNOSTIC_REVIEW_SYSTEM = """You review ONE bounded diagnostic prior-art search.
+
+This is NOT the ordinary full-claim novelty review.
+
+The FULL CLAIM is supplied only as scientific context. Do NOT decide whether the full claim is DIRECT_PRIOR_ART or PARTIAL_PRIOR_ART. Those labels are intentionally unavailable in this diagnostic review.
+
+Your authority is limited to the explicitly supplied DIAGNOSTIC TARGET.
+
+Use ONLY the supplied title/abstract metadata. Do not use outside knowledge. Do not claim literature-wide novelty or absence.
+
+ALLOWED RELATIONSHIPS:
+- LOWER_ORDER_RELATION_PRIOR_ART
+- DIRECTIONAL_COUNTEREVIDENCE
+- COMPONENT_ONLY
+- TITLE_ONLY_NEIGHBOR
+- UNRELATED
+- INSUFFICIENT_METADATA
+
+LOWER_ORDER_RELATION CONTRACT:
+If diagnostic_query_kind=LOWER_ORDER_RELATION, judge whether the record explicitly establishes the DIAGNOSTIC TARGET relation after the higher-order moderator, interaction, mediation extension, or additional relation nucleus has been intentionally relaxed.
+
+Use LOWER_ORDER_RELATION_PRIOR_ART only when ABSTRACT-BACKED metadata explicitly establishes a scientifically meaningful multivariable relation corresponding to that lower-order diagnostic target.
+
+The record does NOT need to establish the full higher-order atomic claim. In fact, establishing only the diagnostic lower-order relation is exactly the purpose of this label.
+
+Do not require the full claim's moderator, interaction, "beyond", mediation, conditional, or higher-order structure when those features have been intentionally removed from the diagnostic target.
+
+If the record contains relevant variables or ingredients but does not establish the diagnostic target relation, use COMPONENT_ONLY.
+
+DIRECTIONAL BOUNDARY CONTRACT:
+If diagnostic_query_kind=DIRECTIONAL_BOUNDARY, use DIRECTIONAL_COUNTEREVIDENCE only when ABSTRACT-BACKED metadata materially challenges the proposed ordered direction in a scientifically relevant neighboring scope, for example by showing an opposite trend, weak or absent correlation, regime dependence, or dominance by another determinant.
+
+Do not reinterpret ordinary support for a relation as directional counterevidence.
+
+TITLE / METADATA CONTRACT:
+A strong diagnostic signal requires abstract-backed evidence. If only a title is available, use TITLE_ONLY_NEIGHBOR when the title is relevant but substantive relation overlap cannot be verified.
+
+FAIL-CLOSED CONTRACT:
+Never convert uncertainty into a strong diagnostic signal.
+Never infer a multivariable relation from separate single-variable main effects.
+Never stitch statements across unrelated contexts into a relation.
+Never infer the diagnostic relation merely because the paper discusses all variables.
+
+WORK-ID COPY CONTRACT:
+Every returned work_id MUST be copied byte-for-byte from ALLOWED_WORK_IDS.
+Never invent, shorten, normalize, index, alias, or reconstruct a work ID.
+Return at most one match per work_id.
+If an exact work ID cannot be copied, omit the record.
+
+Your interpretation must describe only what this bounded diagnostic evidence establishes."""
 
 
 _REVIEW_SYSTEM = """You are a prior-art relationship reviewer in an external-novelty assessment pipeline.
@@ -483,4 +539,269 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             works=works,
             telemetry_event=_event,
         )
+        return result
+
+
+    def review_diagnostic_claim(
+        self,
+        claim: NoveltyClaim,
+        works: list[dict[str, Any]],
+    ) -> DiagnosticPriorArtReviewDraft:
+        """Review only the canonical diagnostic relation for one claim."""
+
+        diagnostic_kind = str(
+            claim.diagnostic_query_kind
+            or ""
+        ).strip()
+
+        diagnostic_target = str(
+            claim.diagnostic_execution_query
+            or ""
+        ).strip()
+
+        if diagnostic_kind == "NONE":
+            raise ValueError(
+                "diagnostic review requires "
+                "diagnostic_query_kind != NONE"
+            )
+
+        if not diagnostic_target:
+            raise ValueError(
+                "diagnostic review requires "
+                "diagnostic_execution_query"
+            )
+
+        lines = [
+            "FULL CLAIM CONTEXT",
+            "==================",
+            f"claim_id: {claim.claim_id}",
+            f"claim_kind: {claim.kind}",
+            f"claim_text: {claim.text}",
+            "",
+            "DIAGNOSTIC TARGET",
+            "=================",
+            (
+                "diagnostic_query_kind: "
+                f"{diagnostic_kind}"
+            ),
+            (
+                "diagnostic_execution_query: "
+                f"{diagnostic_target}"
+            ),
+            (
+                "diagnostic_structural_terms: "
+                + ", ".join(
+                    claim.diagnostic_structural_terms
+                )
+            ),
+            (
+                "diagnostic_relation_terms: "
+                + ", ".join(
+                    claim.diagnostic_relation_terms
+                )
+            ),
+            "",
+            "IMPORTANT:",
+            (
+                "Judge the records against the "
+                "DIAGNOSTIC TARGET, not against "
+                "whether they establish the full claim."
+            ),
+            "",
+            "RETRIEVED DIAGNOSTIC CANDIDATES",
+            "================================",
+        ]
+
+        if not works:
+            lines.append(
+                "- NONE"
+            )
+
+        for index, work in enumerate(
+            works,
+            start=1,
+        ):
+            abstract = str(
+                work.get(
+                    "abstract"
+                )
+                or ""
+            )
+
+            if (
+                len(abstract)
+                > self.max_abstract_chars
+            ):
+                abstract = (
+                    abstract[
+                        : self.max_abstract_chars
+                        - 1
+                    ].rstrip()
+                    + "…"
+                )
+
+            lines.extend(
+                [
+                    (
+                        f"[{index}] "
+                        f"work_id="
+                        f"{work['work_id']}"
+                    ),
+                    (
+                        "title: "
+                        f"{work.get('title', '')}"
+                    ),
+                    (
+                        "year: "
+                        f"{work.get('year')}"
+                    ),
+                    (
+                        "doi: "
+                        f"{work.get('doi')}"
+                    ),
+                    (
+                        "semantic_similarity: "
+                        f"{float(work.get('semantic_similarity', 0.0)):.4f}"
+                    ),
+                    (
+                        "lexical_coverage: "
+                        f"{float(work.get('lexical_coverage', 0.0)):.4f}"
+                    ),
+                    (
+                        "reaction_domain_relevance: "
+                        f"{float(work.get('reaction_domain_relevance', 0.5)):.4f}"
+                    ),
+                    (
+                        "catalyst_scope_relevance: "
+                        f"{float(work.get('catalyst_scope_relevance', 0.5)):.4f}"
+                    ),
+                    (
+                        "abstract: "
+                        + (
+                            abstract
+                            if abstract
+                            else (
+                                "[NO ABSTRACT AVAILABLE]"
+                            )
+                        )
+                    ),
+                    "",
+                ]
+            )
+
+        allowed_work_ids = [
+            str(
+                work["work_id"]
+            )
+            for work in works
+        ]
+
+        lines.extend(
+            [
+                "ALLOWED_WORK_IDS",
+                "================",
+                *allowed_work_ids,
+                "",
+                "Return only exact work IDs "
+                "from ALLOWED_WORK_IDS.",
+                (
+                    "Do not infer literature-wide "
+                    "absence from this bounded "
+                    "candidate set."
+                ),
+            ]
+        )
+
+        user = "\n".join(
+            lines
+        )
+
+        self._record(
+            (
+                "diagnostic_review_"
+                f"{claim.claim_id}"
+            ),
+            _DIAGNOSTIC_REVIEW_SYSTEM,
+            user,
+        )
+
+        result, event = (
+            run_instructor_structured_call(
+                self._get_client()
+                .chat.completions,
+                model=self.model_name,
+                response_model=(
+                    DiagnosticPriorArtReviewDraft
+                ),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            _DIAGNOSTIC_REVIEW_SYSTEM
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": user,
+                    },
+                ],
+                temperature=self.temperature,
+                max_retries=(
+                    self.parse_retries
+                ),
+                telemetry_path=(
+                    self.telemetry_path
+                ),
+                telemetry_context={
+                    **self.telemetry_context,
+                    "pipeline":
+                        "external_novelty",
+                    "stage":
+                        "diagnostic_prior_art_review",
+                    "call_kind":
+                        "structured",
+                    "claim_id":
+                        claim.claim_id,
+                    "diagnostic_query_kind":
+                        diagnostic_kind,
+                },
+            )
+        )
+
+        if not isinstance(
+            result,
+            DiagnosticPriorArtReviewDraft,
+        ):
+            result = (
+                DiagnosticPriorArtReviewDraft
+                .model_validate(
+                    result
+                )
+            )
+
+        record_prior_art_review_call(
+            system_prompt=(
+                _DIAGNOSTIC_REVIEW_SYSTEM
+            ),
+            user_prompt=user,
+            response_schema=(
+                DiagnosticPriorArtReviewDraft
+            ),
+            result=result,
+            model=self.model_name,
+            instructor_mode=(
+                self.instructor_mode
+            ),
+            temperature=(
+                self.temperature
+            ),
+            claim_id=claim.claim_id,
+            hypothesis_id=(
+                claim.hypothesis_id
+            ),
+            claim_text=claim.text,
+            works=works,
+            telemetry_event=event,
+        )
+
         return result
