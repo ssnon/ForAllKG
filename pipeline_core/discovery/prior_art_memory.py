@@ -172,7 +172,19 @@ def _relation_tokens(
 ) -> set[str]:
     # relation_nucleus_terms are the canonical base-relation
     # representation for cross-claim prior-art continuity.
-    source = list(claim.relation_nucleus_terms)
+    #
+    # When this structured field is present, novelty-specific
+    # distinguishing facets have already been separated upstream.
+    # Removing distinguishing_terms again can erase genuine
+    # base-relation variables when decomposition redundantly places
+    # those variables in both fields.
+    has_structured_nucleus = bool(
+        claim.relation_nucleus_terms
+    )
+
+    source = list(
+        claim.relation_nucleus_terms
+    )
 
     # Backward compatibility for historical artifacts.
     if not source:
@@ -187,14 +199,20 @@ def _relation_tokens(
 
     tokens = _tokens(source)
 
-    # Neither prior-art identity nor novelty-specific prediction
-    # facets may manufacture base-relation compatibility.
+    # Prior-art identity is always removed so a shared identity alone
+    # cannot manufacture relation compatibility.
     tokens -= _tokens(
         _prior_art_identity_terms(claim)
     )
-    tokens -= _tokens(
-        claim.distinguishing_terms
-    )
+
+    # Legacy fallback representations may still mix novelty-specific
+    # facets into their relation vocabulary. Preserve the historical
+    # subtraction there. A canonical relation_nucleus_terms contract,
+    # however, must not be filtered a second time.
+    if not has_structured_nucleus:
+        tokens -= _tokens(
+            claim.distinguishing_terms
+        )
 
     return tokens
 

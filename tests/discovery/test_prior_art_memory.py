@@ -331,3 +331,94 @@ def test_memory_blocks_same_identity_with_unrelated_relation():
         )
         == []
     )
+
+
+def test_memory_structured_nucleus_survives_duplicate_distinguishing_relation_terms():
+    """Structured relation nuclei remain authoritative.
+
+    A decomposer may redundantly repeat base-relation variables in
+    distinguishing_terms. That duplication must not erase the same
+    variables from the canonical relation_nucleus_terms memory gate.
+    """
+
+    historical = structured_claim(
+        "old-dg-her",
+        kind="mechanistic_link",
+        text=(
+            "Across different metal identities, hydrogen adsorption "
+            "free energy is associated with HER activity."
+        ),
+        identity=[
+            "hydrogen adsorption free energy",
+        ],
+        distinguishing=[
+            "hydrogen adsorption free energy",
+            "HER activity",
+            "metal identity dependence",
+        ],
+        relation=[
+            "hydrogen adsorption free energy",
+            "HER activity",
+            "metal identity",
+            "association",
+        ],
+    )
+
+    current = structured_claim(
+        "new-dg-her",
+        kind="mediator",
+        text=(
+            "Across different metal identities, hydrogen adsorption "
+            "free energy is associated with HER catalytic activity."
+        ),
+        identity=[
+            "hydrogen adsorption free energy",
+        ],
+        distinguishing=[
+            "hydrogen adsorption free energy",
+            "HER catalytic activity",
+        ],
+        relation=[
+            "hydrogen adsorption free energy",
+            "HER catalytic activity",
+            "association",
+        ],
+    )
+
+    matches = PriorArtMemoryMatcher(
+        FlatEncoder()
+    ).match(
+        current,
+        [
+            PriorArtMemoryEntry(
+                claim=historical,
+                work_ids=(
+                    "work:sciadv-control",
+                ),
+            )
+        ],
+    )
+
+    assert len(matches) == 1
+
+    match = matches[0]
+
+    assert (
+        match.memory_claim_id
+        == "old-dg-her"
+    )
+
+    assert (
+        match.work_ids
+        == ("work:sciadv-control",)
+    )
+
+    assert (
+        match.shared_relation_token_count
+        >= 2
+    )
+
+    assert (
+        match.relation_overlap
+        >= 0.25
+    )
