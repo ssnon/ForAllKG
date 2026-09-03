@@ -35,6 +35,9 @@ from pipeline_core.discovery.novelty_claim_decomposition import (
     LiteratureQueryPlanner,
     NoveltyClaimDecomposer,
 )
+from pipeline_core.discovery.novelty_inference_provenance import (
+    attach_atomic_inference_provenance,
+)
 from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
@@ -463,14 +466,18 @@ def main() -> None:
             for row in portfolio.hypotheses
         ]
 
-        decompositions = (
-            _attach_inference_provenance(
-                decompositions=decompositions,
-                provenance_by_hypothesis=(
-                    inference_provenance_by_hypothesis
-                ),
+        if args.inference_audit:
+            decompositions = (
+                attach_atomic_inference_provenance(
+                    decompositions=decompositions,
+                    inference_audit_path=(
+                        args.inference_audit
+                    ),
+                    fallback_by_hypothesis=(
+                        inference_provenance_by_hypothesis
+                    ),
+                )
             )
-        )
 
         plan = LiteratureQueryPlanner().build(
             portfolio,

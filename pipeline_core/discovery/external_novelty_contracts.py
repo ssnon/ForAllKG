@@ -188,9 +188,9 @@ class NoveltyClaimInferenceProvenance(StrictModel):
     claim, promote discovery-axis content into evidence, expand search
     vocabulary, or authorize novelty/non-obviousness conclusions.
 
-    N9-D1 intentionally preserves the complete accepted hypothesis
-    inference context without pretending that assertion-to-atomic-claim
-    binding has already been solved.
+    N9-D preserves the accepted Alpha4 inference context and, when a
+    conservative lexical binding is available, narrows that context to
+    the inference assertions that actually carry the atomic claim.
     """
 
     schema_version: Literal[
@@ -198,7 +198,8 @@ class NoveltyClaimInferenceProvenance(StrictModel):
     ] = "novelty-claim-inference-provenance-v1"
 
     binding_scope: Literal[
-        "HYPOTHESIS_REVIEW_CONTEXT"
+        "HYPOTHESIS_REVIEW_CONTEXT",
+        "ATOMIC_CLAIM_ASSERTION_BINDING",
     ] = "HYPOTHESIS_REVIEW_CONTEXT"
 
     final_hypothesis_id: str
@@ -216,6 +217,15 @@ class NoveltyClaimInferenceProvenance(StrictModel):
         default_factory=list
     )
     axis_basis: list[str] = Field(
+        default_factory=list
+    )
+
+    # Diagnostic provenance for deterministic assertion-to-atomic
+    # binding. These fields never add scientific authority.
+    binding_identity_terms: list[str] = Field(
+        default_factory=list
+    )
+    binding_reason_codes: list[str] = Field(
         default_factory=list
     )
 
