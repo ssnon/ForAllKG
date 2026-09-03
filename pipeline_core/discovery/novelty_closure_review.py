@@ -141,6 +141,220 @@ def _normalize_identity_text(
     )
 
 
+_IDENTITY_STRUCTURAL_STOPWORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "between",
+        "by",
+        "for",
+        "from",
+        "in",
+        "into",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "under",
+        "via",
+        "with",
+    }
+)
+
+
+def _canonical_identity_token(
+    token: str,
+) -> str:
+    """Apply only conservative inflectional normalization.
+
+    This helper is intentionally not a stemmer and contains no
+    scientific synonym knowledge. Its purpose is limited to trivial
+    lexical variants such as ``intermediate``/``intermediates`` and
+    ``property``/``properties``.
+    """
+
+    value = str(
+        token
+        or ""
+    ).casefold()
+
+    if (
+        len(value) > 5
+        and value.endswith("ies")
+    ):
+        return (
+            value[:-3]
+            + "y"
+        )
+
+    if (
+        len(value) >= 5
+        and value.endswith("s")
+        and not value.endswith(
+            (
+                "ss",
+                "us",
+                "is",
+            )
+        )
+    ):
+        return value[:-1]
+
+    return value
+
+
+def _identity_content_tokens(
+    value: str,
+) -> tuple[str, ...]:
+    normalized = (
+        _normalize_identity_text(
+            value
+        )
+    )
+
+    tokens = []
+
+    for token in normalized.split():
+        if (
+            token
+            in _IDENTITY_STRUCTURAL_STOPWORDS
+        ):
+            continue
+
+        canonical = (
+            _canonical_identity_token(
+                token
+            )
+        )
+
+        if canonical:
+            tokens.append(
+                canonical
+            )
+
+    return tuple(tokens)
+
+
+def _contains_contiguous_identity_tokens(
+    *,
+    abstract_tokens: tuple[str, ...],
+    anchor_tokens: tuple[str, ...],
+) -> bool:
+    if not anchor_tokens:
+        return False
+
+    width = len(
+        anchor_tokens
+    )
+
+    if width > len(
+        abstract_tokens
+    ):
+        return False
+
+    for start in range(
+        0,
+        len(abstract_tokens)
+        - width
+        + 1,
+    ):
+        if (
+            abstract_tokens[
+                start:
+                start + width
+            ]
+            ==
+            anchor_tokens
+        ):
+            return True
+
+    return False
+
+
+def _relaxed_identity_window_match(
+    *,
+    abstract_tokens: tuple[str, ...],
+    anchor_tokens: tuple[str, ...],
+) -> bool:
+    """Conservative order-robust match for longer lexical anchors.
+
+    This is used only after exact phrase matching fails.
+
+    Safety constraints:
+    - at least three distinct content tokens in the anchor;
+    - at least three matched anchor tokens;
+    - at least 75% of distinct anchor content tokens matched;
+    - matches must co-occur in a short local lexical window.
+
+    The matcher performs no synonym expansion, embedding lookup, or
+    model-based semantic inference.
+    """
+
+    distinct_anchor_tokens = tuple(
+        dict.fromkeys(
+            anchor_tokens
+        )
+    )
+
+    anchor_count = len(
+        distinct_anchor_tokens
+    )
+
+    if anchor_count < 3:
+        return False
+
+    required_match_count = max(
+        3,
+        (
+            3 * anchor_count
+            + 3
+        )
+        // 4,
+    )
+
+    # Permit small grammatical/intervening material while preventing
+    # terms scattered across an abstract from manufacturing identity
+    # coverage.
+    window_size = max(
+        6,
+        anchor_count + 2,
+    )
+
+    if not abstract_tokens:
+        return False
+
+    for start in range(
+        len(
+            abstract_tokens
+        )
+    ):
+        window = set(
+            abstract_tokens[
+                start:
+                start + window_size
+            ]
+        )
+
+        matched = sum(
+            1
+            for token
+            in distinct_anchor_tokens
+            if token in window
+        )
+
+        if (
+            matched
+            >= required_match_count
+        ):
+            return True
+
+    return False
+
+
 def _abstract_contains_identity_anchor(
     *,
     abstract: str,
@@ -152,6 +366,12 @@ def _abstract_contains_identity_anchor(
         )
     )
 
+    abstract_tokens = (
+        _identity_content_tokens(
+            abstract
+        )
+    )
+
     for anchor in anchors:
         normalized_anchor = (
             _normalize_identity_text(
@@ -159,10 +379,59 @@ def _abstract_contains_identity_anchor(
             )
         )
 
+        if not normalized_anchor:
+            continue
+
+        # Preserve the original strict behavior as the first and
+        # strongest lexical route.
         if (
             normalized_anchor
-            and normalized_anchor
             in normalized_abstract
+        ):
+            return True
+
+        anchor_tokens = (
+            _identity_content_tokens(
+                anchor
+            )
+        )
+
+        # Short anchors remain strict: only trivial inflectional
+        # normalization is allowed, while order and adjacency must be
+        # preserved.
+        if len(
+            tuple(
+                dict.fromkeys(
+                    anchor_tokens
+                )
+            )
+        ) <= 2:
+            if (
+                _contains_contiguous_identity_tokens(
+                    abstract_tokens=(
+                        abstract_tokens
+                    ),
+                    anchor_tokens=(
+                        anchor_tokens
+                    ),
+                )
+            ):
+                return True
+
+            continue
+
+        # Longer anchors may tolerate word-order variation and one
+        # missing modifier only when most lexical identity is locally
+        # preserved.
+        if (
+            _relaxed_identity_window_match(
+                abstract_tokens=(
+                    abstract_tokens
+                ),
+                anchor_tokens=(
+                    anchor_tokens
+                ),
+            )
         ):
             return True
 
