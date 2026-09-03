@@ -15,6 +15,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     PriorArtPacket,
 )
 from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisContext,
     HypothesisPortfolio,
 )
 from pipeline_core.discovery.node_mapping import (
@@ -39,6 +40,10 @@ from pipeline_core.discovery.novelty_adjudication_llm import (
 )
 from pipeline_core.discovery.novelty_closure_compiler import (
     compile_nonobviousness_evidence_closure,
+)
+from pipeline_core.discovery.novelty_internal_closure_review import (
+    InstructorOpenAICompatibleInternalClosureBackend,
+    review_and_compile_internal_base_target,
 )
 from pipeline_core.discovery.novelty_closure_execution import (
     build_closure_execution_plan,
@@ -103,6 +108,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--portfolio",
+        type=Path,
+        default=None,
+    )
+    parser.add_argument(
+        "--hypothesis-context",
         type=Path,
         default=None,
     )
@@ -251,6 +261,16 @@ def main() -> int:
         else None
     )
 
+    source_context = (
+        HypothesisContext.model_validate_json(
+            args.hypothesis_context.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.hypothesis_context is not None
+        else None
+    )
+
     intake = json.loads(
         args.intake_shadow.read_text(
             encoding="utf-8"
@@ -275,6 +295,58 @@ def main() -> int:
             "Full N9 shadow provenance mismatch: "
             "canonical portfolio and external report."
         )
+
+    if (
+        source_context is not None
+        and source_portfolio is None
+    ):
+        raise ValueError(
+            "Full N9 internal grounding requires "
+            "--portfolio when --hypothesis-context "
+            "is supplied."
+        )
+
+    if (
+        source_context is not None
+        and source_portfolio is not None
+    ):
+        if (
+            source_portfolio.source_context_id
+            != source_context.context_id
+        ):
+            raise ValueError(
+                "Full N9 internal grounding provenance "
+                "mismatch: portfolio source_context_id "
+                "and hypothesis context."
+            )
+
+        if (
+            source_portfolio.source_context_sha256
+            != source_context.context_sha256
+        ):
+            raise ValueError(
+                "Full N9 internal grounding provenance "
+                "mismatch: portfolio source_context_sha256 "
+                "and hypothesis context."
+            )
+
+        if (
+            source_portfolio.domain_profile_id
+            != source_context.domain_profile_id
+        ):
+            raise ValueError(
+                "Full N9 internal grounding provenance "
+                "mismatch: portfolio and context domain."
+            )
+
+        if (
+            source_context.domain_profile_id
+            != args.domain_profile
+        ):
+            raise ValueError(
+                "Full N9 internal grounding provenance "
+                "mismatch: context and runner domain."
+            )
 
     if (
         report.source_prior_art_packet_id
@@ -650,6 +722,19 @@ def main() -> int:
         )
     )
 
+    internal_backend = (
+        InstructorOpenAICompatibleInternalClosureBackend(
+            model=args.model,
+            api_key_env=args.api_key_env,
+            base_url=args.base_url,
+            temperature=0.0,
+            parse_retries=1,
+            capture_prompts=True,
+        )
+        if source_context is not None
+        else None
+    )
+
     relationship_backend = (
         InstructorOpenAICompatibleClosureRelationshipBackend(
             model=args.model,
@@ -755,6 +840,46 @@ def main() -> int:
             in expanded_plan.targets
         }
 
+        internal_reviews = []
+
+        if internal_backend is not None:
+            if source_context is None:
+                raise RuntimeError(
+                    "Internal closure backend initialized "
+                    "without a hypothesis context."
+                )
+
+            hypothesis = source_cards.get(
+                claim.hypothesis_id
+            )
+
+            if hypothesis is None:
+                raise ValueError(
+                    "Internal grounding cannot resolve "
+                    "canonical hypothesis: "
+                    + claim.hypothesis_id
+                )
+
+            base_target = targets_by_slot.get(
+                "BASE_RELATION"
+            )
+
+            if base_target is None:
+                raise ValueError(
+                    "N9 closure plan has no "
+                    "BASE_RELATION target for "
+                    + claim.claim_id
+                )
+
+            internal_reviews.append(
+                review_and_compile_internal_base_target(
+                    backend=internal_backend,
+                    target=base_target,
+                    hypothesis=hypothesis,
+                    context=source_context,
+                )
+            )
+
         relationship_outcome = (
             review_and_compile_closure_relationships(
                 backend=relationship_backend,
@@ -767,6 +892,7 @@ def main() -> int:
         closure_compilation = (
             compile_nonobviousness_evidence_closure(
                 reviews=reviews,
+                internal_reviews=internal_reviews,
                 bridge_kind=(
                     relationship_outcome
                     .compiled
@@ -944,6 +1070,12 @@ def main() -> int:
 
         write_json(
             detail_root
+            / "internal_slot_reviews.json",
+            internal_reviews,
+        )
+
+        write_json(
+            detail_root
             / "closure_relationships.json",
             relationship_outcome,
         )
@@ -996,6 +1128,29 @@ def main() -> int:
                         closure.bridge_relation,
                     "FULL_RELATION":
                         closure.full_relation,
+                },
+
+                "internal_positive_statement_ids": {
+                    "BASE_RELATION":
+                        list(
+                            closure
+                            .base_internal_statement_ids
+                        ),
+                    "DISTINGUISHING_FACTOR_EFFECT":
+                        list(
+                            closure
+                            .factor_internal_statement_ids
+                        ),
+                    "BRIDGE_RELATION":
+                        list(
+                            closure
+                            .bridge_internal_statement_ids
+                        ),
+                    "FULL_RELATION":
+                        list(
+                            closure
+                            .full_relation_internal_statement_ids
+                        ),
                 },
 
                 "relationship_review_performed":

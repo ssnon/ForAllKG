@@ -118,3 +118,34 @@ def test_only_selected_authoritative_premises_are_supplied():
     ] == [
         "stmt:good"
     ]
+
+def test_context_id_mismatch_fails_closed():
+    hypothesis = _hypothesis().model_copy(
+        update={
+            "source_context_id":
+                "context:wrong",
+        }
+    )
+
+    rows = authoritative_premise_statements(
+        hypothesis=hypothesis,
+        context=_context(),
+    )
+
+    assert rows == []
+
+
+def test_context_sha_mismatch_fails_closed():
+    hypothesis = _hypothesis().model_copy(
+        update={
+            "source_context_sha256":
+                "sha-wrong",
+        }
+    )
+
+    rows = authoritative_premise_statements(
+        hypothesis=hypothesis,
+        context=_context(),
+    )
+
+    assert rows == []

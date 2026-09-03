@@ -189,6 +189,18 @@ def authoritative_premise_statements(
     - backed by at least one scientific support node or edge.
     """
 
+    if (
+        hypothesis.source_context_id
+        != context.context_id
+    ):
+        return []
+
+    if (
+        hypothesis.source_context_sha256
+        != context.context_sha256
+    ):
+        return []
+
     by_id = {
         row.statement_id: row
         for row

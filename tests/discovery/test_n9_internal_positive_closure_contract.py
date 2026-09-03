@@ -162,3 +162,52 @@ def test_illegal_external_negative_still_fails_closed():
         "illegal_negative_closure_fail_closed"
         in compilation.reason_codes
     )
+
+def test_internal_positive_overrides_search_bounded_external_negative():
+    reviews = _reviews()
+
+    reviews[0] = {
+        "slot":
+            "BASE_RELATION",
+        "evidence_state":
+            "NOT_FOUND",
+        "positive_work_ids": [],
+        "negative_coverage_sufficient":
+            True,
+    }
+
+    compilation = (
+        compile_nonobviousness_evidence_closure(
+            reviews=reviews,
+            internal_reviews=[
+                {
+                    "slot":
+                        "BASE_RELATION",
+                    "positive_statement_ids": [
+                        "stmt:grounded-base"
+                    ],
+                }
+            ],
+        )
+    )
+
+    assert (
+        compilation.closure.base_relation
+        == "ESTABLISHED"
+    )
+
+    assert (
+        compilation
+        .closure
+        .base_internal_statement_ids
+        == (
+            "stmt:grounded-base",
+        )
+    )
+
+    assert (
+        "base_relation:"
+        "internal_positive_overrides_"
+        "search_bounded_negative"
+        in compilation.reason_codes
+    )

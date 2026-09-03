@@ -76,6 +76,7 @@ def _unique_ids(
 def compile_nonobviousness_evidence_closure(
     *,
     reviews: Sequence[Any],
+    internal_reviews: Sequence[Any] = (),
     bridge_kind: str = "NONE",
     scope_compatible: bool = True,
 ) -> NonObviousnessClosureCompilation:
@@ -85,7 +86,9 @@ def compile_nonobviousness_evidence_closure(
     - missing/duplicate slots are invalid artifacts;
     - unsupported evidence states become UNASSESSED;
     - NOT_FOUND without sufficient negative coverage becomes UNASSESSED;
-    - ESTABLISHED without traceable positive work IDs becomes UNASSESSED.
+    - ESTABLISHED requires traceable positive external work IDs or
+      positive internal statement IDs;
+    - internal grounding is positive-only and can never create NOT_FOUND.
 
     This compiler never turns absence-like evidence into novelty evidence.
     """
@@ -126,9 +129,34 @@ def compile_nonobviousness_evidence_closure(
             + ", ".join(missing)
         )
 
+    internal_by_slot: dict[str, Any] = {}
+
+    for row in internal_reviews:
+        slot = str(
+            _field(row, "slot", "")
+        ).strip()
+
+        if slot not in _EXPECTED_SLOTS:
+            raise ValueError(
+                "Unexpected internal closure slot: "
+                f"{slot!r}"
+            )
+
+        if slot in internal_by_slot:
+            raise ValueError(
+                "Duplicate internal closure slot: "
+                + slot
+            )
+
+        internal_by_slot[slot] = row
+
     reason_codes: list[str] = []
     states: dict[str, str] = {}
     work_ids: dict[str, tuple[str, ...]] = {}
+    internal_statement_ids: dict[
+        str,
+        tuple[str, ...],
+    ] = {}
 
     for slot in _EXPECTED_SLOTS:
         row = by_slot[slot]
@@ -145,6 +173,18 @@ def compile_nonobviousness_evidence_closure(
             _field(
                 row,
                 "positive_work_ids",
+                (),
+            )
+        )
+
+        internal_row = (
+            internal_by_slot.get(slot)
+        )
+
+        positive_internal_ids = _unique_ids(
+            _field(
+                internal_row,
+                "positive_statement_ids",
                 (),
             )
         )
@@ -179,6 +219,7 @@ def compile_nonobviousness_evidence_closure(
         if (
             state == "ESTABLISHED"
             and not positive_ids
+            and not positive_internal_ids
         ):
             state = "UNASSESSED"
 
@@ -186,10 +227,35 @@ def compile_nonobviousness_evidence_closure(
                 f"{slot.lower()}:established_without_positive_provenance"
             )
 
+        if positive_internal_ids:
+            if state == "NOT_FOUND":
+                reason_codes.append(
+                    f"{slot.lower()}:"
+                    "internal_positive_overrides_"
+                    "search_bounded_negative"
+                )
+
+            if (
+                state != "ESTABLISHED"
+                or not positive_ids
+            ):
+                reason_codes.append(
+                    f"{slot.lower()}:"
+                    "established_from_internal_grounding"
+                )
+
+            state = "ESTABLISHED"
+
         states[slot] = state
 
         work_ids[slot] = (
             positive_ids
+            if state == "ESTABLISHED"
+            else ()
+        )
+
+        internal_statement_ids[slot] = (
+            positive_internal_ids
             if state == "ESTABLISHED"
             else ()
         )
@@ -223,6 +289,26 @@ def compile_nonobviousness_evidence_closure(
         full_relation_work_ids=work_ids[
             "FULL_RELATION"
         ],
+        base_internal_statement_ids=(
+            internal_statement_ids[
+                "BASE_RELATION"
+            ]
+        ),
+        factor_internal_statement_ids=(
+            internal_statement_ids[
+                "DISTINGUISHING_FACTOR_EFFECT"
+            ]
+        ),
+        bridge_internal_statement_ids=(
+            internal_statement_ids[
+                "BRIDGE_RELATION"
+            ]
+        ),
+        full_relation_internal_statement_ids=(
+            internal_statement_ids[
+                "FULL_RELATION"
+            ]
+        ),
     )
 
     return NonObviousnessClosureCompilation(
