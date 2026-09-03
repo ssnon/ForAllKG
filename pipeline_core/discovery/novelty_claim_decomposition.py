@@ -99,23 +99,11 @@ def _clean_branch_specific_specification(
     if not identities:
         return cleaned
 
-    normalized_text = _clean_query(
+    if _normalized_identity_present(
         cleaned,
-        limit=2000,
-    ).lower()
-
-    for identity in identities:
-        normalized_identity = _clean_query(
-            identity,
-            limit=120,
-        ).lower()
-
-        if (
-            normalized_identity
-            and normalized_identity
-            in normalized_text
-        ):
-            return cleaned
+        identities,
+    ):
+        return cleaned
 
     return ""
 
@@ -159,23 +147,10 @@ def _clean_branch_specific_bridge(
         limit=4000,
     ).lower()
 
-    identity_present = False
-
-    for identity in identities:
-        normalized_identity = _clean_query(
-            identity,
-            limit=120,
-        ).lower()
-
-        if (
-            normalized_identity
-            and normalized_identity
-            in normalized_bridge
-        ):
-            identity_present = True
-            break
-
-    if not identity_present:
+    if not _normalized_identity_present(
+        cleaned,
+        identities,
+    ):
         return ""
 
     for source in source_texts:
@@ -194,27 +169,183 @@ def _clean_branch_specific_bridge(
     return ""
 
 
+_BRANCH_IDENTITY_NONDISCRIMINATING_TOKENS = frozenset(
+    {
+        # Grammatical / comparison qualifiers that do not identify
+        # the scientific branch itself.
+        "identity",
+        "relative",
+        "fixed",
+        "same",
+        "different",
+        "distinct",
+        "matched",
+    }
+)
+
+
+def _branch_identity_signature(
+    text: str,
+) -> tuple[str, ...]:
+    """Return a conservative lexical signature for branch identity.
+
+    This performs only surface normalization. It never adds synonyms,
+    stems terms, expands abbreviations, invokes an embedding model, or
+    infers scientific equivalence.
+
+    Example:
+        "metal pair identity" -> ("metal", "pair")
+        "relative oxygenated intermediate stabilization"
+            -> ("oxygenated", "intermediate", "stabilization")
+
+    All retained tokens must still occur in the candidate
+    specification for branch attribution to succeed.
+    """
+
+    normalized = _clean_query(
+        text,
+        limit=1000,
+    ).lower()
+
+    tokens = [
+        token
+        for token in re.findall(
+            r"\w+",
+            normalized,
+            flags=re.UNICODE,
+        )
+        if (
+            token
+            and token
+            not in _BRANCH_IDENTITY_NONDISCRIMINATING_TOKENS
+        )
+    ]
+
+    return tuple(
+        dict.fromkeys(tokens)
+    )
+
+
+def _identity_token_surface_variants(
+    token: str,
+) -> frozenset[str]:
+    """Return conservative surface variants for one identity token.
+
+    Only simple English plural morphology is added. This function does
+    NOT perform stemming, synonym expansion, abbreviation expansion,
+    embedding similarity, or semantic inference.
+
+    Examples:
+        environment -> {environment, environments}
+        pair -> {pair, pairs}
+        intermediate -> {intermediate, intermediates}
+        activity -> {activity, activities}
+
+    The original token is always retained.
+    """
+
+    value = str(
+        token or ""
+    ).strip().lower()
+
+    if not value:
+        return frozenset()
+
+    variants = {
+        value,
+    }
+
+    # Avoid inventing morphology for very short tokens and tokens that
+    # are not simple alphabetic lexical items.
+    if (
+        len(value) < 4
+        or not value.isalpha()
+    ):
+        return frozenset(
+            variants
+        )
+
+    if (
+        value.endswith("y")
+        and len(value) >= 2
+        and value[-2]
+        not in "aeiou"
+    ):
+        variants.add(
+            value[:-1] + "ies"
+        )
+
+    elif value.endswith(
+        (
+            "ch",
+            "sh",
+            "x",
+            "z",
+        )
+    ):
+        variants.add(
+            value + "es"
+        )
+
+    else:
+        variants.add(
+            value + "s"
+        )
+
+    return frozenset(
+        variants
+    )
+
+
 def _normalized_identity_present(
     text: str,
     identity_terms: list[str],
 ) -> bool:
+    """Check branch identity by conservative lexical containment.
+
+    Each identity term is an alternative branch-identity expression.
+    For one identity term to match, every informative token retained
+    from that identity must occur in the specification text.
+
+    This is deliberately weaker than exact phrase matching but much
+    stronger than semantic similarity.
+    """
+
     normalized_text = _clean_query(
         text,
         limit=8000,
     ).lower()
 
+    text_tokens = set(
+        re.findall(
+            r"\w+",
+            normalized_text,
+            flags=re.UNICODE,
+        )
+    )
+
     for identity in _clean_diagnostic_terms(
         identity_terms
     ):
-        normalized_identity = _clean_query(
-            identity,
-            limit=120,
-        ).lower()
+        signature = (
+            _branch_identity_signature(
+                identity
+            )
+        )
 
-        if (
-            normalized_identity
-            and normalized_identity
-            in normalized_text
+        # Fail closed if normalization removes the whole identity.
+        if not signature:
+            continue
+
+        if all(
+            any(
+                variant in text_tokens
+                for variant
+                in _identity_token_surface_variants(
+                    token
+                )
+            )
+            for token in signature
         ):
             return True
 

@@ -470,3 +470,196 @@ def test_legacy_intake_missing_new_metadata_reconciles_fail_safe() -> None:
 
     assert reconciled == claim
     assert reconciled.importance == "core"
+
+
+def test_branch_identity_binding_accepts_nondiscriminating_qualifier_variation() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    metal_pair = (
+        _clean_branch_specific_specification(
+            (
+                "For at least one fixed metal pair, "
+                "the hydrogen adsorption response reverses sign."
+            ),
+            ["metal pair identity"],
+        )
+    )
+
+    assert metal_pair
+
+    oxygenated = (
+        _clean_branch_specific_specification(
+            (
+                "Oxygenated-intermediate stabilization "
+                "changes the residual adsorption trend."
+            ),
+            [
+                "relative oxygenated intermediate stabilization"
+            ],
+        )
+    )
+
+    assert oxygenated
+
+
+def test_branch_identity_binding_still_rejects_sibling_scientific_branch() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    result = (
+        _clean_branch_specific_specification(
+            (
+                "Laser power changes the dependence "
+                "of SERS enhancement on spacing."
+            ),
+            ["excitation wavelength"],
+        )
+    )
+
+    assert result == ""
+
+
+def test_branch_identity_binding_requires_all_informative_tokens() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    result = (
+        _clean_branch_specific_specification(
+            (
+                "Metal identity changes hydrogen adsorption."
+            ),
+            ["metal pair identity"],
+        )
+    )
+
+    # "pair" is scientifically discriminating and is absent.
+    assert result == ""
+
+
+def test_bridge_lexical_binding_does_not_weaken_extractive_provenance() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_bridge,
+    )
+
+    bridge = (
+        "For a fixed metal pair, coordination changes "
+        "the hydrogen adsorption response."
+    )
+
+    accepted = (
+        _clean_branch_specific_bridge(
+            bridge,
+            ["metal pair identity"],
+            [bridge],
+        )
+    )
+
+    assert accepted == bridge
+
+    rejected_nonextractive = (
+        _clean_branch_specific_bridge(
+            bridge,
+            ["metal pair identity"],
+            [
+                (
+                    "For a fixed metal pair, another "
+                    "scientific statement is supplied."
+                )
+            ],
+        )
+    )
+
+    assert rejected_nonextractive == ""
+
+
+def test_branch_identity_binding_accepts_simple_plural_surface_form() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    coordination = (
+        _clean_branch_specific_specification(
+            (
+                "The response has opposite signs in two "
+                "matched coordination environments."
+            ),
+            [
+                "coordination environment"
+            ],
+        )
+    )
+
+    assert coordination
+
+    metal_pair = (
+        _clean_branch_specific_specification(
+            (
+                "The response differs between metal pairs."
+            ),
+            [
+                "metal pair identity"
+            ],
+        )
+    )
+
+    assert metal_pair
+
+    oxygenated = (
+        _clean_branch_specific_specification(
+            (
+                "Stabilization of oxygenated intermediates "
+                "changes the residual trend."
+            ),
+            [
+                (
+                    "relative oxygenated intermediate "
+                    "stabilization"
+                )
+            ],
+        )
+    )
+
+    assert oxygenated
+
+
+def test_plural_binding_does_not_accept_missing_identity_head() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    result = (
+        _clean_branch_specific_specification(
+            (
+                "Coordination changes the adsorption response."
+            ),
+            [
+                "coordination environment"
+            ],
+        )
+    )
+
+    # The discriminating token "environment" is still absent.
+    assert result == ""
+
+
+def test_plural_binding_does_not_turn_related_mechanism_into_same_branch() -> None:
+    from pipeline_core.discovery.novelty_claim_decomposition import (
+        _clean_branch_specific_specification,
+    )
+
+    result = (
+        _clean_branch_specific_specification(
+            (
+                "Inter-site coupling changes HER activity."
+            ),
+            [
+                "dual metal inter site synergy"
+            ],
+        )
+    )
+
+    assert result == ""
