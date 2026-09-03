@@ -13,6 +13,7 @@ def _claim_outcome(
     shadow_state: str,
     claim_id: str,
     full_by_claim: dict[str, dict[str, Any]],
+    specification: dict[str, Any] | None = None,
 ) -> tuple[str, tuple[str, ...]]:
     """Resolve one atomic claim into N10 production disposition."""
 
@@ -29,9 +30,54 @@ def _claim_outcome(
         )
 
     if shadow_state == "NEEDS_REFINEMENT":
+        detail_codes: list[str] = [
+            "atomic_specification_incomplete",
+        ]
+
+        specification = (
+            specification
+            if isinstance(specification, dict)
+            else {}
+        )
+
+        raw_reason_codes = specification.get(
+            "reason_codes",
+            [],
+        )
+
+        if isinstance(
+            raw_reason_codes,
+            (list, tuple),
+        ):
+            detail_codes.extend(
+                str(value)
+                for value in raw_reason_codes
+                if str(value).strip()
+            )
+
+        raw_missing_fields = specification.get(
+            "missing_fields",
+            [],
+        )
+
+        if isinstance(
+            raw_missing_fields,
+            (list, tuple),
+        ):
+            detail_codes.extend(
+                "missing_specification_field:"
+                + str(value)
+                for value in raw_missing_fields
+                if str(value).strip()
+            )
+
         return (
             "NEEDS_REFINEMENT",
-            ("atomic_specification_incomplete",),
+            tuple(
+                dict.fromkeys(
+                    detail_codes
+                )
+            ),
         )
 
     if shadow_state == "UNRESOLVED":
@@ -343,7 +389,7 @@ def build_nonobviousness_fallback_gate(
 
             importance = str(
                 claim.get("importance")
-                or "supporting"
+                or "core"
             ).strip()
 
             if importance not in {
@@ -354,6 +400,16 @@ def build_nonobviousness_fallback_gate(
                     "unsupported N10 claim importance: "
                     + importance
                 )
+
+            specification = decision.get(
+                "specification"
+            )
+
+            if not isinstance(
+                specification,
+                dict,
+            ):
+                specification = {}
 
             outcome, reasons = (
                 _claim_outcome(
@@ -366,6 +422,9 @@ def build_nonobviousness_fallback_gate(
                     claim_id=claim_id,
                     full_by_claim=(
                         full_by_claim
+                    ),
+                    specification=(
+                        specification
                     ),
                 )
             )

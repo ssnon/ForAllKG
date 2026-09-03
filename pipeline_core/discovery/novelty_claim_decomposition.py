@@ -194,6 +194,182 @@ def _clean_branch_specific_bridge(
     return ""
 
 
+def _normalized_identity_present(
+    text: str,
+    identity_terms: list[str],
+) -> bool:
+    normalized_text = _clean_query(
+        text,
+        limit=8000,
+    ).lower()
+
+    for identity in _clean_diagnostic_terms(
+        identity_terms
+    ):
+        normalized_identity = _clean_query(
+            identity,
+            limit=120,
+        ).lower()
+
+        if (
+            normalized_identity
+            and normalized_identity
+            in normalized_text
+        ):
+            return True
+
+    return False
+
+
+def _extractively_present(
+    text: str,
+    source_texts: list[str],
+) -> bool:
+    normalized = _clean_query(
+        text,
+        limit=8000,
+    ).lower()
+
+    if not normalized:
+        return False
+
+    for source in source_texts:
+        normalized_source = _clean_query(
+            source,
+            limit=12000,
+        ).lower()
+
+        if normalized in normalized_source:
+            return True
+
+    return False
+
+
+def _diagnose_specification_sanitization(
+    *,
+    raw_required_bridge: str,
+    required_bridge_source: str,
+    sanitized_required_bridge: str,
+    raw_predicted_observation: str,
+    sanitized_predicted_observation: str,
+    raw_falsification_condition: str,
+    sanitized_falsification_condition: str,
+    identity_terms: list[str],
+    bridge_source_texts: list[str],
+) -> list[str]:
+    """Explain specification loss without changing acceptance policy."""
+
+    codes: list[str] = []
+
+    raw_bridge = " ".join(
+        str(raw_required_bridge or "").split()
+    )
+
+    raw_prediction = " ".join(
+        str(raw_predicted_observation or "").split()
+    )
+
+    raw_falsifier = " ".join(
+        str(raw_falsification_condition or "").split()
+    )
+
+    identities = _clean_diagnostic_terms(
+        identity_terms
+    )
+
+    # --------------------------------------------------------------
+    # required_bridge
+    # --------------------------------------------------------------
+
+    if not raw_bridge:
+        codes.append(
+            "required_bridge_source_empty"
+        )
+
+    else:
+        codes.append(
+            "required_bridge_source_"
+            + required_bridge_source
+        )
+
+        if not sanitized_required_bridge:
+            if not identities:
+                codes.append(
+                    "required_bridge_rejected_"
+                    "missing_branch_identity_terms"
+                )
+
+            elif not _normalized_identity_present(
+                raw_bridge,
+                identities,
+            ):
+                codes.append(
+                    "required_bridge_rejected_"
+                    "branch_identity"
+                )
+
+            elif not _extractively_present(
+                raw_bridge,
+                bridge_source_texts,
+            ):
+                codes.append(
+                    "required_bridge_rejected_"
+                    "nonextractive"
+                )
+
+            else:
+                codes.append(
+                    "required_bridge_rejected_"
+                    "unspecified"
+                )
+
+    # --------------------------------------------------------------
+    # predicted_observation
+    # --------------------------------------------------------------
+
+    if not raw_prediction:
+        codes.append(
+            "predicted_observation_draft_empty"
+        )
+
+    elif not sanitized_predicted_observation:
+        if not identities:
+            codes.append(
+                "predicted_observation_rejected_"
+                "missing_branch_identity_terms"
+            )
+        else:
+            codes.append(
+                "predicted_observation_rejected_"
+                "branch_identity"
+            )
+
+    # --------------------------------------------------------------
+    # falsification_condition
+    # --------------------------------------------------------------
+
+    if not raw_falsifier:
+        codes.append(
+            "falsification_condition_draft_empty"
+        )
+
+    elif not sanitized_falsification_condition:
+        if not identities:
+            codes.append(
+                "falsification_condition_rejected_"
+                "missing_branch_identity_terms"
+            )
+        else:
+            codes.append(
+                "falsification_condition_rejected_"
+                "branch_identity"
+            )
+
+    return list(
+        dict.fromkeys(codes)
+    )
+
+
 def recover_required_bridge_from_hypothesis(
     hypothesis: HypothesisCard,
     identity_terms: list[str] | tuple[str, ...],
@@ -364,6 +540,91 @@ class NoveltyClaimDecomposer:
                 )
             )
 
+            raw_required_bridge = str(
+                (
+                    row.required_bridge
+                    if str(
+                        row.required_bridge or ""
+                    ).strip()
+                    else hypothesis.inferential_bridge
+                )
+                or ""
+            )
+
+            required_bridge_source = (
+                "draft"
+                if str(
+                    row.required_bridge or ""
+                ).strip()
+                else (
+                    "hypothesis_fallback"
+                    if str(
+                        hypothesis.inferential_bridge
+                        or ""
+                    ).strip()
+                    else "empty"
+                )
+            )
+
+            bridge_source_texts = [
+                hypothesis.inferential_bridge,
+                *hypothesis.assumptions,
+            ]
+
+            sanitized_required_bridge = (
+                _clean_branch_specific_bridge(
+                    raw_required_bridge,
+                    prior_art_identity_terms,
+                    bridge_source_texts,
+                )
+            )
+
+            sanitized_predicted_observation = (
+                _clean_branch_specific_specification(
+                    row.predicted_observation,
+                    prior_art_identity_terms,
+                )
+            )
+
+            sanitized_falsification_condition = (
+                _clean_branch_specific_specification(
+                    row.falsification_condition,
+                    prior_art_identity_terms,
+                )
+            )
+
+            specification_sanitization_reason_codes = (
+                _diagnose_specification_sanitization(
+                    raw_required_bridge=(
+                        raw_required_bridge
+                    ),
+                    required_bridge_source=(
+                        required_bridge_source
+                    ),
+                    sanitized_required_bridge=(
+                        sanitized_required_bridge
+                    ),
+                    raw_predicted_observation=(
+                        row.predicted_observation
+                    ),
+                    sanitized_predicted_observation=(
+                        sanitized_predicted_observation
+                    ),
+                    raw_falsification_condition=(
+                        row.falsification_condition
+                    ),
+                    sanitized_falsification_condition=(
+                        sanitized_falsification_condition
+                    ),
+                    identity_terms=(
+                        prior_art_identity_terms
+                    ),
+                    bridge_source_texts=(
+                        bridge_source_texts
+                    ),
+                )
+            )
+
             rows.append(
                 NoveltyClaim(
                     claim_id=_stable_id(
@@ -391,30 +652,13 @@ class NoveltyClaimDecomposer:
                         relation_nucleus_terms
                     ),
                     required_bridge=(
-                        _clean_branch_specific_bridge(
-                            (
-                                row.required_bridge
-                                if str(row.required_bridge or "").strip()
-                                else hypothesis.inferential_bridge
-                            ),
-                            prior_art_identity_terms,
-                            [
-                                hypothesis.inferential_bridge,
-                                *hypothesis.assumptions,
-                            ],
-                        )
+                        sanitized_required_bridge
                     ),
                     predicted_observation=(
-                        _clean_branch_specific_specification(
-                            row.predicted_observation,
-                            prior_art_identity_terms,
-                        )
+                        sanitized_predicted_observation
                     ),
                     falsification_condition=(
-                        _clean_branch_specific_specification(
-                            row.falsification_condition,
-                            prior_art_identity_terms,
-                        )
+                        sanitized_falsification_condition
                     ),
                     scientific_structure=scientific_structure,
                     diagnostic_query_kind=diagnostic_kind,
@@ -432,6 +676,9 @@ class NoveltyClaimDecomposer:
                     ),
                     scientific_structure_reason_codes=list(
                         structure_reason_codes
+                    ),
+                    specification_sanitization_reason_codes=(
+                        specification_sanitization_reason_codes
                     ),
                 )
             )

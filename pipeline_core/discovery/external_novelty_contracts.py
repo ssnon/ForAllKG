@@ -207,6 +207,16 @@ class NoveltyClaim(StrictModel):
     diagnostic_relation_terms: list[str] = Field(default_factory=list)
     scientific_structure_reason_codes: list[str] = Field(default_factory=list)
 
+    # Diagnostic only. These codes record where an atomic
+    # specification was absent or rejected while moving from the
+    # decomposition draft into the canonical query-plan claim.
+    #
+    # They do not provide scientific authority and must never be used
+    # to infer novelty or non-obviousness.
+    specification_sanitization_reason_codes: list[str] = Field(
+        default_factory=list
+    )
+
 
 class HypothesisNoveltyClaims(StrictModel):
     hypothesis_id: str

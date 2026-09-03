@@ -93,6 +93,23 @@ def reconcile_intake_required_bridge(
 
     incoming = dict(intake_claim)
 
+    # Backward-compatible metadata reconciliation.
+    #
+    # Older N9 intake artifacts predate these fields. Their absence
+    # is not scientific drift because both values are reconstructed
+    # independently from the authoritative query-plan residue.
+    for metadata_field in (
+        "importance",
+        "specification_sanitization_reason_codes",
+    ):
+        if (
+            metadata_field in expected
+            and metadata_field not in incoming
+        ):
+            incoming[metadata_field] = (
+                expected[metadata_field]
+            )
+
     expected_bridge = str(
         expected.pop("required_bridge", "")
         or ""

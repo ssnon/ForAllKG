@@ -6,6 +6,7 @@ from typing import Literal
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     LiteratureQueryPlan,
+    NoveltyClaimImportance,
     NoveltyClaimScientificStructure,
 )
 
@@ -89,6 +90,18 @@ class NoveltyResidueClaim:
     direct_or_partial_work_ids: tuple[str, ...]
     lower_order_work_ids: tuple[str, ...]
     component_work_ids: tuple[str, ...]
+
+    # Preserve the decomposition-time epistemic role through N9/N10.
+    #
+    # Legacy/manual constructors default fail-safe to core. Production
+    # extraction below always supplies the upstream NoveltyClaim role
+    # explicitly, so a supporting branch remains supporting while a
+    # core branch can no longer silently degrade to supporting.
+    importance: NoveltyClaimImportance = "core"
+
+    # Diagnostic-only provenance inherited from the canonical
+    # query-plan claim. It does not alter prior-art disposition.
+    specification_sanitization_reason_codes: tuple[str, ...] = ()
 
     scientific_structure: NoveltyClaimScientificStructure = field(
         default_factory=NoveltyClaimScientificStructure
@@ -212,6 +225,7 @@ def assess_residual_specification(
                     f"missing_{name}"
                     for name in missing
                 ),
+                *claim.specification_sanitization_reason_codes,
             ),
             interpretation=(
                 "The atomic prior-art residue is not independently "
@@ -342,6 +356,10 @@ def extract_novelty_residue(
                     ),
                     component_work_ids=tuple(
                         components
+                    ),
+                    importance=claim.importance,
+                    specification_sanitization_reason_codes=tuple(
+                        claim.specification_sanitization_reason_codes
                     ),
                     scientific_structure=(
                         claim.scientific_structure
