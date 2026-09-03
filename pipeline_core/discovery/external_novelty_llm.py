@@ -104,7 +104,22 @@ ATOMIC SPECIFICATION PROVENANCE CONTRACT:
 - Do not borrow a bridge, prediction, or falsifier whose scientific meaning belongs only to a sibling branch.
 - If a branch-specific bridge, prediction, or falsification condition cannot be extracted without inventing or choosing new scientific content, return the corresponding field as an empty string.
 - Empty specification fields are valid and are preferred over unsupported completion.
-- These fields record hypothesis specification provenance; they are not prior-art evidence.
+These fields record hypothesis specification provenance; they are not prior-art evidence.
+
+SELF-CONTAINED ATOMIC SPECIFICATION CONTRACT:
+- Every non-empty predicted_observation and falsification_condition must be understandable as a standalone statement of THIS atomic branch. Do not return a bare anaphoric expression such as "the interaction", "this interaction", "this effect", "that reversal", "these effects", or "the pathway" when the branch identity is not also named in the same field.
+- When the supplied hypothesis already makes the referent unambiguous, you MAY replace such an anaphoric reference with the already stated atomic branch identity solely to make the field self-contained. This reference expansion must not add a new mechanism, direction, threshold, condition, variable, or scientific proposition.
+- For example, if the supplied hypothesis and atomic claim already identify an "M-H iCOHP × oxygenated-intermediate stabilization interaction", a falsifier saying only "the interaction does not improve prediction" should be rendered self-contained by explicitly naming that same interaction. Do not invent any additional consequence.
+- required_bridge remains stricter. A non-empty required_bridge must remain an extractive scientific span supported by the hypothesis inferential bridge or assumptions. Do not rewrite or expand a bridge merely to satisfy branch identity matching.
+- If the hypothesis uses both a canonical branch phrase and a shorter literal branch phrase that unambiguously denotes the same branch, prior_art_identity_terms may contain both literal forms. Do not invent synonyms or broader scientific categories merely to obtain a match.
+- Do not use a generic word such as "coordination", "effect", "coupling", "interaction", or "pathway" as an additional identity term unless that exact expression is independently specific enough to distinguish the atomic branch from sibling branches.
+
+CORE-VERSUS-TESTING-PREDICTION CONTRACT:
+- Do not mark both a core scientific relation and every direct operational test of that same relation as independent core novelty claims.
+- A distinctive_prediction that merely operationalizes, measures, statistically tests, or provides a falsification criterion for an already represented core relation should normally be importance=supporting.
+- Keep a distinctive_prediction importance=core only when it adds an independent novelty-bearing scientific proposition whose prior-art status could invalidate the hypothesis even if the associated moderator/mechanistic core relation remained intact.
+- For example, if a core claim already states that descriptor X and factor Z interact in determining outcome Y, a prediction that an X×Z interaction model outperforms an additive model is normally supporting when it is simply the operational test of that interaction.
+- In contrast, an explicit sign reversal, threshold, new regime, or qualitatively distinct ordering may remain core when that feature is itself the central scientific proposition rather than merely a measurement criterion.
 
 ATOMIC SCIENTIFIC-STRUCTURE CONTRACT:
 - scientific_structure describes the inferential structure of THIS atomic claim. It is a claim specification, not a novelty verdict and not prior-art evidence.
