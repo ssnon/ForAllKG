@@ -64,6 +64,16 @@ class NonObviousnessEvidenceClosure:
     bridge_work_ids: tuple[str, ...] = ()
     full_relation_work_ids: tuple[str, ...] = ()
 
+    # Positive-only internal grounding provenance.
+    #
+    # These IDs may establish a positively grounded lower-order
+    # relation, but they can never encode literature absence or
+    # create a NOT_FOUND state.
+    base_internal_statement_ids: tuple[str, ...] = ()
+    factor_internal_statement_ids: tuple[str, ...] = ()
+    bridge_internal_statement_ids: tuple[str, ...] = ()
+    full_relation_internal_statement_ids: tuple[str, ...] = ()
+
 
 @dataclass(frozen=True)
 class ResidualClaimStructure:

@@ -100,6 +100,49 @@ def _query_from_terms(
     )
 
 
+_MODERATOR_RELATION_ONLY_TERMS = frozenset(
+    {
+        "conditional dependence",
+        "conditional association",
+        "conditional relationship",
+        "moderation",
+        "moderator interaction",
+        "interaction",
+        "conditioned relationship",
+        "conditioned association",
+    }
+)
+
+
+def _remove_moderator_structure_terms(
+    nucleus: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Remove terms that encode only the higher-order moderator form.
+
+    BASE_RELATION must represent the unconditioned lower-order
+    relation. This function performs exact normalized filtering only;
+    it does not add synonyms or infer scientific relations.
+    """
+
+    output: list[str] = []
+
+    for term in nucleus:
+        normalized = _normalize_text(
+            term,
+            limit=140,
+        ).casefold()
+
+        if (
+            normalized
+            in _MODERATOR_RELATION_ONLY_TERMS
+        ):
+            continue
+
+        output.append(term)
+
+    return tuple(output)
+
+
 def _remove_exact_identity_terms(
     *,
     nucleus: tuple[str, ...],
@@ -267,6 +310,12 @@ def build_closure_retrieval_plan(
         base_nucleus = _remove_exact_identity_terms(
             nucleus=nucleus,
             identity=identity,
+        )
+
+        base_nucleus = (
+            _remove_moderator_structure_terms(
+                base_nucleus
+            )
         )
 
         if not base_nucleus:
