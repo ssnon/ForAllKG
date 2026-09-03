@@ -485,6 +485,38 @@ def main() -> None:
         )
 
     prefix = Path(args.output_prefix)
+
+    # Diagnostic-only sidecar containing specification values
+    # before and after branch-specific sanitization.
+    #
+    # It is intentionally outside LiteratureQueryPlan and is not
+    # consumed by retrieval, evidence closure, N9, or N10.
+    #
+    # In --reuse-query-plan mode no decomposition occurs, so the
+    # record list is deliberately empty rather than reusing stale
+    # diagnostic data from another run.
+    _write(
+        prefix.with_suffix(
+            ".specification_sanitization.json"
+        ),
+        {
+            "schema_version": (
+                "novelty-specification-"
+                "sanitization-audit-v1"
+            ),
+            "source_portfolio_id": (
+                portfolio.portfolio_id
+            ),
+            "diagnostic_only": True,
+            "decomposition_executed": (
+                not bool(args.reuse_query_plan)
+            ),
+            "records": list(
+                decomposer.specification_sanitization_records
+            ),
+        },
+    )
+
     report_path = prefix.with_suffix(".report.json")
     # Remove a stale final report before the assessment starts. If the
     # assessment crashes, downstream stages cannot accidentally consume a

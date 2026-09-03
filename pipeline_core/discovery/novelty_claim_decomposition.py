@@ -581,6 +581,17 @@ class NoveltyClaimDecomposer:
         self.backend = backend
         self.max_claims = int(max_claims_per_hypothesis)
         self.max_queries = int(max_queries_per_claim)
+
+        # Diagnostic-only observability channel.
+        #
+        # Raw decomposition values stored here must never be
+        # promoted into NoveltyClaim, LiteratureQueryPlan,
+        # retrieval vocabulary, evidence closure, or
+        # novelty/non-obviousness authority.
+        self.specification_sanitization_records: list[
+            dict[str, object]
+        ] = []
+
         if self.max_claims < 1:
             raise ValueError("max_claims_per_hypothesis must be >= 1")
         if self.max_queries < 1:
@@ -671,30 +682,18 @@ class NoveltyClaimDecomposer:
                 )
             )
 
+            # Preserve an explicit empty bridge from the atomic
+            # decomposition. A hypothesis-level inferential bridge is
+            # not a safe fallback for an atomic claim because it may
+            # contain sibling branches or additional relation nuclei.
             raw_required_bridge = str(
-                (
-                    row.required_bridge
-                    if str(
-                        row.required_bridge or ""
-                    ).strip()
-                    else hypothesis.inferential_bridge
-                )
-                or ""
+                row.required_bridge or ""
             )
 
             required_bridge_source = (
                 "draft"
-                if str(
-                    row.required_bridge or ""
-                ).strip()
-                else (
-                    "hypothesis_fallback"
-                    if str(
-                        hypothesis.inferential_bridge
-                        or ""
-                    ).strip()
-                    else "empty"
-                )
+                if raw_required_bridge.strip()
+                else "empty"
             )
 
             bridge_source_texts = [
@@ -756,15 +755,66 @@ class NoveltyClaimDecomposer:
                 )
             )
 
+            claim_id = _stable_id(
+                "external_novelty_claim",
+                hypothesis.hypothesis_id,
+                rank,
+                row.kind,
+                row.text,
+            )
+
+            # Preserve pre-sanitization specification values
+            # outside the canonical NoveltyClaim contract.
+            #
+            # This is diagnostic provenance only. Rejected text
+            # must not become evidence, query vocabulary, or
+            # novelty/non-obviousness authority.
+            self.specification_sanitization_records.append(
+                {
+                    "schema_version": (
+                        "novelty-claim-specification-"
+                        "sanitization-v1"
+                    ),
+                    "diagnostic_only": True,
+                    "hypothesis_id": (
+                        hypothesis.hypothesis_id
+                    ),
+                    "claim_id": claim_id,
+                    "claim_rank": rank,
+                    "claim_local_id": row.local_id,
+                    "prior_art_identity_terms": list(
+                        prior_art_identity_terms
+                    ),
+                    "required_bridge_source": (
+                        required_bridge_source
+                    ),
+                    "raw_required_bridge": (
+                        raw_required_bridge
+                    ),
+                    "sanitized_required_bridge": (
+                        sanitized_required_bridge
+                    ),
+                    "raw_predicted_observation": str(
+                        row.predicted_observation or ""
+                    ),
+                    "sanitized_predicted_observation": (
+                        sanitized_predicted_observation
+                    ),
+                    "raw_falsification_condition": str(
+                        row.falsification_condition or ""
+                    ),
+                    "sanitized_falsification_condition": (
+                        sanitized_falsification_condition
+                    ),
+                    "reason_codes": list(
+                        specification_sanitization_reason_codes
+                    ),
+                }
+            )
+
             rows.append(
                 NoveltyClaim(
-                    claim_id=_stable_id(
-                        "external_novelty_claim",
-                        hypothesis.hypothesis_id,
-                        rank,
-                        row.kind,
-                        row.text,
-                    ),
+                    claim_id=claim_id,
                     hypothesis_id=hypothesis.hypothesis_id,
                     claim_rank=rank,
                     kind=row.kind,

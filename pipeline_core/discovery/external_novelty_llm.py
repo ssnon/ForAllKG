@@ -111,6 +111,16 @@ SELF-CONTAINED ATOMIC SPECIFICATION CONTRACT:
 - When the supplied hypothesis already makes the referent unambiguous, you MAY replace such an anaphoric reference with the already stated atomic branch identity solely to make the field self-contained. This reference expansion must not add a new mechanism, direction, threshold, condition, variable, or scientific proposition.
 - For example, if the supplied hypothesis and atomic claim already identify an "M-H iCOHP × oxygenated-intermediate stabilization interaction", a falsifier saying only "the interaction does not improve prediction" should be rendered self-contained by explicitly naming that same interaction. Do not invent any additional consequence.
 - required_bridge remains stricter. A non-empty required_bridge must remain an extractive scientific span supported by the hypothesis inferential bridge or assumptions. Do not rewrite or expand a bridge merely to satisfy branch identity matching.
+
+REQUIRED-BRIDGE RETURN SELF-CHECK:
+- First choose prior_art_identity_terms according to the scientific branch-identity contract above. Do NOT weaken, broaden, replace, or opportunistically change the correct branch identity merely to make required_bridge non-empty.
+- Before returning any non-empty required_bridge, verify that the RETURNED BRIDGE STRING ITSELF explicitly contains at least one valid prior_art_identity_terms expression under conservative surface normalization. Do not rely on identity words that occur only before or after the returned span elsewhere in the source sentence or paragraph.
+- required_bridge must be ONE CONTIGUOUS EXTRACTIVE SPAN from the supplied hypothesis inferential_bridge or assumptions. Do not stitch together non-contiguous fragments.
+- Do not delete an intervening sibling alternative, sibling mechanism, sibling moderator, or sibling relation merely to manufacture a branch-specific span.
+- Do not expand to a larger umbrella sentence merely to capture the identity term when that expansion would import a scientifically separable sibling branch or an additional relation nucleus.
+- If no contiguous source span both explicitly identifies THIS atomic branch and states the bridge without importing a separable sibling branch or new scientific relation, return required_bridge as an empty string.
+- An empty bridge in this situation is the correct epistemic result; downstream refinement may later supply a better branch-specific hypothesis specification.
+
 - If the hypothesis uses both a canonical branch phrase and a shorter literal branch phrase that unambiguously denotes the same branch, prior_art_identity_terms may contain both literal forms. Do not invent synonyms or broader scientific categories merely to obtain a match.
 - Do not use a generic word such as "coordination", "effect", "coupling", "interaction", or "pathway" as an additional identity term unless that exact expression is independently specific enough to distinguish the atomic branch from sibling branches.
 
