@@ -34,6 +34,7 @@ class ClosureRetrievalTarget:
     search_query: str
     source_text: str
     identity_anchor_terms: tuple[str, ...] = ()
+    inference_provenance: dict[str, object] | None = None
     evidence_status: Literal["UNASSESSED"] = "UNASSESSED"
 
 
@@ -386,6 +387,9 @@ def build_closure_retrieval_plan(
         ClosureRetrievalTarget(
             slot="BASE_RELATION",
             source_claim_id=claim.claim_id,
+            inference_provenance=(
+                claim.inference_provenance
+            ),
             target_basis="RELATION_NUCLEUS",
             search_terms=base_nucleus,
             search_query=base_query,
@@ -395,6 +399,9 @@ def build_closure_retrieval_plan(
         ClosureRetrievalTarget(
             slot="DISTINGUISHING_FACTOR_EFFECT",
             source_claim_id=claim.claim_id,
+            inference_provenance=(
+                claim.inference_provenance
+            ),
             target_basis=(
                 "IDENTITY_PLUS_RELATION_CONTEXT"
             ),
@@ -411,6 +418,9 @@ def build_closure_retrieval_plan(
         ClosureRetrievalTarget(
             slot="BRIDGE_RELATION",
             source_claim_id=claim.claim_id,
+            inference_provenance=(
+                claim.inference_provenance
+            ),
             target_basis=(
                 "EXTRACTIVE_REQUIRED_BRIDGE"
             ),
@@ -422,6 +432,9 @@ def build_closure_retrieval_plan(
         ClosureRetrievalTarget(
             slot="FULL_RELATION",
             source_claim_id=claim.claim_id,
+            inference_provenance=(
+                claim.inference_provenance
+            ),
             target_basis="FULL_RESIDUAL_CLAIM",
             search_terms=full_retrieval_terms,
             search_query=full_query,

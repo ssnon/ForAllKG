@@ -99,6 +99,10 @@ class NoveltyResidueClaim:
     # core branch can no longer silently degrade to supporting.
     importance: NoveltyClaimImportance = "core"
 
+    # Alpha4 inference context preserved from the canonical
+    # query-plan claim. Diagnostic/provenance only.
+    inference_provenance: dict[str, object] | None = None
+
     # Diagnostic-only provenance inherited from the canonical
     # query-plan claim. It does not alter prior-art disposition.
     specification_sanitization_reason_codes: tuple[str, ...] = ()
@@ -358,6 +362,14 @@ def extract_novelty_residue(
                         components
                     ),
                     importance=claim.importance,
+                    inference_provenance=(
+                        claim.inference_provenance.model_dump(
+                            mode="json"
+                        )
+                        if claim.inference_provenance
+                        is not None
+                        else None
+                    ),
                     specification_sanitization_reason_codes=tuple(
                         claim.specification_sanitization_reason_codes
                     ),

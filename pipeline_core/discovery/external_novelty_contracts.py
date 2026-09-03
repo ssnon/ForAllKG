@@ -181,6 +181,45 @@ class NoveltyClaimDecompositionDraft(StrictModel):
         return self
 
 
+class NoveltyClaimInferenceProvenance(StrictModel):
+    """Upstream inference context preserved for an atomic novelty claim.
+
+    This record is provenance only. It does not establish the atomic
+    claim, promote discovery-axis content into evidence, expand search
+    vocabulary, or authorize novelty/non-obviousness conclusions.
+
+    N9-D1 intentionally preserves the complete accepted hypothesis
+    inference context without pretending that assertion-to-atomic-claim
+    binding has already been solved.
+    """
+
+    schema_version: Literal[
+        "novelty-claim-inference-provenance-v1"
+    ] = "novelty-claim-inference-provenance-v1"
+
+    binding_scope: Literal[
+        "HYPOTHESIS_REVIEW_CONTEXT"
+    ] = "HYPOTHESIS_REVIEW_CONTEXT"
+
+    final_hypothesis_id: str
+    source_review_hypothesis_id: str
+    axis_id: str
+    review_status: str
+
+    assertion_ids: list[str] = Field(
+        default_factory=list
+    )
+    source_classes: list[str] = Field(
+        default_factory=list
+    )
+    grounded_statement_ids: list[str] = Field(
+        default_factory=list
+    )
+    axis_basis: list[str] = Field(
+        default_factory=list
+    )
+
+
 class NoveltyClaim(StrictModel):
     claim_id: str
     hypothesis_id: str
@@ -206,6 +245,11 @@ class NoveltyClaim(StrictModel):
     diagnostic_structural_terms: list[str] = Field(default_factory=list)
     diagnostic_relation_terms: list[str] = Field(default_factory=list)
     scientific_structure_reason_codes: list[str] = Field(default_factory=list)
+
+    # Provenance only. This preserves the accepted Alpha4 inference
+    # context through external novelty and N9. It is not scientific
+    # authority and must not be used by itself to establish a claim.
+    inference_provenance: NoveltyClaimInferenceProvenance | None = None
 
     # Diagnostic only. These codes record where an atomic
     # specification was absent or rejected while moving from the

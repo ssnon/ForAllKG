@@ -33,6 +33,7 @@ class ExecutableClosureTarget(StrictModel):
     search_query: str
     source_text: str
     identity_anchor_terms: tuple[str, ...] = ()
+    inference_provenance: dict[str, object] | None = None
     evidence_status: str = "UNASSESSED"
 
 
@@ -519,6 +520,9 @@ def build_closure_execution_plan(
                 slot=target.slot,
                 source_claim_id=target.source_claim_id,
                 target_basis=target.target_basis,
+                inference_provenance=(
+                    target.inference_provenance
+                ),
                 search_terms=target.search_terms,
                 search_query=target.search_query,
                 source_text=target.source_text,

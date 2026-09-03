@@ -3360,6 +3360,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--portfolio", str(axis_portfolio),
             "--domain-profile", domain_profile.profile_id,
             "--lineage", str(lineage),
+            "--inference-audit", str(axis_inference),
             *_base_model_args(args, critic=True),
             "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),

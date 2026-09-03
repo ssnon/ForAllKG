@@ -532,6 +532,36 @@ def compile_closure_slot_review(
                 "positive_slot_match_downgraded_without_abstract"
             )
 
+        # N9-D1 identity symmetry:
+        #
+        # For FACTOR / BRIDGE / FULL, a semantic reviewer may call a
+        # neighboring abstract ESTABLISHES_SLOT only when that same
+        # abstract also satisfies the atomic identity contract already
+        # used for bounded negative closure.
+        #
+        # This does not affect BASE, broaden identity matching, add
+        # synonyms, or promote discovery-axis provenance into evidence.
+        if (
+            target.slot != "BASE_RELATION"
+            and relationship
+            in _POSITIVE_RELATIONSHIPS
+            and work.abstract
+            and not _abstract_contains_identity_anchor(
+                abstract=work.abstract,
+                anchors=(
+                    target.identity_anchor_terms
+                ),
+            )
+        ):
+            relationship = "COMPONENT_ONLY"
+
+            code = (
+                "positive_slot_match_downgraded_identity_mismatch"
+            )
+
+            if code not in reason_codes:
+                reason_codes.append(code)
+
         matches.append(
             ClosureEvidenceMatch(
                 work_id=work.work_id,

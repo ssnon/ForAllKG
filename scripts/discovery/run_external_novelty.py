@@ -11,7 +11,9 @@ from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
     ExternalNoveltyReport,
+    HypothesisNoveltyClaims,
     LiteratureQueryPlan,
+    NoveltyClaimInferenceProvenance,
     PriorArtPacket,
 )
 from pipeline_core.discovery.external_novelty_llm import (
@@ -54,6 +56,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--portfolio", required=True)
     parser.add_argument("--domain-profile", required=True)
     parser.add_argument("--lineage", default=None)
+    parser.add_argument(
+        "--inference-audit",
+        default=None,
+        help=(
+            "Optional Alpha4 discovery-axis inference artifact. "
+            "When supplied, accepted inference provenance is preserved "
+            "on atomic novelty claims without changing search queries "
+            "or scientific authority."
+        ),
+    )
     parser.add_argument("--model", required=True)
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--api-key-env", default="OPENAI_API_KEY")
@@ -130,6 +142,251 @@ def _write(path: Path, value: object) -> None:
     )
 
 
+def _unique_strings(
+    values: list[object],
+) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+
+    for value in values:
+        text = str(value or "").strip()
+
+        if not text:
+            continue
+
+        if text in seen:
+            continue
+
+        seen.add(text)
+        output.append(text)
+
+    return output
+
+
+def _load_inference_provenance_map(
+    *,
+    path: str | Path,
+    portfolio: HypothesisPortfolio,
+) -> dict[str, NoveltyClaimInferenceProvenance]:
+    payload = json.loads(
+        Path(path).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    if (
+        payload.get("schema_version")
+        != "discovery-axis-inference-artifact-v2"
+    ):
+        raise ValueError(
+            "Unexpected Alpha4 inference artifact schema."
+        )
+
+    if (
+        payload.get("portfolio_id")
+        != portfolio.portfolio_id
+    ):
+        raise ValueError(
+            "Inference artifact / portfolio provenance mismatch."
+        )
+
+    records = payload.get("records")
+
+    if not isinstance(records, list):
+        raise ValueError(
+            "Inference artifact records must be a list."
+        )
+
+    result: dict[
+        str,
+        NoveltyClaimInferenceProvenance,
+    ] = {}
+
+    for record in records:
+        if not isinstance(record, dict):
+            raise ValueError(
+                "Inference artifact final record must be an object."
+            )
+
+        final_hypothesis_id = str(
+            record.get("final_hypothesis_id")
+            or ""
+        ).strip()
+
+        source_review_hypothesis_id = str(
+            record.get(
+                "source_review_hypothesis_id"
+            )
+            or ""
+        ).strip()
+
+        axis_id = str(
+            record.get("axis_id")
+            or ""
+        ).strip()
+
+        review = record.get("review")
+
+        if (
+            not final_hypothesis_id
+            or not source_review_hypothesis_id
+            or not axis_id
+            or not isinstance(review, dict)
+        ):
+            raise ValueError(
+                "Incomplete inference provenance record."
+            )
+
+        if (
+            str(
+                review.get("hypothesis_id")
+                or ""
+            )
+            != source_review_hypothesis_id
+        ):
+            raise ValueError(
+                "Inference source-review hypothesis mismatch."
+            )
+
+        if (
+            str(
+                review.get("axis_id")
+                or ""
+            )
+            != axis_id
+        ):
+            raise ValueError(
+                "Inference axis binding mismatch."
+            )
+
+        assertions = review.get("assertions")
+
+        if not isinstance(assertions, list):
+            raise ValueError(
+                "Inference review assertions must be a list."
+            )
+
+        assertion_ids = []
+        source_classes = []
+        grounded_statement_ids = []
+        axis_basis = []
+
+        for assertion in assertions:
+            if not isinstance(assertion, dict):
+                continue
+
+            assertion_ids.append(
+                assertion.get("assertion_id")
+            )
+
+            source_classes.append(
+                assertion.get("source_class")
+            )
+
+            grounded_statement_ids.extend(
+                assertion.get(
+                    "grounded_statement_ids"
+                )
+                or []
+            )
+
+            axis_basis.extend(
+                assertion.get("axis_basis")
+                or []
+            )
+
+        result[
+            final_hypothesis_id
+        ] = NoveltyClaimInferenceProvenance(
+            final_hypothesis_id=(
+                final_hypothesis_id
+            ),
+            source_review_hypothesis_id=(
+                source_review_hypothesis_id
+            ),
+            axis_id=axis_id,
+            review_status=str(
+                review.get("status")
+                or record.get("status")
+                or ""
+            ),
+            assertion_ids=_unique_strings(
+                assertion_ids
+            ),
+            source_classes=_unique_strings(
+                source_classes
+            ),
+            grounded_statement_ids=_unique_strings(
+                grounded_statement_ids
+            ),
+            axis_basis=_unique_strings(
+                axis_basis
+            ),
+        )
+
+    expected_ids = {
+        row.hypothesis_id
+        for row in portfolio.hypotheses
+    }
+
+    actual_ids = set(result)
+
+    if actual_ids != expected_ids:
+        raise ValueError(
+            "Inference artifact final hypothesis IDs do not "
+            "match the external-novelty portfolio: "
+            f"expected={sorted(expected_ids)}, "
+            f"actual={sorted(actual_ids)}"
+        )
+
+    return result
+
+
+def _attach_inference_provenance(
+    *,
+    decompositions: list[
+        HypothesisNoveltyClaims
+    ],
+    provenance_by_hypothesis: dict[
+        str,
+        NoveltyClaimInferenceProvenance,
+    ],
+) -> list[HypothesisNoveltyClaims]:
+    if not provenance_by_hypothesis:
+        return decompositions
+
+    output: list[
+        HypothesisNoveltyClaims
+    ] = []
+
+    for group in decompositions:
+        provenance = (
+            provenance_by_hypothesis.get(
+                group.hypothesis_id
+            )
+        )
+
+        claims = [
+            claim.model_copy(
+                update={
+                    "inference_provenance":
+                        provenance
+                }
+            )
+            for claim in group.claims
+        ]
+
+        output.append(
+            group.model_copy(
+                update={
+                    "claims": claims
+                }
+            )
+        )
+
+    return output
+
+
 def main() -> None:
     args = parse_args()
 
@@ -166,6 +423,15 @@ def main() -> None:
         else None
     )
 
+    inference_provenance_by_hypothesis = (
+        _load_inference_provenance_map(
+            path=args.inference_audit,
+            portfolio=portfolio,
+        )
+        if args.inference_audit
+        else {}
+    )
+
     policy = ExternalNoveltyPolicy(
         max_claims_per_hypothesis=args.max_claims,
         max_queries_per_claim=args.max_queries_per_claim,
@@ -192,8 +458,24 @@ def main() -> None:
         if plan.source_portfolio_id != portfolio.portfolio_id:
             raise ValueError("--reuse-query-plan source_portfolio_id mismatch")
     else:
-        decompositions = [decomposer.decompose(row) for row in portfolio.hypotheses]
-        plan = LiteratureQueryPlanner().build(portfolio, decompositions)
+        decompositions = [
+            decomposer.decompose(row)
+            for row in portfolio.hypotheses
+        ]
+
+        decompositions = (
+            _attach_inference_provenance(
+                decompositions=decompositions,
+                provenance_by_hypothesis=(
+                    inference_provenance_by_hypothesis
+                ),
+            )
+        )
+
+        plan = LiteratureQueryPlanner().build(
+            portfolio,
+            decompositions,
+        )
 
     prefix = Path(args.output_prefix)
     report_path = prefix.with_suffix(".report.json")
