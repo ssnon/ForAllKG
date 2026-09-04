@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from pipeline_core.discovery.n10_alpha6_resolution_policy import (
+    NO_N10_ALPHA6_OVERRIDE,
+    alpha6_resolution_directive_from_gate_row,
+)
+
 import hashlib
 import json
 from dataclasses import dataclass
@@ -835,65 +840,180 @@ class TargetedNoveltyRefinementRuntime:
             original = cards[gap.hypothesis_id]
             source_external = external_by_h[gap.hypothesis_id]
 
+            n10_resolution_directive = (
+                alpha6_resolution_directive_from_gate_row(
+                    scientific_gate_by_id.get(
+                        original.hypothesis_id
+                    )
+                )
+                if (
+                    scientific_novelty_gate is not None
+                    and scientific_novelty_gate.get(
+                        "schema_version"
+                    )
+                    == (
+                        "scientific-novelty-fallback-"
+                        "gate-v2"
+                    )
+                    and scientific_gate_by_id is not None
+                )
+                else NO_N10_ALPHA6_OVERRIDE
+            )
+
             if gap.action == "keep":
-                if self._original_fallback_allowed(
-                    source_external.status,
-                    hypothesis_id=original.hypothesis_id,
-                    scientific_gate_by_id=scientific_gate_by_id,
+                if not (
+                    n10_resolution_directive
+                    .force_bounded_refinement
                 ):
-                    accepted_proposals.append(
-                        _proposal_from_card(
-                            original,
-                            prefix=f"keep{index}",
+                    if self._original_fallback_allowed(
+                        source_external.status,
+                        hypothesis_id=original.hypothesis_id,
+                        scientific_gate_by_id=scientific_gate_by_id,
+                    ):
+                        accepted_proposals.append(
+                            _proposal_from_card(
+                                original,
+                                prefix=f"keep{index}",
+                            )
                         )
-                    )
-                    attempts.append(
-                        RefinementAttempt(
-                            original_hypothesis_id=original.hypothesis_id,
-                            candidate_hypothesis_id=original.hypothesis_id,
-                            gap_id=gap.gap_id,
-                            action=gap.action,
-                            decision="kept_original",
-                            original_external_status=source_external.status,
-                            targeted_external_status=source_external.status,
-                            final_external_status=source_external.status,
-                            grounding_preserved=True,
-                            refinement_generated=False,
-                            interpretation=(
-                                "The external novelty status did not require "
-                                "bounded refinement."
-                            ),
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                candidate_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="kept_original",
+                                original_external_status=source_external.status,
+                                targeted_external_status=source_external.status,
+                                final_external_status=source_external.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                interpretation=(
+                                    "The external novelty status did not require "
+                                    "bounded refinement."
+                                ),
+                            )
                         )
-                    )
-                else:
-                    attempts.append(
-                        RefinementAttempt(
-                            original_hypothesis_id=original.hypothesis_id,
-                            gap_id=gap.gap_id,
-                            action=gap.action,
-                            decision="scientific_novelty_rejected",
-                            original_external_status=source_external.status,
-                            targeted_external_status=source_external.status,
-                            grounding_preserved=True,
-                            refinement_generated=False,
-                            reason_codes=[
-                                "scientific_novelty_gate_blocked_original_fallback",
-                            ],
-                            interpretation=(
-                                "External novelty alone would otherwise retain "
-                                "the original hypothesis, but the authoritative "
-                                "scientific-novelty gate disallows original fallback."
-                            ),
+                    else:
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="scientific_novelty_rejected",
+                                original_external_status=source_external.status,
+                                targeted_external_status=source_external.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                reason_codes=[
+                                    "scientific_novelty_gate_blocked_original_fallback",
+                                ],
+                                interpretation=(
+                                    "External novelty alone would otherwise retain "
+                                    "the original hypothesis, but the authoritative "
+                                    "scientific-novelty gate disallows original fallback."
+                                ),
+                            )
                         )
-                    )
-                continue
+                    continue
 
             if not gap.targeted_queries:
-                if self._original_fallback_allowed(
-                    source_external.status,
-                    hypothesis_id=original.hypothesis_id,
-                    scientific_gate_by_id=scientific_gate_by_id,
+                if not (
+                    n10_resolution_directive
+                    .force_bounded_refinement
+                    and n10_resolution_directive
+                    .use_source_external_without_targeted_search
                 ):
+                    if self._original_fallback_allowed(
+                        source_external.status,
+                        hypothesis_id=original.hypothesis_id,
+                        scientific_gate_by_id=scientific_gate_by_id,
+                    ):
+                        accepted_proposals.append(
+                            _proposal_from_card(original, prefix=f"fallback{index}")
+                        )
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                candidate_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="kept_original",
+                                original_external_status=source_external.status,
+                                targeted_external_status=source_external.status,
+                                final_external_status=source_external.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                reason_codes=[
+                                    "no_targeted_queries",
+                                    "non_destructive_original_fallback",
+                                ],
+                                interpretation=(
+                                    "No non-duplicate targeted query could be generated. "
+                                    "The grounded original is retained without any novelty upgrade."
+                                ),
+                            )
+                        )
+                    else:
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="search_insufficient",
+                                original_external_status=source_external.status,
+                                grounding_preserved=True,
+                                reason_codes=["no_targeted_queries"],
+                                interpretation=(
+                                    "No non-duplicate targeted query could be generated for an "
+                                    "original hypothesis already in a destructive prior-art state."
+                                ),
+                            )
+                        )
+                    continue
+
+            if (
+                n10_resolution_directive
+                .force_bounded_refinement
+                and n10_resolution_directive
+                .use_source_external_without_targeted_search
+                and not gap.targeted_queries
+            ):
+                # Reuse the already-grounded external card only
+                # as bounded specification-repair context.
+                # This does not upgrade novelty or add evidence.
+                targeted_card = source_external
+            else:
+                targeted = self.targeted_retriever.retrieve(
+                    external_query_plan, external_prior_art, gap
+                )
+                with prior_art_review_audit_scope(
+                    assessment_kind="alpha6_targeted_reassessment",
+                    focal_hypothesis_id=original.hypothesis_id,
+                    gap_id=gap.gap_id,
+                    source_portfolio_id=portfolio.portfolio_id,
+                    query_plan_id=targeted.augmented_plan.plan_id,
+                    prior_art_packet_id=targeted.merged_packet.packet_id,
+                ):
+                    reassessed = self.external_assessor.assess(
+                        portfolio,
+                        targeted.augmented_plan,
+                        targeted.merged_packet,
+                        lineage=lineage,
+                    )
+                targeted_card = next(
+                    x for x in reassessed.cards
+                    if x.hypothesis_id == original.hypothesis_id
+                )
+
+                def keep_original_after_failed_refinement(
+                    failure_decision: str,
+                    *,
+                    reason_codes: list[str] | None = None,
+                    failure_interpretation: str,
+                    axis_fidelity_status: str | None = None,
+                    internal_novelty_status: str | None = None,
+                ) -> None:
                     accepted_proposals.append(
                         _proposal_from_card(original, prefix=f"fallback{index}")
                     )
@@ -905,193 +1025,126 @@ class TargetedNoveltyRefinementRuntime:
                             action=gap.action,
                             decision="kept_original",
                             original_external_status=source_external.status,
-                            targeted_external_status=source_external.status,
-                            final_external_status=source_external.status,
+                            targeted_external_status=targeted_card.status,
+                            final_external_status=targeted_card.status,
+                            axis_fidelity_status=axis_fidelity_status,
+                            internal_novelty_status=internal_novelty_status,
                             grounding_preserved=True,
-                            refinement_generated=False,
-                            reason_codes=[
-                                "no_targeted_queries",
-                                "non_destructive_original_fallback",
-                            ],
+                            refinement_generated=True,
+                            reason_codes=sorted(
+                                set(
+                                    [
+                                        "non_destructive_original_fallback",
+                                        f"refinement_failure:{failure_decision}",
+                                        *(reason_codes or []),
+                                    ]
+                                )
+                            ),
                             interpretation=(
-                                "No non-duplicate targeted query could be generated. "
-                                "The grounded original is retained without any novelty upgrade."
+                                failure_interpretation
+                                + " The optional refinement is discarded and the grounded "
+                                  "original is retained at its targeted external-novelty "
+                                  f"status ({targeted_card.status}); no novelty upgrade is claimed."
                             ),
                         )
                     )
-                else:
-                    attempts.append(
-                        RefinementAttempt(
-                            original_hypothesis_id=original.hypothesis_id,
-                            gap_id=gap.gap_id,
-                            action=gap.action,
-                            decision="search_insufficient",
-                            original_external_status=source_external.status,
-                            grounding_preserved=True,
-                            reason_codes=["no_targeted_queries"],
-                            interpretation=(
-                                "No non-duplicate targeted query could be generated for an "
-                                "original hypothesis already in a destructive prior-art state."
-                            ),
-                        )
+                targeted_artifacts.append(
+                    PerHypothesisExternalArtifacts(
+                        hypothesis_id=original.hypothesis_id,
+                        query_plan=targeted.augmented_plan,
+                        prior_art=targeted.merged_packet,
+                        report=reassessed,
                     )
-                continue
-
-            targeted = self.targeted_retriever.retrieve(
-                external_query_plan, external_prior_art, gap
-            )
-            with prior_art_review_audit_scope(
-                assessment_kind="alpha6_targeted_reassessment",
-                focal_hypothesis_id=original.hypothesis_id,
-                gap_id=gap.gap_id,
-                source_portfolio_id=portfolio.portfolio_id,
-                query_plan_id=targeted.augmented_plan.plan_id,
-                prior_art_packet_id=targeted.merged_packet.packet_id,
-            ):
-                reassessed = self.external_assessor.assess(
-                    portfolio,
-                    targeted.augmented_plan,
-                    targeted.merged_packet,
-                    lineage=lineage,
                 )
-            targeted_card = next(
-                x for x in reassessed.cards
-                if x.hypothesis_id == original.hypothesis_id
-            )
-
-            def keep_original_after_failed_refinement(
-                failure_decision: str,
-                *,
-                reason_codes: list[str] | None = None,
-                failure_interpretation: str,
-                axis_fidelity_status: str | None = None,
-                internal_novelty_status: str | None = None,
-            ) -> None:
-                accepted_proposals.append(
-                    _proposal_from_card(original, prefix=f"fallback{index}")
-                )
-                attempts.append(
-                    RefinementAttempt(
-                        original_hypothesis_id=original.hypothesis_id,
-                        candidate_hypothesis_id=original.hypothesis_id,
+                search_records.append(
+                    TargetedSearchRecord(
+                        hypothesis_id=original.hypothesis_id,
                         gap_id=gap.gap_id,
-                        action=gap.action,
-                        decision="kept_original",
-                        original_external_status=source_external.status,
-                        targeted_external_status=targeted_card.status,
-                        final_external_status=targeted_card.status,
-                        axis_fidelity_status=axis_fidelity_status,
-                        internal_novelty_status=internal_novelty_status,
-                        grounding_preserved=True,
-                        refinement_generated=True,
-                        reason_codes=sorted(
-                            set(
-                                [
-                                    "non_destructive_original_fallback",
-                                    f"refinement_failure:{failure_decision}",
-                                    *(reason_codes or []),
-                                ]
-                            )
-                        ),
-                        interpretation=(
-                            failure_interpretation
-                            + " The optional refinement is discarded and the grounded "
-                              "original is retained at its targeted external-novelty "
-                              f"status ({targeted_card.status}); no novelty upgrade is claimed."
-                        ),
+                        query_plan_id=targeted.augmented_plan.plan_id,
+                        prior_art_packet_id=targeted.merged_packet.packet_id,
+                        external_report_id=reassessed.report_id,
+                        external_status_after_search=targeted_card.status,
+                        unique_work_count=targeted_card.coverage.unique_work_count,
+                        abstract_work_count=targeted_card.coverage.abstract_work_count,
+                        successful_query_count=targeted_card.coverage.successful_query_count,
                     )
                 )
-            targeted_artifacts.append(
-                PerHypothesisExternalArtifacts(
-                    hypothesis_id=original.hypothesis_id,
-                    query_plan=targeted.augmented_plan,
-                    prior_art=targeted.merged_packet,
-                    report=reassessed,
-                )
-            )
-            search_records.append(
-                TargetedSearchRecord(
-                    hypothesis_id=original.hypothesis_id,
-                    gap_id=gap.gap_id,
-                    query_plan_id=targeted.augmented_plan.plan_id,
-                    prior_art_packet_id=targeted.merged_packet.packet_id,
-                    external_report_id=reassessed.report_id,
-                    external_status_after_search=targeted_card.status,
-                    unique_work_count=targeted_card.coverage.unique_work_count,
-                    abstract_work_count=targeted_card.coverage.abstract_work_count,
-                    successful_query_count=targeted_card.coverage.successful_query_count,
-                )
-            )
 
-            # If targeted search already resolves the original into a
-            # search-bounded candidate category, do not regenerate merely for
-            # novelty optimization. This applies regardless of the initial
-            # status that triggered targeted search.
+                # If targeted search already resolves the original into a
+                # search-bounded candidate category, do not regenerate merely for
+                # novelty optimization. This applies regardless of the initial
+                # status that triggered targeted search.
             if (
                 targeted_card.status
                 in self.RESOLVED_CANDIDATE_EXTERNAL
             ):
-                if self._original_fallback_allowed(
-                    targeted_card.status,
-                    hypothesis_id=original.hypothesis_id,
-                    scientific_gate_by_id=scientific_gate_by_id,
+                if not (
+                    n10_resolution_directive
+                    .force_bounded_refinement
+                    and n10_resolution_directive
+                    .bypass_resolved_candidate_external_exit
                 ):
-                    accepted_proposals.append(
-                        _proposal_from_card(
-                            original,
-                            prefix=f"keep{index}",
+                    if self._original_fallback_allowed(
+                        targeted_card.status,
+                        hypothesis_id=original.hypothesis_id,
+                        scientific_gate_by_id=scientific_gate_by_id,
+                    ):
+                        accepted_proposals.append(
+                            _proposal_from_card(
+                                original,
+                                prefix=f"keep{index}",
+                            )
                         )
-                    )
-                    attempts.append(
-                        RefinementAttempt(
-                            original_hypothesis_id=original.hypothesis_id,
-                            candidate_hypothesis_id=original.hypothesis_id,
-                            gap_id=gap.gap_id,
-                            action=gap.action,
-                            decision="kept_original",
-                            original_external_status=source_external.status,
-                            targeted_external_status=targeted_card.status,
-                            final_external_status=targeted_card.status,
-                            grounding_preserved=True,
-                            refinement_generated=False,
-                            generation_mode="none",
-                            context_grounding_valid=True,
-                            reason_codes=[
-                                "targeted_search_resolved_candidate_status",
-                            ],
-                            interpretation=(
-                                "Targeted search resolved the candidate without "
-                                "requiring hypothesis regeneration; no additional "
-                                "novelty optimization is performed."
-                            ),
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                candidate_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="kept_original",
+                                original_external_status=source_external.status,
+                                targeted_external_status=targeted_card.status,
+                                final_external_status=targeted_card.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                generation_mode="none",
+                                context_grounding_valid=True,
+                                reason_codes=[
+                                    "targeted_search_resolved_candidate_status",
+                                ],
+                                interpretation=(
+                                    "Targeted search resolved the candidate without "
+                                    "requiring hypothesis regeneration; no additional "
+                                    "novelty optimization is performed."
+                                ),
+                            )
                         )
-                    )
-                else:
-                    attempts.append(
-                        RefinementAttempt(
-                            original_hypothesis_id=original.hypothesis_id,
-                            gap_id=gap.gap_id,
-                            action=gap.action,
-                            decision="scientific_novelty_rejected",
-                            original_external_status=source_external.status,
-                            targeted_external_status=targeted_card.status,
-                            grounding_preserved=True,
-                            refinement_generated=False,
-                            generation_mode="none",
-                            context_grounding_valid=True,
-                            reason_codes=[
-                                "targeted_search_resolved_candidate_status",
-                                "scientific_novelty_gate_blocked_original_fallback",
-                            ],
-                            interpretation=(
-                                "Targeted search reached an externally acceptable "
-                                "candidate status, but the authoritative scientific-"
-                                "novelty gate disallows retention of the original "
-                                "hypothesis."
-                            ),
+                    else:
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="scientific_novelty_rejected",
+                                original_external_status=source_external.status,
+                                targeted_external_status=targeted_card.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                generation_mode="none",
+                                context_grounding_valid=True,
+                                reason_codes=[
+                                    "targeted_search_resolved_candidate_status",
+                                    "scientific_novelty_gate_blocked_original_fallback",
+                                ],
+                                interpretation=(
+                                    "Targeted search reached an externally acceptable "
+                                    "candidate status, but the authoritative scientific-"
+                                    "novelty gate disallows retention of the original "
+                                    "hypothesis."
+                                ),
+                            )
                         )
-                    )
-                continue
+                    continue
 
             # ----------------------------------------------------------
             # Fresh-context novelty re-axis
