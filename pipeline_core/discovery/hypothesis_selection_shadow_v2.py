@@ -12,6 +12,9 @@ from pipeline_core.discovery.novelty_selection_topology_aggregation import (
     TopologyAwareAtomicClaim,
     aggregate_topology_aware_nonobviousness,
 )
+from pipeline_core.discovery.nonobviousness_shadow_action_routing import (
+    route_shadow_resolution_actions,
+)
 
 
 _SCHEMA = "hypothesis-selection-shadow-v2"
@@ -375,6 +378,35 @@ def build_hypothesis_selection_shadow_v2(
             and not unresolved_role_claim_ids
         )
 
+        routed = route_shadow_resolution_actions(
+            selection_class=selection_class,
+            atomic_claims=atomic_rows,
+            fallback_action=action,
+        )
+
+        routed_action = (
+            routed.primary_action
+        )
+
+        resolution_requirements = [
+            {
+                "claim_id":
+                    row.claim_id,
+                "novelty_selection_role":
+                    row.novelty_selection_role,
+                "nonobviousness_outcome":
+                    row.nonobviousness_outcome,
+                "action":
+                    row.action,
+                "reason_codes":
+                    list(
+                        row.reason_codes
+                    ),
+            }
+            for row
+            in routed.resolution_requirements
+        ]
+
         selection_counts[
             selection_class
         ] += 1
@@ -386,7 +418,11 @@ def build_hypothesis_selection_shadow_v2(
                 "selection_class":
                     selection_class,
                 "action":
+                    routed_action,
+                "base_aggregation_action":
                     action,
+                "resolution_requirements":
+                    resolution_requirements,
                 "shadow_positive_nonobviousness_authority":
                     shadow_positive,
                 # Critical: v2 is observational only.
