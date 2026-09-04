@@ -38,10 +38,14 @@ def _validate_n10_gate(
     candidate_id: str,
     gate: dict[str, Any],
 ) -> dict[str, Any]:
-    if (
-        gate.get("schema_version")
-        != "scientific-novelty-fallback-gate-v1"
-    ):
+    schema = gate.get(
+        "schema_version"
+    )
+
+    if schema not in {
+        "scientific-novelty-fallback-gate-v1",
+        "scientific-novelty-fallback-gate-v2",
+    }:
         raise ValueError(
             "unexpected N10 production gate schema"
         )
@@ -54,13 +58,75 @@ def _validate_n10_gate(
         )
 
     if (
-        gate.get("authority_source")
-        != "n10_nonobviousness"
+        schema
+        == "scientific-novelty-fallback-gate-v1"
     ):
-        raise ValueError(
-            "post-generation candidate gate must come "
-            "from N10 non-obviousness"
-        )
+        if (
+            gate.get("authority_source")
+            != "n10_nonobviousness"
+        ):
+            raise ValueError(
+                "post-generation candidate gate must come "
+                "from N10 non-obviousness"
+            )
+
+    else:
+        if (
+            gate.get("authority_scope")
+            != "alpha6_post_generation_candidate"
+        ):
+            raise ValueError(
+                "role-aware post-generation N10 gate has "
+                "wrong authority scope"
+            )
+
+        if (
+            gate.get("authority_source")
+            != "n10_role_aware_nonobviousness_v2"
+        ):
+            raise ValueError(
+                "unexpected role-aware N10 authority source"
+            )
+
+        if (
+            gate.get(
+                "positive_authority_requires"
+            )
+            != (
+                "ELIGIBLE_AND_ROLE_AWARE_"
+                "POSITIVE_NONOBVIOUSNESS"
+            )
+        ):
+            raise ValueError(
+                "unexpected role-aware positive-authority "
+                "contract"
+            )
+
+        if (
+            gate.get("conditional_is_positive")
+            is not False
+        ):
+            raise ValueError(
+                "CONDITIONAL must not be positive authority"
+            )
+
+        if (
+            gate.get("absence_is_novelty")
+            is not False
+        ):
+            raise ValueError(
+                "search-bounded absence must not become novelty"
+            )
+
+        if (
+            gate.get(
+                "candidate_semantics_preserved"
+            )
+            is not True
+        ):
+            raise ValueError(
+                "candidate semantics must be preserved"
+            )
 
     rows = gate.get(
         "gates"
@@ -80,7 +146,9 @@ def _validate_n10_gate(
         if (
             isinstance(row, dict)
             and str(
-                row.get("hypothesis_id")
+                row.get(
+                    "hypothesis_id"
+                )
                 or ""
             )
             == candidate_id
@@ -94,7 +162,76 @@ def _validate_n10_gate(
             + candidate_id
         )
 
-    return matches[0]
+    row = matches[0]
+
+    if (
+        schema
+        == "scientific-novelty-fallback-gate-v2"
+    ):
+        selection = row.get(
+            "selection_class"
+        )
+
+        if selection not in {
+            "ELIGIBLE",
+            "CONDITIONAL",
+            "INELIGIBLE",
+        }:
+            raise ValueError(
+                "invalid role-aware N10 selection class"
+            )
+
+        positive = row.get(
+            "positive_nonobviousness_authority"
+        )
+
+        fallback = row.get(
+            "fallback_allowed"
+        )
+
+        if not isinstance(
+            positive,
+            bool,
+        ):
+            raise ValueError(
+                "role-aware positive authority must be boolean"
+            )
+
+        if not isinstance(
+            fallback,
+            bool,
+        ):
+            raise ValueError(
+                "role-aware fallback permission must be boolean"
+            )
+
+        if selection == "ELIGIBLE":
+            if positive is not True:
+                raise ValueError(
+                    "ELIGIBLE role-aware candidate lacks "
+                    "positive authority"
+                )
+
+            if fallback is not True:
+                raise ValueError(
+                    "ELIGIBLE role-aware candidate lacks "
+                    "production permission"
+                )
+
+        else:
+            if positive is not False:
+                raise ValueError(
+                    "non-ELIGIBLE role-aware candidate "
+                    "cannot carry positive authority"
+                )
+
+            if fallback is not False:
+                raise ValueError(
+                    "non-ELIGIBLE role-aware candidate "
+                    "cannot carry production permission"
+                )
+
+    return row
 
 
 def filter_alpha6_portfolio_by_nonobviousness(
@@ -193,6 +330,10 @@ def filter_alpha6_portfolio_by_nonobviousness(
         str
     ] = set()
 
+    consumed_gate_schemas: set[
+        str
+    ] = set()
+
     for attempt in surviving_attempts:
         final_id = str(
             attempt.final_hypothesis_id
@@ -266,6 +407,17 @@ def filter_alpha6_portfolio_by_nonobviousness(
             gate=gate,
         )
 
+        gate_schema = str(
+            gate.get(
+                "schema_version"
+            )
+            or ""
+        )
+
+        consumed_gate_schemas.add(
+            gate_schema
+        )
+
         consumed_candidates.add(
             candidate_id
         )
@@ -283,12 +435,27 @@ def filter_alpha6_portfolio_by_nonobviousness(
             )
         )
 
-        eligible = (
-            selection_class
-            == "ELIGIBLE"
-            and fallback_allowed
-            is True
-        )
+        if (
+            gate_schema
+            == "scientific-novelty-fallback-gate-v2"
+        ):
+            eligible = (
+                selection_class
+                == "ELIGIBLE"
+                and row.get(
+                    "positive_nonobviousness_authority"
+                )
+                is True
+                and fallback_allowed
+                is True
+            )
+        else:
+            eligible = (
+                selection_class
+                == "ELIGIBLE"
+                and fallback_allowed
+                is True
+            )
 
         if eligible:
             keep_ids.add(
@@ -398,10 +565,59 @@ def filter_alpha6_portfolio_by_nonobviousness(
         ),
     )
 
+    if (
+        not consumed_gate_schemas
+        or consumed_gate_schemas
+        == {
+            "scientific-novelty-fallback-gate-v1"
+        }
+    ):
+        report_schema_version = (
+            "alpha6-post-generation-"
+            "nonobviousness-enforcement-v1"
+        )
+
+        report_authority_source = (
+            "n10_nonobviousness"
+        )
+
+        report_positive_requirement = (
+            "POTENTIALLY_NON_OBVIOUS"
+        )
+
+        report_is_role_aware_v2 = False
+
+    elif (
+        consumed_gate_schemas
+        == {
+            "scientific-novelty-fallback-gate-v2"
+        }
+    ):
+        report_schema_version = (
+            "alpha6-post-generation-"
+            "nonobviousness-enforcement-v2"
+        )
+
+        report_authority_source = (
+            "n10_role_aware_nonobviousness_v2"
+        )
+
+        report_positive_requirement = (
+            "ELIGIBLE_AND_ROLE_AWARE_"
+            "POSITIVE_NONOBVIOUSNESS"
+        )
+
+        report_is_role_aware_v2 = True
+
+    else:
+        raise ValueError(
+            "mixed post-generation N10 gate schemas "
+            "are not permitted"
+        )
+
     report = {
         "schema_version":
-            "alpha6-post-generation-"
-            "nonobviousness-enforcement-v1",
+            report_schema_version,
 
         "source_alpha6_portfolio_id":
             portfolio.portfolio_id,
@@ -442,14 +658,33 @@ def filter_alpha6_portfolio_by_nonobviousness(
             True,
 
         "authority_source":
-            "n10_nonobviousness",
+            report_authority_source,
 
         "generated_candidate_requires_fresh_n10":
             True,
 
         "positive_authority_requires":
-            "POTENTIALLY_NON_OBVIOUS",
+            report_positive_requirement,
     }
+
+    if report_is_role_aware_v2:
+        report[
+            "authority_scope"
+        ] = (
+            "alpha6_post_generation_candidate"
+        )
+
+        report[
+            "conditional_is_positive"
+        ] = False
+
+        report[
+            "absence_is_novelty"
+        ] = False
+
+        report[
+            "candidate_semantics_preserved"
+        ] = True
 
     return (
         result,

@@ -599,14 +599,33 @@ def main() -> int:
             full_args,
         )
 
+        candidate_gate_path = (
+            gate_path.with_name(
+                "production_gate_v2.candidate.json"
+            )
+        )
+
         _run(
             "scripts.discovery."
-            "build_nonobviousness_production_gate",
+            "build_nonobviousness_production_gate_v2_candidate",
             [
+                "--query-plan",
+                str(query_plan),
                 "--intake-shadow",
                 str(intake),
                 "--full-shadow",
                 str(full),
+                "--output",
+                str(candidate_gate_path),
+            ],
+        )
+
+        _run(
+            "scripts.discovery."
+            "build_nonobviousness_post_generation_production_gate_v2",
+            [
+                "--candidate-gate",
+                str(candidate_gate_path),
                 "--output",
                 str(gate_path),
             ],
