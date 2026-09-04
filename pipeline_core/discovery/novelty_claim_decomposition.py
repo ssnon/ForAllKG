@@ -819,6 +819,9 @@ class NoveltyClaimDecomposer:
                     claim_rank=rank,
                     kind=row.kind,
                     importance=row.importance,
+                    novelty_selection_role=(
+                        row.novelty_selection_role
+                    ),
                     text=row.text,
                     rationale=row.rationale,
                     search_concepts=concepts,

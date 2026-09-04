@@ -32,6 +32,14 @@ NoveltyClaimKind = Literal[
 
 NoveltyClaimImportance = Literal["core", "supporting"]
 
+NoveltySelectionRole = Literal[
+    "NOVELTY_BEARING",
+    "REQUIRED_ENABLING_RELATION",
+    "TESTING_PREDICTION",
+    "AUXILIARY",
+]
+
+
 NoveltyDiagnosticQueryKind = Literal[
     "NONE",
     "LOWER_ORDER_RELATION",
@@ -137,6 +145,7 @@ class NoveltyClaimDraft(StrictModel):
     local_id: str
     kind: NoveltyClaimKind
     importance: NoveltyClaimImportance = "core"
+    novelty_selection_role: NoveltySelectionRole | None = None
     text: str = Field(min_length=1)
     rationale: str = Field(min_length=1)
     search_concepts: list[str] = Field(default_factory=list)
@@ -236,6 +245,7 @@ class NoveltyClaim(StrictModel):
     claim_rank: int
     kind: NoveltyClaimKind
     importance: NoveltyClaimImportance
+    novelty_selection_role: NoveltySelectionRole | None = None
     text: str
     rationale: str
     search_concepts: list[str] = Field(default_factory=list)

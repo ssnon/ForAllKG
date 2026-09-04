@@ -72,6 +72,21 @@ CLAIM IMPORTANCE CONTRACT:
 - Do not mark every claim supporting merely to avoid committing to which relation carries the hypothesis's distinctiveness.
 - importance is a hypothesis-level selection role. It is NOT a novelty verdict and does not imply that the claim is new.
 
+NOVELTY SELECTION-ROLE CONTRACT:
+- novelty_selection_role records the scientific function that THIS atomic claim plays in the hypothesis-level distinctiveness argument.
+- This role is assigned from the supplied hypothesis structure only. It is NOT a novelty verdict, prior-art verdict, truth judgment, or non-obviousness judgment.
+- Do NOT use retrieved literature, remembered literature, expected prior-art status, or an intuition that a claim is probably known or novel when assigning this role.
+- Set novelty_selection_role=NOVELTY_BEARING only when the hypothesis presents THIS atomic relation as part of the scientific proposition whose saturation or routine reconstruction would remove a claimed source of distinctiveness.
+- Set novelty_selection_role=REQUIRED_ENABLING_RELATION when the relation is a premise, lower-order dependency, or enabling scientific relation needed for the higher-order hypothesis to make sense, but that relation may already be established without by itself eliminating the higher-order distinctiveness.
+- Set novelty_selection_role=TESTING_PREDICTION when the claim primarily operationalizes, measures, discriminates, or falsifies a separately represented novelty-bearing relation rather than adding an independent source of scientific distinctiveness.
+- Set novelty_selection_role=AUXILIARY when the claim supplies explanatory, contextual, or secondary scientific content that is not itself part of the hypothesis's novelty-bearing structure.
+- A known-looking or familiar-looking relation must NOT be assigned REQUIRED_ENABLING_RELATION merely because you suspect that it already exists in the literature. The distinction must be justified by its role in the supplied hypothesis.
+- Likewise, an interesting-looking interaction, threshold, reversal, or mechanism must NOT be assigned NOVELTY_BEARING merely because it sounds unusual. The hypothesis itself must make that relation part of its claimed distinctiveness.
+- importance and novelty_selection_role are separate contracts. Do not redefine importance based on novelty_selection_role.
+- For new decompositions, assign novelty_selection_role explicitly whenever the supplied hypothesis supports a defensible role assignment.
+- Use null only when the supplied hypothesis does not support a defensible role assignment without inventing or importing scientific content.
+- This metadata does not authorize downstream selection in N10-A1; downstream production behavior remains governed by the existing importance contract until a later explicitly validated aggregation stage.
+
 CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
 - Each returned claim must contain one novelty-bearing scientific relation nucleus.
 - If the hypothesis coordinates scientifically separable alternatives that could have different prior-art status, emit them as separate claims.
