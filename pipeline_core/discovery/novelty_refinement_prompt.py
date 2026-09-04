@@ -9,10 +9,105 @@ from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyCa
 from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, HypothesisContext, HypothesisPortfolioDraft
 from pipeline_core.discovery.hypothesis_prompt import HypothesisPrompt
 from pipeline_core.discovery.novelty_refinement_contracts import NoveltyGap
+from pipeline_core.discovery.n10_specification_repair_context import (
+    N10SpecificationRepairContext,
+)
 
 
 def _sha(system: str, user: str) -> str:
     return hashlib.sha256((system + "\n---\n" + user).encode("utf-8")).hexdigest()
+
+
+def _render_specification_repair_diagnosis(
+    context: N10SpecificationRepairContext,
+) -> str:
+    """Render diagnostic-only repair targets.
+
+    The context identifies missing specification fields only.
+    It is not scientific evidence and grants no novelty authority.
+    """
+
+    lines = [
+        "SPECIFICATION REPAIR DIAGNOSIS",
+        "==============================",
+        (
+            "DIAGNOSTIC ONLY. The information below identifies "
+            "which fields of existing novelty-bearing claims failed "
+            "the deterministic specification gate."
+        ),
+        (
+            "It is NOT scientific evidence, NOT a positive premise, "
+            "and NOT evidence of novelty or literature-wide absence."
+        ),
+        (
+            "Do not infer scientific content from a missing-field "
+            "label or reason code. Supply a missing field only when "
+            "it can be formulated from the original hypothesis and "
+            "the grounded HypothesisContext."
+        ),
+        (
+            "Do not add new evidence IDs, mechanisms, relations, "
+            "materials, conditions, or literature-derived claims "
+            "merely to satisfy this diagnosis."
+        ),
+        (
+            "If a listed field cannot be repaired without unsupported "
+            "scientific content, abstain."
+        ),
+        "",
+        "repair_action: "
+        + context.repair_action,
+    ]
+
+    for index, row in enumerate(
+        context.claim_diagnostics,
+        start=1,
+    ):
+        lines.extend(
+            [
+                "",
+                f"diagnostic_claim_{index}:",
+                f"  claim_id: {row.claim_id}",
+                (
+                    "  claim_text: "
+                    + row.claim_text
+                ),
+                (
+                    "  missing_fields: "
+                    + json.dumps(
+                        row.missing_fields,
+                        ensure_ascii=False,
+                    )
+                ),
+                (
+                    "  reason_codes: "
+                    + json.dumps(
+                        row.reason_codes,
+                        ensure_ascii=False,
+                    )
+                ),
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            "REPAIR CONSTRAINT",
+            "=================",
+            (
+                "Target only the listed missing specification fields "
+                "for these novelty-bearing claims."
+            ),
+            (
+                "Preserve already-grounded scientific scope and do "
+                "not reinterpret the diagnosis itself as evidence."
+            ),
+        ]
+    )
+
+    return "\n".join(
+        lines
+    )
 
 
 class NoveltyRefinementPromptAssembler:
@@ -24,16 +119,40 @@ class NoveltyRefinementPromptAssembler:
 
     prompt_version = "novelty-refinement-prompt-v2.8.1-a6-relgap-boundary"
 
+    diagnostic_prompt_version = (
+        "novelty-refinement-prompt-v2.8.2-a6-n10-specification-diagnostic"
+    )
+
     def __init__(
         self,
         *,
         original: HypothesisCard,
         gap: NoveltyGap,
         targeted_card: ExternalNoveltyCard,
+        specification_repair_context: (
+            N10SpecificationRepairContext
+            | None
+        ) = None,
     ) -> None:
+        if (
+            specification_repair_context is not None
+            and (
+                specification_repair_context
+                .source_hypothesis_id
+                != original.hypothesis_id
+            )
+        ):
+            raise ValueError(
+                "N10 specification-repair context "
+                "hypothesis identity mismatch"
+            )
+
         self.original = original
         self.gap = gap
         self.targeted_card = targeted_card
+        self.specification_repair_context = (
+            specification_repair_context
+        )
 
     def build(self, context: HypothesisContext) -> HypothesisPrompt:
         system = """You refine ONE scientific hypothesis after a bounded external prior-art search.
@@ -117,8 +236,28 @@ A useful refinement introduces a more precise moderator, mediator, conditional d
                 + relational_gap_boundary
             )
 
+        prompt_version = (
+            self.prompt_version
+        )
+
+        if (
+            self.specification_repair_context
+            is not None
+        ):
+            user = (
+                user
+                + "\n\n"
+                + _render_specification_repair_diagnosis(
+                    self.specification_repair_context
+                )
+            )
+
+            prompt_version = (
+                self.diagnostic_prompt_version
+            )
+
         return HypothesisPrompt(
-            prompt_version=self.prompt_version,
+            prompt_version=prompt_version,
             system_prompt=system,
             user_prompt=user,
             prompt_sha256=_sha(system, user),
