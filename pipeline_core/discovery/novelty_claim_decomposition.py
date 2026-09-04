@@ -70,6 +70,109 @@ def _clean_diagnostic_terms(
     return rows
 
 
+def _compile_higher_order_relation_basis(
+    *,
+    kind: str,
+    values: list[str],
+    source_texts: list[str],
+) -> tuple[list[str], list[str]]:
+    """Validate explicit higher-order relation provenance.
+
+    This function never constructs a composite scientific relation
+    from lower-order component claims.
+
+    In particular:
+
+        A -> B
+        B -> C
+
+    does not authorize:
+
+        A -> B -> C
+
+    A higher-order basis is accepted only when the supplied hypothesis
+    material itself already contains the returned span under
+    conservative surface normalization.
+    """
+
+    cleaned_values: list[str] = []
+
+    for value in values:
+        cleaned = " ".join(
+            str(value or "").split()
+        )
+
+        if (
+            cleaned
+            and cleaned not in cleaned_values
+        ):
+            cleaned_values.append(cleaned)
+
+    reason_codes: list[str] = []
+
+    if str(kind) != "composite":
+        if cleaned_values:
+            reason_codes.append(
+                "higher_order_basis_rejected_on_non_composite_claim"
+            )
+
+        return (
+            [],
+            list(
+                dict.fromkeys(
+                    reason_codes
+                )
+            ),
+        )
+
+    normalized_sources = [
+        _clean_query(
+            source,
+            limit=12000,
+        ).lower()
+        for source in source_texts
+        if str(source or "").strip()
+    ]
+
+    accepted: list[str] = []
+
+    for value in cleaned_values:
+        normalized_value = _clean_query(
+            value,
+            limit=6000,
+        ).lower()
+
+        supported = bool(
+            normalized_value
+            and any(
+                normalized_value in source
+                for source in normalized_sources
+            )
+        )
+
+        if not supported:
+            reason_codes.append(
+                "unsupported_higher_order_relation_basis"
+            )
+            continue
+
+        accepted.append(value)
+
+    if not accepted:
+        reason_codes.append(
+            "composite_missing_valid_higher_order_relation_basis"
+        )
+
+    return (
+        accepted,
+        list(
+            dict.fromkeys(
+                reason_codes
+            )
+        ),
+    )
+
+
 def _clean_branch_specific_specification(
     text: str,
     identity_terms: list[str],
@@ -650,6 +753,41 @@ class NoveltyClaimDecomposer:
                 )
             )
 
+            higher_order_source_texts = [
+                hypothesis.hypothesis_statement,
+                hypothesis.inferential_bridge,
+                *hypothesis.assumptions,
+                *[
+                    item.observable
+                    for item
+                    in hypothesis.predicted_observations
+                ],
+                *[
+                    item.rationale
+                    for item
+                    in hypothesis.predicted_observations
+                ],
+                *[
+                    item.observable
+                    for item
+                    in hypothesis.falsification_criteria
+                ],
+                *[
+                    item.falsifying_outcome
+                    for item
+                    in hypothesis.falsification_criteria
+                ],
+            ]
+
+            (
+                higher_order_relation_basis,
+                higher_order_relation_reason_codes,
+            ) = _compile_higher_order_relation_basis(
+                kind=row.kind,
+                values=row.higher_order_relation_basis,
+                source_texts=higher_order_source_texts,
+            )
+
             scientific_structure, structure_reason_codes = (
                 compile_claim_scientific_structure(
                     row.scientific_structure,
@@ -835,6 +973,9 @@ class NoveltyClaimDecomposer:
                     relation_nucleus_terms=(
                         relation_nucleus_terms
                     ),
+                    higher_order_relation_basis=(
+                        higher_order_relation_basis
+                    ),
                     required_bridge=(
                         sanitized_required_bridge
                     ),
@@ -860,6 +1001,9 @@ class NoveltyClaimDecomposer:
                     ),
                     scientific_structure_reason_codes=list(
                         structure_reason_codes
+                    ),
+                    higher_order_relation_reason_codes=(
+                        higher_order_relation_reason_codes
                     ),
                     specification_sanitization_reason_codes=(
                         specification_sanitization_reason_codes

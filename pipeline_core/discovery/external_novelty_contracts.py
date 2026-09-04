@@ -153,6 +153,14 @@ class NoveltyClaimDraft(StrictModel):
     distinguishing_terms: list[str] = Field(default_factory=list)
     prior_art_identity_terms: list[str] = Field(default_factory=list)
     relation_nucleus_terms: list[str] = Field(default_factory=list)
+
+    # Exact hypothesis-source spans that explicitly state a
+    # higher-order composed, mediated, linked, or joint relation.
+    # This is provenance only, never novelty authority.
+    higher_order_relation_basis: list[str] = Field(
+        default_factory=list
+    )
+
     required_bridge: str = ""
     predicted_observation: str = ""
     falsification_condition: str = ""
@@ -253,6 +261,14 @@ class NoveltyClaim(StrictModel):
     distinguishing_terms: list[str] = Field(default_factory=list)
     prior_art_identity_terms: list[str] = Field(default_factory=list)
     relation_nucleus_terms: list[str] = Field(default_factory=list)
+
+    # Validated exact-source provenance for an explicitly proposed
+    # higher-order relation. Empty means no such relation was
+    # conservatively preserved.
+    higher_order_relation_basis: list[str] = Field(
+        default_factory=list
+    )
+
     required_bridge: str = ""
     predicted_observation: str = ""
     falsification_condition: str = ""
@@ -265,6 +281,13 @@ class NoveltyClaim(StrictModel):
     diagnostic_structural_terms: list[str] = Field(default_factory=list)
     diagnostic_relation_terms: list[str] = Field(default_factory=list)
     scientific_structure_reason_codes: list[str] = Field(default_factory=list)
+
+    # Diagnostic-only validation results for explicit higher-order
+    # relation provenance. These codes never establish novelty,
+    # truth, prior-art status, or non-obviousness.
+    higher_order_relation_reason_codes: list[str] = Field(
+        default_factory=list
+    )
 
     # Provenance only. This preserves the accepted Alpha4 inference
     # context through external novelty and N9. It is not scientific

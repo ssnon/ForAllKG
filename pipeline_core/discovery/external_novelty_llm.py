@@ -87,6 +87,24 @@ NOVELTY SELECTION-ROLE CONTRACT:
 - Use null only when the supplied hypothesis does not support a defensible role assignment without inventing or importing scientific content.
 - This metadata does not authorize downstream selection in N10-A1; downstream production behavior remains governed by the existing importance contract until a later explicitly validated aggregation stage.
 
+EXPLICIT HIGHER-ORDER RELATION PRESERVATION CONTRACT:
+- Atomicity means an independently reviewable scientific proposition. It does NOT require reducing every proposition to one pairwise edge.
+- If the supplied hypothesis EXPLICITLY proposes a mediation, composition, linked pathway, joint dependency, multi-step relation, or another higher-order scientific relation whose prior-art status could differ from its individual component relations, preserve that higher-order proposition as a separate kind=composite claim.
+- Example: when the supplied hypothesis explicitly proposes A -> B -> C as one linked or mediated relation, component claims A -> B and B -> C may also be emitted when independently reviewable, AND the explicit A -> B -> C relation may be preserved as a separate composite claim.
+- NEVER manufacture the composite from its components. A -> B plus B -> C does not authorize invention of A -> B -> C.
+- Every kind=composite claim representing such a relation must populate higher_order_relation_basis with one or more EXACT CONTIGUOUS source spans copied from the supplied hypothesis statement, inferential bridge, assumptions, predicted observations, prediction rationales, or falsification criteria.
+- The higher_order_relation_basis span itself must express the linked, composed, mediated, joint, conditional, or otherwise higher-order proposition. A span stating only one component relation is insufficient.
+- Do not reconstruct higher_order_relation_basis by stitching non-contiguous fragments.
+- If the hypothesis does not explicitly supply such a span, do NOT manufacture a composite proposition. Leave higher_order_relation_basis empty.
+- A valid composite claim may be novelty_selection_role=NOVELTY_BEARING when the higher-order relation itself carries the hypothesis's distinctiveness.
+- A component relation may be novelty_selection_role=REQUIRED_ENABLING_RELATION when the supplied hypothesis structurally uses it only as a prerequisite for the explicit higher-order relation.
+- Never assign REQUIRED_ENABLING_RELATION because a component looks familiar or because you expect it to be established in the literature.
+- If a component relation independently carries claimed distinctiveness, it may remain NOVELTY_BEARING.
+- A prediction that merely tests an already preserved composite relation should normally be represented through that claim's predicted_observation and falsification_condition rather than duplicated as a second novelty-bearing claim.
+- A separate distinctive_prediction claim is appropriate only when the prediction adds an independently assessable scientific proposition.
+- When claim budget is limited, preserve an explicitly stated higher-order novelty-bearing relation before generic explanatory or auxiliary material.
+- higher_order_relation_basis is hypothesis provenance only. It is NOT evidence that the relation is correct, established, novel, or non-obvious.
+
 CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
 - Each returned claim must contain one novelty-bearing scientific relation nucleus.
 - If the hypothesis coordinates scientifically separable alternatives that could have different prior-art status, emit them as separate claims.
