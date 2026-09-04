@@ -454,6 +454,20 @@ def main() -> int:
         for claim in residue.claims
     }
 
+    claims_by_hypothesis: dict[
+        str,
+        list,
+    ] = {}
+
+    for residue in residues:
+        for claim in residue.claims:
+            claims_by_hypothesis.setdefault(
+                claim.hypothesis_id,
+                [],
+            ).append(
+                claim
+            )
+
     missing = [
         claim_id
         for claim_id in ready_ids
@@ -528,6 +542,12 @@ def main() -> int:
             specification_provenance=provenance,
             hypothesis=source_cards.get(
                 base_claim.hypothesis_id
+            ),
+            sibling_claims=tuple(
+                claims_by_hypothesis.get(
+                    base_claim.hypothesis_id,
+                    [],
+                )
             ),
         )
 
