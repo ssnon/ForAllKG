@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pipeline_core.discovery.n10_alpha6_resolution_policy import (
+    Alpha6N10ResolutionDirective,
     NO_N10_ALPHA6_OVERRIDE,
     alpha6_resolution_directive_from_gate_row,
 )
@@ -13,6 +14,10 @@ from typing import Any
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan
 from pipeline_core.discovery.n10_alpha6_lineage_loader import (
     Alpha6LineageInput,
+)
+from pipeline_core.discovery.n10_specification_repair_context import (
+    N10SpecificationRepairContext,
+    build_n10_specification_repair_context,
 )
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
@@ -114,6 +119,83 @@ class PerHypothesisExternalArtifacts:
     source_portfolio: HypothesisPortfolio | None = None
 
 
+def _build_alpha6_specification_repair_context(
+    *,
+    source_hypothesis_id: str,
+    external_query_plan: LiteratureQueryPlan,
+    n10_resolution_directive:
+        Alpha6N10ResolutionDirective,
+    specification_repair_intake_shadow:
+        dict[str, Any] | None,
+    specification_repair_post_generation_gate:
+        dict[str, Any] | None,
+) -> N10SpecificationRepairContext | None:
+    """Build diagnosis only for the exact frozen N10 repair directive.
+
+    The diagnostic provenance inputs are deliberately separate from the
+    Alpha6 original-fallback production gate.
+
+    Missing paired inputs preserve historical Alpha6 behavior. Supplying
+    exactly one input is malformed and fails closed.
+    """
+
+    has_intake = (
+        specification_repair_intake_shadow
+        is not None
+    )
+
+    has_post_generation_gate = (
+        specification_repair_post_generation_gate
+        is not None
+    )
+
+    if (
+        has_intake
+        != has_post_generation_gate
+    ):
+        raise RuntimeError(
+            "N10 specification-repair diagnostic "
+            "inputs must be supplied as a pair"
+        )
+
+    if not (
+        n10_resolution_directive
+        .force_bounded_refinement
+    ):
+        return None
+
+    # Preserve the frozen E2b path for historical callers that
+    # do not yet supply diagnostic provenance.
+    if not has_intake:
+        return None
+
+    if not (
+        n10_resolution_directive
+        .use_source_external_without_targeted_search
+        and n10_resolution_directive
+        .bypass_resolved_candidate_external_exit
+        and n10_resolution_directive.reason_code
+        == "n10_refine_novelty_bearing_specification"
+    ):
+        raise RuntimeError(
+            "N10 diagnostic context may be consumed "
+            "only by the exact frozen specification-repair directive"
+        )
+
+    return (
+        build_n10_specification_repair_context(
+            source_hypothesis_id=
+                source_hypothesis_id,
+            query_plan=
+                external_query_plan,
+            intake_shadow=
+                specification_repair_intake_shadow,
+            post_generation_gate=
+                specification_repair_post_generation_gate,
+        )
+    )
+
+
 def _post_generation_novelty_observability(
     assessment: Any,
 ) -> dict[str, Any]:
@@ -151,6 +233,10 @@ class NoveltyRefinementOutcome:
     report: NoveltyRefinementReport
     targeted_external_artifacts: tuple[PerHypothesisExternalArtifacts, ...]
     final_external_artifacts: tuple[PerHypothesisExternalArtifacts, ...]
+    specification_repair_contexts: tuple[
+        N10SpecificationRepairContext,
+        ...,
+    ] = ()
 
 
 class TargetedNoveltyRefinementRuntime:
@@ -812,6 +898,12 @@ class TargetedNoveltyRefinementRuntime:
         external_query_plan: LiteratureQueryPlan,
         external_prior_art: PriorArtPacket,
         scientific_novelty_gate: dict[str, Any] | None = None,
+        specification_repair_intake_shadow: (
+            dict[str, Any] | None
+        ) = None,
+        specification_repair_post_generation_gate: (
+            dict[str, Any] | None
+        ) = None,
     ) -> NoveltyRefinementOutcome:
         scientific_gate_by_id = (
             self._validate_scientific_novelty_gate(
@@ -833,6 +925,24 @@ class TargetedNoveltyRefinementRuntime:
         search_records: list[TargetedSearchRecord] = []
         targeted_artifacts: list[PerHypothesisExternalArtifacts] = []
         final_external_artifacts: list[PerHypothesisExternalArtifacts] = []
+        specification_repair_contexts: list[
+            N10SpecificationRepairContext
+        ] = []
+
+        if (
+            (
+                specification_repair_intake_shadow
+                is None
+            )
+            != (
+                specification_repair_post_generation_gate
+                is None
+            )
+        ):
+            raise RuntimeError(
+                "N10 specification-repair diagnostic "
+                "inputs must be supplied as a pair"
+            )
 
         post_generation_observability_by_candidate_id: dict[
             str,
@@ -1630,10 +1740,38 @@ class TargetedNoveltyRefinementRuntime:
                     )
                 )
 
+            specification_repair_context = (
+                _build_alpha6_specification_repair_context(
+                    source_hypothesis_id=
+                        original.hypothesis_id,
+                    external_query_plan=
+                        external_query_plan,
+                    n10_resolution_directive=
+                        n10_resolution_directive,
+                    specification_repair_intake_shadow=(
+                        specification_repair_intake_shadow
+                    ),
+                    specification_repair_post_generation_gate=(
+                        specification_repair_post_generation_gate
+                    ),
+                )
+            )
+
+            if (
+                specification_repair_context
+                is not None
+            ):
+                specification_repair_contexts.append(
+                    specification_repair_context
+                )
+
             assembler = NoveltyRefinementPromptAssembler(
                 original=original,
                 gap=gap,
                 targeted_card=targeted_card,
+                specification_repair_context=(
+                    specification_repair_context
+                ),
             )
             prompt = assembler.build(dual.grounded_context)
             generation = self.hypothesis_backend.generate(prompt)
@@ -2106,4 +2244,7 @@ class TargetedNoveltyRefinementRuntime:
             report=report,
             targeted_external_artifacts=tuple(targeted_artifacts),
             final_external_artifacts=tuple(final_external_artifacts),
+            specification_repair_contexts=tuple(
+                specification_repair_contexts
+            ),
         )

@@ -82,6 +82,26 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument(
+        "--n10-specification-repair-intake-shadow",
+        type=Path,
+        default=None,
+        help=(
+            "Optional N9 intake shadow supplying deterministic "
+            "specification-repair diagnostics. Must be paired with "
+            "--n10-specification-repair-post-generation-gate."
+        ),
+    )
+    p.add_argument(
+        "--n10-specification-repair-post-generation-gate",
+        type=Path,
+        default=None,
+        help=(
+            "Optional original post-generation N10-v2 gate supplying "
+            "diagnostic provenance only. Must be paired with "
+            "--n10-specification-repair-intake-shadow."
+        ),
+    )
+    p.add_argument(
         "--question-task-preservation-enforce",
         action="store_true",
         help=(
@@ -177,6 +197,53 @@ def main() -> int:
     )
     prior_art = PriorArtPacket.model_validate_json(
         args.external_prior_art.read_text(encoding="utf-8")
+    )
+
+    if (
+        (
+            args.n10_specification_repair_intake_shadow
+            is None
+        )
+        != (
+            args.n10_specification_repair_post_generation_gate
+            is None
+        )
+    ):
+        raise ValueError(
+            "N10 specification-repair diagnostic inputs "
+            "must be supplied as a pair."
+        )
+
+    specification_repair_intake_shadow = (
+        json.loads(
+            args
+            .n10_specification_repair_intake_shadow
+            .read_text(
+                encoding="utf-8"
+            )
+        )
+        if (
+            args
+            .n10_specification_repair_intake_shadow
+            is not None
+        )
+        else None
+    )
+
+    specification_repair_post_generation_gate = (
+        json.loads(
+            args
+            .n10_specification_repair_post_generation_gate
+            .read_text(
+                encoding="utf-8"
+            )
+        )
+        if (
+            args
+            .n10_specification_repair_post_generation_gate
+            is not None
+        )
+        else None
     )
 
     gap_analyzer = NoveltyGapAnalyzer(
@@ -356,12 +423,43 @@ def main() -> int:
             if args.scientific_novelty_gate
             else None
         ),
+        specification_repair_intake_shadow=(
+            specification_repair_intake_shadow
+        ),
+        specification_repair_post_generation_gate=(
+            specification_repair_post_generation_gate
+        ),
     )
 
     prefix = args.output_prefix
     _write(Path(str(prefix) + ".portfolio.json"), outcome.portfolio)
     _write(Path(str(prefix) + ".report.json"), outcome.report)
     _write(Path(str(prefix) + ".gap_plan.json"), outcome.gap_plan)
+
+    repair_detail_dir = Path(
+        str(prefix)
+        + ".n10_specification_repair"
+    )
+
+    for i, row in enumerate(
+        outcome.specification_repair_contexts,
+        1,
+    ):
+        stem = (
+            repair_detail_dir
+            / (
+                f"{i:02d}_"
+                f"{row.source_hypothesis_id.split(':')[-1]}"
+            )
+        )
+
+        _write(
+            Path(
+                str(stem)
+                + ".context.json"
+            ),
+            row,
+        )
 
     detail_dir = Path(str(prefix) + ".external")
     for i, row in enumerate(outcome.targeted_external_artifacts, 1):
@@ -392,6 +490,12 @@ def main() -> int:
     print("Provider mode:", provider_plan.mode)
     print("Provider plan:", provider_plan.plan_id)
     print("Final hypotheses:", len(outcome.portfolio.hypotheses))
+    print(
+        "N10 specification-repair diagnostic contexts:",
+        len(
+            outcome.specification_repair_contexts
+        ),
+    )
     print("Accepted refinements:", outcome.report.accepted_refinement_count)
     print("Accepted fresh re-axes:", outcome.report.accepted_reaxis_count)
     print("Kept originals:", outcome.report.kept_original_count)
