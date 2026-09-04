@@ -4,6 +4,7 @@ import hashlib
 from typing import Any
 
 from pipeline_core.discovery.hypothesis_contracts import (
+    HypothesisCard,
     HypothesisPortfolio,
 )
 from pipeline_core.discovery.novelty_refinement_contracts import (
@@ -15,6 +16,107 @@ _GENERATED_SURVIVOR_DECISIONS = {
     "accepted_refinement",
     "accepted_reaxis",
 }
+
+
+def _candidate_final_authority_projection(
+    card: HypothesisCard,
+) -> dict[str, Any]:
+    """Return all authority-relevant card content minus compile identities.
+
+    Candidate-stage and final-portfolio compilation intentionally occupy
+    distinct identity namespaces.  Authority may cross that boundary only
+    when every non-identity field is preserved.
+
+    The only fields ignored here are identities deterministically regenerated
+    by HypothesisCompiler:
+      - hypothesis_id
+      - predicted_observations[].observation_id
+      - falsification_criteria[].criterion_id
+
+    Any current or future non-identity HypothesisCard field remains part of
+    the comparison by default, so schema evolution fails closed.
+    """
+
+    payload = card.model_dump(
+        mode="json"
+    )
+
+    payload.pop(
+        "hypothesis_id",
+        None,
+    )
+
+    for row in payload.get(
+        "predicted_observations",
+        [],
+    ):
+        if isinstance(row, dict):
+            row.pop(
+                "observation_id",
+                None,
+            )
+
+    for row in payload.get(
+        "falsification_criteria",
+        [],
+    ):
+        if isinstance(row, dict):
+            row.pop(
+                "criterion_id",
+                None,
+            )
+
+    return payload
+
+
+def assert_candidate_final_authority_equivalent(
+    *,
+    candidate: HypothesisCard,
+    final: HypothesisCard,
+) -> None:
+    """Fail closed unless candidate and final differ only by compile IDs."""
+
+    candidate_payload = (
+        _candidate_final_authority_projection(
+            candidate
+        )
+    )
+
+    final_payload = (
+        _candidate_final_authority_projection(
+            final
+        )
+    )
+
+    if candidate_payload == final_payload:
+        return
+
+    fields = sorted(
+        {
+            *candidate_payload,
+            *final_payload,
+        }
+    )
+
+    changed = [
+        field
+        for field in fields
+        if (
+            candidate_payload.get(field)
+            != final_payload.get(field)
+        )
+    ]
+
+    raise ValueError(
+        "Alpha6 candidate/final authority transfer "
+        "requires semantic/provenance equivalence; "
+        "candidate="
+        + candidate.hypothesis_id
+        + "; final="
+        + final.hypothesis_id
+        + "; changed_fields="
+        + repr(changed)
+    )
 
 
 def _stable_id(

@@ -15,6 +15,7 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisPortfolio,
 )
 from pipeline_core.discovery.nonobviousness_post_generation import (
+    assert_candidate_final_authority_equivalent,
     filter_alpha6_portfolio_by_nonobviousness,
 )
 from pipeline_core.discovery.novelty_refinement_contracts import (
@@ -472,6 +473,90 @@ def main() -> int:
             candidate_id=candidate_id,
         )
 
+        generated_attempts = [
+            attempt
+            for attempt
+            in refinement.attempts
+            if (
+                attempt.decision
+                in _GENERATED
+                and str(
+                    attempt.candidate_hypothesis_id
+                    or ""
+                ).strip()
+                == candidate_id
+            )
+        ]
+
+        if len(generated_attempts) != 1:
+            raise ValueError(
+                "expected exactly one generated Alpha6 "
+                "attempt for candidate "
+                + candidate_id
+            )
+
+        generated_attempt = (
+            generated_attempts[0]
+        )
+
+        final_id = str(
+            generated_attempt.final_hypothesis_id
+            or ""
+        ).strip()
+
+        if not final_id:
+            raise ValueError(
+                "generated Alpha6 candidate lacks "
+                "final_hypothesis_id before N10 authority transfer: "
+                + candidate_id
+            )
+
+        candidate_source_portfolio = (
+            HypothesisPortfolio
+            .model_validate_json(
+                source_portfolio.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+
+        candidate_cards = [
+            card
+            for card
+            in candidate_source_portfolio.hypotheses
+            if card.hypothesis_id
+            == candidate_id
+        ]
+
+        if len(candidate_cards) != 1:
+            raise ValueError(
+                "fresh candidate source portfolio "
+                "does not resolve exactly one candidate card: "
+                + candidate_id
+            )
+
+        final_cards = [
+            card
+            for card
+            in portfolio.hypotheses
+            if card.hypothesis_id
+            == final_id
+        ]
+
+        if len(final_cards) != 1:
+            raise ValueError(
+                "Alpha6 final portfolio does not resolve "
+                "exactly one final card for candidate "
+                + candidate_id
+                + "; final="
+                + final_id
+            )
+
+        assert_candidate_final_authority_equivalent(
+            candidate=candidate_cards[0],
+            final=final_cards[0],
+        )
+
         candidate_dir = (
             args.work_dir
             / (
@@ -667,6 +752,10 @@ def main() -> int:
             {
                 "candidate_id":
                     candidate_id,
+                "final_hypothesis_id":
+                    final_id,
+                "candidate_final_authority_equivalent":
+                    True,
                 "source_portfolio":
                     str(source_portfolio),
                 "hypothesis_context":
