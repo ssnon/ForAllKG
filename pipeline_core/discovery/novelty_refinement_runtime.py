@@ -10,7 +10,10 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan
+from pipeline_core.discovery.n10_alpha6_lineage_loader import (
+    Alpha6LineageInput,
+)
 from pipeline_core.discovery.discovery_axis_fidelity import DiscoveryAxisFidelityCritic
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
@@ -803,7 +806,7 @@ class TargetedNoveltyRefinementRuntime:
         *,
         dual: DualHypothesisContext,
         portfolio: HypothesisPortfolio,
-        lineage: DiscoveryAxisSynthesisReport,
+        lineage: Alpha6LineageInput,
         axis_plan: DiscoveryAxisPlan,
         external_report: ExternalNoveltyReport,
         external_query_plan: LiteratureQueryPlan,

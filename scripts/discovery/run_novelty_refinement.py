@@ -9,7 +9,10 @@ from pipeline_core.discovery.semantic_distinctiveness_llm import OpenRouterSeman
 from pipeline_core.discovery.question_axis_responsiveness_llm import (
     OpenRouterQuestionAxisResponsivenessBackend,
 )
-from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan, DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan
+from pipeline_core.discovery.n10_alpha6_lineage_loader import (
+    load_alpha6_lineage_input,
+)
 from domains.registry import get_domain_profile
 from pipeline_core.discovery.dual_hypothesis_context import DualHypothesisContext
 from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
@@ -163,8 +166,8 @@ def main() -> int:
             f"portfolio={portfolio.domain_profile_id!r}, "
             f"requested={domain_profile.profile_id!r}"
         )
-    lineage = DiscoveryAxisSynthesisReport.model_validate_json(
-        args.lineage.read_text(encoding="utf-8")
+    lineage = load_alpha6_lineage_input(
+        args.lineage
     )
     external = ExternalNoveltyReport.model_validate_json(
         args.external_report.read_text(encoding="utf-8")
