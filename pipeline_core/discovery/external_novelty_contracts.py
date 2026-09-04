@@ -161,6 +161,13 @@ class NoveltyClaimDraft(StrictModel):
         default_factory=list
     )
 
+    # Structural provenance only. For a composite claim, these are
+    # local IDs of separately emitted claims that constitute the
+    # explicitly proposed higher-order relation.
+    higher_order_component_local_ids: list[str] = Field(
+        default_factory=list
+    )
+
     required_bridge: str = ""
     predicted_observation: str = ""
     falsification_condition: str = ""
@@ -266,6 +273,13 @@ class NoveltyClaim(StrictModel):
     # higher-order relation. Empty means no such relation was
     # conservatively preserved.
     higher_order_relation_basis: list[str] = Field(
+        default_factory=list
+    )
+
+    # Canonical IDs of separately emitted component claims belonging
+    # to this explicit higher-order claim. This expresses topology,
+    # not evidence authority or selection outcome.
+    higher_order_component_claim_ids: list[str] = Field(
         default_factory=list
     )
 

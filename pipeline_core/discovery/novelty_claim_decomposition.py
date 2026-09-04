@@ -173,6 +173,71 @@ def _compile_higher_order_relation_basis(
     )
 
 
+def _compile_higher_order_component_claim_ids(
+    *,
+    kind: str,
+    local_id: str,
+    component_local_ids: list[str],
+    claim_id_by_local_id: dict[str, str],
+) -> list[str]:
+    """Resolve explicit decomposition topology fail closed.
+
+    This function does NOT infer component relationships from claim
+    text, shared variables, lexical overlap, or scientific semantics.
+
+    Only explicit local-ID references returned by the decomposition
+    are accepted.
+    """
+
+    values = [
+        str(value or "").strip()
+        for value in component_local_ids
+    ]
+
+    values = [
+        value
+        for value in values
+        if value
+    ]
+
+    if len(values) != len(set(values)):
+        raise ValueError(
+            "duplicate higher-order component local_id"
+        )
+
+    if str(kind) != "composite":
+        if values:
+            raise ValueError(
+                "non-composite claim cannot declare "
+                "higher-order components"
+            )
+
+        return []
+
+    if str(local_id) in values:
+        raise ValueError(
+            "composite claim cannot reference itself "
+            "as a component"
+        )
+
+    unknown = [
+        value
+        for value in values
+        if value not in claim_id_by_local_id
+    ]
+
+    if unknown:
+        raise ValueError(
+            "unknown higher-order component local_id: "
+            + ", ".join(unknown)
+        )
+
+    return [
+        claim_id_by_local_id[value]
+        for value in values
+    ]
+
+
 def _clean_branch_specific_specification(
     text: str,
     identity_terms: list[str],
@@ -702,8 +767,42 @@ class NoveltyClaimDecomposer:
 
     def decompose(self, hypothesis: HypothesisCard) -> HypothesisNoveltyClaims:
         draft = self.backend.decompose(hypothesis, max_claims=self.max_claims)
+
+        draft_rows = list(
+            draft.claims[: self.max_claims]
+        )
+
+        claim_id_by_local_id: dict[str, str] = {}
+
+        for rank, draft_row in enumerate(
+            draft_rows,
+            start=1,
+        ):
+            if (
+                draft_row.local_id
+                in claim_id_by_local_id
+            ):
+                raise ValueError(
+                    "duplicate bounded decomposition local_id: "
+                    + draft_row.local_id
+                )
+
+            claim_id_by_local_id[
+                draft_row.local_id
+            ] = _stable_id(
+                "external_novelty_claim",
+                hypothesis.hypothesis_id,
+                rank,
+                draft_row.kind,
+                draft_row.text,
+            )
+
         rows: list[NoveltyClaim] = []
-        for rank, row in enumerate(draft.claims[: self.max_claims], start=1):
+
+        for rank, row in enumerate(
+            draft_rows,
+            start=1,
+        ):
             concepts = []
             for value in row.search_concepts:
                 cleaned = _clean_query(value, limit=120)
@@ -786,6 +885,19 @@ class NoveltyClaimDecomposer:
                 kind=row.kind,
                 values=row.higher_order_relation_basis,
                 source_texts=higher_order_source_texts,
+            )
+
+            higher_order_component_claim_ids = (
+                _compile_higher_order_component_claim_ids(
+                    kind=row.kind,
+                    local_id=row.local_id,
+                    component_local_ids=(
+                        row.higher_order_component_local_ids
+                    ),
+                    claim_id_by_local_id=(
+                        claim_id_by_local_id
+                    ),
+                )
             )
 
             scientific_structure, structure_reason_codes = (
@@ -893,13 +1005,9 @@ class NoveltyClaimDecomposer:
                 )
             )
 
-            claim_id = _stable_id(
-                "external_novelty_claim",
-                hypothesis.hypothesis_id,
-                rank,
-                row.kind,
-                row.text,
-            )
+            claim_id = claim_id_by_local_id[
+                row.local_id
+            ]
 
             # Preserve pre-sanitization specification values
             # outside the canonical NoveltyClaim contract.
@@ -975,6 +1083,9 @@ class NoveltyClaimDecomposer:
                     ),
                     higher_order_relation_basis=(
                         higher_order_relation_basis
+                    ),
+                    higher_order_component_claim_ids=(
+                        higher_order_component_claim_ids
                     ),
                     required_bridge=(
                         sanitized_required_bridge

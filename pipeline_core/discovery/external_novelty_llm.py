@@ -105,6 +105,19 @@ EXPLICIT HIGHER-ORDER RELATION PRESERVATION CONTRACT:
 - When claim budget is limited, preserve an explicitly stated higher-order novelty-bearing relation before generic explanatory or auxiliary material.
 - higher_order_relation_basis is hypothesis provenance only. It is NOT evidence that the relation is correct, established, novel, or non-obvious.
 
+COMPOSITE-COMPONENT TOPOLOGY CONTRACT:
+- If a kind=composite claim is emitted together with separately emitted atomic component claims that actually constitute that explicit higher-order proposition, list those component claims in higher_order_component_local_ids.
+- Copy component local_id values exactly from the claims returned in THIS decomposition.
+- higher_order_component_local_ids expresses structural membership only. It does NOT mean that a component is known, supporting, routine, novel, or non-obvious.
+- Do not list a claim merely because it mentions the same variables or is thematically related.
+- Do not infer a component edge that is not separately emitted.
+- Do not reference the composite claim itself.
+- Do not reference unknown or omitted local IDs.
+- A non-composite claim MUST return higher_order_component_local_ids=[].
+- A composite may return an empty component list when the higher-order proposition is explicitly supported by higher_order_relation_basis but its components are not separately emitted because of claim-budget or atomicity choices.
+- The deterministic compiler resolves these local IDs to canonical claim IDs without performing semantic inference.
+- This topology does not alter novelty_selection_role and has no production selection authority by itself.
+
 CLAIM ATOMICITY / BRANCH-SPLITTING CONTRACT:
 - Each returned claim must contain one novelty-bearing scientific relation nucleus.
 - If the hypothesis coordinates scientifically separable alternatives that could have different prior-art status, emit them as separate claims.
