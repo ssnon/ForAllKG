@@ -392,39 +392,124 @@ class TargetedNoveltyRefinementRuntime:
         if scientific_novelty_gate is None:
             return None
 
-        if (
-            scientific_novelty_gate.get("schema_version")
-            != "scientific-novelty-fallback-gate-v1"
-        ):
+        schema_version = str(
+            scientific_novelty_gate.get(
+                "schema_version"
+            )
+            or ""
+        ).strip()
+
+        supported_schemas = {
+            "scientific-novelty-fallback-gate-v1",
+            "scientific-novelty-fallback-gate-v2",
+        }
+
+        if schema_version not in supported_schemas:
             raise RuntimeError(
                 "Unexpected scientific novelty fallback gate schema."
             )
 
         if (
-            scientific_novelty_gate.get("production_authority")
+            scientific_novelty_gate.get(
+                "production_authority"
+            )
             is not True
         ):
             raise RuntimeError(
                 "Scientific novelty fallback gate lacks production authority."
             )
 
-        rows = scientific_novelty_gate.get("gates")
+        is_v2 = (
+            schema_version
+            == "scientific-novelty-fallback-gate-v2"
+        )
 
-        if not isinstance(rows, list):
+        # V2 has deliberately different fallback semantics from V1.
+        #
+        # V1 is frozen for backward compatibility:
+        #   ELIGIBLE / CONDITIONAL -> fallback allowed.
+        #
+        # V2 is fail-closed:
+        #   only ELIGIBLE + explicit positive role-aware
+        #   non-obviousness authority -> fallback allowed.
+        #
+        # Do not collapse these schema-specific policies.
+        if is_v2:
+            if (
+                scientific_novelty_gate.get(
+                    "authority_scope"
+                )
+                != "alpha6_original_fallback"
+            ):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate v2 "
+                    "has unexpected authority scope."
+                )
+
+            if (
+                scientific_novelty_gate.get(
+                    "conditional_is_positive"
+                )
+                is not False
+            ):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate v2 "
+                    "must keep CONDITIONAL non-positive."
+                )
+
+            if (
+                scientific_novelty_gate.get(
+                    "absence_is_novelty"
+                )
+                is not False
+            ):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate v2 "
+                    "must not treat absence as novelty."
+                )
+
+            if (
+                scientific_novelty_gate.get(
+                    "candidate_semantics_preserved"
+                )
+                is not True
+            ):
+                raise RuntimeError(
+                    "Scientific novelty fallback gate v2 "
+                    "must preserve candidate semantics."
+                )
+
+        rows = scientific_novelty_gate.get(
+            "gates"
+        )
+
+        if not isinstance(
+            rows,
+            list,
+        ):
             raise RuntimeError(
                 "Scientific novelty fallback gates must be a list."
             )
 
-        by_id: dict[str, dict[str, Any]] = {}
+        by_id: dict[
+            str,
+            dict[str, Any],
+        ] = {}
 
         for row in rows:
-            if not isinstance(row, dict):
+            if not isinstance(
+                row,
+                dict,
+            ):
                 raise RuntimeError(
                     "Scientific novelty fallback gate row must be an object."
                 )
 
             hypothesis_id = str(
-                row.get("hypothesis_id") or ""
+                row.get(
+                    "hypothesis_id"
+                )
+                or ""
             ).strip()
 
             if not hypothesis_id:
@@ -439,19 +524,82 @@ class TargetedNoveltyRefinementRuntime:
                 )
 
             selection_class = str(
-                row.get("selection_class") or ""
-            )
+                row.get(
+                    "selection_class"
+                )
+                or ""
+            ).strip()
 
-            expected_allowed = (
-                selection_class
-                in {
-                    "ELIGIBLE",
-                    "CONDITIONAL",
-                }
-            )
+            if not is_v2:
+                # Frozen V1 behavior. Do not change.
+                expected_allowed = (
+                    selection_class
+                    in {
+                        "ELIGIBLE",
+                        "CONDITIONAL",
+                    }
+                )
+
+            else:
+                if (
+                    selection_class
+                    not in {
+                        "ELIGIBLE",
+                        "CONDITIONAL",
+                        "INELIGIBLE",
+                    }
+                ):
+                    raise RuntimeError(
+                        "Scientific novelty fallback gate v2 "
+                        "has unsupported selection class."
+                    )
+
+                positive_authority = row.get(
+                    "positive_nonobviousness_authority"
+                )
+
+                if not isinstance(
+                    positive_authority,
+                    bool,
+                ):
+                    raise RuntimeError(
+                        "Scientific novelty fallback gate v2 "
+                        "requires boolean positive authority."
+                    )
+
+                if (
+                    selection_class
+                    == "ELIGIBLE"
+                    and positive_authority
+                    is not True
+                ):
+                    raise RuntimeError(
+                        "Scientific novelty fallback gate v2 "
+                        "ELIGIBLE row lacks positive authority."
+                    )
+
+                if (
+                    selection_class
+                    != "ELIGIBLE"
+                    and positive_authority
+                    is True
+                ):
+                    raise RuntimeError(
+                        "Scientific novelty fallback gate v2 "
+                        "non-ELIGIBLE row claims positive authority."
+                    )
+
+                expected_allowed = bool(
+                    selection_class
+                    == "ELIGIBLE"
+                    and positive_authority
+                    is True
+                )
 
             if (
-                row.get("fallback_allowed")
+                row.get(
+                    "fallback_allowed"
+                )
                 is not expected_allowed
             ):
                 raise RuntimeError(
@@ -459,11 +607,14 @@ class TargetedNoveltyRefinementRuntime:
                     f"inconsistent for {hypothesis_id}."
                 )
 
-            by_id[hypothesis_id] = row
+            by_id[
+                hypothesis_id
+            ] = row
 
         portfolio_ids = {
             card.hypothesis_id
-            for card in portfolio.hypotheses
+            for card
+            in portfolio.hypotheses
         }
 
         if set(by_id) != portfolio_ids:
@@ -473,6 +624,7 @@ class TargetedNoveltyRefinementRuntime:
             )
 
         return by_id
+
 
     @classmethod
     def _original_fallback_allowed(
