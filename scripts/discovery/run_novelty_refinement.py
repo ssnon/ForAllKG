@@ -480,6 +480,32 @@ def main() -> int:
             Path(str(stem) + ".portfolio.json"),
             row.source_portfolio,
         )
+
+        # Reuse the existing external-novelty diagnostic sidecar
+        # contract. This artifact is observability-only and is not
+        # consumed by retrieval, evidence closure, N9, N10, or
+        # scientific selection.
+        _write(
+            Path(
+                str(stem)
+                + ".specification_sanitization.json"
+            ),
+            {
+                "schema_version": (
+                    "novelty-specification-"
+                    "sanitization-audit-v1"
+                ),
+                "source_portfolio_id": (
+                    row.source_portfolio.portfolio_id
+                ),
+                "diagnostic_only": True,
+                "decomposition_executed": True,
+                "records": list(
+                    row.specification_sanitization_records
+                ),
+            },
+        )
+
         _write(Path(str(stem) + ".claims_queries.json"), row.query_plan)
         _write(Path(str(stem) + ".prior_art.json"), row.prior_art)
         _write(Path(str(stem) + ".report.json"), row.report)

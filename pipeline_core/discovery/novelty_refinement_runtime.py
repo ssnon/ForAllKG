@@ -118,6 +118,50 @@ class PerHypothesisExternalArtifacts:
     report: ExternalNoveltyReport
     source_portfolio: HypothesisPortfolio | None = None
 
+    # Diagnostic-only decomposition observability.
+    #
+    # These rows are copied from the existing
+    # NoveltyClaimDecomposer.specification_sanitization_records
+    # channel. They are not part of LiteratureQueryPlan,
+    # retrieval, prior-art review, N9, N10, or scientific
+    # selection authority.
+    specification_sanitization_records: tuple[
+        dict[str, object],
+        ...,
+    ] = ()
+
+
+def _fresh_specification_sanitization_slice(
+    *,
+    records: list[dict[str, object]],
+    start_index: int,
+) -> tuple[dict[str, object], ...]:
+    """Copy only diagnostics produced by one fresh decomposition call.
+
+    NoveltyClaimDecomposer keeps an append-only in-memory diagnostic
+    list across calls. Fresh Alpha6 external assessment must therefore
+    preserve only rows appended after this call's starting index.
+
+    This function is observability-only and does not interpret,
+    validate, promote, or consume the diagnostic content.
+    """
+
+    if (
+        start_index < 0
+        or start_index > len(records)
+    ):
+        raise ValueError(
+            "invalid specification-sanitization "
+            "record start index"
+        )
+
+    return tuple(
+        dict(row)
+        for row in records[
+            start_index:
+        ]
+    )
+
 
 def _build_alpha6_specification_repair_context(
     *,
@@ -864,7 +908,25 @@ class TargetedNoveltyRefinementRuntime:
         self,
         portfolio: HypothesisPortfolio,
     ) -> PerHypothesisExternalArtifacts:
+        sanitization_records = (
+            self.external_assessor
+            .decomposer
+            .specification_sanitization_records
+        )
+
+        sanitization_start = len(
+            sanitization_records
+        )
+
         decompositions = self.external_assessor.decompose_portfolio(portfolio)
+
+        fresh_sanitization_records = (
+            _fresh_specification_sanitization_slice(
+                records=sanitization_records,
+                start_index=sanitization_start,
+            )
+        )
+
         plan = LiteratureQueryPlanner().build(portfolio, decompositions)
         packet = self.targeted_retriever.retriever.retrieve(plan).packet
         with prior_art_review_audit_scope(
@@ -885,6 +947,9 @@ class TargetedNoveltyRefinementRuntime:
             prior_art=packet,
             report=report,
             source_portfolio=portfolio,
+            specification_sanitization_records=(
+                fresh_sanitization_records
+            ),
         )
 
     def run(
