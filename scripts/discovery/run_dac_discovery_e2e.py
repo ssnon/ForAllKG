@@ -3579,6 +3579,34 @@ def run_pipeline(args: argparse.Namespace) -> int:
             ],
         )
 
+        nonobviousness_dual_run_comparison = (
+            run
+            / "nonobviousness_n10."
+              "dual_run_comparison.shadow.json"
+        )
+
+        runner.run_stage(
+            "[10N10-C/13] N10 v1-v2 "
+            "non-obviousness comparison shadow",
+            "scripts.discovery."
+            "build_nonobviousness_dual_run_comparison",
+            [
+                "--query-plan",
+                str(external_plan),
+                "--intake-shadow",
+                str(nonobviousness_shadow),
+                "--full-shadow",
+                str(nonobviousness_full_shadow),
+                "--output",
+                str(
+                    nonobviousness_dual_run_comparison
+                ),
+            ],
+            expected=[
+                nonobviousness_dual_run_comparison,
+            ],
+        )
+
     if (
         args.nonobviousness_post_generation_enforce
         and not args.nonobviousness_original_fallback_enforce
