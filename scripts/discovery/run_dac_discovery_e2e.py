@@ -3555,7 +3555,14 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 "both intake and full non-obviousness artifacts."
             )
 
-        scientific_novelty_gate = (
+        # --------------------------------------------------------------
+        # Frozen V1 production artifact.
+        #
+        # Keep building this artifact for rollback, comparison, and
+        # observational continuity. It is no longer the gate consumed
+        # by Alpha6 in role-aware V2 production mode.
+        # --------------------------------------------------------------
+        nonobviousness_v1_production_gate = (
             run
             / "nonobviousness_n10."
               "fallback_gate.production.json"
@@ -3563,7 +3570,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
         runner.run_stage(
             "[10N10-P/13] N10 non-obviousness "
-            "original-fallback production gate",
+            "original-fallback production gate v1",
             "scripts.discovery."
             "build_nonobviousness_production_gate",
             [
@@ -3572,13 +3579,18 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 "--full-shadow",
                 str(nonobviousness_full_shadow),
                 "--output",
-                str(scientific_novelty_gate),
+                str(
+                    nonobviousness_v1_production_gate
+                ),
             ],
             expected=[
-                scientific_novelty_gate,
+                nonobviousness_v1_production_gate,
             ],
         )
 
+        # --------------------------------------------------------------
+        # Observational V1/V2 comparison remains non-authoritative.
+        # --------------------------------------------------------------
         nonobviousness_dual_run_comparison = (
             run
             / "nonobviousness_n10."
@@ -3597,6 +3609,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 str(nonobviousness_shadow),
                 "--full-shadow",
                 str(nonobviousness_full_shadow),
+                "--runtime-authority-policy",
+                "v2_production",
                 "--output",
                 str(
                     nonobviousness_dual_run_comparison
@@ -3604,6 +3618,73 @@ def run_pipeline(args: argparse.Namespace) -> int:
             ],
             expected=[
                 nonobviousness_dual_run_comparison,
+            ],
+        )
+
+        # --------------------------------------------------------------
+        # Role-aware V2 candidate.
+        #
+        # This stage has zero production authority and must preserve
+        # the frozen role-aware aggregation result exactly.
+        # --------------------------------------------------------------
+        nonobviousness_v2_candidate_gate = (
+            run
+            / "nonobviousness_n10."
+              "fallback_gate_v2.candidate.json"
+        )
+
+        runner.run_stage(
+            "[10N10-V2C/13] N10 role-aware "
+            "original-fallback candidate gate",
+            "scripts.discovery."
+            "build_nonobviousness_production_gate_v2_candidate",
+            [
+                "--query-plan",
+                str(external_plan),
+                "--intake-shadow",
+                str(nonobviousness_shadow),
+                "--full-shadow",
+                str(nonobviousness_full_shadow),
+                "--output",
+                str(
+                    nonobviousness_v2_candidate_gate
+                ),
+            ],
+            expected=[
+                nonobviousness_v2_candidate_gate,
+            ],
+        )
+
+        # --------------------------------------------------------------
+        # Authoritative role-aware V2 production gate.
+        #
+        # This is the only N10 artifact passed to Alpha6 as original
+        # fallback authority. V1 remains available above for audit and
+        # rollback but is not consumed by Alpha6.
+        # --------------------------------------------------------------
+        scientific_novelty_gate = (
+            run
+            / "nonobviousness_n10."
+              "fallback_gate_v2.production.json"
+        )
+
+        runner.run_stage(
+            "[10N10-V2P/13] N10 role-aware "
+            "original-fallback production gate v2",
+            "scripts.discovery."
+            "build_nonobviousness_production_gate_v2",
+            [
+                "--candidate-gate",
+                str(
+                    nonobviousness_v2_candidate_gate
+                ),
+                "--output",
+                str(
+                    scientific_novelty_gate
+                ),
+            ],
+            expected=[
+                scientific_novelty_gate,
             ],
         )
 

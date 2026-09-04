@@ -45,6 +45,21 @@ def parse_args() -> argparse.Namespace:
         type=Path,
     )
 
+    parser.add_argument(
+        "--runtime-authority-policy",
+        choices=[
+            "v1_only",
+            "v2_production",
+        ],
+        default="v1_only",
+        help=(
+            "Record which separately compiled production "
+            "gate the surrounding runtime will consume. "
+            "The comparison artifact itself remains "
+            "non-authoritative."
+        ),
+    )
+
     return parser.parse_args()
 
 
@@ -74,6 +89,9 @@ def main() -> int:
             query_plan=plan,
             intake_shadow=intake,
             full_shadow=full,
+            runtime_authority_policy=(
+                args.runtime_authority_policy
+            ),
         )
     )
 
@@ -100,10 +118,13 @@ def main() -> int:
             "production authority"
         )
 
-    if result.get("authority_policy") != "v1_only":
+    if (
+        result.get("authority_policy")
+        != args.runtime_authority_policy
+    ):
         raise RuntimeError(
             "dual-run comparison authority policy "
-            "is not v1_only"
+            "does not match requested runtime policy"
         )
 
     args.output.parent.mkdir(

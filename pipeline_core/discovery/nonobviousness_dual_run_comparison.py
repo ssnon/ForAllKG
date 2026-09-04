@@ -16,7 +16,68 @@ from pipeline_core.discovery.nonobviousness_production_gate import (
 )
 
 
-_SCHEMA = "nonobviousness-dual-run-comparison-v1"
+_SCHEMA_V1 = "nonobviousness-dual-run-comparison-v1"
+_SCHEMA_V2 = "nonobviousness-dual-run-comparison-v2"
+
+_RUNTIME_AUTHORITY_POLICIES = {
+    "v1_only",
+    "v2_production",
+}
+
+
+def _comparison_schema_for_authority(
+    runtime_authority_policy: str,
+) -> str:
+    if runtime_authority_policy == "v1_only":
+        return _SCHEMA_V1
+
+    if runtime_authority_policy == "v2_production":
+        return _SCHEMA_V2
+
+    raise ValueError(
+        "unsupported dual-run runtime authority policy: "
+        + repr(runtime_authority_policy)
+    )
+
+
+def _authoritative_gate_schema_for_authority(
+    runtime_authority_policy: str,
+) -> str:
+    if runtime_authority_policy == "v1_only":
+        return "scientific-novelty-fallback-gate-v1"
+
+    if runtime_authority_policy == "v2_production":
+        return "scientific-novelty-fallback-gate-v2"
+
+    raise ValueError(
+        "unsupported dual-run runtime authority policy: "
+        + repr(runtime_authority_policy)
+    )
+
+
+def _selected_production_fallback_allowed(
+    *,
+    runtime_authority_policy: str,
+    v1_fallback_allowed: bool,
+    v2_selection_class: str,
+    v2_positive_authority: bool,
+) -> bool:
+    if runtime_authority_policy == "v1_only":
+        return bool(
+            v1_fallback_allowed
+        )
+
+    if runtime_authority_policy == "v2_production":
+        return bool(
+            v2_selection_class == "ELIGIBLE"
+            and v2_positive_authority
+        )
+
+    raise ValueError(
+        "unsupported dual-run runtime authority policy: "
+        + repr(runtime_authority_policy)
+    )
+
 
 
 def build_nonobviousness_dual_run_comparison(
@@ -24,15 +85,29 @@ def build_nonobviousness_dual_run_comparison(
     query_plan: LiteratureQueryPlan,
     intake_shadow: dict[str, Any],
     full_shadow: dict[str, Any],
+    runtime_authority_policy: str = "v1_only",
 ) -> dict[str, Any]:
-    """Compare authoritative v1 and candidate v2 without promotion.
+    """Compare the frozen v1 baseline with role-aware v2.
 
-    This compiler is observational only.
+    This compiler is observational only and never grants production
+    authority itself.
 
-    Production authority remains with the frozen v1 gate. The v2
-    result is computed solely to expose semantic divergence before
-    any production integration decision is made.
+    ``runtime_authority_policy`` records which separately compiled
+    production gate the surrounding runtime intends to consume:
+
+    - ``v1_only`` preserves the frozen E1 observational contract.
+    - ``v2_production`` records promoted role-aware v2 authority.
+
+    The comparison still exposes both decisions independently.
     """
+    if (
+        runtime_authority_policy
+        not in _RUNTIME_AUTHORITY_POLICIES
+    ):
+        raise ValueError(
+            "unsupported dual-run runtime authority policy: "
+            + repr(runtime_authority_policy)
+        )
 
     source_portfolio_id = str(
         intake_shadow.get(
@@ -171,6 +246,24 @@ def build_nonobviousness_dual_run_comparison(
         if positive_changed:
             positive_authority_divergence_count += 1
 
+        v2_candidate_fallback_allowed = bool(
+            new_selection == "ELIGIBLE"
+            and v2_positive
+        )
+
+        selected_production_fallback_allowed = (
+            _selected_production_fallback_allowed(
+                runtime_authority_policy=
+                    runtime_authority_policy,
+                v1_fallback_allowed=
+                    v1_positive,
+                v2_selection_class=
+                    new_selection,
+                v2_positive_authority=
+                    v2_positive,
+            )
+        )
+
         rows.append(
             {
                 "hypothesis_id":
@@ -244,10 +337,17 @@ def build_nonobviousness_dual_run_comparison(
                     positive_changed,
 
                 # The comparison artifact itself cannot alter runtime
-                # authority. This is deliberately the observed v1
-                # decision, not a merged or promoted decision.
-                "observed_production_fallback_allowed":
+                # authority. These fields expose both candidate decisions
+                # plus the decision selected by the surrounding runtime
+                # authority policy.
+                "baseline_v1_fallback_allowed":
                     v1_positive,
+
+                "candidate_v2_fallback_allowed":
+                    v2_candidate_fallback_allowed,
+
+                "observed_production_fallback_allowed":
+                    selected_production_fallback_allowed,
 
                 "candidate_has_production_authority":
                     False,
@@ -256,7 +356,9 @@ def build_nonobviousness_dual_run_comparison(
 
     return {
         "schema_version":
-            _SCHEMA,
+            _comparison_schema_for_authority(
+                runtime_authority_policy
+            ),
 
         "comparison_only":
             True,
@@ -265,6 +367,11 @@ def build_nonobviousness_dual_run_comparison(
             False,
 
         "authoritative_policy":
+            _authoritative_gate_schema_for_authority(
+                runtime_authority_policy
+            ),
+
+        "comparison_baseline_policy":
             "scientific-novelty-fallback-gate-v1",
 
         "candidate_policy":
@@ -274,7 +381,7 @@ def build_nonobviousness_dual_run_comparison(
             False,
 
         "authority_policy":
-            "v1_only",
+            runtime_authority_policy,
 
         "source_portfolio_id":
             source_portfolio_id,
