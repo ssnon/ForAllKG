@@ -142,6 +142,18 @@ PRIOR-ART IDENTITY / RELATION-NUCLEUS CONTRACT:
 - Example: "Changing excitation wavelength changes the relative ordering of SERS across spacings" may use prior_art_identity_terms=["excitation wavelength"], distinguishing_terms=["relative ordering"], and relation_nucleus_terms=["interparticle spacing", "SERS enhancement", "dependence"].
 - A prior-art memory match only makes a historical work eligible for re-review. It never implies that the historical work establishes the current distinguishing prediction.
 
+ATOMIC CLAIM SOURCE-BINDING CONTRACT:
+- semantic_fidelity_binding is DIAGNOSTIC PROVENANCE ONLY. It does not establish truth, evidence, novelty, or non-obviousness.
+- proposition_basis must be ONE CONTIGUOUS EXACT SOURCE SPAN from the supplied hypothesis statement, inferential_bridge, assumptions, prediction observable/rationale, or falsifier observable/outcome that states THIS atomic proposition.
+- Do not stitch separately stated source relations into proposition_basis. If no single proposition-complete source span supports the atomic claim, narrow the atomic claim rather than composing a stronger relation.
+- proposition_basis must preserve source conditions, comparison scope, and ordered/directional language that materially limit the atomic proposition. Do not select an inner substring that drops an explicit "under/when/if/at comparable" condition or changes "more/less/higher/lower" scope.
+- relation_endpoint_anchors must list the literal scientific endpoint phrases that identify THIS atomic relation. Copy them verbatim from BOTH the atomic claim text and proposition_basis. Do not use synonyms or broader replacement labels merely to manufacture overlap.
+- scope_qualifier_spans must list every explicit condition or comparison phrase from proposition_basis that limits THIS atomic claim and is retained in the claim text.
+- directional_qualifier_spans must list every explicit ordered/directional phrase asserted by the atomic claim, copied verbatim from proposition_basis. A qualitative/unspecified source prediction does not license "higher", "lower", "increase", "decrease", an optimum, threshold, reversal, or ordering unless that same ordered proposition is explicitly present in proposition_basis.
+- If predicted_observation is non-empty, prediction_observation_id must copy the exact observation_id of the supplied hypothesis prediction from which it was derived. Otherwise use null.
+- If falsification_condition is non-empty, falsification_criterion_id must copy the exact criterion_id of the supplied falsifier from which it was derived. Otherwise use null.
+- These bindings are for deterministic fidelity diagnostics only. They must never be populated from remembered literature or discovery-axis content not already stated in the supplied hypothesis.
+
 ATOMIC SPECIFICATION PROVENANCE CONTRACT:
 - For every atomic novelty-bearing claim, preserve branch-specific scientific specification only when it can be grounded in the supplied hypothesis.
 - required_bridge is the minimum inferential or mechanistic bridge already stated by the hypothesis for THIS atomic branch.
@@ -443,11 +455,17 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         max_claims: int,
     ) -> NoveltyClaimDecompositionDraft:
         prediction_lines = [
-            f"- {row.observable} => {row.expected_direction}; rationale={row.rationale}"
+            (
+                f"- observation_id={row.observation_id}; observable={row.observable} "
+                f"=> expected_direction={row.expected_direction}; rationale={row.rationale}"
+            )
             for row in hypothesis.predicted_observations
         ]
         falsifier_lines = [
-            f"- {row.observable} => falsified_by={row.falsifying_outcome}"
+            (
+                f"- criterion_id={row.criterion_id}; observable={row.observable} "
+                f"=> falsified_by={row.falsifying_outcome}"
+            )
             for row in hypothesis.falsification_criteria
         ]
         user = "\n".join(

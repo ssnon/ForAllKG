@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pipeline_core.discovery.hypothesis_specification_prompt import (
+    SELF_CONTAINED_SPECIFICATION_RULES,
+)
 
 from pipeline_core.discovery.novelty_prior_art_boundary import render_higher_order_relational_gap_boundary
 
@@ -190,6 +193,7 @@ Epistemic rules:
 
 A useful refinement introduces a more precise moderator, mediator, conditional dependency, pathway competition, descriptor interaction, or distinctive prediction while staying supported by the same grounded premises.
 """
+        system += "\n\n" + SELF_CONTAINED_SPECIFICATION_RULES
         reviews = []
         for review in self.targeted_card.claim_reviews:
             reviews.append(

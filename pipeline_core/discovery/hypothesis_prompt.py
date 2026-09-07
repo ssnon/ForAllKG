@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pipeline_core.discovery.hypothesis_specification_prompt import (
+    SELF_CONTAINED_SPECIFICATION_RULES,
+)
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -88,6 +91,8 @@ An unresolved statement can motivate a gap_statement_id, but it cannot serve as 
 If the evidence does not support a useful falsifiable hypothesis without violating these rules, return hypotheses=[] with a concise abstention_reason.
 
 Return only the structured HypothesisPortfolioDraft requested by the caller. Local IDs are temporary labels used only inside the draft; do not invent final hypothesis, prediction, falsifier, portfolio, report, packet, or context IDs."""
+
+SYSTEM_PROMPT += "\n\n" + SELF_CONTAINED_SPECIFICATION_RULES
 
 
 class HypothesisPromptAssembler:

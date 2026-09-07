@@ -141,6 +141,35 @@ ClaimPriorArtStatus = Literal[
 ]
 
 
+class NoveltyClaimSemanticFidelityBindingDraft(StrictModel):
+    """Diagnostic source binding for one atomic novelty claim.
+
+    This binding is provenance only. It does not establish scientific
+    truth, novelty, non-obviousness, or evidence eligibility.
+
+    proposition_basis must be one contiguous span from the supplied
+    HypothesisCard material that states the atomic proposition without
+    composing separately stated scientific relations.
+
+    relation_endpoint_anchors are literal scientific endpoint phrases
+    expected to occur in both the atomic claim text and proposition_basis.
+
+    scope_qualifier_spans and directional_qualifier_spans preserve explicit
+    conditions, comparisons, or ordered language that delimit the source
+    proposition.
+
+    prediction/falsifier source IDs bind non-empty atomic test specification
+    back to the corresponding supplied HypothesisCard records.
+    """
+
+    proposition_basis: str = ""
+    relation_endpoint_anchors: list[str] = Field(default_factory=list)
+    scope_qualifier_spans: list[str] = Field(default_factory=list)
+    directional_qualifier_spans: list[str] = Field(default_factory=list)
+    prediction_observation_id: str | None = None
+    falsification_criterion_id: str | None = None
+
+
 class NoveltyClaimDraft(StrictModel):
     local_id: str
     kind: NoveltyClaimKind
@@ -153,6 +182,12 @@ class NoveltyClaimDraft(StrictModel):
     distinguishing_terms: list[str] = Field(default_factory=list)
     prior_art_identity_terms: list[str] = Field(default_factory=list)
     relation_nucleus_terms: list[str] = Field(default_factory=list)
+
+    # Diagnostic-only source binding for semantic-fidelity observability.
+    # This must never be treated as evidence or novelty authority.
+    semantic_fidelity_binding: NoveltyClaimSemanticFidelityBindingDraft = Field(
+        default_factory=NoveltyClaimSemanticFidelityBindingDraft
+    )
 
     # Exact hypothesis-source spans that explicitly state a
     # higher-order composed, mediated, linked, or joint relation.

@@ -111,6 +111,76 @@ def test_raw_specification_is_preserved_only_in_diagnostic_record() -> None:
     assert record["prior_art_identity_terms"] == [
         "metal identity",
     ]
+    trace = record["source_trace"]
+    assert trace["diagnostic_only"] is True
+    assert trace["branch_attribution_assessed"] is False
+    field = trace["fields"]["required_bridge"]
+    assert field["sanitizer_state"] == "REJECTED"
+    assert field["accepted_exact_matches"] == []
+    assert "source_trace" not in claim.model_dump(mode="json")
+
+    taxonomy = record["semantic_fidelity_taxonomy_shadow"]
+    assert taxonomy["diagnostic_only"] is True
+    assert taxonomy["production_authority"] is False
+    assert taxonomy["flat_reason_codes_are_authority"] is False
+    assert "semantic_fidelity_taxonomy_shadow" not in claim.model_dump(mode="json")
+
+    wrapper = record["scope_wrapper_exact_source_recompile_shadow"]
+    assert wrapper["diagnostic_only"] is True
+    assert wrapper["production_authority"] is False
+    assert wrapper["production_recompile_enabled"] is False
+    assert wrapper["recompile_performed"] is False
+    assert wrapper["semantic_scope_synonymy_allowed"] is False
+    assert (
+        "scope_wrapper_exact_source_recompile_shadow"
+        not in claim.model_dump(mode="json")
+    )
+
+    wrapper_preview = record[
+        "scope_wrapper_exact_source_recompile_preview_shadow"
+    ]
+    assert wrapper_preview["diagnostic_only"] is True
+    assert wrapper_preview["production_authority"] is False
+    assert wrapper_preview["production_recompile_enabled"] is False
+    assert wrapper_preview["recompile_performed"] is False
+    assert wrapper_preview["semantic_scope_synonymy_allowed"] is False
+    assert wrapper_preview["preview_status"] == "NOT_ELIGIBLE"
+    assert (
+        "scope_wrapper_exact_source_recompile_preview_shadow"
+        not in claim.model_dump(mode="json")
+    )
+
+    wrapper_authority = record[
+        "scope_wrapper_exact_source_recompile_authority_shadow"
+    ]
+    assert wrapper_authority["diagnostic_only"] is True
+    assert wrapper_authority["production_authority"] is False
+    assert wrapper_authority["production_recompile_enabled"] is False
+    assert wrapper_authority["recompile_performed"] is False
+    assert wrapper_authority["semantic_scope_synonymy_allowed"] is False
+    assert wrapper_authority["authority_status"] == "DENIED_SHADOW"
+    assert wrapper_authority["bounded_recompile_contract_satisfied"] is False
+    assert (
+        "scope_wrapper_exact_source_recompile_authority_shadow"
+        not in claim.model_dump(mode="json")
+    )
+
+    preview = record["exact_source_recompile_preview_shadow"]
+    assert preview["diagnostic_only"] is True
+    assert preview["production_authority"] is False
+    assert preview["production_recompile_enabled"] is False
+    assert preview["recompile_performed"] is False
+    assert preview["preview_status"] == "NOT_ELIGIBLE"
+    assert "exact_source_recompile_preview_shadow" not in claim.model_dump(mode="json")
+
+    authority = record["exact_source_recompile_authority_shadow"]
+    assert authority["diagnostic_only"] is True
+    assert authority["production_authority"] is False
+    assert authority["production_recompile_enabled"] is False
+    assert authority["recompile_performed"] is False
+    assert authority["authority_status"] == "DENIED_SHADOW"
+    assert authority["bounded_recompile_contract_satisfied"] is False
+    assert "exact_source_recompile_authority_shadow" not in claim.model_dump(mode="json")
 
     assert (
         "required_bridge_rejected_branch_identity"
@@ -161,6 +231,12 @@ def test_required_bridge_prompt_requires_self_contained_contiguous_branch_span()
         "return required_bridge as an empty string"
         in prompt
     )
+
+    assert "ATOMIC CLAIM SOURCE-BINDING CONTRACT:" in prompt
+    assert "semantic_fidelity_binding" in prompt
+    assert "proposition_basis must be ONE CONTIGUOUS EXACT SOURCE SPAN" in prompt
+    assert "prediction_observation_id" in prompt
+    assert "falsification_criterion_id" in prompt
 
 
 def test_empty_atomic_bridge_does_not_fallback_to_hypothesis_bridge() -> None:
@@ -252,6 +328,11 @@ def test_empty_atomic_bridge_does_not_fallback_to_hypothesis_bridge() -> None:
         == "empty"
     )
     assert record["raw_required_bridge"] == ""
+    field = record["source_trace"]["fields"]["required_bridge"]
+    assert field["draft_state"] == "EMPTY"
+    assert field["sanitizer_state"] == "EMPTY"
+    assert field["nonempty_source_paths"] == ["inferential_bridge"]
+    assert field["accepted_exact_matches"] == []
     assert (
         record["sanitized_required_bridge"]
         == ""

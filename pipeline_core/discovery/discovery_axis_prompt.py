@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pipeline_core.discovery.hypothesis_specification_prompt import (
+    SELF_CONTAINED_SPECIFICATION_RULES,
+)
 from typing import Iterable
 
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxis
@@ -202,6 +205,7 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
             [
                 "DISCOVERY-AXIS INFERENCE-STRENGTH REPAIR",
                 "========================================",
+                SELF_CONTAINED_SPECIFICATION_RULES,
                 (
                     "The previous hypothesis is scientifically usable in core form, "
                     "but the inference-strength critic found one or more assertions "
