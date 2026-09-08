@@ -1,0 +1,248 @@
+schema_version: corpus-acquisition-profile-v1
+profile_id: cb_rubber_mechanism_transfer_corpus_acquisition_v0
+domain_profile_id: rcb_rubber
+description: >-
+  Pilot acquisition profile for conventional carbon-black/rubber mechanism
+  literature that may provide transferable mechanistic priors for rCB studies.
+  These papers must not be promoted as direct rCB evidence without a later
+  applicability/context check. The target is mechanistic coverage of
+  surface chemistry, interphase/bound rubber, filler network, reinforcement,
+  M300, fatigue, crack growth, cavitation, and cure/coupling effects.
+
+discovery:
+  results_per_query: 60
+  default_providers:
+    - crossref
+
+scope:
+  required_term_groups:
+    - ["carbon black", "furnace black", "n330", "n550", "n660"]
+    - ["rubber", "elastomer", "vulcanizate", "vulcanisate", "natural rubber", "styrene butadiene rubber", "butadiene rubber", "epdm", "iir", "sbr"]
+  excluded_title_terms:
+    - "recovered carbon black"
+    - "recycled carbon black"
+    - "pyrolysis carbon black"
+    - "pyrolytic carbon black"
+    - "review"
+    - "perspective"
+    - "editorial"
+    - "corrigendum"
+    - "erratum"
+    - "bibliometric"
+  excluded_publication_types:
+    - "Review"
+    - "Editorial"
+    - "MetaAnalysis"
+  min_year: 1960
+  max_year: null
+  require_abstract: false
+  manual_review_if_no_abstract: true
+  require_axis_match: true
+
+scoring:
+  open_access_bonus: 1.0
+  abstract_available_bonus: 1.0
+  retrieval_axis_bonus: 0.5
+  axis_indicator_bonus: 1.5
+  max_axis_bonus: 4.5
+  signals:
+    - signal_id: mechanistic_causality_or_mediation
+      terms:
+        - "mechanism"
+        - "attributed to"
+        - "due to"
+        - "relationship"
+        - "correlation"
+        - "interfacial interaction"
+        - "filler-rubber interaction"
+        - "bound rubber"
+        - "strain amplification"
+        - "stress concentration"
+      weight: 2.5
+      match_mode: any
+
+    - signal_id: controlled_comparison
+      terms:
+        - "compared with"
+        - "versus"
+        - "effect of"
+        - "varying"
+        - "loading"
+        - "content"
+        - "particle size"
+        - "structure"
+        - "surface"
+      weight: 1.5
+      match_mode: any
+
+    - signal_id: target_endpoint
+      terms:
+        - "m300"
+        - "300% modulus"
+        - "modulus at 300"
+        - "fatigue"
+        - "crack growth"
+        - "crack initiation"
+        - "cavitation"
+      weight: 2.0
+      match_mode: any
+
+    - signal_id: interface_network_descriptor
+      terms:
+        - "surface energy"
+        - "surface energy distribution"
+        - "bound rubber"
+        - "payne effect"
+        - "dispersion"
+        - "filler network"
+        - "crosslink density"
+        - "interphase"
+      weight: 2.0
+      match_mode: any
+
+    - signal_id: characterization_bridge
+      terms:
+        - "atomic force microscopy"
+        - "afm"
+        - "inverse gas chromatography"
+        - "igc"
+        - "xps"
+        - "ftir"
+        - "raman"
+        - "sem"
+        - "tem"
+      weight: 1.0
+      match_mode: any
+
+  citation_bonuses:
+    - min_citations: 20
+      bonus: 0.25
+    - min_citations: 100
+      bonus: 0.25
+
+selection:
+  target_total: 60
+  include_manual_review: false
+
+axes:
+  - axis_id: surface_chemistry_interaction
+    target_selected: 8
+    weight: 1.0
+    queries:
+      - "carbon black surface chemistry rubber filler polymer interaction"
+      - "carbon black functional groups rubber reinforcement"
+      - "carbon black surface activity rubber interface"
+    indicators:
+      - "surface chemistry"
+      - "surface activity"
+      - "functional group"
+      - "filler-rubber interaction"
+      - "filler polymer interaction"
+      - "interfacial interaction"
+
+  - axis_id: surface_energy_heterogeneity
+    target_selected: 7
+    weight: 1.0
+    queries:
+      - "carbon black surface energy rubber"
+      - "carbon black inverse gas chromatography rubber"
+      - "carbon black surface energy distribution elastomer"
+    indicators:
+      - "surface energy"
+      - "surface energy distribution"
+      - "surface heterogeneity"
+      - "inverse gas chromatography"
+      - "igc"
+
+  - axis_id: bound_rubber_interphase
+    target_selected: 8
+    weight: 1.0
+    queries:
+      - "carbon black bound rubber reinforcement"
+      - "carbon black interphase rubber"
+      - "carbon black afm bound rubber"
+    indicators:
+      - "bound rubber"
+      - "interphase"
+      - "interfacial layer"
+      - "polymer-filler interaction"
+      - "filler-polymer interaction"
+      - "afm"
+      - "atomic force microscopy"
+
+  - axis_id: dispersion_filler_network
+    target_selected: 8
+    weight: 1.0
+    queries:
+      - "carbon black dispersion rubber payne effect"
+      - "carbon black filler network elastomer reinforcement"
+      - "carbon black aggregate structure rubber dispersion"
+    indicators:
+      - "dispersion"
+      - "payne effect"
+      - "filler network"
+      - "aggregate structure"
+      - "agglomeration"
+      - "strain amplification"
+
+  - axis_id: reinforcement_m300
+    target_selected: 8
+    weight: 1.0
+    queries:
+      - "carbon black m300 rubber"
+      - "carbon black 300% modulus rubber"
+      - "carbon black reinforcement modulus at 300 strain"
+    indicators:
+      - "m300"
+      - "300% modulus"
+      - "modulus at 300"
+      - "stress at 300"
+      - "reinforcement"
+      - "tensile modulus"
+
+  - axis_id: fatigue_crack_growth
+    target_selected: 8
+    weight: 1.0
+    queries:
+      - "carbon black fatigue rubber"
+      - "carbon black fatigue crack growth elastomer"
+      - "carbon black crack initiation rubber"
+    indicators:
+      - "fatigue"
+      - "fatigue life"
+      - "fatigue crack"
+      - "crack growth"
+      - "crack initiation"
+      - "damage accumulation"
+
+  - axis_id: cavitation_stress_concentration
+    target_selected: 6
+    weight: 1.0
+    queries:
+      - "carbon black cavitation rubber"
+      - "carbon black stress concentration rubber fatigue"
+      - "filler particle cavitation elastomer crack initiation"
+    indicators:
+      - "cavitation"
+      - "stress concentration"
+      - "void"
+      - "microvoid"
+      - "debonding"
+      - "crack initiation"
+
+  - axis_id: cure_crosslink_coupling
+    target_selected: 5
+    weight: 1.0
+    queries:
+      - "carbon black crosslink density rubber reinforcement"
+      - "carbon black cure system rubber mechanical properties"
+      - "carbon black silane coupling agent rubber"
+    indicators:
+      - "crosslink density"
+      - "cross-link density"
+      - "cure system"
+      - "vulcanization"
+      - "vulcanisation"
+      - "coupling agent"
+      - "silane"
+      - "tespt"

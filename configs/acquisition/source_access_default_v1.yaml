@@ -1,5 +1,5 @@
 schema_version: source-acquisition-policy-v1
-policy_id: generic_oa_source_acquisition_v2
+policy_id: generic_oa_source_acquisition_v3
 
 unpaywall_email_env: UNPAYWALL_EMAIL
 fallback_email_env: CROSSREF_MAILTO
@@ -12,6 +12,9 @@ use_unpaywall: true
 use_openalex: true
 use_pmc_aws: true
 use_catalog_open_access_url: true
+use_public_landing_html: true
+landing_html_max_bytes: 2097152
+max_landing_pages_per_work: 4
 request_timeout_seconds: 45.0
 retries: 2
 retry_backoff_seconds: 1.0

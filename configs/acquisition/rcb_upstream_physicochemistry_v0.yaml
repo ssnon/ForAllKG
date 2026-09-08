@@ -1,0 +1,250 @@
+schema_version: corpus-acquisition-profile-v1
+profile_id: rcb_upstream_physicochemistry_corpus_acquisition_v0
+domain_profile_id: rcb_rubber
+description: >-
+  Pilot acquisition profile for upstream recovered-carbon-black provenance,
+  production, post-treatment, composition, surface chemistry, texture,
+  morphology, and quality variability. This corpus is not direct rubber
+  performance evidence by default; it is intended to establish rCB state and
+  descriptor provenance that may later connect to direct rCB-rubber evidence.
+
+discovery:
+  results_per_query: 60
+  default_providers:
+    - crossref
+
+scope:
+  required_term_groups:
+    - ["recovered carbon black", "recycled carbon black", "pyrolysis carbon black", "pyrolytic carbon black", "tire-derived carbon black", "tyre-derived carbon black", "rcb", "cbp"]
+  excluded_title_terms:
+    - "review"
+    - "perspective"
+    - "editorial"
+    - "corrigendum"
+    - "erratum"
+    - "bibliometric"
+  excluded_publication_types:
+    - "Review"
+    - "Editorial"
+    - "MetaAnalysis"
+  min_year: 1990
+  max_year: null
+  require_abstract: false
+  manual_review_if_no_abstract: true
+  require_axis_match: true
+
+scoring:
+  open_access_bonus: 1.5
+  abstract_available_bonus: 1.0
+  retrieval_axis_bonus: 0.5
+  axis_indicator_bonus: 1.5
+  max_axis_bonus: 4.5
+  signals:
+    - signal_id: end_of_life_tire_context
+      terms:
+        - "end-of-life tire"
+        - "end of life tire"
+        - "end-of-life tyre"
+        - "waste tire"
+        - "waste tyre"
+        - "tire pyrolysis"
+        - "tyre pyrolysis"
+      weight: 1.5
+      match_mode: any
+
+    - signal_id: controlled_process_study
+      terms:
+        - "temperature"
+        - "residence time"
+        - "heating rate"
+        - "process condition"
+        - "effect of"
+        - "optimization"
+        - "varying"
+        - "systematic"
+      weight: 1.5
+      match_mode: any
+
+    - signal_id: chemical_or_surface_characterization
+      terms:
+        - "xps"
+        - "ftir"
+        - "raman"
+        - "xrf"
+        - "tga"
+        - "elemental analysis"
+        - "bet"
+        - "surface area"
+        - "pore volume"
+        - "surface chemistry"
+      weight: 2.0
+      match_mode: any
+
+    - signal_id: quality_relevant_descriptor
+      terms:
+        - "ash"
+        - "silica"
+        - "zinc"
+        - "carbonaceous residue"
+        - "organic residue"
+        - "aggregate size"
+        - "particle size"
+        - "surface area"
+        - "oil absorption"
+        - "oxygen functional"
+      weight: 2.0
+      match_mode: any
+
+    - signal_id: intervention_or_upgrading
+      terms:
+        - "demineralization"
+        - "acid treatment"
+        - "activation"
+        - "surface modification"
+        - "milling"
+        - "oxidation"
+        - "hydrogenation"
+        - "plasma"
+        - "upgrading"
+      weight: 1.5
+      match_mode: any
+
+  citation_bonuses:
+    - min_citations: 10
+      bonus: 0.25
+    - min_citations: 50
+      bonus: 0.25
+
+selection:
+  target_total: 45
+  include_manual_review: true
+
+axes:
+  - axis_id: feedstock_pyrolysis
+    target_selected: 6
+    weight: 1.0
+    queries:
+      - "waste tire recovered carbon black pyrolysis conditions"
+      - "end of life tire recovered carbon black feedstock pyrolysis"
+      - "pyrolysis carbon black tire temperature residence time"
+    indicators:
+      - "feedstock"
+      - "pyrolysis"
+      - "pyrolysis temperature"
+      - "residence time"
+      - "heating rate"
+      - "reactor"
+
+  - axis_id: ash_inorganics
+    target_selected: 6
+    weight: 1.0
+    queries:
+      - "recovered carbon black ash composition"
+      - "recovered carbon black silica zinc ash"
+      - "pyrolysis carbon black inorganic impurities tire"
+    indicators:
+      - "ash"
+      - "inorganic"
+      - "silica"
+      - "zinc"
+      - "zns"
+      - "zno"
+      - "mineral"
+
+  - axis_id: carbonaceous_organic_residue
+    target_selected: 5
+    weight: 1.0
+    queries:
+      - "recovered carbon black carbonaceous residue"
+      - "recovered carbon black organic residue"
+      - "pyrolysis carbon black carbon deposition tire"
+    indicators:
+      - "carbonaceous residue"
+      - "organic residue"
+      - "carbon deposit"
+      - "carbon deposition"
+      - "volatile matter"
+      - "residue"
+
+  - axis_id: surface_chemistry
+    target_selected: 6
+    weight: 1.0
+    queries:
+      - "recovered carbon black surface chemistry oxygen functional groups"
+      - "pyrolysis carbon black xps ftir surface chemistry"
+      - "recovered carbon black acidic functional groups"
+    indicators:
+      - "surface chemistry"
+      - "functional group"
+      - "oxygen functional"
+      - "oxygenated"
+      - "acidic functional"
+      - "xps"
+      - "ftir"
+
+  - axis_id: texture_morphology
+    target_selected: 6
+    weight: 1.0
+    queries:
+      - "recovered carbon black aggregate size morphology"
+      - "recovered carbon black bet surface area porosity"
+      - "pyrolytic carbon black particle size pore structure"
+    indicators:
+      - "aggregate size"
+      - "particle size"
+      - "morphology"
+      - "surface area"
+      - "bet"
+      - "porosity"
+      - "pore volume"
+      - "oil absorption"
+
+  - axis_id: demineralization
+    target_selected: 5
+    weight: 1.0
+    queries:
+      - "recovered carbon black demineralization acid"
+      - "recovered carbon black ash removal hcl hno3"
+      - "pyrolysis carbon black demineralization tire"
+    indicators:
+      - "demineralization"
+      - "demineralisation"
+      - "acid treatment"
+      - "ash removal"
+      - "hcl"
+      - "hno3"
+      - "naoh"
+
+  - axis_id: activation_modification
+    target_selected: 5
+    weight: 1.0
+    queries:
+      - "recovered carbon black activation surface modification"
+      - "recovered carbon black plasma treatment"
+      - "recovered carbon black oxidation hydrogenation"
+      - "recovered carbon black milling modification"
+    indicators:
+      - "activation"
+      - "surface modification"
+      - "surface treatment"
+      - "plasma"
+      - "oxidation"
+      - "hydrogenation"
+      - "milling"
+      - "upgrading"
+
+  - axis_id: quality_variability
+    target_selected: 4
+    weight: 1.0
+    queries:
+      - "recovered carbon black quality variability"
+      - "recovered carbon black batch variability properties"
+      - "recovered carbon black classification consistency"
+    indicators:
+      - "variability"
+      - "variation"
+      - "quality"
+      - "consistency"
+      - "batch"
+      - "classification"
+      - "heterogeneity"

@@ -1,0 +1,298 @@
+schema_version: corpus-acquisition-profile-v1
+profile_id: rcb_direct_mechanism_corpus_acquisition_v0_1
+domain_profile_id: rcb_rubber
+description: Recall-repaired pilot profile for direct rCB/rubber literature. Adds missing rCB naming variants and a broad in-rubber-performance axis while retaining mechanism-specific quotas. Manual-review records are included in the feasibility lane because many relevant older/materials records have no provider abstract; they must not be promoted to positive KG evidence without later full-text and quality gates.
+discovery:
+  results_per_query: 60
+  default_providers:
+  - crossref
+scope:
+  required_term_groups:
+  - - recovered carbon black
+    - recycled carbon black
+    - pyrolysis carbon black
+    - pyrolytic carbon black
+    - tire-derived carbon black
+    - tyre-derived carbon black
+    - recovered carbon
+    - carbon black recovered from waste tire
+    - carbon black recovered from waste tyre
+    - carbon black derived from waste tire
+    - carbon black derived from waste tyre
+    - carbon black obtained from waste tire pyrolysis
+    - carbon black obtained from waste tyre pyrolysis
+    - rcb
+    - cbp
+  - - rubber
+    - elastomer
+    - vulcanizate
+    - vulcanisate
+    - natural rubber
+    - styrene butadiene rubber
+    - butadiene rubber
+    - epdm
+    - iir
+    - biir
+    - ssbr
+    - sbr
+    - rubber compound
+    - tire compound
+    - tyre compound
+    - tread compound
+  excluded_title_terms:
+  - review
+  - perspective
+  - editorial
+  - corrigendum
+  - erratum
+  - bibliometric
+  - electromagnetic wave absorption
+  - low-density polyethylene composites
+  - polyethylene composites
+  excluded_publication_types:
+  - Review
+  - Editorial
+  - MetaAnalysis
+  min_year: 1990
+  max_year: null
+  require_abstract: false
+  manual_review_if_no_abstract: true
+  require_axis_match: true
+scoring:
+  open_access_bonus: 1.5
+  abstract_available_bonus: 1.0
+  retrieval_axis_bonus: 0.5
+  axis_indicator_bonus: 1.5
+  max_axis_bonus: 4.5
+  signals:
+  - signal_id: mechanistic_linkage
+    terms:
+    - mechanism
+    - attributed to
+    - due to
+    - correlation
+    - correlated
+    - relationship
+    - interfacial interaction
+    - filler-rubber interaction
+    - filler polymer interaction
+    - bound rubber
+    - dispersion
+    weight: 2.5
+    match_mode: any
+  - signal_id: controlled_comparison_or_sweep
+    terms:
+    - compared with
+    - versus
+    - replacement
+    - substitution
+    - loading
+    - content
+    - phr
+    - proportion
+    - varying
+    - effect of
+    weight: 1.5
+    match_mode: any
+  - signal_id: target_mechanical_endpoint
+    terms:
+    - m300
+    - 300% modulus
+    - modulus at 300
+    - stress at 300
+    - fatigue
+    - fatigue life
+    - crack growth
+    - crack initiation
+    - mechanical properties
+    - dynamic mechanical
+    weight: 2.0
+    match_mode: any
+  - signal_id: multiscale_characterization
+    terms:
+    - ftir
+    - xps
+    - raman
+    - afm
+    - atomic force microscopy
+    - inverse gas chromatography
+    - igc
+    - sem
+    - tem
+    - bet
+    - oan
+    - xrf
+    - tga
+    weight: 1.5
+    match_mode: any
+  - signal_id: interface_or_network_evidence
+    terms:
+    - bound rubber
+    - payne effect
+    - filler network
+    - crosslink density
+    - surface energy
+    - dispersion
+    - interphase
+    - interface
+    weight: 1.5
+    match_mode: any
+  - signal_id: direct_in_rubber_study
+    terms:
+    - rubber compound
+    - rubber composite
+    - vulcanizate
+    - vulcanisate
+    - in-rubber
+    - tread compound
+    - mechanical properties
+    - rheological properties
+    weight: 1.5
+    match_mode: any
+  citation_bonuses:
+  - min_citations: 10
+    bonus: 0.25
+  - min_citations: 50
+    bonus: 0.25
+selection:
+  target_total: 60
+  include_manual_review: true
+axes:
+- axis_id: surface_chemistry_residue
+  target_selected: 8
+  weight: 1.0
+  queries:
+  - recovered carbon black surface chemistry rubber
+  - pyrolysis carbon black oxygen functional groups elastomer
+  - recovered carbon black carbonaceous residue rubber
+  - recovered carbon black ash surface functional groups rubber
+  indicators:
+  - surface chemistry
+  - functional group
+  - oxygen functional
+  - oxygen-containing
+  - oxygenated
+  - carbonaceous residue
+  - organic residue
+  - surface functionality
+  - ash
+- axis_id: microstructure_aggregate
+  target_selected: 8
+  weight: 1.0
+  queries:
+  - recovered carbon black aggregate structure rubber
+  - pyrolytic carbon black particle size morphology elastomer
+  - cbp aggregate morphology rubber
+  - recovered carbon black porosity structure rubber
+  indicators:
+  - aggregate
+  - aggregate size
+  - particle size
+  - morphology
+  - porosity
+  - microstructure
+  - structure
+- axis_id: interface_bound_rubber
+  target_selected: 9
+  weight: 1.0
+  queries:
+  - recovered carbon black bound rubber
+  - recovered carbon black filler rubber interaction
+  - pyrolysis carbon black polymer filler interface rubber
+  - recovered carbon black interphase rubber
+  indicators:
+  - bound rubber
+  - filler-rubber interaction
+  - filler rubber interaction
+  - filler-polymer interaction
+  - filler polymer interaction
+  - interfacial interaction
+  - interphase
+  - interface
+- axis_id: dispersion_filler_network
+  target_selected: 8
+  weight: 1.0
+  queries:
+  - recovered carbon black dispersion rubber
+  - recovered carbon black payne effect rubber
+  - pyrolysis carbon black filler network elastomer
+  indicators:
+  - dispersion
+  - dispersibility
+  - payne effect
+  - filler network
+  - agglomeration
+  - aggregation
+- axis_id: m300_reinforcement
+  target_selected: 8
+  weight: 1.0
+  queries:
+  - recovered carbon black m300 rubber
+  - recovered carbon black 300% modulus rubber
+  - recovered carbon black modulus at 300 strain
+  - recovered carbon black reinforcement mechanical properties rubber
+  - recovered carbon rubber mechanical properties carbon black
+  indicators:
+  - m300
+  - 300% modulus
+  - modulus at 300
+  - stress at 300
+  - 300% strain
+  - reinforcement
+  - tensile modulus
+- axis_id: fatigue_damage
+  target_selected: 6
+  weight: 1.0
+  queries:
+  - recovered carbon black fatigue rubber
+  - pyrolysis carbon black fatigue crack rubber
+  - recovered carbon black crack growth elastomer
+  - recovered carbon black cavitation fatigue rubber
+  - pyrolytic carbon black dynamic fatigue rubber
+  indicators:
+  - fatigue
+  - fatigue life
+  - fatigue crack
+  - crack growth
+  - crack initiation
+  - damage
+  - cavitation
+- axis_id: intervention_recovery
+  target_selected: 7
+  weight: 1.0
+  queries:
+  - recovered carbon black coupling agent rubber reinforcement
+  - recovered carbon black silane rubber
+  - recovered carbon black surface modification rubber
+  - recovered carbon black treatment dispersion bound rubber
+  - recovered carbon black cure system rubber
+  indicators:
+  - coupling agent
+  - silane
+  - tespt
+  - surface modification
+  - surface treatment
+  - plasma
+  - demineralization
+  - crosslink
+  - cure system
+- axis_id: general_in_rubber_performance
+  target_selected: 5
+  weight: 0.8
+  queries:
+  - recovered carbon black in-rubber performance
+  - pyrolytic carbon black rubber mechanical dynamic properties
+  - recovered carbon black rubber compound rheological mechanical properties
+  - recovered carbon versus carbon black styrene butadiene rubber
+  indicators:
+  - in-rubber performance
+  - mechanical properties
+  - rheological properties
+  - rheological
+  - dynamic mechanical
+  - dynamic properties
+  - vulcanization
+  - vulcanisation
+  - rubber compound
+  - rubber composites
+  - reinforcing filler
