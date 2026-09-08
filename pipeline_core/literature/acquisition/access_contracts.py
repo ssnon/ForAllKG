@@ -123,6 +123,17 @@ class SourceAcquisitionPolicy(StrictModel):
     use_openalex: bool = True
     use_pmc_aws: bool = False
     use_catalog_open_access_url: bool = True
+    use_public_landing_html: bool = True
+    landing_html_max_bytes: int = Field(
+        default=2097152,
+        ge=65536,
+        le=16777216,
+    )
+    max_landing_pages_per_work: int = Field(
+        default=4,
+        ge=1,
+        le=8,
+    )
     request_timeout_seconds: float = Field(default=45.0, gt=0)
     retries: int = Field(default=2, ge=0, le=6)
     retry_backoff_seconds: float = Field(default=1.0, ge=0)

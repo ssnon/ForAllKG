@@ -15,6 +15,7 @@ from urllib.request import Request, urlopen
 from pipeline_core.literature.acquisition.access_contracts import AccessLocation, AccessResolution, ResolverAttempt, SourceAcquisitionPolicy
 from pipeline_core.literature.acquisition.access_priority import access_location_priority
 from pipeline_core.literature.acquisition.openalex_access import OpenAlexAccessResolver
+from pipeline_core.literature.acquisition.main_landing_resolution import PublicLandingMainPdfResolver
 from pipeline_core.literature.acquisition.pmc_access import PmcAwsAccessResolver
 from pipeline_core.literature.catalog_contracts import CatalogWork
 
@@ -298,6 +299,27 @@ class OpenAccessResolver:
                 notes.append(
                     "OpenAlex access lookup failed; existing resolvers and "
                     "catalog fallback remain available."
+                )
+
+        if self.policy.use_public_landing_html:
+            probe = PublicLandingMainPdfResolver(
+                self.policy
+            ).resolve(
+                work,
+                existing_locations=locations,
+            )
+            attempts.append(probe.attempt)
+            for location in probe.locations:
+                if all(
+                    str(location.url_for_pdf or location.url)
+                    != str(existing.url_for_pdf or existing.url)
+                    for existing in locations
+                ):
+                    locations.append(location)
+            if probe.attempt.status == "failed":
+                notes.append(
+                    "Public landing-page main-PDF discovery failed; "
+                    "existing access locations remain available."
                 )
 
         if self.policy.use_catalog_open_access_url:

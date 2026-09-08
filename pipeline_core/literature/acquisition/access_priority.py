@@ -28,10 +28,12 @@ def access_location_priority(row: AccessLocation) -> tuple[int, str]:
             rank = 4
         elif row.resolver == "openalex":
             rank = 5
-        elif row.resolver == "catalog_open_access":
+        elif row.resolver == "public_landing_html":
             rank = 6
-        else:
+        elif row.resolver == "catalog_open_access":
             rank = 7
+        else:
+            rank = 8
     else:
         rank = 10
 
