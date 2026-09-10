@@ -154,7 +154,8 @@ def test_main_e2e_contains_bounded_execution_between_h1_n10_and_final_count():
     )
 
     first_n10 = text.index(
-        '"[11N10/13] Fresh Alpha6 candidate "'
+        '"[11N10/13] Fresh Alpha6 candidate '
+        'non-obviousness enforcement"'
     )
 
     bounded = text.index(
@@ -214,12 +215,12 @@ def test_disabled_bounded_path_still_consumes_first_post_n10_portfolio():
     )
 
     first_n10 = text.index(
-        '"[11N10/13] Fresh Alpha6 candidate "'
+        '"[11N10/13] Fresh Alpha6 candidate '
+        'non-obviousness enforcement"'
     )
 
     default_binding = text.index(
-        "refined_portfolio = (\n"
-        "            post_n10_portfolio",
+        "refined_portfolio = post_n10_portfolio",
         first_n10,
     )
 

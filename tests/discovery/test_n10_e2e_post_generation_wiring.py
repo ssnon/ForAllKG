@@ -19,7 +19,7 @@ def test_post_generation_n10_runs_after_alpha6():
     )
 
     post = text.index(
-        '"enforce_alpha6_nonobviousness"'
+        '"scripts.discovery.enforce_alpha6_nonobviousness"'
     )
 
     assert post > alpha6
@@ -29,13 +29,22 @@ def test_post_generation_n10_rebinds_downstream_portfolio():
     text = _text()
 
     assert (
-        "refined_portfolio = (\n"
-        "            post_n10_portfolio"
+        "refined_portfolio = post_n10_portfolio"
         in text
     )
 
     assert (
-        "N10-filtered"
+        "refined_portfolio = post_n10_candidate_portfolio"
+        in text
+    )
+
+    assert (
+        '"candidate_survival_authority": True'
+        in text
+    )
+
+    assert (
+        '"candidate_survival_authority": False'
         in text
     )
 
@@ -91,7 +100,7 @@ def test_post_generation_n10_does_not_require_device_namespace():
     text = _text()
 
     start = text.index(
-        '"[11N10/13] Fresh Alpha6 candidate "'
+        "if args.nonobviousness_post_generation_enforce:"
     )
 
     end = text.index(

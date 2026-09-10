@@ -133,16 +133,32 @@ def test_alpha6_n10_requires_canonical_context_and_exact_source_portfolio():
 
 
 def test_main_e2e_passes_context_to_alpha6_n10_enforcer():
-    text = _source(E2E)
+    for stage_label in (
+        (
+            "[11N10/13] Fresh Alpha6 candidate "
+            "non-obviousness enforcement"
+        ),
+        (
+            "[11N10/13] Fresh Alpha6 candidate "
+            "novelty certification"
+        ),
+    ):
+        argv = _argv_for_run_stage(
+            E2E,
+            stage_label=stage_label,
+            module_name=(
+                "scripts.discovery."
+                "enforce_alpha6_nonobviousness"
+            ),
+        )
 
-    block = _section(
-        text,
-        '"[11N10/13] Fresh Alpha6 candidate "',
-        "# Stage 12/13 now consume",
-    )
-
-    assert '"--hypothesis-context"' in block
-    assert "str(context)" in block
+        assert (
+            _flag_value_expression(
+                argv,
+                "--hypothesis-context",
+            )
+            == "str(context)"
+        )
 
 
 # ------------------------------------------------------------------
