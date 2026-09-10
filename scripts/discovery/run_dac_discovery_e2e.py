@@ -212,6 +212,104 @@ def _post_generation_n10_consumer_contract(
         "unsupported post-generation N10 authority mode: " + authority_mode
     )
 
+
+def _open_world_discovery_output_contract(
+    run: Path,
+) -> dict[str, Path]:
+    prefix = run / "hypothesis_axis_open_world"
+    return {
+        "prefix": prefix,
+        "provider_plan":
+            Path(str(prefix) + ".provider_plan.json"),
+        "retrieval":
+            Path(str(prefix) + ".retrieval.json"),
+        "selected_works":
+            Path(str(prefix) + ".selected_works.json"),
+        "axis_synthesis":
+            Path(str(prefix) + ".axis_synthesis.json"),
+        "axis_validation":
+            Path(str(prefix) + ".axis_validation.json"),
+        "external_axis_plan":
+            Path(str(prefix) + ".external_axis_plan.json"),
+        "external_axis_bundle":
+            Path(str(prefix) + ".external_axis_bundle.json"),
+        "external_axis_rejections":
+            Path(str(prefix) + ".external_axis_rejections.json"),
+        "manifest":
+            Path(str(prefix) + ".manifest.json"),
+        "prompt":
+            Path(str(prefix) + ".axis_synthesis_prompt.json"),
+    }
+
+
+def _validate_open_world_discovery_parent_manifest(
+    payload: dict[str, Any],
+    *,
+    expected_provider_plan_sha256: str,
+) -> None:
+    if (
+        payload.get("provider_plan_sha256")
+        != expected_provider_plan_sha256
+    ):
+        raise RuntimeError(
+            "Open-world discovery provider plan drifted from "
+            "the frozen parent E2E provider plan."
+        )
+
+    expected_false = (
+        "positive_premise_authority_changed",
+        "novelty_authority_created",
+        "hypothesis_generation_performed",
+        "canonical_fallback_authorized",
+    )
+    for key in expected_false:
+        if payload.get(key) is not False:
+            raise RuntimeError(
+                "Open-world discovery authority contract violated: "
+                f"{key} must be false."
+            )
+
+    if (
+        payload.get("external_literature_authority")
+        != "INSPIRATION_ONLY"
+    ):
+        raise RuntimeError(
+            "Open-world discovery literature authority must remain "
+            "INSPIRATION_ONLY."
+        )
+
+    try:
+        external_axis_count = int(
+            payload.get("external_axis_count", 0)
+        )
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(
+            "Open-world discovery external_axis_count is invalid."
+        ) from exc
+
+    if external_axis_count <= 0:
+        raise RuntimeError(
+            "Open-world discovery produced zero validated external axes. "
+            "Do not silently fall back to the persistent-KG axis plan."
+        )
+
+
+def _stage8_axis_plan_input(
+    *,
+    control_plan: Path,
+    open_world_plan: Path | None,
+    open_world_enabled: bool,
+) -> Path:
+    if not open_world_enabled:
+        return control_plan
+    if open_world_plan is None:
+        raise RuntimeError(
+            "Open-world discovery is enabled but no external axis plan "
+            "was supplied to stage 8."
+        )
+    return open_world_plan
+
+
 class PipelineRunner:
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
@@ -2898,6 +2996,95 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     dual_context = task_conditioned_dual_context
 
+    open_world_outputs: dict[str, Path] | None = None
+    if args.open_world_discovery:
+        open_world_outputs = (
+            _open_world_discovery_output_contract(
+                run
+            )
+        )
+
+        runner.run_stage(
+            "[7.6/13] Bounded open-world discovery-axis synthesis",
+            "scripts.discovery.run_open_world_discovery_axes",
+            [
+                "--dual-context",
+                str(dual_context),
+                "--control-axis-plan",
+                str(task_conditioned_axis_plan),
+                *_mechanism_index_args(args),
+                "--providers",
+                str(args.providers),
+                *_base_model_args(args),
+                "--output-prefix",
+                str(open_world_outputs["prefix"]),
+                "--save-prompt",
+            ],
+            expected=[
+                open_world_outputs["provider_plan"],
+                open_world_outputs["retrieval"],
+                open_world_outputs["selected_works"],
+                open_world_outputs["axis_synthesis"],
+                open_world_outputs["axis_validation"],
+                open_world_outputs["external_axis_plan"],
+                open_world_outputs["external_axis_bundle"],
+                open_world_outputs["external_axis_rejections"],
+                open_world_outputs["manifest"],
+                open_world_outputs["prompt"],
+            ],
+        )
+
+        open_world_manifest = _load_json(
+            open_world_outputs["manifest"]
+        )
+        _validate_open_world_discovery_parent_manifest(
+            open_world_manifest,
+            expected_provider_plan_sha256=(
+                literature_provider_plan.plan_sha256
+            ),
+        )
+
+        runner.manifest["open_world_discovery"] = {
+            "enabled": True,
+            "control_axis_plan":
+                str(task_conditioned_axis_plan),
+            "external_axis_plan":
+                str(open_world_outputs["external_axis_plan"]),
+            "external_axis_bundle":
+                str(open_world_outputs["external_axis_bundle"]),
+            "stage8_axis_plan_source":
+                "validated_external_open_world_plan",
+            "provider_plan_sha256":
+                open_world_manifest.get(
+                    "provider_plan_sha256"
+                ),
+            "external_axis_count":
+                open_world_manifest.get(
+                    "external_axis_count"
+                ),
+            "external_literature_authority":
+                "INSPIRATION_ONLY",
+            "positive_premise_authority_changed":
+                False,
+            "novelty_authority_created":
+                False,
+            "canonical_fallback_authorized":
+                False,
+        }
+        runner._save_manifest()
+
+    stage8_axis_plan_input = _stage8_axis_plan_input(
+        control_plan=task_conditioned_axis_plan,
+        open_world_plan=(
+            None
+            if open_world_outputs is None
+            else open_world_outputs[
+                "external_axis_plan"
+            ]
+        ),
+        open_world_enabled=args.open_world_discovery,
+    )
+
     # ------------------------------------------------------------------
     # 8-9. Alpha4 generation and semantic gate
     # ------------------------------------------------------------------
@@ -2944,7 +3131,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 is not None
             ),
             frozen_axis_plan_input=(
-                task_conditioned_axis_plan
+                stage8_axis_plan_input
             ),
         )
     else:
@@ -2969,7 +3156,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
                     else []
                 ),
                 "--axis-plan-input",
-                str(task_conditioned_axis_plan),
+                str(stage8_axis_plan_input),
                 "--output-prefix", str(axis_prefix),
                 "--save-prompts",
             ],
@@ -4576,6 +4763,18 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--max-axes", type=int, default=5)
+    parser.add_argument(
+        "--open-world-discovery",
+        action="store_true",
+        help=(
+            "Opt in to the bounded external-literature discovery-axis lane "
+            "after the task-conditioned persistent-KG control plan. "
+            "The external lane is inspiration-only, uses the frozen E2E "
+            "provider configuration, and must produce at least one validated "
+            "external axis; zero external axes fail closed rather than "
+            "silently reverting to the control plan."
+        ),
+    )
     parser.add_argument(
         "--hypothesis-parse-retries",
         type=int,
