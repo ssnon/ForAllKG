@@ -12,6 +12,10 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisCard,
     HypothesisPortfolio,
 )
+from pipeline_core.discovery.typed_required_bridge_binding import (
+    TYPED_REQUIRED_BRIDGE_PROVENANCE,
+    validate_typed_required_bridge_binding,
+)
 from pipeline_core.discovery.novelty_claim_decomposition import (
     _branch_identity_signature,
     recover_required_bridge_from_hypothesis,
@@ -319,6 +323,8 @@ def reconcile_intake_required_bridge(
     specification_provenance: dict[str, object] | None,
     hypothesis: HypothesisCard | None,
     sibling_claims: Sequence[NoveltyResidueClaim] | None = None,
+    required_bridge_binding: dict[str, object] | None = None,
+    required_bridge_binding_contract: dict[str, object] | None = None,
 ) -> NoveltyResidueClaim:
     """Reconcile only a provenance-validated required_bridge.
 
@@ -371,20 +377,6 @@ def reconcile_intake_required_bridge(
             "N10 intake claim drift outside required_bridge"
         )
 
-    # Existing query-plan bridge remains authoritative.
-    if expected_bridge:
-        if incoming_bridge != expected_bridge:
-            raise ValueError(
-                "N10 intake attempted to replace an existing "
-                "query-plan required_bridge"
-            )
-
-        return claim
-
-    # Nothing recovered: preserve the original fail-closed claim.
-    if not incoming_bridge:
-        return claim
-
     provenance = str(
         (
             specification_provenance
@@ -395,6 +387,58 @@ def reconcile_intake_required_bridge(
         )
         or ""
     )
+
+    # Existing query-plan bridge remains authoritative.
+    if expected_bridge:
+        if incoming_bridge != expected_bridge:
+            raise ValueError(
+                "N10 intake attempted to replace an existing "
+                "query-plan required_bridge"
+            )
+        if provenance == TYPED_REQUIRED_BRIDGE_PROVENANCE:
+            raise ValueError(
+                "typed source binding cannot replace existing query-plan bridge"
+            )
+        return claim
+
+    # Typed source binding is an alternate representation of the bridge.
+    # Raw intake text stays empty; only a validated existing source quote
+    # is transiently materialized for legacy N9 closure/vector consumers.
+    if provenance == TYPED_REQUIRED_BRIDGE_PROVENANCE:
+        if incoming_bridge:
+            raise ValueError(
+                "typed source binding must not write free-text required_bridge"
+            )
+        if hypothesis is None:
+            raise ValueError(
+                "typed source binding requires canonical hypothesis"
+            )
+        if hypothesis.hypothesis_id != claim.hypothesis_id:
+            raise ValueError(
+                "typed source binding hypothesis mismatch"
+            )
+        if not isinstance(required_bridge_binding, dict):
+            raise ValueError(
+                "typed source binding payload missing"
+            )
+        if not isinstance(required_bridge_binding_contract, dict):
+            raise ValueError(
+                "typed source binding contract missing"
+            )
+        recovered = validate_typed_required_bridge_binding(
+            hypothesis=hypothesis,
+            claim=claim,
+            binding=required_bridge_binding,
+            contract=required_bridge_binding_contract,
+        )
+        return replace(
+            claim,
+            required_bridge=recovered,
+        )
+
+    # Nothing recovered: preserve the original fail-closed claim.
+    if not incoming_bridge:
+        return claim
 
     if provenance != _CANONICAL_BRIDGE_PROVENANCE:
         raise ValueError(
@@ -518,6 +562,7 @@ def build_nonobviousness_shadow(
     plan: LiteratureQueryPlan,
     report: ExternalNoveltyReport,
     source_portfolio: HypothesisPortfolio | None = None,
+    required_bridge_bindings: dict[str, dict[str, object]] | None = None,
 ) -> dict[str, object]:
     """Build shadow-only N9 residue/specification artifact."""
 
@@ -605,9 +650,63 @@ def build_nonobviousness_shadow(
                             "INFERENTIAL_BRIDGE"
                         )
 
+            typed_binding = None
+            typed_contract = None
+
+            if (
+                not str(compiled_claim.required_bridge or "").strip()
+                and required_bridge_bindings is not None
+            ):
+                typed_row = required_bridge_bindings.get(
+                    claim.claim_id
+                )
+                if typed_row is not None:
+                    if not isinstance(typed_row, dict):
+                        raise ValueError(
+                            "typed bridge binding row must be an object"
+                        )
+                    typed_binding = typed_row.get("binding")
+                    typed_contract = typed_row.get("contract")
+                    hypothesis = source_cards.get(
+                        claim.hypothesis_id
+                    )
+                    if hypothesis is None:
+                        raise ValueError(
+                            "typed bridge binding cannot resolve canonical hypothesis"
+                        )
+                    if not isinstance(typed_binding, dict):
+                        raise ValueError(
+                            "typed bridge binding payload must be an object"
+                        )
+                    if not isinstance(typed_contract, dict):
+                        raise ValueError(
+                            "typed bridge contract must be an object"
+                        )
+                    typed_quote = validate_typed_required_bridge_binding(
+                        hypothesis=hypothesis,
+                        claim=claim,
+                        binding=typed_binding,
+                        contract=typed_contract,
+                    )
+                    compiled_claim = replace(
+                        claim,
+                        required_bridge=typed_quote,
+                    )
+                    bridge_source = TYPED_REQUIRED_BRIDGE_PROVENANCE
+
             decision = compile_shadow_claim(
                 compiled_claim
             )
+
+            if typed_binding is not None:
+                # Persist original raw atomic claim; structured binding remains
+                # separate metadata and does not become generated bridge prose.
+                decision_claim = decision.get("claim")
+                if not isinstance(decision_claim, dict):
+                    raise TypeError("compiled N9 claim is not a dictionary")
+                decision_claim["required_bridge"] = claim.required_bridge
+                decision["required_bridge_binding"] = typed_binding
+                decision["required_bridge_binding_contract"] = typed_contract
 
             decision["specification_provenance"] = {
                 "required_bridge": bridge_source,

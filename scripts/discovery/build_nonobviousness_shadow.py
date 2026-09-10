@@ -42,6 +42,16 @@ def parse_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
+        "--required-bridge-bindings",
+        type=Path,
+        default=None,
+        help=(
+            "Optional diagnostic typed source-span required_bridge bindings. "
+            "These do not carry novelty authority."
+        ),
+    )
+
+    parser.add_argument(
         "--output",
         required=True,
         type=Path,
@@ -75,10 +85,29 @@ def main() -> int:
         else None
     )
 
+    required_bridge_bindings = None
+    if args.required_bridge_bindings is not None:
+        payload = json.loads(
+            args.required_bridge_bindings.read_text(
+                encoding="utf-8"
+            )
+        )
+        if (
+            not isinstance(payload, dict)
+            or payload.get("schema_version")
+            != "typed-required-bridge-live-ablation-v1"
+            or not isinstance(payload.get("bindings_by_claim"), dict)
+        ):
+            raise ValueError(
+                "invalid typed required_bridge binding artifact"
+            )
+        required_bridge_bindings = payload["bindings_by_claim"]
+
     result = build_nonobviousness_shadow(
         plan=plan,
         report=report,
         source_portfolio=source_portfolio,
+        required_bridge_bindings=required_bridge_bindings,
     )
 
     args.output.parent.mkdir(

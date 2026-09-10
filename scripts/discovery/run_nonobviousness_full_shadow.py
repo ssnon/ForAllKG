@@ -534,6 +534,13 @@ def main() -> int:
             claim_id
         ]
 
+        typed_binding = decision.get(
+            "required_bridge_binding"
+        )
+        typed_contract = decision.get(
+            "required_bridge_binding_contract"
+        )
+
         claims_by_id[
             claim_id
         ] = reconcile_intake_required_bridge(
@@ -548,6 +555,16 @@ def main() -> int:
                     base_claim.hypothesis_id,
                     [],
                 )
+            ),
+            required_bridge_binding=(
+                typed_binding
+                if isinstance(typed_binding, dict)
+                else None
+            ),
+            required_bridge_binding_contract=(
+                typed_contract
+                if isinstance(typed_contract, dict)
+                else None
             ),
         )
 
