@@ -162,3 +162,106 @@ def test_openalex_provider_requires_key():
         match="OPENALEX_API_KEY",
     ):
         lr.OpenAlexProvider(api_key="")
+
+
+def _query_text(text: str) -> LiteratureQuery:
+    return LiteratureQuery(
+        query_id="q-transport",
+        hypothesis_id="h-transport",
+        claim_id="c-transport",
+        query_kind="claim_primary",
+        query_text=text,
+    )
+
+
+def _captured_search_text(
+    monkeypatch,
+    query_text: str,
+) -> str:
+    from urllib.parse import parse_qs, urlsplit
+
+    captured: dict[str, str] = {}
+
+    def fake_request(
+        url,
+        **kwargs,
+    ):
+        captured["url"] = url
+        return {"results": []}
+
+    monkeypatch.setattr(
+        lr,
+        "_request_json",
+        fake_request,
+    )
+    provider = lr.OpenAlexProvider(
+        api_key="oa-test-key"
+    )
+    provider.search(
+        _query_text(query_text),
+        limit=3,
+    )
+    params = parse_qs(
+        urlsplit(captured["url"]).query
+    )
+    return params["search"][0]
+
+
+def test_openalex_transport_strips_terminal_question_mark(
+    monkeypatch,
+):
+    assert (
+        _captured_search_text(
+            monkeypatch,
+            "bonding antibonding distribution?",
+        )
+        == "bonding antibonding distribution"
+    )
+
+
+def test_openalex_transport_normalizes_hstar_notation(
+    monkeypatch,
+):
+    assert (
+        _captured_search_text(
+            monkeypatch,
+            "H* adsorption relation",
+        )
+        == "H adsorption relation"
+    )
+
+
+def test_openalex_transport_rejects_unsupported_star(
+    monkeypatch,
+):
+    called = False
+
+    def fake_request(
+        url,
+        **kwargs,
+    ):
+        nonlocal called
+        called = True
+        return {"results": []}
+
+    monkeypatch.setattr(
+        lr,
+        "_request_json",
+        fake_request,
+    )
+    provider = lr.OpenAlexProvider(
+        api_key="oa-test-key"
+    )
+
+    with pytest.raises(
+        lr.OpenAlexProviderError,
+        match="unsupported \* outside H\* notation",
+    ):
+        provider.search(
+            _query_text(
+                "bonding* antibonding"
+            ),
+            limit=3,
+        )
+
+    assert called is False

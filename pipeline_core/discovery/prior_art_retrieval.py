@@ -376,9 +376,19 @@ class OpenAlexProvider:
         *,
         limit: int,
     ) -> list[PriorArtWork]:
+        transport_query_text = str(query.query_text)
+        if transport_query_text.endswith("?"):
+            transport_query_text = transport_query_text[:-1].rstrip()
+        if "*" in transport_query_text:
+            if transport_query_text.count("*") != transport_query_text.count("H*"):
+                raise OpenAlexProviderError(
+                    "unsupported * outside H* notation in OpenAlex transport query"
+                )
+            transport_query_text = transport_query_text.replace("H*", "H")
+
         params = urlencode(
             {
-                "search": query.query_text,
+                "search": transport_query_text,
                 "per_page": max(
                     1,
                     min(100, int(limit)),
