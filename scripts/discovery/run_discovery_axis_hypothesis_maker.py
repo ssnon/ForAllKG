@@ -336,15 +336,38 @@ def _resolve_axis_plan(
     )
 
 
+def _require_axis_source_availability(
+    *,
+    args,
+    dual: DualHypothesisContext,
+) -> None:
+    """Refuse canonical fallback while allowing an explicit frozen plan.
+
+    A supplied axis plan may originate from the bounded open-world stage and
+    is independently bound to the same dual-context ID/SHA by
+    ``_resolve_axis_plan``. Therefore the absence of persistent-KG
+    inspirations must only block planning from the dual, not consumption of
+    an already validated external/frozen DiscoveryAxisPlan.
+    """
+
+    if args.axis_plan_input is not None:
+        return
+    if not dual.discovery_bundle.inspirations:
+        raise SystemExit(
+            "DiscoveryBundle contains no inspirations. Alpha4 refuses to "
+            "collapse back to canonical synthesis."
+        )
+
+
 def main() -> int:
     args = parse_args()
     dual = DualHypothesisContext.model_validate_json(
         args.dual_context.read_text(encoding="utf-8")
     )
-    if not dual.discovery_bundle.inspirations:
-        raise SystemExit(
-            "DiscoveryBundle contains no inspirations. Alpha4 refuses to collapse back to canonical synthesis."
-        )
+    _require_axis_source_availability(
+        args=args,
+        dual=dual,
+    )
 
     family_hierarchy = None
     if args.evidence_family_decomposition_report is not None:
