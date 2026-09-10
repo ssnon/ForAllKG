@@ -217,7 +217,7 @@ class DiscoveryAxisSynthesisRuntime:
             return None, [row.code for row in exc.issues], []
         validation = self.validator.validate(context, portfolio)
         if not validation.passes:
-            return portfolio, [], [row.code for row in validation.issues if row.severity == "error"]
+            return None, [], [row.code for row in validation.issues if row.severity == "error"]
         return portfolio, [], []
 
     def _single_card(
