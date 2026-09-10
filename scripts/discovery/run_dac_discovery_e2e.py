@@ -2971,6 +2971,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "scripts.discovery.build_task_conditioned_axis_plan",
         [
             "--question", str(args.question),
+            "--requested-source", str(args.source),
+            "--requested-target", str(args.target),
             "--final-traversal", str(final_traversal),
             "--candidate-traversal", str(candidate_traversal),
             "--discovery-bundle", str(bundle),

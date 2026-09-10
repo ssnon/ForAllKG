@@ -113,6 +113,68 @@ def _parse_question(
     return source, target
 
 
+def _resolve_task_endpoints(
+    *,
+    question: str,
+    requested_source: str | None,
+    requested_target: str | None,
+) -> tuple[str, str] | None:
+    source_supplied = (
+        requested_source is not None
+    )
+    target_supplied = (
+        requested_target is not None
+    )
+
+    if source_supplied != target_supplied:
+        raise ValueError(
+            "Explicit task endpoints must be "
+            "provided together."
+        )
+
+    if source_supplied:
+        assert requested_source is not None
+        assert requested_target is not None
+
+        source = requested_source.strip()
+        target = requested_target.strip()
+
+        if not source or not target:
+            raise ValueError(
+                "Explicit task endpoints must "
+                "be non-empty."
+            )
+
+        return source, target
+
+    return _parse_question(
+        question
+    )
+
+
+def _endpoint_resolution_observability(
+    *,
+    question: str,
+    requested_source: str | None,
+    requested_target: str | None,
+) -> tuple[str, bool]:
+    explicit_pair = (
+        requested_source is not None
+        and requested_target is not None
+    )
+
+    mode = (
+        "EXPLICIT_RUNNER_ENDPOINTS_V1"
+        if explicit_pair
+        else "LEGACY_QUESTION_GRAMMAR_V1"
+    )
+
+    return (
+        mode,
+        _parse_question(question) is not None,
+    )
+
+
 def _candidate_mapping(
     row: dict[str, Any],
 ) -> dict[str, Any] | None:
@@ -376,6 +438,14 @@ def main() -> int:
         required=True,
     )
     parser.add_argument(
+        "--requested-source",
+        default=None,
+    )
+    parser.add_argument(
+        "--requested-target",
+        default=None,
+    )
+    parser.add_argument(
         "--final-traversal",
         required=True,
         type=Path,
@@ -460,12 +530,31 @@ def main() -> int:
         old_dual
     )
 
-    parsed = _parse_question(
-        args.question
+    parsed = _resolve_task_endpoints(
+        question=args.question,
+        requested_source=(
+            args.requested_source
+        ),
+        requested_target=(
+            args.requested_target
+        ),
+    )
+
+    (
+        endpoint_resolution_mode,
+        question_grammar_matched,
+    ) = _endpoint_resolution_observability(
+        question=args.question,
+        requested_source=(
+            args.requested_source
+        ),
+        requested_target=(
+            args.requested_target
+        ),
     )
 
     # --------------------------------------------------------------
-    # Exact grammar does not apply:
+    # Neither explicit endpoints nor exact legacy grammar apply:
     # preserve old production behavior exactly.
     # --------------------------------------------------------------
     if parsed is None:
@@ -492,6 +581,14 @@ def main() -> int:
                         "GRAMMAR_NOT_APPLICABLE",
                     "grammar":
                         "HOW_DOES_RELATE_TO_GRAMMAR_V1",
+                    "endpoint_resolution_mode":
+                        endpoint_resolution_mode,
+                    "requested_source":
+                        None,
+                    "requested_target":
+                        None,
+                    "question_grammar_matched":
+                        question_grammar_matched,
                     "generic_bundle_changed":
                         False,
                     "task_axis_count":
@@ -764,6 +861,14 @@ def main() -> int:
                         "NO_TASK_COMPOSITE",
                     "grammar":
                         "HOW_DOES_RELATE_TO_GRAMMAR_V1",
+                    "endpoint_resolution_mode":
+                        endpoint_resolution_mode,
+                    "requested_source":
+                        requested_source,
+                    "requested_target":
+                        requested_target,
+                    "question_grammar_matched":
+                        question_grammar_matched,
                     "generic_bundle_changed":
                         False,
                     "quality_eligible_source_count":
@@ -1068,10 +1173,14 @@ def main() -> int:
             "TASK_CONDITIONED",
         "grammar":
             "HOW_DOES_RELATE_TO_GRAMMAR_V1",
+        "endpoint_resolution_mode":
+            endpoint_resolution_mode,
         "requested_source":
             requested_source,
         "requested_target":
             requested_target,
+        "question_grammar_matched":
+            question_grammar_matched,
         "generic_bundle_changed":
             False,
         "generic_bundle_sha256":
