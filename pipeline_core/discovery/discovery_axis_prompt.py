@@ -19,9 +19,9 @@ from pipeline_core.discovery.evidence_family_selection import (
 )
 
 
-PROMPT_VERSION = "hypothesis-maker-discovery-axis-prompt-v2.8.0-a4"
+PROMPT_VERSION = "hypothesis-maker-discovery-axis-prompt-v2.8.0-a4-s17-intent-v1"
 FAMILY_AWARE_PROMPT_VERSION = (
-    "hypothesis-maker-discovery-axis-prompt-v2.9.1-ec2c"
+    "hypothesis-maker-discovery-axis-prompt-v2.9.1-ec2c-s17-intent-v1"
 )
 
 
@@ -62,8 +62,34 @@ Your task is narrower than ordinary hypothesis generation:
 
 A hypothesis fails this task if removing the assigned discovery axis leaves
 its central hypothesis and predictions essentially unchanged. Merely adding
-axis vocabulary to an otherwise canonical coordination→adsorption→HER chain is
-not sufficient.
+axis vocabulary to an otherwise familiar downstream relation chain is not
+sufficient.
+
+DISCOVERY-INTENT RETENTION
+==========================
+The assigned discovery axis remains inspiration-only and MUST NOT become a
+positive premise. Preserve its proposed semantics as the central exploratory
+dependency rather than translating it back into a familiar downstream claim.
+
+- The central dependency in hypothesis_statement must preserve the scientific
+  roles of the assigned proposed_subject, proposed_relation, and
+  proposed_object. Paraphrase is allowed, but role substitution is not.
+- inferential_bridge must make that same assigned dependency the primary
+  extension being proposed, rather than using it as decorative vocabulary.
+- At least one predicted observation and one matching falsification criterion
+  must directly test the assigned dependency.
+- Do not replace the assigned proposed_object with a familiar downstream
+  endpoint merely because that endpoint is well represented in the grounded
+  context.
+- Grounded canonical relations may explain plausibility, but they may not
+  replace the assigned axis as the central hypothesis relation.
+- Do not add unsupported sign, ordering, optimum, threshold, or quantitative
+  specificity.
+- If the assigned relation cannot be preserved without unsupported content,
+  abstain.
+
+This policy strengthens discovery-intent transfer only. It does not authorize
+an external novelty claim.
 """.strip()
 
 
