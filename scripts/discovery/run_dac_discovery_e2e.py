@@ -142,6 +142,76 @@ def _alpha6_empty_is_degraded(report_payload: dict[str, Any]) -> bool:
     )
 
 
+_POST_GENERATION_N10_AUTHORITY_MODES = (
+    "hard_filter",
+    "certification_only",
+)
+
+
+def _post_generation_n10_output_contract(
+    run: Path,
+    authority_mode: str,
+) -> dict[str, Path | None]:
+    if authority_mode == "hard_filter":
+        legacy_portfolio = run / "novelty_refinement_a6.n10.portfolio.json"
+        legacy_report = run / "novelty_refinement_a6.n10.enforcement.json"
+        return {
+            "legacy_output_portfolio": legacy_portfolio,
+            "legacy_output_report": legacy_report,
+            "scientific_candidate_portfolio": None,
+            "certification_report": None,
+            "certified_novelty_portfolio": None,
+            "downstream_portfolio": legacy_portfolio,
+        }
+
+    if authority_mode == "certification_only":
+        candidate = (
+            run / "novelty_refinement_a6.n10.candidate.portfolio.json"
+        )
+        certification = (
+            run / "novelty_refinement_a6.n10.certification.json"
+        )
+        certified = (
+            run / "novelty_refinement_a6.n10.certified.portfolio.json"
+        )
+        return {
+            "legacy_output_portfolio": None,
+            "legacy_output_report": None,
+            "scientific_candidate_portfolio": candidate,
+            "certification_report": certification,
+            "certified_novelty_portfolio": certified,
+            "downstream_portfolio": candidate,
+        }
+
+    raise ValueError(
+        "unsupported post-generation N10 authority mode: " + authority_mode
+    )
+
+
+def _post_generation_n10_consumer_contract(
+    authority_mode: str,
+) -> dict[str, str]:
+    if authority_mode == "hard_filter":
+        return {
+            "stage12_semantic": "legacy_n10_filtered_portfolio",
+            "stage13_feasibility": "legacy_n10_filtered_portfolio",
+            "demo_viewer": "legacy_alpha6_portfolio",
+            "novelty_certified_export": "legacy_n10_filtered_portfolio",
+        }
+
+    if authority_mode == "certification_only":
+        return {
+            "stage12_semantic": "scientific_candidate_portfolio",
+            "stage13_feasibility": "scientific_candidate_portfolio",
+            "demo_viewer":
+                "scientific_candidate_portfolio+certification_report",
+            "novelty_certified_export": "certified_novelty_portfolio",
+        }
+
+    raise ValueError(
+        "unsupported post-generation N10 authority mode: " + authority_mode
+    )
+
 class PipelineRunner:
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
@@ -3781,83 +3851,183 @@ def run_pipeline(args: argparse.Namespace) -> int:
               "n10.details"
         )
 
-        runner.run_stage(
-            "[11N10/13] Fresh Alpha6 candidate "
-            "non-obviousness enforcement",
-            "scripts.discovery."
-            "enforce_alpha6_nonobviousness",
-            [
-                "--portfolio",
-                str(refined_portfolio),
-                "--hypothesis-context",
-                str(context),
-                "--refinement-report",
-                str(refined_report),
-                "--external-dir",
-                str(
-                    Path(
-                        str(
-                            refinement_prefix
-                        )
-                        + ".external"
-                    )
-                ),
-                "--provider-plan",
-                str(
-                    literature_provider_plan_path
-                ),
-                "--domain-profile",
-                domain_profile.profile_id,
-                "--model",
-                (
-                    args.critic_model
-                    or args.model
-                ),
-                *(
-                    [
-                        "--base-url",
-                        args.base_url,
-                    ]
-                    if args.base_url
-                    else []
-                ),
-                "--api-key-env",
-                args.api_key_env,
-                *(
-                    [
-                        "--device",
-                        getattr(args, "device"),
-                    ]
-                    if getattr(args, "device", None)
-                    else []
-                ),
-                "--results-per-query",
-                str(
-                    args.results_per_query
-                ),
-                "--work-dir",
-                str(post_n10_details),
-                "--output-portfolio",
-                str(post_n10_portfolio),
-                "--output-report",
-                str(post_n10_report),
-            ],
-            expected=[
-                post_n10_portfolio,
-                post_n10_report,
-            ],
+        post_n10_authority_mode = args.post_generation_n10_authority_mode
+        post_n10_contract = _post_generation_n10_output_contract(
+            run,
+            post_n10_authority_mode,
+        )
+        post_n10_consumers = _post_generation_n10_consumer_contract(
+            post_n10_authority_mode,
         )
 
-        # Stage 12/13 now consume the N10-filtered
-        # selection artifact by default, while the original Alpha6
-        # portfolio/report remain intact for lineage audit.
-        #
-        # Staged bounded continuation may replace this downstream
-        # portfolio only after independently fresh H2 N10 authority
-        # and deterministic final merge.
-        refined_portfolio = (
-            post_n10_portfolio
-        )
+        if post_n10_authority_mode == "hard_filter":
+            post_n10_portfolio = post_n10_contract["legacy_output_portfolio"]
+            post_n10_report = post_n10_contract["legacy_output_report"]
+            if post_n10_portfolio is None or post_n10_report is None:
+                raise RuntimeError("hard_filter output contract incomplete")
+
+            runner.run_stage(
+                "[11N10/13] Fresh Alpha6 candidate non-obviousness enforcement",
+                "scripts.discovery.enforce_alpha6_nonobviousness",
+                [
+                    "--authority-mode",
+                    "hard_filter",
+                    "--portfolio",
+                    str(refined_portfolio),
+                    "--hypothesis-context",
+                    str(context),
+                    "--refinement-report",
+                    str(refined_report),
+                    "--external-dir",
+                    str(Path(str(refinement_prefix) + ".external")),
+                    "--provider-plan",
+                    str(literature_provider_plan_path),
+                    "--domain-profile",
+                    domain_profile.profile_id,
+                    "--model",
+                    (args.critic_model or args.model),
+                    *(
+                        ["--base-url", args.base_url]
+                        if args.base_url
+                        else []
+                    ),
+                    "--api-key-env",
+                    args.api_key_env,
+                    *(
+                        ["--device", getattr(args, "device")]
+                        if getattr(args, "device", None)
+                        else []
+                    ),
+                    "--results-per-query",
+                    str(args.results_per_query),
+                    "--work-dir",
+                    str(post_n10_details),
+                    "--output-portfolio",
+                    str(post_n10_portfolio),
+                    "--output-report",
+                    str(post_n10_report),
+                ],
+                expected=[
+                    post_n10_portfolio,
+                    post_n10_report,
+                ],
+            )
+
+            refined_portfolio = post_n10_portfolio
+
+            runner.manifest["post_generation_n10_authority"] = {
+                "mode": "hard_filter",
+                "candidate_survival_authority": True,
+                "novelty_certification_authority": True,
+                "downstream_portfolio": str(refined_portfolio),
+                "legacy_enforcement_report": str(post_n10_report),
+                "consumer_bindings": post_n10_consumers,
+            }
+
+        else:
+            post_n10_candidate_portfolio = post_n10_contract[
+                "scientific_candidate_portfolio"
+            ]
+            post_n10_certification_report = post_n10_contract[
+                "certification_report"
+            ]
+            post_n10_certified_portfolio = post_n10_contract[
+                "certified_novelty_portfolio"
+            ]
+            if any(
+                value is None
+                for value in (
+                    post_n10_candidate_portfolio,
+                    post_n10_certification_report,
+                    post_n10_certified_portfolio,
+                )
+            ):
+                raise RuntimeError(
+                    "certification_only output contract incomplete"
+                )
+
+            runner.run_stage(
+                "[11N10/13] Fresh Alpha6 candidate novelty certification",
+                "scripts.discovery.enforce_alpha6_nonobviousness",
+                [
+                    "--authority-mode",
+                    "certification_only",
+                    "--portfolio",
+                    str(refined_portfolio),
+                    "--hypothesis-context",
+                    str(context),
+                    "--refinement-report",
+                    str(refined_report),
+                    "--external-dir",
+                    str(Path(str(refinement_prefix) + ".external")),
+                    "--provider-plan",
+                    str(literature_provider_plan_path),
+                    "--domain-profile",
+                    domain_profile.profile_id,
+                    "--model",
+                    (args.critic_model or args.model),
+                    *(
+                        ["--base-url", args.base_url]
+                        if args.base_url
+                        else []
+                    ),
+                    "--api-key-env",
+                    args.api_key_env,
+                    *(
+                        ["--device", getattr(args, "device")]
+                        if getattr(args, "device", None)
+                        else []
+                    ),
+                    "--results-per-query",
+                    str(args.results_per_query),
+                    "--work-dir",
+                    str(post_n10_details),
+                    "--output-candidate-portfolio",
+                    str(post_n10_candidate_portfolio),
+                    "--output-certification-report",
+                    str(post_n10_certification_report),
+                    "--output-certified-portfolio",
+                    str(post_n10_certified_portfolio),
+                ],
+                expected=[
+                    post_n10_candidate_portfolio,
+                    post_n10_certification_report,
+                    post_n10_certified_portfolio,
+                ],
+            )
+
+            refined_portfolio = post_n10_candidate_portfolio
+            post_n10_portfolio = post_n10_candidate_portfolio
+            post_n10_report = post_n10_certification_report
+
+            certification_payload = _load_json(
+                post_n10_certification_report
+            )
+            runner.manifest["post_generation_n10_authority"] = {
+                "mode": "certification_only",
+                "candidate_survival_authority": False,
+                "novelty_certification_authority": True,
+                "scientific_candidate_portfolio":
+                    str(post_n10_candidate_portfolio),
+                "certification_report":
+                    str(post_n10_certification_report),
+                "certified_novelty_portfolio":
+                    str(post_n10_certified_portfolio),
+                "downstream_portfolio": str(refined_portfolio),
+                "scientific_candidate_count":
+                    _hypothesis_count(post_n10_candidate_portfolio),
+                "novelty_certified_count":
+                    _hypothesis_count(post_n10_certified_portfolio),
+                "novelty_unresolved_count":
+                    certification_payload.get("unresolved_count", 0),
+                "novelty_rejected_count":
+                    certification_payload.get("rejected_count", 0),
+                "certification_report_id":
+                    certification_payload.get("report_id"),
+                "consumer_bindings": post_n10_consumers,
+            }
+
+        runner._save_manifest()
 
         if args.nonobviousness_bounded_continuation_enforce:
             bounded_index_dir = (
@@ -4309,6 +4479,19 @@ def parse_args() -> argparse.Namespace:
         ),
     )
 
+
+    parser.add_argument(
+        "--post-generation-n10-authority-mode",
+        choices=_POST_GENERATION_N10_AUTHORITY_MODES,
+        default="hard_filter",
+        help=(
+            "Authority contract for post-generation N10. "
+            "hard_filter preserves legacy candidate deletion. "
+            "certification_only preserves Alpha6 scientific candidates "
+            "and emits separate certification/certified artifacts."
+        ),
+    )
+
     parser.add_argument(
         "--nonobviousness-bounded-continuation-enforce",
         action="store_true",
@@ -4516,7 +4699,18 @@ def parse_args() -> argparse.Namespace:
     if args.nonobviousness_enforce:
         args.nonobviousness_original_fallback_enforce = True
         args.nonobviousness_post_generation_enforce = True
-        args.nonobviousness_bounded_continuation_enforce = True
+        if args.post_generation_n10_authority_mode == "hard_filter":
+            args.nonobviousness_bounded_continuation_enforce = True
+
+    if (
+        args.nonobviousness_bounded_continuation_enforce
+        and args.post_generation_n10_authority_mode != "hard_filter"
+    ):
+        parser.error(
+            "--nonobviousness-bounded-continuation-enforce currently "
+            "requires --post-generation-n10-authority-mode hard_filter. "
+            "The continuation merger still has legacy survivor semantics."
+        )
 
     if (
         args.nonobviousness_bounded_continuation_enforce

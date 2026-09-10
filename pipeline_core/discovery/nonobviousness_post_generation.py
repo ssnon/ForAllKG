@@ -792,3 +792,446 @@ def filter_alpha6_portfolio_by_nonobviousness(
         result,
         report,
     )
+
+
+POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER = "hard_filter"
+POST_GENERATION_N10_AUTHORITY_MODE_CERTIFICATION_ONLY = "certification_only"
+POST_GENERATION_N10_AUTHORITY_MODES = (
+    POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER,
+    POST_GENERATION_N10_AUTHORITY_MODE_CERTIFICATION_ONLY,
+)
+
+POST_GENERATION_N10_CERTIFICATION_OUTPUT_CONTRACT = {
+    "candidate_portfolio": "--output-candidate-portfolio",
+    "certification_report": "--output-certification-report",
+    "certified_portfolio": "--output-certified-portfolio",
+}
+
+
+def certified_novelty_portfolio_id(
+    *,
+    source_portfolio_id: str,
+    domain_profile_id: str,
+    source_context_sha256: str,
+    certified_hypothesis_ids: tuple[str, ...],
+    abstention_reason: str | None,
+    authority_source: str = "n10_role_aware_nonobviousness_v2",
+) -> str:
+    """Return a source-scoped identity for the certified novelty subset."""
+
+    return _stable_id(
+        "hypothesis_portfolio",
+        "novelty_certified",
+        source_portfolio_id,
+        authority_source,
+        domain_profile_id,
+        source_context_sha256,
+        *certified_hypothesis_ids,
+        abstention_reason or "",
+    )
+
+
+def novelty_certification_report_id(
+    *,
+    source_portfolio_id: str,
+    certified_portfolio_id: str,
+    refinement_report_id: str,
+    decision_signatures: tuple[str, ...],
+    authority_source: str = "n10_role_aware_nonobviousness_v2",
+) -> str:
+    """Return a deterministic identity for one certification decision set."""
+
+    return _stable_id(
+        "novelty_certification_report",
+        source_portfolio_id,
+        certified_portfolio_id,
+        refinement_report_id,
+        authority_source,
+        *decision_signatures,
+    )
+
+
+def split_alpha6_portfolio_by_novelty_certification(
+    *,
+    portfolio: HypothesisPortfolio,
+    refinement_report: NoveltyRefinementReport,
+    gates_by_candidate_id: dict[str, dict[str, Any]],
+) -> tuple[
+    HypothesisPortfolio,
+    HypothesisPortfolio,
+    dict[str, Any],
+]:
+    """Preserve scientific candidates while separating novelty certification.
+
+    This is intentionally a different authority contract from
+    filter_alpha6_portfolio_by_nonobviousness():
+
+      hard_filter:
+          legacy behavior; N10 may remove Alpha6 survivors.
+
+      certification_only:
+          N10 never removes Alpha6 scientific candidates.
+          ELIGIBLE + positive authority -> NOVELTY_CERTIFIED.
+          CONDITIONAL -> NOVELTY_UNRESOLVED.
+          INELIGIBLE -> NOVELTY_REJECTED.
+
+    NOVELTY_UNRESOLVED and NOVELTY_REJECTED are not positive novelty
+    authority. Neither status changes the scientific-candidate portfolio.
+    """
+
+    if refinement_report.final_portfolio_id != portfolio.portfolio_id:
+        raise ValueError(
+            "Alpha6 report / portfolio mismatch before novelty certification"
+        )
+
+    cards_by_id = {
+        card.hypothesis_id: card
+        for card in portfolio.hypotheses
+    }
+    if len(cards_by_id) != len(portfolio.hypotheses):
+        raise ValueError("duplicate hypothesis IDs in Alpha6 portfolio")
+
+    surviving_attempts = [
+        attempt
+        for attempt in refinement_report.attempts
+        if attempt.final_hypothesis_id is not None
+    ]
+    final_attempt_ids = [
+        str(attempt.final_hypothesis_id)
+        for attempt in surviving_attempts
+    ]
+    if len(final_attempt_ids) != len(set(final_attempt_ids)):
+        raise ValueError("duplicate final_hypothesis_id in Alpha6 report")
+    if set(final_attempt_ids) != set(cards_by_id):
+        raise ValueError("Alpha6 survivor/report membership mismatch")
+
+    certified_ids: set[str] = set()
+    decisions: list[dict[str, Any]] = []
+    consumed_candidates: set[str] = set()
+
+    def unresolved_dimensions(row: dict[str, Any]) -> list[str]:
+        dimensions: set[str] = set()
+
+        for requirement in row.get("resolution_requirements") or []:
+            role = str(requirement.get("novelty_selection_role") or "")
+            action = str(requirement.get("action") or "")
+            outcome = str(requirement.get("nonobviousness_outcome") or "")
+            reasons = {
+                str(value)
+                for value in (requirement.get("reason_codes") or [])
+            }
+
+            if role == "REQUIRED_ENABLING_RELATION":
+                dimensions.add("REQUIRED_ENABLING_RELATION")
+
+            if role != "NOVELTY_BEARING":
+                continue
+
+            if (
+                "SPECIFICATION" in action
+                or "atomic_specification_incomplete" in reasons
+            ):
+                dimensions.add("SPECIFICATION")
+
+            if (
+                action == "RESOLVE_NOVELTY_BEARING_EVIDENCE"
+                or outcome == "INSUFFICIENT_FOR_JUDGMENT"
+                or "candidate_not_ready_for_adjudication" in reasons
+            ):
+                dimensions.add("EVIDENCE_CLOSURE")
+
+            if (
+                action == "RESOLVE_NOVELTY_BEARING_PRIOR_ART_RELATION"
+                or "partial_prior_art_requires_resolution" in reasons
+            ):
+                dimensions.add("PRIOR_ART_RELATION")
+
+        return sorted(dimensions)
+
+    for attempt in surviving_attempts:
+        final_id = str(attempt.final_hypothesis_id)
+        candidate_id = str(attempt.candidate_hypothesis_id or "")
+
+        if attempt.decision == "kept_original":
+            certified_ids.add(final_id)
+            decisions.append(
+                {
+                    "original_hypothesis_id":
+                        attempt.original_hypothesis_id,
+                    "candidate_hypothesis_id":
+                        candidate_id,
+                    "final_hypothesis_id":
+                        final_id,
+                    "alpha6_decision":
+                        attempt.decision,
+                    "post_generation_n10_required":
+                        False,
+                    "n10_selection_class":
+                        "PRE_GENERATION_GATE_ALREADY_PASSED",
+                    "n10_action":
+                        "KEEP",
+                    "certification_status":
+                        "NOVELTY_CERTIFIED_PRE_GENERATION",
+                    "novelty_certified":
+                        True,
+                    "candidate_retained":
+                        True,
+                    "unresolved_dimensions":
+                        [],
+                    "blocking_claim_ids":
+                        [],
+                    "unresolved_claim_ids":
+                        [],
+                    "reason_codes": [
+                        "original_survivor_already_passed_pre_generation_n10",
+                    ],
+                }
+            )
+            continue
+
+        if attempt.decision not in _GENERATED_SURVIVOR_DECISIONS:
+            raise ValueError(
+                "unsupported surviving Alpha6 decision: "
+                + str(attempt.decision)
+            )
+
+        if not candidate_id:
+            raise ValueError(
+                "generated Alpha6 survivor missing candidate ID"
+            )
+
+        gate = gates_by_candidate_id.get(candidate_id)
+        if gate is None:
+            raise ValueError(
+                "missing fresh N10 gate for generated candidate "
+                + candidate_id
+            )
+
+        row = _validate_n10_gate(
+            candidate_id=candidate_id,
+            gate=gate,
+        )
+        gate_schema = str(gate.get("schema_version") or "")
+        consumed_candidates.add(candidate_id)
+
+        if gate_schema != "scientific-novelty-fallback-gate-v2":
+            raise ValueError(
+                "certification_only requires role-aware v2 "
+                "post-generation N10 gates"
+            )
+
+        selection_class = str(row.get("selection_class") or "")
+        positive = bool(
+            row.get("positive_nonobviousness_authority")
+        )
+        fallback_allowed = bool(row.get("fallback_allowed"))
+
+        if selection_class == "ELIGIBLE":
+            if not positive or not fallback_allowed:
+                raise ValueError(
+                    "ELIGIBLE candidate lacks positive certification authority"
+                )
+            certification_status = "NOVELTY_CERTIFIED"
+            novelty_certified = True
+            unresolved = []
+            certified_ids.add(final_id)
+
+        elif selection_class == "CONDITIONAL":
+            certification_status = "NOVELTY_UNRESOLVED"
+            novelty_certified = False
+            unresolved = unresolved_dimensions(row)
+
+        elif selection_class == "INELIGIBLE":
+            certification_status = "NOVELTY_REJECTED"
+            novelty_certified = False
+            unresolved = []
+
+        else:
+            raise ValueError(
+                "invalid N10 selection class: " + selection_class
+            )
+
+        decisions.append(
+            {
+                "original_hypothesis_id":
+                    attempt.original_hypothesis_id,
+                "candidate_hypothesis_id":
+                    candidate_id,
+                "final_hypothesis_id":
+                    final_id,
+                "alpha6_decision":
+                    attempt.decision,
+                "post_generation_n10_required":
+                    True,
+                "n10_selection_class":
+                    selection_class,
+                "n10_action":
+                    row.get("action"),
+                "certification_status":
+                    certification_status,
+                "novelty_certified":
+                    novelty_certified,
+                "candidate_retained":
+                    True,
+                "unresolved_dimensions":
+                    unresolved,
+                "blocking_claim_ids":
+                    list(row.get("blocking_claim_ids") or []),
+                "unresolved_claim_ids":
+                    list(row.get("unresolved_claim_ids") or []),
+                "reason_codes":
+                    list(row.get("reason_codes") or []),
+            }
+        )
+
+    extra_gate_ids = set(gates_by_candidate_id) - consumed_candidates
+    if extra_gate_ids:
+        raise ValueError(
+            "unused post-generation N10 gates: "
+            + ",".join(sorted(extra_gate_ids))
+        )
+
+    candidate_portfolio = portfolio
+
+    certified_cards = [
+        card
+        for card in portfolio.hypotheses
+        if card.hypothesis_id in certified_ids
+    ]
+
+    if certified_cards:
+        certified_abstention_reason = None
+    elif not portfolio.hypotheses:
+        certified_abstention_reason = portfolio.abstention_reason
+    else:
+        certified_abstention_reason = (
+            "No Alpha6 scientific candidate currently carries "
+            "positive novelty-certification authority."
+        )
+
+    certified_id = certified_novelty_portfolio_id(
+        source_portfolio_id=portfolio.portfolio_id,
+        domain_profile_id=portfolio.domain_profile_id,
+        source_context_sha256=portfolio.source_context_sha256,
+        certified_hypothesis_ids=tuple(
+            card.hypothesis_id
+            for card in certified_cards
+        ),
+        abstention_reason=certified_abstention_reason,
+    )
+
+    certified_portfolio = HypothesisPortfolio(
+        portfolio_id=certified_id,
+        domain_profile_id=portfolio.domain_profile_id,
+        source_context_id=portfolio.source_context_id,
+        source_context_sha256=portfolio.source_context_sha256,
+        source_report_id=portfolio.source_report_id,
+        source_report_sha256=portfolio.source_report_sha256,
+        hypotheses=certified_cards,
+        abstention_reason=certified_abstention_reason,
+    )
+
+    status_counts: dict[str, int] = {}
+    unresolved_dimension_counts: dict[str, int] = {}
+    for decision in decisions:
+        status = str(decision["certification_status"])
+        status_counts[status] = status_counts.get(status, 0) + 1
+        for dimension in decision.get("unresolved_dimensions", []):
+            unresolved_dimension_counts[dimension] = (
+                unresolved_dimension_counts.get(dimension, 0) + 1
+            )
+
+    decision_signatures = tuple(
+        (
+            str(decision.get("final_hypothesis_id") or "")
+            + "::"
+            + str(decision.get("candidate_hypothesis_id") or "")
+            + "::"
+            + str(decision.get("n10_selection_class") or "")
+            + "::"
+            + str(decision.get("certification_status") or "")
+        )
+        for decision in decisions
+    )
+    report_id = novelty_certification_report_id(
+        source_portfolio_id=portfolio.portfolio_id,
+        certified_portfolio_id=certified_portfolio.portfolio_id,
+        refinement_report_id=refinement_report.report_id,
+        decision_signatures=decision_signatures,
+    )
+
+    report = {
+        "schema_version":
+            "alpha6-post-generation-novelty-certification-v2",
+        "report_id":
+            report_id,
+        "source_alpha6_portfolio_id":
+            portfolio.portfolio_id,
+        "source_alpha6_refinement_report_id":
+            refinement_report.report_id,
+        "candidate_portfolio_id":
+            candidate_portfolio.portfolio_id,
+        "certified_portfolio_id":
+            certified_portfolio.portfolio_id,
+        "candidate_count":
+            len(candidate_portfolio.hypotheses),
+        "certified_count":
+            len(certified_portfolio.hypotheses),
+        "unresolved_count":
+            status_counts.get("NOVELTY_UNRESOLVED", 0),
+        "rejected_count":
+            status_counts.get("NOVELTY_REJECTED", 0),
+        "pre_generation_certified_count":
+            status_counts.get(
+                "NOVELTY_CERTIFIED_PRE_GENERATION",
+                0,
+            ),
+        "status_counts":
+            status_counts,
+        "unresolved_dimension_counts":
+            unresolved_dimension_counts,
+        "decisions":
+            decisions,
+        "candidate_survival_authority":
+            False,
+        "novelty_certification_authority":
+            True,
+        "authority_source":
+            "n10_role_aware_nonobviousness_v2",
+        "authority_scope":
+            "novelty_certification_only",
+        "authority_mode":
+            POST_GENERATION_N10_AUTHORITY_MODE_CERTIFICATION_ONLY,
+        "compatibility_boundary": {
+            "legacy_hard_filter_function":
+                "filter_alpha6_portfolio_by_nonobviousness",
+            "certification_only_function":
+                "split_alpha6_portfolio_by_novelty_certification",
+            "legacy_behavior_changed":
+                False,
+        },
+        "output_contract":
+            dict(POST_GENERATION_N10_CERTIFICATION_OUTPUT_CONTRACT),
+        "candidate_portfolio_preserved":
+            True,
+        "conditional_is_positive":
+            False,
+        "absence_is_novelty":
+            False,
+        "ineligible_deletes_scientific_candidate":
+            False,
+        "policy": {
+            "ELIGIBLE":
+                "NOVELTY_CERTIFIED",
+            "CONDITIONAL":
+                "NOVELTY_UNRESOLVED",
+            "INELIGIBLE":
+                "NOVELTY_REJECTED",
+        },
+    }
+
+    return (
+        candidate_portfolio,
+        certified_portfolio,
+        report,
+    )

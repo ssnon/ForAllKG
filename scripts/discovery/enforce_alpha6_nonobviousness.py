@@ -15,8 +15,12 @@ from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisPortfolio,
 )
 from pipeline_core.discovery.nonobviousness_post_generation import (
+    POST_GENERATION_N10_AUTHORITY_MODE_CERTIFICATION_ONLY,
+    POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER,
+    POST_GENERATION_N10_AUTHORITY_MODES,
     assert_candidate_final_authority_equivalent,
     filter_alpha6_portfolio_by_nonobviousness,
+    split_alpha6_portfolio_by_novelty_certification,
 )
 from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyRefinementReport,
@@ -414,15 +418,49 @@ def parse_args() -> argparse.Namespace:
     )
 
     p.add_argument(
+        "--authority-mode",
+        choices=POST_GENERATION_N10_AUTHORITY_MODES,
+        default=POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER,
+        help=(
+            "hard_filter preserves legacy deletion semantics; "
+            "certification_only preserves the Alpha6 candidate portfolio "
+            "and emits a separate novelty certification report/subset."
+        ),
+    )
+
+    p.add_argument(
         "--output-portfolio",
-        required=True,
+        required=False,
         type=Path,
+        help="Legacy hard_filter output portfolio.",
     )
 
     p.add_argument(
         "--output-report",
-        required=True,
+        required=False,
         type=Path,
+        help="Legacy hard_filter enforcement report.",
+    )
+
+    p.add_argument(
+        "--output-candidate-portfolio",
+        required=False,
+        type=Path,
+        help="Certification-only scientific candidate portfolio.",
+    )
+
+    p.add_argument(
+        "--output-certification-report",
+        required=False,
+        type=Path,
+        help="Certification-only N10 novelty certification report.",
+    )
+
+    p.add_argument(
+        "--output-certified-portfolio",
+        required=False,
+        type=Path,
+        help="Certification-only novelty-certified portfolio subset.",
     )
 
     return p.parse_args()
@@ -430,6 +468,49 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+
+    if args.authority_mode == POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER:
+        if args.output_portfolio is None or args.output_report is None:
+            raise ValueError(
+                "hard_filter requires --output-portfolio and --output-report"
+            )
+        if any(
+            value is not None
+            for value in (
+                args.output_candidate_portfolio,
+                args.output_certification_report,
+                args.output_certified_portfolio,
+            )
+        ):
+            raise ValueError(
+                "hard_filter cannot use certification-only output arguments"
+            )
+
+    elif (
+        args.authority_mode
+        == POST_GENERATION_N10_AUTHORITY_MODE_CERTIFICATION_ONLY
+    ):
+        if any(
+            value is None
+            for value in (
+                args.output_candidate_portfolio,
+                args.output_certification_report,
+                args.output_certified_portfolio,
+            )
+        ):
+            raise ValueError(
+                "certification_only requires "
+                "--output-candidate-portfolio, "
+                "--output-certification-report, and "
+                "--output-certified-portfolio"
+            )
+        if args.output_portfolio is not None or args.output_report is not None:
+            raise ValueError(
+                "certification_only cannot use legacy hard-filter outputs"
+            )
+
+    else:
+        raise ValueError("unsupported post-generation N10 authority mode")
 
     portfolio = (
         HypothesisPortfolio
@@ -789,43 +870,105 @@ def main() -> int:
             }
         )
 
-    filtered, audit = (
-        filter_alpha6_portfolio_by_nonobviousness(
+    if args.authority_mode == POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER:
+        filtered, audit = (
+            filter_alpha6_portfolio_by_nonobviousness(
+                portfolio=portfolio,
+                refinement_report=refinement,
+                gates_by_candidate_id=gates,
+            )
+        )
+
+        audit[
+            "candidate_artifacts"
+        ] = artifact_audit
+        audit["authority_mode"] = (
+            POST_GENERATION_N10_AUTHORITY_MODE_HARD_FILTER
+        )
+
+        _write_json(
+            args.output_portfolio,
+            filtered,
+        )
+
+        _write_json(
+            args.output_report,
+            audit,
+        )
+
+        print(
+            "Alpha6 fresh-candidate N10 hard-filter enforcement complete"
+        )
+        print(
+            "Generated candidates:",
+            len(candidate_ids),
+        )
+        print(
+            "Alpha6 survivors:",
+            len(portfolio.hypotheses),
+        )
+        print(
+            "Final N10 survivors:",
+            len(filtered.hypotheses),
+        )
+
+    else:
+        (
+            candidate_portfolio,
+            certified_portfolio,
+            certification_report,
+        ) = split_alpha6_portfolio_by_novelty_certification(
             portfolio=portfolio,
             refinement_report=refinement,
             gates_by_candidate_id=gates,
         )
-    )
 
-    audit[
-        "candidate_artifacts"
-    ] = artifact_audit
+        certification_report[
+            "candidate_artifacts"
+        ] = artifact_audit
+        certification_report[
+            "output_paths"
+        ] = {
+            "candidate_portfolio":
+                str(args.output_candidate_portfolio),
+            "certification_report":
+                str(args.output_certification_report),
+            "certified_portfolio":
+                str(args.output_certified_portfolio),
+        }
 
-    _write_json(
-        args.output_portfolio,
-        filtered,
-    )
+        _write_json(
+            args.output_candidate_portfolio,
+            candidate_portfolio,
+        )
+        _write_json(
+            args.output_certification_report,
+            certification_report,
+        )
+        _write_json(
+            args.output_certified_portfolio,
+            certified_portfolio,
+        )
 
-    _write_json(
-        args.output_report,
-        audit,
-    )
-
-    print(
-        "Alpha6 fresh-candidate N10 enforcement complete"
-    )
-    print(
-        "Generated candidates:",
-        len(candidate_ids),
-    )
-    print(
-        "Alpha6 survivors:",
-        len(portfolio.hypotheses),
-    )
-    print(
-        "Final N10 survivors:",
-        len(filtered.hypotheses),
-    )
+        print(
+            "Alpha6 fresh-candidate N10 certification-only assessment complete"
+        )
+        print(
+            "Generated candidates:",
+            len(candidate_ids),
+        )
+        print(
+            "Scientific candidates preserved:",
+            len(candidate_portfolio.hypotheses),
+        )
+        print(
+            "Novelty-certified candidates:",
+            len(certified_portfolio.hypotheses),
+        )
+        print(
+            "Novelty-unresolved candidates:",
+            certification_report.get("unresolved_count", 0),
+        )
 
     return 0
 

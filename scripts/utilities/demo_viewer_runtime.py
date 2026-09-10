@@ -190,6 +190,7 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     portfolio_path, portfolio = _first_json(
         run_dir,
         (
+            "novelty_refinement_a6.n10.candidate.portfolio.json",
             "novelty_refinement_a6.portfolio.json",
             "hypothesis_axis_a4.portfolio.json",
         ),
@@ -210,6 +211,14 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
         run_dir,
         ("novelty_refinement_a6.report.json",),
     )
+    certification_path, certification_report = _first_json(
+        run_dir,
+        ("novelty_refinement_a6.n10.certification.json",),
+    )
+    certified_path, _certified_portfolio = _first_json(
+        run_dir,
+        ("novelty_refinement_a6.n10.certified.portfolio.json",),
+    )
     _, runner_manifest = _first_json(
         run_dir,
         ("e2e_runner.manifest.json", "manifest.json"),
@@ -228,6 +237,12 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     refinement_by_hypothesis = _refinement_attempt_by_final_hypothesis(
         refinement_report
     )
+    certification_by_hypothesis = {
+        _text(row.get("final_hypothesis_id")): dict(row)
+        for row in _list(certification_report.get("decisions"))
+        if isinstance(row, dict)
+        and _text(row.get("final_hypothesis_id"))
+    }
 
     hypotheses: list[dict[str, Any]] = []
     all_papers: set[str] = set()
@@ -345,6 +360,12 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
                 "semantic": semantic_rows,
                 "novelty": novelty,
                 "refinement": dict(refinement),
+                "novelty_certification": dict(
+                    certification_by_hypothesis.get(
+                        hypothesis_id,
+                        {},
+                    )
+                ),
             }
         )
 
@@ -373,6 +394,16 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
             "semantic_review": str(semantic_path) if semantic_path else None,
             "external_novelty": str(external_path) if external_path else None,
             "refinement_report": str(refinement_path) if refinement_path else None,
+            "novelty_certification": (
+                str(certification_path)
+                if certification_path
+                else None
+            ),
+            "certified_novelty_portfolio": (
+                str(certified_path)
+                if certified_path
+                else None
+            ),
         },
         "semantic_overall_summary": _text(
             semantic_review.get("overall_summary")
