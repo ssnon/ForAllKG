@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pipeline_core.discovery.task_bridge_candidate_composition import (
     CandidateRelationView,
+    _target_endpoint_atom_matches,
+    _target_endpoint_atoms,
     compose_task_bridge_candidates,
     lexical_tokens,
 )
@@ -274,8 +276,7 @@ def test_shared_mediator_composition_records_argument_role_bindings():
         "size",
     ]
 
-
-def test_q3_bad_fixture_exposes_argument_role_bindings_without_rejecting():
+def test_q3_bad_fixture_is_rejected_by_target_atom_fidelity():
     source = _candidate(
         "q3_source",
         "plasmonic properties",
@@ -307,38 +308,111 @@ def test_q3_bad_fixture_exposes_argument_role_bindings_without_rejecting():
         ),
     )
 
-    # S18b-1 is instrumentation-only: preserve the current composite.
+    assert rows == ()
+
+
+def test_target_endpoint_atoms_split_explicit_coordination():
+    atoms = _target_endpoint_atoms(
+        (
+            "excitation wavelength and Raman "
+            "reporter or dye selection"
+        )
+    )
+
+    assert atoms == (
+        frozenset(
+            {
+                "excitation",
+                "wavelength",
+            }
+        ),
+        frozenset(
+            {
+                "raman",
+                "reporter",
+            }
+        ),
+        frozenset(
+            {
+                "dye",
+                "selection",
+            }
+        ),
+    )
+
+
+def test_compound_target_requires_complete_atom_in_single_argument():
+    relation = _candidate(
+        "target",
+        "nanoparticle size",
+        "VARIES_WITH",
+        "laser wavelength",
+    )
+
+    atoms = _target_endpoint_atoms(
+        (
+            "excitation wavelength and Raman "
+            "reporter or dye selection"
+        )
+    )
+
+    assert not _target_endpoint_atom_matches(
+        relation=relation,
+        target_atoms=atoms,
+    )
+
+
+def test_compound_target_accepts_complete_atom_in_subject():
+    relation = _candidate(
+        "target",
+        "SERS intensity",
+        "VARIES_WITH",
+        "interparticle separation",
+    )
+
+    atoms = _target_endpoint_atoms(
+        (
+            "electromagnetic hotspot number, "
+            "intensity, and spatial distribution"
+        )
+    )
+
+    assert _target_endpoint_atom_matches(
+        relation=relation,
+        target_atoms=atoms,
+    )
+
+
+def test_single_atom_target_preserves_legacy_overlap_semantics():
+    source = _candidate(
+        "source",
+        "superlattice structural order",
+        "VARIES_WITH",
+        "size and shape uniformity",
+    )
+
+    target = _candidate(
+        "target",
+        "plasmonic properties",
+        "VARIES_WITH",
+        (
+            "nanostructure size shape "
+            "composition arrangement"
+        ),
+    )
+
+    rows = compose_task_bridge_candidates(
+        candidates=[
+            source,
+            target,
+        ],
+        requested_source="structural motif",
+        requested_target="SERS plasmonic behavior",
+    )
+
     assert len(rows) == 1
-
-    row = rows[0]
-
-    assert row.shared_mediator_tokens == ["size"]
-    assert row.target_overlap_tokens == ["wavelength"]
-
-    assert row.source_role_binding.task_subject_tokens == [
-        "plasmonic"
-    ]
-    assert row.source_role_binding.task_object_tokens == [
-        "nanostructure"
-    ]
-    assert row.source_role_binding.mediator_subject_tokens == []
-    assert row.source_role_binding.mediator_object_tokens == [
-        "size"
-    ]
-
-    assert row.target_role_binding.task_subject_tokens == []
-    assert row.target_role_binding.task_object_tokens == [
-        "wavelength"
-    ]
-    assert row.target_role_binding.mediator_subject_tokens == [
-        "size"
-    ]
-    assert row.target_role_binding.mediator_object_tokens == []
-
-    assert row.source_role_binding.task_predicate_tokens == []
-    assert row.source_role_binding.mediator_predicate_tokens == []
-    assert row.target_role_binding.task_predicate_tokens == []
-    assert row.target_role_binding.mediator_predicate_tokens == []
-
-    assert row.epistemic_status == "inspiration_only"
-    assert row.requires_verification
+    assert (
+        rows[0].composite_id
+        == "task_bridge_composite:5ccdb4182f7dc352daa2"
+    )
+    assert rows[0].compatibility_score == 4.25

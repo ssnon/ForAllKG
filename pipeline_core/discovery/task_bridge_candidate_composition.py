@@ -100,6 +100,11 @@ _TOKEN_RE = re.compile(
     r"[A-Za-z0-9]+"
 )
 
+_TARGET_ATOM_SPLIT_RE = re.compile(
+    r"\s*(?:,|\band\b|\bor\b)\s*",
+    flags=re.IGNORECASE,
+)
+
 _STOP = {
     "a",
     "an",
@@ -221,6 +226,65 @@ def relation_tokens(
                 relation.proposed_object,
             ]
         )
+    )
+
+
+def _target_endpoint_atoms(
+    text: str,
+) -> tuple[frozenset[str], ...]:
+    atoms = []
+    seen = set()
+
+    for raw in _TARGET_ATOM_SPLIT_RE.split(
+        str(text)
+    ):
+        tokens = lexical_tokens(
+            raw
+        )
+
+        if not tokens:
+            continue
+
+        key = tuple(
+            sorted(tokens)
+        )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        atoms.append(
+            tokens
+        )
+
+    return tuple(
+        atoms
+    )
+
+
+def _target_endpoint_atom_matches(
+    *,
+    relation: CandidateRelationView,
+    target_atoms: tuple[
+        frozenset[str],
+        ...,
+    ],
+) -> bool:
+    if len(target_atoms) < 2:
+        return True
+
+    subject_tokens = lexical_tokens(
+        relation.proposed_subject
+    )
+
+    object_tokens = lexical_tokens(
+        relation.proposed_object
+    )
+
+    return any(
+        atom <= subject_tokens
+        or atom <= object_tokens
+        for atom in target_atoms
     )
 
 
@@ -352,9 +416,11 @@ def compose_task_bridge_candidates(
     Selection contract:
       1. source-side candidate must lexically overlap requested source;
       2. target-side candidate must lexically overlap requested target;
-      3. after removing task-nucleus tokens, both candidate relations
+      3. for explicitly compound target endpoints, at least one complete
+         target atom must be preserved in one target relation argument;
+      4. after removing task-nucleus tokens, both candidate relations
          must share at least one mediator token;
-      4. rank by mediator overlap/coverage, never by downstream novelty
+      5. rank by mediator overlap/coverage, never by downstream novelty
          or semantic-distinctiveness outcomes.
     """
 
@@ -371,6 +437,12 @@ def compose_task_bridge_candidates(
         requested_target
     )
 
+    target_endpoint_atoms = (
+        _target_endpoint_atoms(
+            requested_target
+        )
+    )
+
     if not source_task_tokens:
         raise ValueError(
             "requested_source produced no tokens"
@@ -379,6 +451,11 @@ def compose_task_bridge_candidates(
     if not target_task_tokens:
         raise ValueError(
             "requested_target produced no tokens"
+        )
+
+    if not target_endpoint_atoms:
+        raise ValueError(
+            "requested_target produced no endpoint atoms"
         )
 
     rows = []
@@ -410,7 +487,16 @@ def compose_task_bridge_candidates(
                 )
             )
 
-        if target_overlap:
+        if (
+            target_overlap
+            and
+            _target_endpoint_atom_matches(
+                relation=candidate,
+                target_atoms=(
+                    target_endpoint_atoms
+                ),
+            )
+        ):
             target_candidates.append(
                 (
                     candidate,
