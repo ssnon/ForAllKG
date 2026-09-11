@@ -217,3 +217,128 @@ def test_semantic_novelty_is_not_an_input():
         and "semantic" not in key.lower()
         for key in type(rows[0]).model_fields
     )
+
+
+def test_shared_mediator_composition_records_argument_role_bindings():
+    source = _candidate(
+        "source",
+        "superlattice structural order",
+        "VARIES_WITH",
+        "size and shape uniformity",
+    )
+
+    target = _candidate(
+        "target",
+        "plasmonic properties",
+        "VARIES_WITH",
+        (
+            "nanostructure size shape "
+            "composition arrangement"
+        ),
+    )
+
+    rows = compose_task_bridge_candidates(
+        candidates=[
+            source,
+            target,
+        ],
+        requested_source="structural motif",
+        requested_target="SERS plasmonic behavior",
+    )
+
+    assert len(rows) == 1
+
+    row = rows[0]
+
+    assert row.source_role_binding.task_subject_tokens == [
+        "structural"
+    ]
+    assert row.source_role_binding.task_predicate_tokens == []
+    assert row.source_role_binding.task_object_tokens == []
+    assert row.source_role_binding.mediator_subject_tokens == []
+    assert row.source_role_binding.mediator_predicate_tokens == []
+    assert row.source_role_binding.mediator_object_tokens == [
+        "shape",
+        "size",
+    ]
+
+    assert row.target_role_binding.task_subject_tokens == [
+        "plasmonic"
+    ]
+    assert row.target_role_binding.task_predicate_tokens == []
+    assert row.target_role_binding.task_object_tokens == []
+    assert row.target_role_binding.mediator_subject_tokens == []
+    assert row.target_role_binding.mediator_predicate_tokens == []
+    assert row.target_role_binding.mediator_object_tokens == [
+        "shape",
+        "size",
+    ]
+
+
+def test_q3_bad_fixture_exposes_argument_role_bindings_without_rejecting():
+    source = _candidate(
+        "q3_source",
+        "plasmonic properties",
+        "VARIES_WITH",
+        (
+            "nanostructure size, shape, "
+            "composition, and arrangement"
+        ),
+    )
+
+    target = _candidate(
+        "q3_target",
+        "nanoparticle size",
+        "VARIES_WITH",
+        "laser wavelength",
+    )
+
+    rows = compose_task_bridge_candidates(
+        candidates=[
+            source,
+            target,
+        ],
+        requested_source=(
+            "Au nanostructure plasmonic response"
+        ),
+        requested_target=(
+            "excitation wavelength and Raman "
+            "reporter or dye selection"
+        ),
+    )
+
+    # S18b-1 is instrumentation-only: preserve the current composite.
+    assert len(rows) == 1
+
+    row = rows[0]
+
+    assert row.shared_mediator_tokens == ["size"]
+    assert row.target_overlap_tokens == ["wavelength"]
+
+    assert row.source_role_binding.task_subject_tokens == [
+        "plasmonic"
+    ]
+    assert row.source_role_binding.task_object_tokens == [
+        "nanostructure"
+    ]
+    assert row.source_role_binding.mediator_subject_tokens == []
+    assert row.source_role_binding.mediator_object_tokens == [
+        "size"
+    ]
+
+    assert row.target_role_binding.task_subject_tokens == []
+    assert row.target_role_binding.task_object_tokens == [
+        "wavelength"
+    ]
+    assert row.target_role_binding.mediator_subject_tokens == [
+        "size"
+    ]
+    assert row.target_role_binding.mediator_object_tokens == []
+
+    assert row.source_role_binding.task_predicate_tokens == []
+    assert row.source_role_binding.mediator_predicate_tokens == []
+    assert row.target_role_binding.task_predicate_tokens == []
+    assert row.target_role_binding.mediator_predicate_tokens == []
+
+    assert row.epistemic_status == "inspiration_only"
+    assert row.requires_verification

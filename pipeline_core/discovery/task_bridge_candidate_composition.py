@@ -22,6 +22,34 @@ class CandidateRelationView(StrictModel):
     occurrences: int = 0
 
 
+
+class RelationRoleBindingView(StrictModel):
+    # Diagnostic-only argument-slot binding for S18b-1.
+    schema_version: str = (
+        "relation-role-binding-v1"
+    )
+
+    task_subject_tokens: list[str] = Field(
+        default_factory=list
+    )
+    task_predicate_tokens: list[str] = Field(
+        default_factory=list
+    )
+    task_object_tokens: list[str] = Field(
+        default_factory=list
+    )
+
+    mediator_subject_tokens: list[str] = Field(
+        default_factory=list
+    )
+    mediator_predicate_tokens: list[str] = Field(
+        default_factory=list
+    )
+    mediator_object_tokens: list[str] = Field(
+        default_factory=list
+    )
+
+
 class TaskBridgeCompositeCandidate(StrictModel):
     schema_version: str = (
         "task-bridge-composite-candidate-v1"
@@ -41,6 +69,13 @@ class TaskBridgeCompositeCandidate(StrictModel):
 
     source_relation: CandidateRelationView
     target_relation: CandidateRelationView
+
+    source_role_binding: RelationRoleBindingView = Field(
+        default_factory=RelationRoleBindingView
+    )
+    target_role_binding: RelationRoleBindingView = Field(
+        default_factory=RelationRoleBindingView
+    )
 
     compatibility_score: float
 
@@ -186,6 +221,45 @@ def relation_tokens(
                 relation.proposed_object,
             ]
         )
+    )
+
+
+def _relation_role_binding(
+    *,
+    relation: CandidateRelationView,
+    task_tokens: frozenset[str],
+    mediator_tokens: frozenset[str],
+) -> RelationRoleBindingView:
+    # Diagnostic-only in S18b-1. Existing eligibility/ranking remains frozen.
+    subject_tokens = lexical_tokens(
+        relation.proposed_subject
+    )
+    predicate_tokens = lexical_tokens(
+        relation.proposed_relation
+    )
+    object_tokens = lexical_tokens(
+        relation.proposed_object
+    )
+
+    return RelationRoleBindingView(
+        task_subject_tokens=sorted(
+            subject_tokens & task_tokens
+        ),
+        task_predicate_tokens=sorted(
+            predicate_tokens & task_tokens
+        ),
+        task_object_tokens=sorted(
+            object_tokens & task_tokens
+        ),
+        mediator_subject_tokens=sorted(
+            subject_tokens & mediator_tokens
+        ),
+        mediator_predicate_tokens=sorted(
+            predicate_tokens & mediator_tokens
+        ),
+        mediator_object_tokens=sorted(
+            object_tokens & mediator_tokens
+        ),
     )
 
 
@@ -468,6 +542,22 @@ def compose_task_bridge_candidates(
 
                     target_relation=(
                         target_candidate
+                    ),
+
+                    source_role_binding=(
+                        _relation_role_binding(
+                            relation=source_candidate,
+                            task_tokens=source_task_tokens,
+                            mediator_tokens=shared,
+                        )
+                    ),
+
+                    target_role_binding=(
+                        _relation_role_binding(
+                            relation=target_candidate,
+                            task_tokens=target_task_tokens,
+                            mediator_tokens=shared,
+                        )
                     ),
 
                     compatibility_score=float(
