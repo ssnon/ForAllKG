@@ -7,6 +7,12 @@ from pathlib import Path
 
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisSynthesisReport
 from domains.registry import get_domain_profile
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    build_diagnostic_review_report,
+)
+from pipeline_core.discovery.diagnostic_prior_art_retrieval import (
+    build_diagnostic_query_plan,
+)
 from pipeline_core.discovery.external_novelty import ExternalNoveltyAssessor
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
@@ -666,6 +672,54 @@ def main() -> None:
 
     _write(prefix.with_suffix(".prior_art.json"), packet)
 
+    diagnostic_plan = (
+        build_diagnostic_query_plan(
+            plan
+        )
+    )
+
+    diagnostic_query_path = (
+        prefix.with_suffix(
+            ".diagnostic_queries.json"
+        )
+    )
+
+    _write(
+        diagnostic_query_path,
+        diagnostic_plan,
+    )
+
+    diagnostic_packet = None
+    diagnostic_prior_art_path = None
+
+    if (
+        diagnostic_plan.queries
+        and not args.reuse_prior_art
+    ):
+        diagnostic_packet = (
+            LiteratureRetriever(
+                providers,
+                results_per_query=(
+                    args.results_per_query
+                ),
+            )
+            .retrieve(
+                diagnostic_plan
+            )
+            .packet
+        )
+
+        diagnostic_prior_art_path = (
+            prefix.with_suffix(
+                ".diagnostic_prior_art.json"
+            )
+        )
+
+        _write(
+            diagnostic_prior_art_path,
+            diagnostic_packet,
+        )
+
     ranker = PriorArtRanker(
         encoder,
         max_ranked_works_per_claim=policy.max_ranked_works_per_claim,
@@ -687,6 +741,54 @@ def main() -> None:
         policy=policy,
         compiler=compiler,
     )
+
+    diagnostic_reviews = []
+    diagnostic_review_path = None
+
+    if diagnostic_packet is not None:
+        diagnostic_reviews = (
+            assessor.review_diagnostic_prior_art(
+                diagnostic_plan,
+                diagnostic_packet,
+            )
+        )
+
+        diagnostic_review_report = (
+            build_diagnostic_review_report(
+                source_portfolio_id=(
+                    diagnostic_plan
+                    .source_portfolio_id
+                ),
+                source_query_plan_id=(
+                    diagnostic_plan.plan_id
+                ),
+                source_query_plan_sha256=(
+                    diagnostic_plan
+                    .plan_sha256
+                ),
+                source_prior_art_packet_id=(
+                    diagnostic_packet
+                    .packet_id
+                ),
+                source_prior_art_packet_sha256=(
+                    diagnostic_packet
+                    .packet_sha256
+                ),
+                reviews=diagnostic_reviews,
+            )
+        )
+
+        diagnostic_review_path = (
+            prefix.with_suffix(
+                ".diagnostic_review.json"
+            )
+        )
+
+        _write(
+            diagnostic_review_path,
+            diagnostic_review_report,
+        )
+
     with prior_art_review_audit_scope(
         assessment_kind="alpha5_initial",
         source_portfolio_id=portfolio.portfolio_id,
@@ -697,6 +799,18 @@ def main() -> None:
             portfolio,
             plan,
             packet,
+            diagnostic_plan=(
+                diagnostic_plan
+                if diagnostic_packet
+                is not None
+                else None
+            ),
+            diagnostic_packet=(
+                diagnostic_packet
+            ),
+            diagnostic_reviews=(
+                diagnostic_reviews
+            ),
             lineage=lineage,
         )
     _write(report_path, report)
@@ -773,6 +887,33 @@ def main() -> None:
 
     print("Saved query plan:", prefix.with_suffix(".claims_queries.json"))
     print("Saved prior art:", prefix.with_suffix(".prior_art.json"))
+    print(
+        "Diagnostic queries:",
+        len(
+            diagnostic_plan.queries
+        ),
+    )
+    print(
+        "Saved diagnostic query plan:",
+        diagnostic_query_path,
+    )
+    if diagnostic_prior_art_path is not None:
+        print(
+            "Saved diagnostic prior art:",
+            diagnostic_prior_art_path,
+        )
+        print(
+            "Saved diagnostic review:",
+            diagnostic_review_path,
+        )
+    else:
+        print(
+            "Diagnostic lower-order authority:",
+            (
+                "fail-closed empty diagnostics "
+                "(reuse-prior-art or no diagnostic queries)"
+            ),
+        )
     print("Saved report:", report_path)
 
 

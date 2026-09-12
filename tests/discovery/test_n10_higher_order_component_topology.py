@@ -82,6 +82,39 @@ def test_prompt_defines_explicit_component_topology():
     )
 
 
+def test_prompt_keeps_composite_only_components_in_enabling_role():
+    text = _DECOMPOSE_SYSTEM
+
+    assert (
+        "do NOT automatically inherit the composite claim's "
+        "NOVELTY_BEARING role onto that component"
+        in text
+    )
+
+    assert (
+        "only scientific function in the supplied hypothesis is "
+        "to constitute, enable, or provide a prerequisite relation"
+        in text
+    )
+
+    assert (
+        "assign novelty_selection_role=REQUIRED_ENABLING_RELATION"
+        in text
+    )
+
+    assert (
+        "explicitly presents that component relation as an "
+        "independent source of scientific distinctiveness"
+        in text
+    )
+
+    assert (
+        "Component-role assignment must be justified by "
+        "hypothesis structure"
+        in text
+    )
+
+
 def test_component_ids_resolve_without_semantic_inference():
     mapping = {
         "a-b": "claim:ab",

@@ -640,6 +640,34 @@ def test_lower_order_gap_annotation_uses_reviewed_core_evidence_only() -> None:
             supporting,
         ],
         coverage,
+        {
+            "claim:component": SimpleNamespace(
+            claim_id="claim:component",
+            importance="core",
+            kind="composite",
+            higher_order_relation_basis=[
+                "A jointly organizes B and C."
+            ],
+            higher_order_component_claim_ids=[
+                "claim:component:ab",
+                "claim:component:ac",
+            ],
+            novelty_selection_role="NOVELTY_BEARING",
+        ),
+            "claim:partial": SimpleNamespace(
+            claim_id="claim:partial",
+            importance="core",
+            kind="composite",
+            higher_order_relation_basis=[
+                "A jointly organizes B and C."
+            ],
+            higher_order_component_claim_ids=[
+                "claim:partial:ab",
+                "claim:partial:ac",
+            ],
+            novelty_selection_role="NOVELTY_BEARING",
+        ),
+        },
     )
 
     assert kind == "HIGHER_ORDER_RELATIONAL_GAP"
@@ -695,6 +723,21 @@ def test_lower_order_gap_annotation_requires_absence_coverage() -> None:
     ) = _lower_order_gap_annotation(
         [review],
         coverage,
+        {
+            "claim:gap": SimpleNamespace(
+            claim_id="claim:gap",
+            importance="core",
+            kind="composite",
+            higher_order_relation_basis=[
+                "A jointly organizes B and C."
+            ],
+            higher_order_component_claim_ids=[
+                "claim:gap:ab",
+                "claim:gap:ac",
+            ],
+            novelty_selection_role="NOVELTY_BEARING",
+        ),
+        },
     )
 
     # Evidence provenance remains visible even when the
@@ -747,6 +790,21 @@ def test_partial_full_claim_does_not_become_relational_gap() -> None:
     ) = _lower_order_gap_annotation(
         [review],
         coverage,
+        {
+            "claim:partial": SimpleNamespace(
+            claim_id="claim:partial",
+            importance="core",
+            kind="composite",
+            higher_order_relation_basis=[
+                "A jointly organizes B and C."
+            ],
+            higher_order_component_claim_ids=[
+                "claim:partial:ab",
+                "claim:partial:ac",
+            ],
+            novelty_selection_role="NOVELTY_BEARING",
+        ),
+        },
     )
 
     assert supported_ids == [

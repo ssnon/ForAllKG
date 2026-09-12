@@ -6,6 +6,10 @@ from collections import Counter
 from typing import Any, Iterable
 
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisSynthesisReport
+from pipeline_core.discovery.diagnostic_prior_art_review import (
+    DiagnosticClaimPriorArtReview,
+    compile_diagnostic_prior_art_review,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
@@ -21,6 +25,9 @@ from pipeline_core.discovery.prior_art_matching import (
     ClaimPriorArtCompiler,
     ClaimReviewBackend,
     PriorArtRanker,
+)
+from pipeline_core.discovery.prior_art_review_audit import (
+    prior_art_review_audit_scope,
 )
 
 
@@ -42,6 +49,12 @@ def _stable_id(prefix: str, *parts: object, length: int = 20) -> str:
 def _lower_order_gap_annotation(
     reviews: list[ClaimPriorArtReview],
     coverage,
+    claims_by_id: dict[str, Any],
+    *,
+    gap_absence_sufficient: bool | None = None,
+    diagnostic_lower_order_signals_by_claim: (
+        dict[str, list[str]] | None
+    ) = None,
 ) -> tuple[
     str,
     list[str],
@@ -52,12 +65,13 @@ def _lower_order_gap_annotation(
 
     LOWER_ORDER_RELATION_PRIOR_ART already asserts that a reviewed record
     establishes a nontrivial lower-order subrelation of the full claim.
-    This helper therefore consumes reviewer output directly rather than
-    re-inferring higher-order eligibility from claim kind or diagnostic
-    query metadata.
+    This helper preserves that reviewed evidence independently of whether
+    the claim is structurally eligible for a higher-order gap annotation.
 
     HIGHER_ORDER_RELATIONAL_GAP is search-bounded and is emitted only when:
       * a core claim has abstract-backed lower-order prior art,
+      * the planned claim is an explicit novelty-bearing composite,
+      * it has exact higher-order provenance and explicit component topology,
       * that full claim remains COMPONENTS_ONLY, and
       * hypothesis-level absence coverage is sufficient.
 
@@ -75,42 +89,98 @@ def _lower_order_gap_annotation(
         if review.importance != "core":
             continue
 
-        lower_matches = [
-            match
-            for match in review.matches
-            if (
-                match.relationship
-                == "LOWER_ORDER_RELATION_PRIOR_ART"
+        if (
+            diagnostic_lower_order_signals_by_claim
+            is None
+        ):
+            lower_work_ids = [
+                match.work_id
+                for match in review.matches
+                if (
+                    match.relationship
+                    == "LOWER_ORDER_RELATION_PRIOR_ART"
+                )
+            ]
+        else:
+            lower_work_ids = list(
+                diagnostic_lower_order_signals_by_claim.get(
+                    review.claim_id,
+                    [],
+                )
             )
-        ]
 
-        if not lower_matches:
+        if not lower_work_ids:
             continue
 
         supported_core_claim_ids.append(
             review.claim_id
         )
 
-        for match in lower_matches:
-            if match.work_id in seen_core_work_ids:
+        for work_id in lower_work_ids:
+            if work_id in seen_core_work_ids:
                 continue
 
             seen_core_work_ids.add(
-                match.work_id
+                work_id
             )
 
             core_work_ids.append(
-                match.work_id
+                work_id
             )
 
-        if review.status == "COMPONENTS_ONLY":
+        claim = claims_by_id.get(
+            review.claim_id
+        )
+
+        structurally_eligible = bool(
+            claim is not None
+            and getattr(
+                claim,
+                "importance",
+                None,
+            )
+            == "core"
+            and getattr(
+                claim,
+                "kind",
+                None,
+            )
+            == "composite"
+            and getattr(
+                claim,
+                "higher_order_relation_basis",
+                None,
+            )
+            and getattr(
+                claim,
+                "higher_order_component_claim_ids",
+                None,
+            )
+            and getattr(
+                claim,
+                "novelty_selection_role",
+                None,
+            )
+            == "NOVELTY_BEARING"
+        )
+
+        if (
+            structurally_eligible
+            and review.status
+            == "COMPONENTS_ONLY"
+        ):
             gap_claim_ids.append(
                 review.claim_id
             )
 
+    if gap_absence_sufficient is None:
+        gap_absence_sufficient = (
+            coverage.sufficient_for_absence_based_novelty
+        )
+
     if (
         gap_claim_ids
-        and coverage.sufficient_for_absence_based_novelty
+        and gap_absence_sufficient
     ):
         relational_gap_kind = (
             "HIGHER_ORDER_RELATIONAL_GAP"
@@ -196,6 +266,83 @@ class ExternalNoveltyAssessor:
             core_claim_count=len(core),
             core_claims_with_minimum_abstract_coverage=covered_core,
             sufficient_for_absence_based_novelty=sufficient,
+        )
+
+    def _relational_gap_absence_sufficient(
+        self,
+        reviews: list[ClaimPriorArtReview],
+        coverage: HypothesisSearchCoverage,
+        claims_by_id: dict[str, Any],
+    ) -> bool:
+        # This authority is only for HIGHER_ORDER_RELATIONAL_GAP.
+        # Global hypothesis status keeps the existing all-core coverage
+        # contract. If any core claim lacks an explicit novelty-selection
+        # role, fail closed to the existing all-core coverage result.
+
+        core = [
+            row
+            for row in reviews
+            if row.importance == "core"
+        ] or reviews
+
+        role_bound: list[
+            tuple[ClaimPriorArtReview, str]
+        ] = []
+
+        for review in core:
+            claim = claims_by_id.get(
+                review.claim_id
+            )
+
+            role = (
+                getattr(
+                    claim,
+                    "novelty_selection_role",
+                    None,
+                )
+                if claim is not None
+                else None
+            )
+
+            if role is None:
+                return (
+                    coverage
+                    .sufficient_for_absence_based_novelty
+                )
+
+            role_bound.append(
+                (
+                    review,
+                    role,
+                )
+            )
+
+        novelty_bearing = [
+            review
+            for review, role in role_bound
+            if role == "NOVELTY_BEARING"
+        ]
+
+        if not novelty_bearing:
+            return False
+
+        covered_novelty_bearing = sum(
+            review.coverage.abstract_work_count
+            >= self.policy.min_abstract_works_per_core_claim
+            for review in novelty_bearing
+        )
+
+        return bool(
+            coverage.successful_query_count
+            >= self.policy.min_successful_queries_for_absence
+            and coverage.unique_work_count
+            >= self.policy.min_unique_works_for_absence
+            and coverage.abstract_work_count
+            >= self.policy.min_abstract_works_for_absence
+            and covered_novelty_bearing
+            == len(
+                novelty_bearing
+            )
         )
 
     def _status(
@@ -352,6 +499,207 @@ class ExternalNoveltyAssessor:
             "The claim-level prior-art pattern does not support a reliable external-novelty category under the current policy.",
         )
 
+    def _diagnostic_lower_order_signal_map(
+        self,
+        diagnostic_reviews: (
+            Iterable[DiagnosticClaimPriorArtReview]
+            | None
+        ),
+        claims_by_id: dict[str, Any],
+        *,
+        diagnostic_plan: LiteratureQueryPlan | None,
+        diagnostic_packet: PriorArtPacket | None,
+    ) -> dict[str, list[str]] | None:
+        if diagnostic_reviews is None:
+            if (
+                diagnostic_plan is not None
+                or diagnostic_packet is not None
+            ):
+                raise ValueError(
+                    "diagnostic plan/packet supplied without "
+                    "diagnostic reviews"
+                )
+            return None
+
+        rows = list(
+            diagnostic_reviews
+        )
+
+        if not rows:
+            if (
+                diagnostic_plan is not None
+                and diagnostic_packet is None
+            ) or (
+                diagnostic_plan is None
+                and diagnostic_packet is not None
+            ):
+                raise ValueError(
+                    "diagnostic plan and packet must be "
+                    "supplied together"
+                )
+            return {}
+
+        if (
+            diagnostic_plan is None
+            or diagnostic_packet is None
+        ):
+            raise ValueError(
+                "non-empty diagnostic reviews require "
+                "diagnostic plan and packet"
+            )
+
+        if (
+            diagnostic_packet.source_portfolio_id
+            != diagnostic_plan.source_portfolio_id
+        ):
+            raise ValueError(
+                "diagnostic plan/packet source_portfolio_id "
+                "mismatch"
+            )
+
+        if (
+            diagnostic_packet.source_query_plan_id
+            != diagnostic_plan.plan_id
+        ):
+            raise ValueError(
+                "diagnostic plan/packet query-plan provenance "
+                "mismatch"
+            )
+
+        if any(
+            row.query_kind != "claim_diagnostic"
+            for row in diagnostic_plan.queries
+        ):
+            raise ValueError(
+                "diagnostic plan contains non-diagnostic query"
+            )
+
+        claim_ids = [
+            row.claim_id
+            for row in rows
+        ]
+
+        if len(claim_ids) != len(set(claim_ids)):
+            raise ValueError(
+                "duplicate diagnostic claim review IDs"
+            )
+
+        packet_works = {
+            row.work_id: row
+            for row in diagnostic_packet.works
+        }
+        projected: dict[str, list[str]] = {}
+
+        for review in rows:
+            planned = claims_by_id.get(
+                review.claim_id
+            )
+
+            if planned is None:
+                raise ValueError(
+                    "diagnostic review references unplanned "
+                    f"claim_id: {review.claim_id}"
+                )
+
+            if review.hypothesis_id != planned.hypothesis_id:
+                raise ValueError(
+                    "diagnostic review hypothesis_id drift "
+                    f"for {review.claim_id}"
+                )
+
+            if review.claim_text != planned.text:
+                raise ValueError(
+                    "diagnostic review text drift "
+                    f"for {review.claim_id}"
+                )
+
+            if (
+                review.diagnostic_query_kind
+                != planned.diagnostic_query_kind
+            ):
+                raise ValueError(
+                    "diagnostic review kind drift "
+                    f"for {review.claim_id}"
+                )
+
+            expected_query = str(
+                planned.diagnostic_execution_query
+                or ""
+            ).strip()
+
+            if (
+                review.diagnostic_execution_query
+                != expected_query
+            ):
+                raise ValueError(
+                    "diagnostic review execution-query drift "
+                    f"for {review.claim_id}"
+                )
+
+            signal_ids = list(
+                review.signal_work_ids
+            )
+
+            if len(signal_ids) != len(set(signal_ids)):
+                raise ValueError(
+                    "duplicate diagnostic signal work IDs "
+                    f"for {review.claim_id}"
+                )
+
+            match_by_id = {
+                match.work_id:
+                    match
+                for match in review.matches
+            }
+
+            for work_id in signal_ids:
+                match = match_by_id.get(
+                    work_id
+                )
+
+                if match is None:
+                    raise ValueError(
+                        "diagnostic signal lacks compiled match "
+                        f"for {review.claim_id}: {work_id}"
+                    )
+
+                if (
+                    review.diagnostic_query_kind
+                    == "LOWER_ORDER_RELATION"
+                    and match.relationship
+                    != "LOWER_ORDER_RELATION_PRIOR_ART"
+                ):
+                    raise ValueError(
+                        "lower-order diagnostic signal has "
+                        "wrong relationship for "
+                        f"{review.claim_id}: {work_id}"
+                    )
+
+                work = packet_works.get(
+                    work_id
+                )
+
+                if (
+                    work is None
+                    or not work.abstract
+                    or not match.abstract_available
+                ):
+                    raise ValueError(
+                        "diagnostic signal lacks abstract-backed "
+                        "packet evidence for "
+                        f"{review.claim_id}: {work_id}"
+                    )
+
+            if (
+                review.diagnostic_query_kind
+                == "LOWER_ORDER_RELATION"
+            ):
+                projected[
+                    review.claim_id
+                ] = signal_ids
+
+        return projected
+
     def _validate_report_sources(
         self,
         portfolio: HypothesisPortfolio,
@@ -372,6 +720,12 @@ class ExternalNoveltyAssessor:
         packet: PriorArtPacket,
         claim_reviews: Iterable[ClaimPriorArtReview],
         *,
+        diagnostic_reviews: (
+            Iterable[DiagnosticClaimPriorArtReview]
+            | None
+        ) = None,
+        diagnostic_plan: LiteratureQueryPlan | None = None,
+        diagnostic_packet: PriorArtPacket | None = None,
         lineage: DiscoveryAxisSynthesisReport | None = None,
     ) -> ExternalNoveltyReport:
         """Compile a production ExternalNoveltyReport from frozen claim reviews.
@@ -456,6 +810,15 @@ class ExternalNoveltyAssessor:
                     f"coverage={review.coverage.claim_id}"
                 )
 
+        diagnostic_lower_order_signals_by_claim = (
+            self._diagnostic_lower_order_signal_map(
+                diagnostic_reviews,
+                planned_by_id,
+                diagnostic_plan=diagnostic_plan,
+                diagnostic_packet=diagnostic_packet,
+            )
+        )
+
         lineages = {
             row.hypothesis_id: row
             for row in (lineage.lineages if lineage is not None else [])
@@ -466,6 +829,14 @@ class ExternalNoveltyAssessor:
             rows = [review_by_id[claim_id] for claim_id in ordered_claim_ids]
             coverage = self._coverage(hypothesis, rows, packet, plan)
             status, reasons, interpretation = self._status(rows, coverage)
+            gap_absence_sufficient = (
+                self._relational_gap_absence_sufficient(
+                    rows,
+                    coverage,
+                    planned_by_id,
+                )
+            )
+
             (
                 relational_gap_kind,
                 lower_order_supported_core_claim_ids,
@@ -474,6 +845,13 @@ class ExternalNoveltyAssessor:
             ) = _lower_order_gap_annotation(
                 rows,
                 coverage,
+                planned_by_id,
+                gap_absence_sufficient=(
+                    gap_absence_sufficient
+                ),
+                diagnostic_lower_order_signals_by_claim=(
+                    diagnostic_lower_order_signals_by_claim
+                ),
             )
 
             strongest: list[tuple[float, str]] = []
@@ -512,7 +890,9 @@ class ExternalNoveltyAssessor:
                         contextual_conflict_ids.append(match.work_id)
 
                     if (
-                        match.relationship
+                        diagnostic_lower_order_signals_by_claim
+                        is None
+                        and match.relationship
                         == "LOWER_ORDER_RELATION_PRIOR_ART"
                         and match.work_id not in seen_lower_order
                     ):
@@ -530,6 +910,27 @@ class ExternalNoveltyAssessor:
                         )
                         directional_counterevidence_ids.append(
                             match.work_id
+                        )
+
+            if (
+                diagnostic_lower_order_signals_by_claim
+                is not None
+            ):
+                for claim_id in ordered_claim_ids:
+                    for work_id in (
+                        diagnostic_lower_order_signals_by_claim.get(
+                            claim_id,
+                            [],
+                        )
+                    ):
+                        if work_id in seen_lower_order:
+                            continue
+
+                        seen_lower_order.add(
+                            work_id
+                        )
+                        lower_order_ids.append(
+                            work_id
                         )
 
             if lower_order_ids:
@@ -619,12 +1020,227 @@ class ExternalNoveltyAssessor:
         }
         return ExternalNoveltyReport(**body, report_sha256=_sha256_json(body))
 
+    def review_diagnostic_prior_art(
+        self,
+        plan: LiteratureQueryPlan,
+        packet: PriorArtPacket,
+    ) -> list[DiagnosticClaimPriorArtReview]:
+        # Run only the bounded diagnostic review lane.
+        # This lane cannot set ordinary full-claim status. Its compiled
+        # signals are consumed only by diagnostic-aware report assembly.
+
+        if (
+            packet.source_portfolio_id
+            != plan.source_portfolio_id
+        ):
+            raise ValueError(
+                "diagnostic plan/packet "
+                "source_portfolio_id mismatch"
+            )
+
+        if (
+            packet.source_query_plan_id
+            != plan.plan_id
+        ):
+            raise ValueError(
+                "diagnostic plan/packet "
+                "query-plan provenance mismatch"
+            )
+
+        if any(
+            row.query_kind
+            != "claim_diagnostic"
+            for row in plan.queries
+        ):
+            raise ValueError(
+                "diagnostic review accepts "
+                "claim_diagnostic queries only"
+            )
+
+        query_claim_ids = {
+            row.claim_id
+            for row in plan.queries
+            if row.claim_id
+        }
+
+        planned_claims = {
+            claim.claim_id: claim
+            for group in plan.claims
+            for claim in group.claims
+        }
+
+        unexpected = sorted(
+            query_claim_ids
+            - set(
+                planned_claims
+            )
+        )
+
+        if unexpected:
+            raise ValueError(
+                "diagnostic query references "
+                "unplanned claim IDs: "
+                f"{unexpected}"
+            )
+
+        claims = [
+            planned_claims[
+                claim_id
+            ]
+            for claim_id in sorted(
+                query_claim_ids
+            )
+        ]
+
+        work_index = {
+            row.work_id: row
+            for row in packet.works
+        }
+
+        reviews: list[
+            DiagnosticClaimPriorArtReview
+        ] = []
+
+        with prior_art_review_audit_scope(
+            assessment_kind=(
+                "diagnostic_prior_art_review"
+            ),
+            source_portfolio_id=(
+                plan.source_portfolio_id
+            ),
+            query_plan_id=(
+                plan.plan_id
+            ),
+            prior_art_packet_id=(
+                packet.packet_id
+            ),
+        ):
+            for claim in claims:
+                candidates = self.ranker.rank(
+                    claim,
+                    packet,
+                    plan,
+                )
+
+                review_input = []
+
+                for ranked in (
+                    candidates.ranked_works
+                ):
+                    work = work_index[
+                        ranked.work_id
+                    ]
+
+                    review_input.append(
+                        {
+                            "work_id":
+                                work.work_id,
+                            "title":
+                                work.title,
+                            "year":
+                                work.year,
+                            "doi":
+                                work.doi,
+                            "abstract":
+                                work.abstract,
+                            "semantic_similarity":
+                                ranked.semantic_similarity,
+                            "lexical_coverage":
+                                ranked.lexical_coverage,
+                            "reaction_domain_relevance":
+                                ranked.reaction_domain_relevance,
+                            "catalyst_scope_relevance":
+                                ranked.catalyst_scope_relevance,
+                            "relevance_score":
+                                ranked.relevance_score,
+                        }
+                    )
+
+                draft = (
+                    self.review_backend
+                    .review_diagnostic_claim(
+                        claim,
+                        review_input,
+                    )
+                )
+
+                reviews.append(
+                    compile_diagnostic_prior_art_review(
+                        claim=claim,
+                        candidates=candidates,
+                        draft=draft,
+                        packet=packet,
+                    )
+                )
+
+        return reviews
+
+    def _resolve_diagnostic_reviews_for_assess(
+        self,
+        *,
+        diagnostic_plan: (
+            LiteratureQueryPlan | None
+        ),
+        diagnostic_packet: (
+            PriorArtPacket | None
+        ),
+        diagnostic_reviews: (
+            Iterable[
+                DiagnosticClaimPriorArtReview
+            ]
+            | None
+        ),
+    ) -> list[
+        DiagnosticClaimPriorArtReview
+    ]:
+        # Production resolution is fail-closed:
+        # no diagnostic artifacts means no lower-order gap authority.
+
+        if diagnostic_reviews is not None:
+            return list(
+                diagnostic_reviews
+            )
+
+        if (
+            diagnostic_plan is None
+            and diagnostic_packet is None
+        ):
+            return []
+
+        if (
+            diagnostic_plan is None
+            or diagnostic_packet is None
+        ):
+            raise ValueError(
+                "diagnostic plan and packet must "
+                "be supplied together"
+            )
+
+        return (
+            self.review_diagnostic_prior_art(
+                diagnostic_plan,
+                diagnostic_packet,
+            )
+        )
+
     def assess(
         self,
         portfolio: HypothesisPortfolio,
         plan: LiteratureQueryPlan,
         packet: PriorArtPacket,
         *,
+        diagnostic_plan: (
+            LiteratureQueryPlan | None
+        ) = None,
+        diagnostic_packet: (
+            PriorArtPacket | None
+        ) = None,
+        diagnostic_reviews: (
+            Iterable[
+                DiagnosticClaimPriorArtReview
+            ]
+            | None
+        ) = None,
         lineage: DiscoveryAxisSynthesisReport | None = None,
     ) -> ExternalNoveltyReport:
         self._validate_report_sources(portfolio, plan, packet)
@@ -671,10 +1287,29 @@ class ExternalNoveltyAssessor:
                     )
                 )
 
+        resolved_diagnostic_reviews = (
+            self._resolve_diagnostic_reviews_for_assess(
+                diagnostic_plan=diagnostic_plan,
+                diagnostic_packet=diagnostic_packet,
+                diagnostic_reviews=(
+                    diagnostic_reviews
+                ),
+            )
+        )
+
         return self.compile_report_from_claim_reviews(
             portfolio,
             plan,
             packet,
             reviews,
+            diagnostic_reviews=(
+                resolved_diagnostic_reviews
+            ),
+            diagnostic_plan=(
+                diagnostic_plan
+            ),
+            diagnostic_packet=(
+                diagnostic_packet
+            ),
             lineage=lineage,
         )

@@ -97,9 +97,11 @@ EXPLICIT HIGHER-ORDER RELATION PRESERVATION CONTRACT:
 - Do not reconstruct higher_order_relation_basis by stitching non-contiguous fragments.
 - If the hypothesis does not explicitly supply such a span, do NOT manufacture a composite proposition. Leave higher_order_relation_basis empty.
 - A valid composite claim may be novelty_selection_role=NOVELTY_BEARING when the higher-order relation itself carries the hypothesis's distinctiveness.
-- A component relation may be novelty_selection_role=REQUIRED_ENABLING_RELATION when the supplied hypothesis structurally uses it only as a prerequisite for the explicit higher-order relation.
+- When a separately emitted atomic claim is listed in a composite claim's higher_order_component_local_ids, do NOT automatically inherit the composite claim's NOVELTY_BEARING role onto that component.
+- If that listed component's only scientific function in the supplied hypothesis is to constitute, enable, or provide a prerequisite relation for the explicit higher-order proposition, assign novelty_selection_role=REQUIRED_ENABLING_RELATION.
+- A listed component may remain novelty_selection_role=NOVELTY_BEARING only when the supplied hypothesis explicitly presents that component relation as an independent source of scientific distinctiveness in addition to its membership in the composite.
 - Never assign REQUIRED_ENABLING_RELATION because a component looks familiar or because you expect it to be established in the literature.
-- If a component relation independently carries claimed distinctiveness, it may remain NOVELTY_BEARING.
+- Component-role assignment must be justified by hypothesis structure, not by retrieved or remembered prior art.
 - A prediction that merely tests an already preserved composite relation should normally be represented through that claim's predicted_observation and falsification_condition rather than duplicated as a second novelty-bearing claim.
 - A separate distinctive_prediction claim is appropriate only when the prediction adds an independently assessable scientific proposition.
 - When claim budget is limited, preserve an explicitly stated higher-order novelty-bearing relation before generic explanatory or auxiliary material.
