@@ -29,11 +29,13 @@ from pipeline_core.discovery.dual_hypothesis_context import (
     DualHypothesisContext,
 )
 from pipeline_core.discovery.relation_component_composition import (
+    EndpointEquivalenceWitness,
     RelationComponentAuthority,
     RelationComponentView,
     candidate_inspiration_component,
     compose_relation_component_topologies,
     confirmed_known_component_from_mapping,
+    topology_has_materializable_endpoint_fidelity,
     topology_to_task_bridge_composite,
 )
 from pipeline_core.discovery.task_bridge_candidate_composition import (
@@ -64,6 +66,152 @@ TASK_AXIS_SOURCE_MODES = {
 MIN_EXPLORATION_SCORE = 0.05
 MAX_GROUNDING_SEMANTIC_OVERLAP = 0.95
 MAX_CONTEXT_SWITCH_PENALTY = 0.50
+
+
+def _normalized_endpoint_text(value: object) -> str:
+    return " ".join(
+        str(value or "").split()
+    ).casefold()
+
+
+def _load_endpoint_equivalences(
+    path: Path | None,
+    *,
+    requested_source: str,
+    requested_target: str,
+) -> tuple[EndpointEquivalenceWitness, ...]:
+    # Task-scoped and fail-closed. No scientific synonymy is inferred.
+    if path is None:
+        return ()
+
+    if not path.is_file():
+        raise ValueError(
+            "endpoint-equivalence file does not exist: "
+            + str(path)
+        )
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8")
+    )
+
+    if not isinstance(payload, dict):
+        raise ValueError(
+            "endpoint-equivalence file must contain a JSON object"
+        )
+
+    if (
+        payload.get("schema_version")
+        != "endpoint-equivalence-set-v1"
+    ):
+        raise ValueError(
+            "endpoint-equivalence file has unsupported schema_version"
+        )
+
+    scope = payload.get("scope")
+    if not isinstance(scope, dict):
+        raise ValueError(
+            "endpoint-equivalence file requires object scope"
+        )
+
+    expected_source = _normalized_endpoint_text(
+        requested_source
+    )
+    expected_target = _normalized_endpoint_text(
+        requested_target
+    )
+    file_source = _normalized_endpoint_text(
+        scope.get("requested_source")
+    )
+    file_target = _normalized_endpoint_text(
+        scope.get("requested_target")
+    )
+
+    if file_source != expected_source:
+        raise ValueError(
+            "endpoint-equivalence source scope does not match task: "
+            f"{file_source!r} != {expected_source!r}"
+        )
+
+    if file_target != expected_target:
+        raise ValueError(
+            "endpoint-equivalence target scope does not match task: "
+            f"{file_target!r} != {expected_target!r}"
+        )
+
+    rows = payload.get("witnesses")
+    if not isinstance(rows, list):
+        raise ValueError(
+            "endpoint-equivalence witnesses must be a list"
+        )
+
+    witnesses = []
+    seen = set()
+
+    for index, row in enumerate(rows):
+        try:
+            witness = EndpointEquivalenceWitness.model_validate(
+                row
+            )
+        except Exception as exc:
+            raise ValueError(
+                "endpoint-equivalence witness failed validation: "
+                f"index={index}"
+            ) from exc
+
+        if witness.witness_id in seen:
+            raise ValueError(
+                "duplicate endpoint-equivalence witness_id: "
+                + witness.witness_id
+            )
+
+        if not witness.provenance_ids:
+            raise ValueError(
+                "endpoint-equivalence witness requires provenance_ids: "
+                + witness.witness_id
+            )
+
+        seen.add(witness.witness_id)
+        witnesses.append(witness)
+
+    return tuple(witnesses)
+
+
+def _used_endpoint_equivalence_witness_ids(
+    topologies: tuple[object, ...],
+) -> list[str]:
+    used = set()
+
+    for topology in topologies:
+        for binding in (
+            topology.source_binding,
+            topology.target_binding,
+        ):
+            witness_id = (
+                binding.equivalence_witness_id
+            )
+            if witness_id:
+                used.add(str(witness_id))
+
+    return sorted(used)
+
+
+def _endpoint_fidelity_counts(
+    topologies: tuple[object, ...],
+) -> tuple[int, int]:
+    exact = 0
+    equivalent = 0
+
+    for topology in topologies:
+        authorities = {
+            topology.source_binding.binding_authority,
+            topology.target_binding.binding_authority,
+        }
+        if authorities == {"exact"}:
+            exact += 1
+        elif "partial" not in authorities:
+            equivalent += 1
+
+    return exact, equivalent
 
 
 def _load_confirmed_known_components(
@@ -555,6 +703,16 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--endpoint-equivalences",
+        default=None,
+        type=Path,
+        help=(
+            "Optional task-scoped endpoint-equivalence-set-v1 JSON. "
+            "Used only with --accepted-patterns. Equivalence remains "
+            "explicit and auditable; it is never inferred."
+        ),
+    )
+    parser.add_argument(
         "--domain-profile",
         required=True,
     )
@@ -706,6 +864,22 @@ def main() -> int:
 
     requested_source, requested_target = (
         parsed
+    )
+
+    if (
+        args.endpoint_equivalences is not None
+        and args.accepted_patterns is None
+    ):
+        raise ValueError(
+            "--endpoint-equivalences requires --accepted-patterns"
+        )
+
+    endpoint_equivalences = (
+        _load_endpoint_equivalences(
+            args.endpoint_equivalences,
+            requested_source=requested_source,
+            requested_target=requested_target,
+        )
     )
 
     scratch_bundle = (
@@ -860,7 +1034,11 @@ def main() -> int:
     ] = ()
 
     relation_component_topologies = ()
+    endpoint_fidelity_topologies = ()
     relation_component_composites = ()
+    exact_endpoint_topology_count = 0
+    equivalent_endpoint_topology_count = 0
+    used_endpoint_equivalence_witness_ids: list[str] = []
 
     if (
         args.accepted_patterns
@@ -929,8 +1107,32 @@ def main() -> int:
                     requested_target=(
                         requested_target
                     ),
+                    endpoint_equivalences=(
+                        endpoint_equivalences
+                    ),
                     max_topologies=12,
                     require_confirmed_known=True,
+                )
+            )
+
+            endpoint_fidelity_topologies = (
+                compose_relation_component_topologies(
+                    components=(
+                        *known_components,
+                        *candidate_components,
+                    ),
+                    requested_source=(
+                        requested_source
+                    ),
+                    requested_target=(
+                        requested_target
+                    ),
+                    endpoint_equivalences=(
+                        endpoint_equivalences
+                    ),
+                    max_topologies=12,
+                    require_confirmed_known=True,
+                    require_endpoint_fidelity=True,
                 )
             )
 
@@ -946,9 +1148,13 @@ def main() -> int:
                     requested_target=(
                         requested_target
                     ),
+                    endpoint_equivalences=(
+                        endpoint_equivalences
+                    ),
                     max_topologies=12,
                     require_confirmed_known=True,
                     require_candidate_anchor=True,
+                    require_endpoint_fidelity=True,
                 )
             )
 
@@ -958,6 +1164,18 @@ def main() -> int:
                 )
                 for topology
                 in materializable_topologies
+            )
+
+            (
+                exact_endpoint_topology_count,
+                equivalent_endpoint_topology_count,
+            ) = _endpoint_fidelity_counts(
+                endpoint_fidelity_topologies
+            )
+            used_endpoint_equivalence_witness_ids = (
+                _used_endpoint_equivalence_witness_ids(
+                    endpoint_fidelity_topologies
+                )
             )
 
     all_relations = [
@@ -1041,8 +1259,14 @@ def main() -> int:
         ):
             continue
 
-        # Require actual lexical task-source support.
-        if not composite.source_overlap_tokens:
+        # Legacy composites still require lexical source overlap.
+        # Relation-component topologies may use an explicit equivalence
+        # witness whose authority is carried by the topology contract.
+        if (
+            not composite.source_overlap_tokens
+            and composite.composition_mode
+            != "relation_component_topology_v1"
+        ):
             continue
 
         selected_composites.append(
@@ -1112,6 +1336,36 @@ def main() -> int:
                         len(
                             relation_component_composites
                         ),
+                    "endpoint_fidelity_relation_component_topology_count":
+                        len(
+                            endpoint_fidelity_topologies
+                        ),
+                    "partial_endpoint_relation_component_topology_count":
+                        sum(
+                            not topology_has_materializable_endpoint_fidelity(
+                                row
+                            )
+                            for row
+                            in relation_component_topologies
+                        ),
+                    "known_known_endpoint_fidelity_topology_count":
+                        sum(
+                            (
+                                row.source_component.authority
+                                ==
+                                RelationComponentAuthority
+                                .CONFIRMED_KNOWN
+                            )
+                            and
+                            (
+                                row.target_component.authority
+                                ==
+                                RelationComponentAuthority
+                                .CONFIRMED_KNOWN
+                            )
+                            for row
+                            in endpoint_fidelity_topologies
+                        ),
                     "known_known_topology_count":
                         sum(
                             (
@@ -1136,6 +1390,20 @@ def main() -> int:
                             if args.accepted_patterns is None
                             else str(args.accepted_patterns)
                         ),
+                    "endpoint_equivalences_input":
+                        (
+                            None
+                            if args.endpoint_equivalences is None
+                            else str(args.endpoint_equivalences)
+                        ),
+                    "endpoint_equivalence_witness_count":
+                        len(endpoint_equivalences),
+                    "exact_endpoint_relation_component_topology_count":
+                        exact_endpoint_topology_count,
+                    "equivalent_endpoint_relation_component_topology_count":
+                        equivalent_endpoint_topology_count,
+                    "used_endpoint_equivalence_witness_ids":
+                        used_endpoint_equivalence_witness_ids,
                     "task_axis_count":
                         0,
                     "generic_axis_count":
@@ -1464,6 +1732,36 @@ def main() -> int:
             len(
                 relation_component_composites
             ),
+        "endpoint_fidelity_relation_component_topology_count":
+            len(
+                endpoint_fidelity_topologies
+            ),
+        "partial_endpoint_relation_component_topology_count":
+            sum(
+                not topology_has_materializable_endpoint_fidelity(
+                    row
+                )
+                for row
+                in relation_component_topologies
+            ),
+        "known_known_endpoint_fidelity_topology_count":
+            sum(
+                (
+                    row.source_component.authority
+                    ==
+                    RelationComponentAuthority
+                    .CONFIRMED_KNOWN
+                )
+                and
+                (
+                    row.target_component.authority
+                    ==
+                    RelationComponentAuthority
+                    .CONFIRMED_KNOWN
+                )
+                for row
+                in endpoint_fidelity_topologies
+            ),
         "known_known_topology_count":
             sum(
                 (
@@ -1499,6 +1797,20 @@ def main() -> int:
                 if args.accepted_patterns is None
                 else str(args.accepted_patterns)
             ),
+        "endpoint_equivalences_input":
+            (
+                None
+                if args.endpoint_equivalences is None
+                else str(args.endpoint_equivalences)
+            ),
+        "endpoint_equivalence_witness_count":
+            len(endpoint_equivalences),
+        "exact_endpoint_relation_component_topology_count":
+            exact_endpoint_topology_count,
+        "equivalent_endpoint_relation_component_topology_count":
+            equivalent_endpoint_topology_count,
+        "used_endpoint_equivalence_witness_ids":
+            used_endpoint_equivalence_witness_ids,
         "selected_source_unit_ids":
             [
                 (

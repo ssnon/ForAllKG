@@ -152,6 +152,57 @@ RelationArgumentSlot = Literal[
 ]
 
 
+EndpointBindingAuthority = Literal[
+    "exact",
+    "equivalent",
+    "partial",
+]
+
+
+class EndpointEquivalenceWitness(StrictModel):
+    """
+    Explicit, auditable endpoint-equivalence evidence.
+
+    The core composer never infers scientific synonymy from lexical
+    similarity or embedding thresholds. EQUIVALENT binding authority
+    exists only when one of these witnesses is supplied by the caller.
+    """
+
+    schema_version: str = "endpoint-equivalence-witness-v1"
+
+    witness_id: str
+    left_endpoint: str
+    right_endpoint: str
+
+    witness_kind: Literal[
+        "explicit_alias",
+        "registry_identity",
+        "task_supplied",
+    ]
+
+    provenance_ids: list[str] = Field(
+        default_factory=list
+    )
+
+    @model_validator(mode="after")
+    def validate_witness(
+        self,
+    ) -> "EndpointEquivalenceWitness":
+        if not str(self.witness_id).strip():
+            raise ValueError(
+                "endpoint-equivalence witness_id must not be empty"
+            )
+        if not str(self.left_endpoint).strip():
+            raise ValueError(
+                "endpoint-equivalence left_endpoint must not be empty"
+            )
+        if not str(self.right_endpoint).strip():
+            raise ValueError(
+                "endpoint-equivalence right_endpoint must not be empty"
+            )
+        return self
+
+
 class RelationComponentBindingView(StrictModel):
     task_slot: RelationArgumentSlot
     mediator_slot: RelationArgumentSlot
@@ -162,6 +213,41 @@ class RelationComponentBindingView(StrictModel):
     mediator_tokens: list[str] = Field(
         default_factory=list
     )
+
+    # S22c endpoint-fidelity authority. PARTIAL is diagnostic-only.
+    binding_authority: EndpointBindingAuthority = "partial"
+    matched_endpoint_atom: str = ""
+    task_coverage: float = 0.0
+    slot_coverage: float = 0.0
+    equivalence_witness_id: str | None = None
+
+    @model_validator(mode="after")
+    def validate_endpoint_authority(
+        self,
+    ) -> "RelationComponentBindingView":
+        if (
+            self.binding_authority == "equivalent"
+            and not self.equivalence_witness_id
+        ):
+            raise ValueError(
+                "equivalent endpoint binding requires an explicit witness"
+            )
+        if (
+            self.binding_authority != "equivalent"
+            and self.equivalence_witness_id is not None
+        ):
+            raise ValueError(
+                "only equivalent endpoint binding may carry a witness"
+            )
+        if not (0.0 <= float(self.task_coverage) <= 1.0):
+            raise ValueError(
+                "task_coverage must be within [0, 1]"
+            )
+        if not (0.0 <= float(self.slot_coverage) <= 1.0):
+            raise ValueError(
+                "slot_coverage must be within [0, 1]"
+            )
+        return self
 
 
 class RelationalTopologyView(StrictModel):
@@ -193,10 +279,12 @@ class RelationalTopologyView(StrictModel):
     )
 
 
-_TARGET_ATOM_SPLIT_RE = re.compile(
+_ENDPOINT_ATOM_SPLIT_RE = re.compile(
     r"\s*(?:,|\band\b|\bor\b)\s*",
     flags=re.IGNORECASE,
 )
+
+_ENDPOINT_DASHES = "‐‑‒–—−"
 
 
 def _stable_id(
@@ -587,36 +675,240 @@ def candidate_inspiration_component(
     )
 
 
-def _target_endpoint_atoms(
+def _endpoint_atoms(
     text: str,
-) -> tuple[frozenset[str], ...]:
+) -> tuple[str, ...]:
     atoms = []
     seen = set()
 
-    for raw in _TARGET_ATOM_SPLIT_RE.split(
+    for raw in _ENDPOINT_ATOM_SPLIT_RE.split(
         str(text)
     ):
-        tokens = lexical_tokens(
-            raw
-        )
+        atom = " ".join(
+            raw.split()
+        ).strip()
 
-        if not tokens:
+        if not atom:
             continue
 
-        key = tuple(
-            sorted(tokens)
-        )
+        if not _endpoint_token_signatures(
+            atom
+        ):
+            continue
 
+        key = atom.casefold()
         if key in seen:
             continue
 
         seen.add(key)
-        atoms.append(
-            tokens
+        atoms.append(atom)
+
+    return tuple(atoms)
+
+
+def _normalize_endpoint_dashes(
+    text: str,
+) -> str:
+    normalized = str(text)
+
+    for dash in _ENDPOINT_DASHES:
+        normalized = normalized.replace(
+            dash,
+            "-",
         )
 
-    return tuple(
-        atoms
+    return normalized
+
+
+def _endpoint_token_signatures(
+    text: str,
+) -> tuple[frozenset[str], ...]:
+    """
+    Generate domain-neutral orthographic token signatures.
+
+    Both hyphen-split and intra-token-hyphen-collapsed signatures are
+    retained, so e.g. "inter-particle" can match "interparticle" without
+    asserting any scientific synonymy.
+    """
+
+    normalized = _normalize_endpoint_dashes(
+        text
+    )
+
+    variants = [
+        lexical_tokens(normalized),
+        lexical_tokens(
+            re.sub(
+                r"(?<=[A-Za-z0-9])-(?=[A-Za-z0-9])",
+                "",
+                normalized,
+            )
+        ),
+    ]
+
+    rows = []
+    seen = set()
+
+    for tokens in variants:
+        if not tokens:
+            continue
+        key = tuple(sorted(tokens))
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(tokens)
+
+    return tuple(rows)
+
+
+def _best_signature_overlap(
+    left: str,
+    right: str,
+) -> tuple[
+    frozenset[str],
+    frozenset[str],
+    frozenset[str],
+    float,
+    float,
+]:
+    rows = []
+
+    for left_tokens in _endpoint_token_signatures(
+        left
+    ):
+        for right_tokens in _endpoint_token_signatures(
+            right
+        ):
+            overlap = (
+                left_tokens
+                & right_tokens
+            )
+            task_coverage = (
+                len(overlap)
+                / max(
+                    len(left_tokens),
+                    1,
+                )
+            )
+            slot_coverage = (
+                len(overlap)
+                / max(
+                    len(right_tokens),
+                    1,
+                )
+            )
+            rows.append(
+                (
+                    len(overlap),
+                    task_coverage,
+                    slot_coverage,
+                    tuple(sorted(left_tokens)),
+                    tuple(sorted(right_tokens)),
+                    left_tokens,
+                    right_tokens,
+                    overlap,
+                )
+            )
+
+    if not rows:
+        return (
+            frozenset(),
+            frozenset(),
+            frozenset(),
+            0.0,
+            0.0,
+        )
+
+    rows.sort(
+        key=lambda row: (
+            -row[0],
+            -row[1],
+            -row[2],
+            row[3],
+            row[4],
+        )
+    )
+
+    best = rows[0]
+    return (
+        best[5],
+        best[6],
+        best[7],
+        float(best[1]),
+        float(best[2]),
+    )
+
+
+def _endpoint_text_exact(
+    left: str,
+    right: str,
+) -> bool:
+    left_signatures = (
+        _endpoint_token_signatures(
+            left
+        )
+    )
+    right_signatures = (
+        _endpoint_token_signatures(
+            right
+        )
+    )
+
+    return any(
+        left_tokens == right_tokens
+        for left_tokens
+        in left_signatures
+        for right_tokens
+        in right_signatures
+    )
+
+
+def _endpoint_equivalence_witness(
+    *,
+    task_endpoint: str,
+    slot_endpoint: str,
+    witnesses: Sequence[
+        EndpointEquivalenceWitness
+    ],
+) -> EndpointEquivalenceWitness | None:
+    for witness in witnesses:
+        forward = (
+            _endpoint_text_exact(
+                task_endpoint,
+                witness.left_endpoint,
+            )
+            and
+            _endpoint_text_exact(
+                slot_endpoint,
+                witness.right_endpoint,
+            )
+        )
+        reverse = (
+            _endpoint_text_exact(
+                task_endpoint,
+                witness.right_endpoint,
+            )
+            and
+            _endpoint_text_exact(
+                slot_endpoint,
+                witness.left_endpoint,
+            )
+        )
+
+        if forward or reverse:
+            return witness
+
+    return None
+
+
+def _slot_text(
+    component: RelationComponentView,
+    slot: RelationArgumentSlot,
+) -> str:
+    return (
+        component.subject
+        if slot == "subject"
+        else component.object
     )
 
 
@@ -625,10 +917,9 @@ def _slot_tokens(
     slot: RelationArgumentSlot,
 ) -> frozenset[str]:
     return lexical_tokens(
-        (
-            component.subject
-            if slot == "subject"
-            else component.object
+        _slot_text(
+            component,
+            slot,
         )
     )
 
@@ -636,14 +927,11 @@ def _slot_tokens(
 def _task_binding(
     *,
     component: RelationComponentView,
-    task_tokens: frozenset[str],
-    endpoint_atoms: (
-        tuple[
-            frozenset[str],
-            ...,
-        ]
-        | None
-    ) = None,
+    task_endpoint: str,
+    endpoint_atoms: tuple[str, ...],
+    endpoint_equivalences: Sequence[
+        EndpointEquivalenceWitness
+    ],
 ) -> RelationComponentBindingView | None:
     rows = []
 
@@ -657,27 +945,10 @@ def _task_binding(
             "subject",
         ),
     ):
-        slot_tokens = _slot_tokens(
+        slot_text = _slot_text(
             component,
             task_slot,
         )
-        overlap = (
-            slot_tokens
-            & task_tokens
-        )
-
-        if not overlap:
-            continue
-
-        if (
-            endpoint_atoms is not None
-            and len(endpoint_atoms) >= 2
-            and not any(
-                atom <= slot_tokens
-                for atom in endpoint_atoms
-            )
-        ):
-            continue
 
         mediator_tokens = _slot_tokens(
             component,
@@ -687,29 +958,80 @@ def _task_binding(
         if not mediator_tokens:
             continue
 
-        rows.append(
+        for atom in endpoint_atoms:
             (
-                len(overlap),
-                (
-                    len(overlap)
-                    / max(
-                        len(task_tokens),
-                        1,
-                    )
-                ),
-                task_slot,
-                RelationComponentBindingView(
-                    task_slot=task_slot,
-                    mediator_slot=mediator_slot,
-                    task_overlap_tokens=sorted(
-                        overlap
-                    ),
-                    mediator_tokens=sorted(
-                        mediator_tokens
-                    ),
-                ),
+                task_tokens,
+                slot_tokens,
+                overlap,
+                task_coverage,
+                slot_coverage,
+            ) = _best_signature_overlap(
+                atom,
+                slot_text,
             )
-        )
+
+            exact = bool(
+                task_tokens
+                and slot_tokens
+                and task_tokens == slot_tokens
+            )
+
+            witness = None
+            if not exact:
+                witness = (
+                    _endpoint_equivalence_witness(
+                        task_endpoint=atom,
+                        slot_endpoint=slot_text,
+                        witnesses=endpoint_equivalences,
+                    )
+                )
+
+            if exact:
+                authority: EndpointBindingAuthority = (
+                    "exact"
+                )
+            elif witness is not None:
+                authority = "equivalent"
+            elif overlap:
+                authority = "partial"
+            else:
+                continue
+
+            authority_rank = {
+                "exact": 3,
+                "equivalent": 2,
+                "partial": 1,
+            }[authority]
+
+            rows.append(
+                (
+                    authority_rank,
+                    len(overlap),
+                    task_coverage,
+                    slot_coverage,
+                    task_slot,
+                    atom.casefold(),
+                    RelationComponentBindingView(
+                        task_slot=task_slot,
+                        mediator_slot=mediator_slot,
+                        task_overlap_tokens=sorted(
+                            overlap
+                        ),
+                        mediator_tokens=sorted(
+                            mediator_tokens
+                        ),
+                        binding_authority=authority,
+                        matched_endpoint_atom=atom,
+                        task_coverage=task_coverage,
+                        slot_coverage=slot_coverage,
+                        equivalence_witness_id=(
+                            None
+                            if witness is None
+                            else witness.witness_id
+                        ),
+                    ),
+                )
+            )
 
     if not rows:
         return None
@@ -718,19 +1040,47 @@ def _task_binding(
         key=lambda row: (
             -row[0],
             -row[1],
-            row[2],
+            -row[2],
+            -row[3],
+            row[4],
+            row[5],
         )
     )
 
     if (
         len(rows) > 1
-        and rows[0][0:2]
-        == rows[1][0:2]
+        and rows[0][0:4]
+        == rows[1][0:4]
+        and rows[0][4] != rows[1][4]
     ):
-        # Fail closed when task anchoring is argument-slot ambiguous.
+        # Fail closed when equally strong task anchoring is ambiguous
+        # between relation subject and object slots.
         return None
 
-    return rows[0][3]
+    return rows[0][6]
+
+
+def topology_has_materializable_endpoint_fidelity(
+    topology: RelationalTopologyView,
+) -> bool:
+    """
+    EXACT and explicitly witnessed EQUIVALENT endpoint bindings may
+    proceed toward production materialization. PARTIAL remains
+    diagnostic-only.
+    """
+
+    eligible = {
+        "exact",
+        "equivalent",
+    }
+
+    return bool(
+        topology.source_binding.binding_authority
+        in eligible
+        and
+        topology.target_binding.binding_authority
+        in eligible
+    )
 
 
 def _mediator_compatibility(
@@ -791,13 +1141,12 @@ def _mediator_compatibility(
         / len(union)
     )
 
+    # Normalized diagnostic compatibility in [0, 1].
+    # Exact mediator identity remains the maximum 1.0 above.
     score = (
-        2.0 * len(shared)
-        + 0.75 * jaccard
-        + 0.25 * min(
-            source_coverage,
-            target_coverage,
-        )
+        0.50 * jaccard
+        + 0.25 * source_coverage
+        + 0.25 * target_coverage
     )
 
     return (
@@ -814,8 +1163,12 @@ def compose_relation_component_topologies(
     requested_source: str,
     requested_target: str,
     max_topologies: int = 12,
+    endpoint_equivalences: Sequence[
+        EndpointEquivalenceWitness
+    ] = (),
     require_confirmed_known: bool = False,
     require_candidate_anchor: bool = False,
+    require_endpoint_fidelity: bool = False,
 ) -> tuple[
     RelationalTopologyView,
     ...,
@@ -839,26 +1192,17 @@ def compose_relation_component_topologies(
             "max_topologies must be >= 1"
         )
 
-    source_task_tokens = lexical_tokens(
+    source_atoms = _endpoint_atoms(
         requested_source
     )
-    target_task_tokens = lexical_tokens(
+    target_atoms = _endpoint_atoms(
         requested_target
     )
 
-    if not source_task_tokens:
+    if not source_atoms:
         raise ValueError(
-            "requested_source produced no tokens"
+            "requested_source produced no endpoint atoms"
         )
-
-    if not target_task_tokens:
-        raise ValueError(
-            "requested_target produced no tokens"
-        )
-
-    target_atoms = _target_endpoint_atoms(
-        requested_target
-    )
 
     if not target_atoms:
         raise ValueError(
@@ -871,7 +1215,11 @@ def compose_relation_component_topologies(
     for component in components:
         source_binding = _task_binding(
             component=component,
-            task_tokens=source_task_tokens,
+            task_endpoint=requested_source,
+            endpoint_atoms=source_atoms,
+            endpoint_equivalences=(
+                endpoint_equivalences
+            ),
         )
 
         if source_binding is not None:
@@ -884,8 +1232,11 @@ def compose_relation_component_topologies(
 
         target_binding = _task_binding(
             component=component,
-            task_tokens=target_task_tokens,
+            task_endpoint=requested_target,
             endpoint_atoms=target_atoms,
+            endpoint_equivalences=(
+                endpoint_equivalences
+            ),
         )
 
         if target_binding is not None:
@@ -935,6 +1286,18 @@ def compose_relation_component_topologies(
                 and
                 target_component.authority
                 != RelationComponentAuthority.CANDIDATE_INSPIRATION
+            ):
+                continue
+            if (
+                require_endpoint_fidelity
+                and
+                (
+                    source_binding.binding_authority
+                    == "partial"
+                    or
+                    target_binding.binding_authority
+                    == "partial"
+                )
             ):
                 continue
 
@@ -1009,6 +1372,45 @@ def compose_relation_component_topologies(
                             .value
                         ),
                         "task_argument_slots_bound",
+                        (
+                            "source_endpoint_binding:"
+                            + source_binding.binding_authority
+                        ),
+                        (
+                            "target_endpoint_binding:"
+                            + target_binding.binding_authority
+                        ),
+                        *(
+                            [
+                                "source_endpoint_equivalence_witness:"
+                                + str(
+                                    source_binding
+                                    .equivalence_witness_id
+                                )
+                            ]
+                            if (
+                                source_binding
+                                .equivalence_witness_id
+                                is not None
+                            )
+                            else []
+                        ),
+                        *(
+                            [
+                                "target_endpoint_equivalence_witness:"
+                                + str(
+                                    target_binding
+                                    .equivalence_witness_id
+                                )
+                            ]
+                            if (
+                                target_binding
+                                .equivalence_witness_id
+                                is not None
+                            )
+                            else []
+                        ),
+                        "endpoint_binding_fidelity_preserved",
                         "mediator_argument_slots_compatible",
                         "topology_inspiration_only",
                         "topology_requires_verification",
@@ -1139,6 +1541,15 @@ def topology_to_task_bridge_composite(
     if anchor_unit_id is None:
         raise ValueError(
             "Relational topology has no candidate provenance anchor"
+        )
+
+    if not topology_has_materializable_endpoint_fidelity(
+        topology
+    ):
+        raise ValueError(
+            "Relational topology has only partial endpoint binding; "
+            "production materialization requires exact or explicitly "
+            "witnessed equivalent endpoint fidelity"
         )
 
     source = (
