@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import re
@@ -27,6 +28,14 @@ from pipeline_core.discovery.discovery_contracts import (
 from pipeline_core.discovery.dual_hypothesis_context import (
     DualHypothesisContext,
 )
+from pipeline_core.discovery.relation_component_composition import (
+    RelationComponentAuthority,
+    RelationComponentView,
+    candidate_inspiration_component,
+    compose_relation_component_topologies,
+    confirmed_known_component_from_mapping,
+    topology_to_task_bridge_composite,
+)
 from pipeline_core.discovery.task_bridge_candidate_composition import (
     CandidateRelationView,
     candidate_relation_from_mapping,
@@ -47,9 +56,78 @@ GRAMMAR = re.compile(
 MAX_TASK_AXES = 2
 MAX_TOTAL_AXES = 3
 
+TASK_AXIS_SOURCE_MODES = {
+    "task_conditioned_composite_bridge_projection",
+    "task_conditioned_relation_component_topology",
+}
+
 MIN_EXPLORATION_SCORE = 0.05
 MAX_GROUNDING_SEMANTIC_OVERLAP = 0.95
 MAX_CONTEXT_SWITCH_PENALTY = 0.50
+
+
+def _load_confirmed_known_components(
+    path: Path,
+) -> tuple[
+    RelationComponentView,
+    ...,
+]:
+    if not path.is_file():
+        raise ValueError(
+            "accepted-pattern table does not exist: "
+            + str(path)
+        )
+
+    components = []
+    seen = set()
+
+    with path.open(
+        "r",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        reader = csv.DictReader(
+            handle
+        )
+
+        if reader.fieldnames is None:
+            raise ValueError(
+                "accepted-pattern table has no header"
+            )
+
+        for row_number, row in enumerate(
+            reader,
+            start=2,
+        ):
+            try:
+                component = (
+                    confirmed_known_component_from_mapping(
+                        row
+                    )
+                )
+            except Exception as exc:
+                raise ValueError(
+                    "accepted-pattern row failed "
+                    "fail-closed validation: "
+                    f"row={row_number}"
+                ) from exc
+
+            if (
+                component.component_id
+                in seen
+            ):
+                continue
+
+            seen.add(
+                component.component_id
+            )
+            components.append(
+                component
+            )
+
+    return tuple(
+        components
+    )
 
 
 def _json(path: Path) -> Any:
@@ -466,6 +544,17 @@ def main() -> int:
         type=Path,
     )
     parser.add_argument(
+        "--accepted-patterns",
+        default=None,
+        type=Path,
+        help=(
+            "Optional bridge_patterns.csv containing "
+            "validated accepted RelationPattern rows. "
+            "When omitted, the frozen candidate-only "
+            "task-composition path is unchanged."
+        ),
+    )
+    parser.add_argument(
         "--domain-profile",
         required=True,
     )
@@ -760,6 +849,117 @@ def main() -> int:
             unit_id
         ] = eligible[0]
 
+    known_components: tuple[
+        RelationComponentView,
+        ...,
+    ] = ()
+
+    candidate_components: tuple[
+        RelationComponentView,
+        ...,
+    ] = ()
+
+    relation_component_topologies = ()
+    relation_component_composites = ()
+
+    if (
+        args.accepted_patterns
+        is not None
+    ):
+        known_components = (
+            _load_confirmed_known_components(
+                args.accepted_patterns
+            )
+        )
+
+        candidate_rows = []
+
+        for unit_id in sorted(
+            representatives
+        ):
+            relation = (
+                relation_by_unit.get(
+                    unit_id
+                )
+            )
+
+            if relation is None:
+                continue
+
+            (
+                inspiration,
+                _,
+            ) = representatives[
+                unit_id
+            ]
+
+            candidate_rows.append(
+                candidate_inspiration_component(
+                    relation=relation,
+                    candidate_unit_score=float(
+                        inspiration
+                        .candidate_unit_score
+                    ),
+                    exploration_score=float(
+                        inspiration
+                        .exploration_score
+                    ),
+                    quality_eligible=True,
+                    source_path_id=str(
+                        inspiration
+                        .source_path_id
+                    ),
+                )
+            )
+
+        candidate_components = tuple(
+            candidate_rows
+        )
+
+        if known_components:
+            relation_component_topologies = (
+                compose_relation_component_topologies(
+                    components=(
+                        *known_components,
+                        *candidate_components,
+                    ),
+                    requested_source=(
+                        requested_source
+                    ),
+                    requested_target=(
+                        requested_target
+                    ),
+                    max_topologies=12,
+                    require_confirmed_known=True,
+                )
+            )
+
+            materializable_topologies = (
+                compose_relation_component_topologies(
+                    components=(
+                        *known_components,
+                        *candidate_components,
+                    ),
+                    requested_source=(
+                        requested_source
+                    ),
+                    requested_target=(
+                        requested_target
+                    ),
+                    max_topologies=12,
+                    require_confirmed_known=True,
+                    require_candidate_anchor=True,
+                )
+            )
+
+            relation_component_composites = tuple(
+                topology_to_task_bridge_composite(
+                    topology
+                )
+                for topology
+                in materializable_topologies
+            )
+
     all_relations = [
         relation_by_unit[unit_id]
         for unit_id in sorted(
@@ -767,7 +967,7 @@ def main() -> int:
         )
     ]
 
-    composites = (
+    legacy_composites = (
         compose_task_bridge_candidates(
             candidates=all_relations,
             requested_source=(
@@ -779,6 +979,30 @@ def main() -> int:
             max_composites=12,
         )
     )
+
+    if relation_component_composites:
+        relation_component_ids = {
+            row.composite_id
+            for row
+            in relation_component_composites
+        }
+
+        composites = (
+            *relation_component_composites,
+            *(
+                row
+                for row
+                in legacy_composites
+                if (
+                    row.composite_id
+                    not in relation_component_ids
+                )
+            ),
+        )
+    else:
+        composites = (
+            legacy_composites
+        )
 
     # Frozen A17F7D choice:
     # earliest GLOBAL A10 rank per quality-eligible source.
@@ -804,7 +1028,8 @@ def main() -> int:
 
     for composite in composites:
         source_id = (
-            composite.source_unit_id
+            composite.provenance_candidate_unit_id
+            or composite.source_unit_id
         )
 
         if source_id in seen_sources:
@@ -875,6 +1100,42 @@ def main() -> int:
                         len(representatives),
                     "global_composite_count":
                         len(composites),
+                    "confirmed_known_component_count":
+                        len(known_components),
+                    "candidate_inspiration_component_count":
+                        len(candidate_components),
+                    "relation_component_topology_count":
+                        len(
+                            relation_component_topologies
+                        ),
+                    "materializable_relation_component_topology_count":
+                        len(
+                            relation_component_composites
+                        ),
+                    "known_known_topology_count":
+                        sum(
+                            (
+                                row.source_component.authority
+                                ==
+                                RelationComponentAuthority
+                                .CONFIRMED_KNOWN
+                            )
+                            and
+                            (
+                                row.target_component.authority
+                                ==
+                                RelationComponentAuthority
+                                .CONFIRMED_KNOWN
+                            )
+                            for row
+                            in relation_component_topologies
+                        ),
+                    "accepted_patterns_input":
+                        (
+                            None
+                            if args.accepted_patterns is None
+                            else str(args.accepted_patterns)
+                        ),
                     "task_axis_count":
                         0,
                     "generic_axis_count":
@@ -908,7 +1169,8 @@ def main() -> int:
         selected_composites
     ):
         source_id = (
-            composite.source_unit_id
+            composite.provenance_candidate_unit_id
+            or composite.source_unit_id
         )
 
         inspiration, _ = (
@@ -1097,8 +1359,7 @@ def main() -> int:
         and
         not any(
             axis.source_mode
-            !=
-            "task_conditioned_composite_bridge_projection"
+            not in TASK_AXIS_SOURCE_MODES
             for axis in final_axes
         )
     ):
@@ -1191,9 +1452,59 @@ def main() -> int:
             len(representatives),
         "global_composite_count":
             len(composites),
+        "confirmed_known_component_count":
+            len(known_components),
+        "candidate_inspiration_component_count":
+            len(candidate_components),
+        "relation_component_topology_count":
+            len(
+                relation_component_topologies
+            ),
+        "materializable_relation_component_topology_count":
+            len(
+                relation_component_composites
+            ),
+        "known_known_topology_count":
+            sum(
+                (
+                    row.source_component.authority
+                    ==
+                    RelationComponentAuthority
+                    .CONFIRMED_KNOWN
+                )
+                and
+                (
+                    row.target_component.authority
+                    ==
+                    RelationComponentAuthority
+                    .CONFIRMED_KNOWN
+                )
+                for row
+                in relation_component_topologies
+            ),
+        "selected_relation_component_topology_ids":
+            [
+                str(row.topology_id)
+                for row
+                in selected_composites
+                if (
+                    row.composition_mode
+                    ==
+                    "relation_component_topology_v1"
+                )
+            ],
+        "accepted_patterns_input":
+            (
+                None
+                if args.accepted_patterns is None
+                else str(args.accepted_patterns)
+            ),
         "selected_source_unit_ids":
             [
-                row.source_unit_id
+                (
+                    row.provenance_candidate_unit_id
+                    or row.source_unit_id
+                )
                 for row in (
                     selected_composites
                 )
@@ -1208,15 +1519,13 @@ def main() -> int:
         "task_axis_count":
             sum(
                 axis.source_mode
-                ==
-                "task_conditioned_composite_bridge_projection"
+                in TASK_AXIS_SOURCE_MODES
                 for axis in final_axes
             ),
         "generic_axis_count":
             sum(
                 axis.source_mode
-                !=
-                "task_conditioned_composite_bridge_projection"
+                not in TASK_AXIS_SOURCE_MODES
                 for axis in final_axes
             ),
         "axis_modes":

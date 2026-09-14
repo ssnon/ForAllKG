@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Literal, Mapping, Sequence
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
@@ -94,6 +94,62 @@ class TaskBridgeCompositeCandidate(StrictModel):
             "composite_requires_verification",
         ]
     )
+
+    # S22a relation-component bridge metadata.
+    #
+    # Defaults preserve the frozen lexical-candidate contract.  S22a
+    # topologies populate these fields explicitly so known relation
+    # components never masquerade as discovery candidates.
+    source_component_id: str = ""
+    target_component_id: str = ""
+
+    source_component_authority: Literal[
+        "candidate_inspiration",
+        "confirmed_known",
+    ] = "candidate_inspiration"
+
+    target_component_authority: Literal[
+        "candidate_inspiration",
+        "confirmed_known",
+    ] = "candidate_inspiration"
+
+    provenance_candidate_unit_id: str | None = None
+    topology_id: str | None = None
+
+    composition_mode: Literal[
+        "candidate_lexical_v1",
+        "relation_component_topology_v1",
+    ] = "candidate_lexical_v1"
+
+    @model_validator(mode="after")
+    def validate_relation_component_topology_shape(
+        self,
+    ) -> "TaskBridgeCompositeCandidate":
+        if (
+            self.composition_mode
+            != "relation_component_topology_v1"
+        ):
+            return self
+
+        if not self.topology_id:
+            raise ValueError(
+                "relation-component topology requires topology_id"
+            )
+        if not self.source_component_id:
+            raise ValueError(
+                "relation-component topology requires source_component_id"
+            )
+        if not self.target_component_id:
+            raise ValueError(
+                "relation-component topology requires target_component_id"
+            )
+        if not self.provenance_candidate_unit_id:
+            raise ValueError(
+                "relation-component topology requires a real candidate "
+                "provenance anchor"
+            )
+
+        return self
 
 
 _TOKEN_RE = re.compile(

@@ -72,13 +72,18 @@ def materialize_task_bridge_composite_axis(
             "axis_rank must be >= 1"
         )
 
+    provenance_candidate_unit_id = (
+        composite.provenance_candidate_unit_id
+        or composite.source_unit_id
+    )
+
     if (
         source_axis.candidate_unit_id
-        != composite.source_unit_id
+        != provenance_candidate_unit_id
     ):
         raise ValueError(
             "source_axis candidate unit does not "
-            "match composite source unit"
+            "match composite provenance candidate unit"
         )
 
     if not composite.shared_mediator_tokens:
@@ -89,6 +94,62 @@ def materialize_task_bridge_composite_axis(
 
     source = composite.source_relation
     target = composite.target_relation
+
+    is_component_topology = (
+        composite.composition_mode
+        ==
+        "relation_component_topology_v1"
+    )
+
+    source_authority_label = (
+        "CONFIRMED KNOWN COMPONENT"
+        if (
+            composite
+            .source_component_authority
+            == "confirmed_known"
+        )
+        else "CANDIDATE INSPIRATION COMPONENT"
+    )
+
+    target_authority_label = (
+        "CONFIRMED KNOWN COMPONENT"
+        if (
+            composite
+            .target_component_authority
+            == "confirmed_known"
+        )
+        else "CANDIDATE INSPIRATION COMPONENT"
+    )
+
+    source_render_label = (
+        source_authority_label
+        if is_component_topology
+        else "UNVERIFIED SOURCE RELATION"
+    )
+
+    target_render_label = (
+        target_authority_label
+        if is_component_topology
+        else "UNVERIFIED TARGET RELATION"
+    )
+
+    bridge_label = (
+        "relation-component topology"
+        if is_component_topology
+        else "composed candidate bridge"
+    )
+
+    source_descriptor = (
+        "source component"
+        if is_component_topology
+        else "source candidate"
+    )
+
+    target_descriptor = (
+        "target component"
+        if is_component_topology
+        else "target candidate"
+    )
 
     source_sro = (
         f"{source.proposed_subject} | "
@@ -134,10 +195,10 @@ def materialize_task_bridge_composite_axis(
 
         label=(
             f"{requested_source} → "
-            f"{requested_target} via composed "
-            f"candidate bridge [{mediator}]; "
-            f"source candidate: {source_sro}; "
-            f"target candidate: {target_sro}"
+            f"{requested_target} via "
+            f"{bridge_label} [{mediator}]; "
+            f"{source_descriptor}: {source_sro}; "
+            f"{target_descriptor}: {target_sro}"
         ),
 
         entry_anchor_id=(
@@ -161,8 +222,15 @@ def materialize_task_bridge_composite_axis(
         ),
 
         proposed_relation=(
-            "MAY_RELATE_TO_VIA_"
-            "COMPOSED_CANDIDATE_BRIDGE"
+            (
+                "MAY_RELATE_TO_VIA_"
+                "RELATION_COMPONENT_TOPOLOGY"
+            )
+            if is_component_topology
+            else (
+                "MAY_RELATE_TO_VIA_"
+                "COMPOSED_CANDIDATE_BRIDGE"
+            )
         ),
 
         proposed_object=(
@@ -171,17 +239,24 @@ def materialize_task_bridge_composite_axis(
 
         rendered_path=(
             f"{requested_source}"
-            f" -> [UNVERIFIED SOURCE RELATION: "
+            f" -> [{source_render_label}: "
             f"{source_sro}]"
             f" -> [SHARED MEDIATOR: {mediator}]"
-            f" -> [UNVERIFIED TARGET RELATION: "
+            f" -> [{target_render_label}: "
             f"{target_sro}]"
             f" -> {requested_target}"
         ),
 
         source_mode=(
-            "task_conditioned_"
-            "composite_bridge_projection"
+            (
+                "task_conditioned_"
+                "relation_component_topology"
+            )
+            if is_component_topology
+            else (
+                "task_conditioned_"
+                "composite_bridge_projection"
+            )
         ),
 
         exploration_score=float(
@@ -224,9 +299,27 @@ def materialize_task_bridge_composite_axis(
         reason_codes=[
             *source_axis.reason_codes,
 
+            *(
+                composite.reason_codes
+                if is_component_topology
+                else []
+            ),
+
             "task_bridge_composite_projection",
             "question_relation_nucleus_preserved",
-            "component_relations_inspiration_only",
+
+            *(
+                [
+                    "relation_component_topology_projection",
+                    "component_authority_preserved",
+                    "topology_inspiration_only",
+                ]
+                if is_component_topology
+                else [
+                    "component_relations_inspiration_only",
+                ]
+            ),
+
             "shared_mediator_required",
             "composite_requires_verification",
 
@@ -236,12 +329,20 @@ def materialize_task_bridge_composite_axis(
             ),
 
             (
-                "source_candidate_unit:"
-                + composite.source_unit_id
+                (
+                    "provenance_candidate_unit:"
+                    if is_component_topology
+                    else "source_candidate_unit:"
+                )
+                + provenance_candidate_unit_id
             ),
 
             (
-                "target_candidate_unit:"
+                (
+                    "target_component:"
+                    if is_component_topology
+                    else "target_candidate_unit:"
+                )
                 + composite.target_unit_id
             ),
 
@@ -250,6 +351,35 @@ def materialize_task_bridge_composite_axis(
                 + ",".join(
                     composite.shared_mediator_tokens
                 )
+            ),
+
+            *(
+                [
+                    (
+                        "topology_id:"
+                        + str(
+                            composite.topology_id
+                        )
+                    ),
+                    (
+                        "source_component_id:"
+                        + composite.source_component_id
+                    ),
+                    (
+                        "target_component_id:"
+                        + composite.target_component_id
+                    ),
+                    (
+                        "source_component_authority:"
+                        + composite.source_component_authority
+                    ),
+                    (
+                        "target_component_authority:"
+                        + composite.target_component_authority
+                    ),
+                ]
+                if is_component_topology
+                else []
             ),
         ],
     )

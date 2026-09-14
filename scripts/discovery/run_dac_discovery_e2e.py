@@ -2977,6 +2977,14 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--candidate-traversal", str(candidate_traversal),
             "--discovery-bundle", str(bundle),
             "--dual-context", str(dual_context),
+            *(
+                [
+                    "--accepted-patterns",
+                    str(args.accepted_patterns),
+                ]
+                if args.accepted_patterns
+                else []
+            ),
             "--domain-profile", domain_profile.profile_id,
             "--discovery-top-k", str(args.discovery_top_k),
             "--min-candidate-unit-score",
@@ -4576,6 +4584,16 @@ def parse_args() -> argparse.Namespace:
             "grounding and candidate-unit traversal stages. "
             "When omitted, child stages retain the domain "
             "adapter default."
+        ),
+    )
+    parser.add_argument(
+        "--accepted-patterns",
+        default=None,
+        type=Path,
+        help=(
+            "Optional accepted bridge-pattern table "
+            "(bridge_patterns.csv) for S22a "
+            "authority-safe relation-component composition."
         ),
     )
     parser.add_argument(
