@@ -141,6 +141,7 @@ def _dual():
         discovery_bundle=SimpleNamespace(
             inspirations=inspirations,
         ),
+        task_lane_inspirations=[],
     )
 
 

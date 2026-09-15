@@ -10,11 +10,21 @@ ROOT = Path(__file__).resolve().parents[2]
 ENTRY_MODULE = "scripts.discovery.run_dac_discovery_e2e"
 
 EXPECTED_DYNAMIC_STAGES = {
-    "scripts.utilities.build_demo_viewer",
     "scripts.discovery.build_discovery_bundle",
     "scripts.discovery.build_dual_hypothesis_context",
     "scripts.discovery.build_explorer_packet",
     "scripts.discovery.build_hypothesis_context",
+    "scripts.discovery.build_nonobviousness_dual_run_comparison",
+    "scripts.discovery.build_nonobviousness_production_gate",
+    "scripts.discovery.build_nonobviousness_production_gate_v2",
+    "scripts.discovery.build_nonobviousness_production_gate_v2_candidate",
+    "scripts.discovery.build_nonobviousness_shadow",
+    "scripts.discovery.build_question_task_preservation_shadow",
+    "scripts.discovery.build_scientific_novelty_action_shadow",
+    "scripts.discovery.build_scientific_novelty_production_gate",
+    "scripts.discovery.build_task_conditioned_axis_plan",
+    "scripts.discovery.enforce_alpha6_nonobviousness",
+    "scripts.discovery.merge_n10_bounded_continuation_portfolio",
     "scripts.discovery.run_candidate_unit_traversal",
     "scripts.discovery.run_discovery_axis_hypothesis_maker",
     "scripts.discovery.run_external_novelty",
@@ -22,7 +32,14 @@ EXPECTED_DYNAMIC_STAGES = {
     "scripts.discovery.run_graph_explorer",
     "scripts.discovery.run_graph_traversal",
     "scripts.discovery.run_hypothesis_semantic_critic",
+    "scripts.discovery.run_n10_bounded_post_generation_continuation",
+    "scripts.discovery.run_nonobviousness_full_shadow",
     "scripts.discovery.run_novelty_refinement",
+    "scripts.discovery.run_open_world_discovery_axes",
+    "scripts.discovery.run_question_task_conflict_responsiveness",
+    "scripts.discovery.run_scientific_distinctiveness_diagnostic",
+    "scripts.discovery.run_semantic_distinctiveness_review",
+    "scripts.utilities.build_demo_viewer",
 }
 
 EXPECTED_DOMAIN_SURFACE = {

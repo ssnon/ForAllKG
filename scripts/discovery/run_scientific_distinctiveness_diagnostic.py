@@ -4,6 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    DiagnosticPriorArtReviewReport,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     LiteratureQueryPlan,
@@ -42,6 +45,24 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--external-diagnostic-query-plan",
+        default=None,
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--external-diagnostic-prior-art",
+        default=None,
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--external-diagnostic-review",
+        default=None,
+        type=Path,
+    )
+
+    parser.add_argument(
         "--output",
         required=True,
         type=Path,
@@ -71,12 +92,60 @@ def main() -> int:
         )
     )
 
+    diagnostic_paths = (
+        args.external_diagnostic_query_plan,
+        args.external_diagnostic_prior_art,
+        args.external_diagnostic_review,
+    )
+
+    if (
+        any(path is not None for path in diagnostic_paths)
+        and not all(path is not None for path in diagnostic_paths)
+    ):
+        raise ValueError(
+            "Diagnostic prior-art provenance requires all three "
+            "--external-diagnostic-* inputs"
+        )
+
+    diagnostic_plan = (
+        LiteratureQueryPlan.model_validate_json(
+            args.external_diagnostic_query_plan.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.external_diagnostic_query_plan is not None
+        else None
+    )
+
+    diagnostic_packet = (
+        PriorArtPacket.model_validate_json(
+            args.external_diagnostic_prior_art.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.external_diagnostic_prior_art is not None
+        else None
+    )
+
+    diagnostic_review_report = (
+        DiagnosticPriorArtReviewReport.model_validate_json(
+            args.external_diagnostic_review.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.external_diagnostic_review is not None
+        else None
+    )
+
     result = (
         ScientificDistinctivenessAnalyzer()
         .build(
             report,
             plan,
             packet,
+            diagnostic_plan=diagnostic_plan,
+            diagnostic_packet=diagnostic_packet,
+            diagnostic_review_report=diagnostic_review_report,
         )
     )
 

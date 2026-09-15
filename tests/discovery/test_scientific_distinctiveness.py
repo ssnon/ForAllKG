@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import pytest
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    build_diagnostic_review_report,
+)
+from pipeline_core.discovery.diagnostic_prior_art_review import (
+    DiagnosticClaimPriorArtReview,
+    DiagnosticPriorArtMatch,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ClaimSearchCoverage,
@@ -453,3 +460,199 @@ def test_distinctiveness_recomputes_stale_derived_aggregates() -> None:
     )
 
     assert result.source_aggregate_warning_count >= 4
+
+def _diagnostic_only_lower_order_fixture():
+    report, plan, packet = _fixture()
+
+    groups = []
+    for group in plan.claims:
+        claims = []
+        for claim in group.claims:
+            if claim.claim_id == "claim:c1":
+                claim = claim.model_copy(
+                    update={
+                        "diagnostic_query_kind": "LOWER_ORDER_RELATION",
+                        "diagnostic_execution_query":
+                            "A lower-order relation Y",
+                    }
+                )
+            claims.append(claim)
+        groups.append(group.model_copy(update={"claims": claims}))
+
+    main_plan = plan.model_copy(update={"claims": groups})
+
+    diagnostic_plan = LiteratureQueryPlan(
+        plan_id="plan:diagnostic",
+        plan_sha256="plan-diagnostic-sha",
+        source_portfolio_id="portfolio:test",
+        queries=[
+            LiteratureQuery(
+                query_id="query:c1:diagnostic",
+                hypothesis_id="hypothesis:test",
+                claim_id="claim:c1",
+                query_kind="claim_diagnostic",
+                query_text="A lower-order relation Y",
+            )
+        ],
+        claims=groups,
+    )
+
+    diagnostic_packet = PriorArtPacket(
+        packet_id="packet:diagnostic",
+        packet_sha256="packet-diagnostic-sha",
+        source_portfolio_id="portfolio:test",
+        source_query_plan_id="plan:diagnostic",
+        searched_at_utc="2026-01-01T00:00:00+00:00",
+        providers_requested=["fixture"],
+        works=[
+            PriorArtWork(
+                work_id="work:diagnostic",
+                title="Diagnostic lower-order relation",
+                abstract="Abstract-backed lower-order relation evidence.",
+                retrieval_query_ids=["query:c1:diagnostic"],
+                retrieval_claim_ids=["claim:c1"],
+            )
+        ],
+        raw_work_count=1,
+        canonical_work_count=1,
+    )
+
+    diagnostic_review = DiagnosticClaimPriorArtReview(
+        hypothesis_id="hypothesis:test",
+        claim_id="claim:c1",
+        claim_text="A and B jointly alter response Y",
+        diagnostic_query_kind="LOWER_ORDER_RELATION",
+        diagnostic_execution_query="A lower-order relation Y",
+        matches=[
+            DiagnosticPriorArtMatch(
+                work_id="work:diagnostic",
+                relationship="LOWER_ORDER_RELATION_PRIOR_ART",
+                confidence=0.95,
+                rationale="Supports the lower-order relation only.",
+                relevance_score=0.90,
+                semantic_similarity=0.88,
+                lexical_coverage=0.80,
+                reaction_domain_relevance=1.0,
+                catalyst_scope_relevance=1.0,
+                title="Diagnostic lower-order relation",
+                abstract_available=True,
+            )
+        ],
+        signal_work_ids=["work:diagnostic"],
+        interpretation="Diagnostic lower-order signal.",
+    )
+
+    diagnostic_review_report = build_diagnostic_review_report(
+        source_portfolio_id="portfolio:test",
+        source_query_plan_id=diagnostic_plan.plan_id,
+        source_query_plan_sha256=diagnostic_plan.plan_sha256,
+        source_prior_art_packet_id=diagnostic_packet.packet_id,
+        source_prior_art_packet_sha256=diagnostic_packet.packet_sha256,
+        reviews=[diagnostic_review],
+    )
+
+    payload = report.model_dump(mode="json")
+    card = payload["cards"][0]
+    card["claim_reviews"][0]["matches"] = []
+    card["lower_order_prior_art_work_ids"] = ["work:diagnostic"]
+    card["lower_order_core_prior_art_work_ids"] = ["work:diagnostic"]
+    card["lower_order_core_unique_work_count"] = 1
+    card["lower_order_supported_core_claim_ids"] = ["claim:c1"]
+    card["higher_order_relational_gap_claim_ids"] = ["claim:c1"]
+    card["relational_gap_kind"] = "HIGHER_ORDER_RELATIONAL_GAP"
+
+    return (
+        ExternalNoveltyReport.model_validate(payload),
+        main_plan,
+        packet,
+        diagnostic_plan,
+        diagnostic_packet,
+        diagnostic_review_report,
+    )
+
+
+def test_distinctiveness_accepts_valid_diagnostic_only_lower_order_signal() -> None:
+    (
+        report,
+        plan,
+        packet,
+        diagnostic_plan,
+        diagnostic_packet,
+        diagnostic_review_report,
+    ) = _diagnostic_only_lower_order_fixture()
+
+    result = ScientificDistinctivenessAnalyzer().build(
+        report,
+        plan,
+        packet,
+        diagnostic_plan=diagnostic_plan,
+        diagnostic_packet=diagnostic_packet,
+        diagnostic_review_report=diagnostic_review_report,
+    )
+
+    review = result.reviews[0]
+    assert review.evidence_pattern == (
+        "HIGHER_ORDER_RELATIONAL_GAP_WITH_"
+        "LOWER_ORDER_PRIOR_ART"
+    )
+    assert review.lower_order_supported_core_claim_count == 1
+    assert review.higher_order_relational_gap_claim_count == 1
+    assert (
+        review.claim_signals[0].lower_order_prior_art_work_ids
+        == ["work:diagnostic"]
+    )
+    assert (
+        review.referenced_diagnostic_prior_art_work_ids
+        == ["work:diagnostic"]
+    )
+    assert "work:diagnostic" not in review.referenced_prior_art_work_ids
+    assert result.source_diagnostic_query_plan_id == diagnostic_plan.plan_id
+    assert (
+        result.source_diagnostic_prior_art_packet_id
+        == diagnostic_packet.packet_id
+    )
+    assert (
+        result.source_diagnostic_review_report_id
+        == diagnostic_review_report.report_id
+    )
+
+
+def test_distinctiveness_rejects_diagnostic_only_work_without_bundle() -> None:
+    (
+        report,
+        plan,
+        packet,
+        _diagnostic_plan,
+        _diagnostic_packet,
+        _diagnostic_review_report,
+    ) = _diagnostic_only_lower_order_fixture()
+
+    with pytest.raises(ValueError, match="unknown prior-art work_id"):
+        ScientificDistinctivenessAnalyzer().build(
+            report,
+            plan,
+            packet,
+        )
+
+
+def test_distinctiveness_rejects_partial_diagnostic_bundle() -> None:
+    (
+        report,
+        plan,
+        packet,
+        diagnostic_plan,
+        _diagnostic_packet,
+        _diagnostic_review_report,
+    ) = _diagnostic_only_lower_order_fixture()
+
+    with pytest.raises(
+        ValueError,
+        match="requires query plan, prior-art packet, and review report together",
+    ):
+        ScientificDistinctivenessAnalyzer().build(
+            report,
+            plan,
+            packet,
+            diagnostic_plan=diagnostic_plan,
+        )
+

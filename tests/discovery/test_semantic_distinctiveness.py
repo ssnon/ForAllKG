@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import pytest
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    build_diagnostic_review_report,
+)
+from pipeline_core.discovery.diagnostic_prior_art_review import (
+    DiagnosticClaimPriorArtReview,
+    DiagnosticPriorArtMatch,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ClaimSearchCoverage,
@@ -1224,3 +1231,154 @@ def test_semantic_aggregation_complementarity_not_required_for_high() -> None:
         "PRIMARY_HIGH:counterfactual_distinctiveness"
         in reasons
     )
+
+
+def _semantic_diagnostic_fixture():
+    scientific_report, scientific_review, card, packet = _fixture()
+
+    diagnostic_packet = PriorArtPacket(
+        packet_id="packet:diagnostic",
+        packet_sha256="packet-diagnostic-sha",
+        source_portfolio_id="portfolio:test",
+        source_query_plan_id="plan:diagnostic",
+        searched_at_utc="2026-01-01T00:00:00+00:00",
+        providers_requested=["fixture"],
+        works=[
+            PriorArtWork(
+                work_id="work:diagnostic",
+                title="Diagnostic lower-order evidence",
+                year=2021,
+                abstract=(
+                    "Context B is separately linked to response Y "
+                    "under the diagnostic lower-order search."
+                ),
+                retrieval_query_ids=["query:diagnostic"],
+                retrieval_claim_ids=["claim:c1"],
+            )
+        ],
+        raw_work_count=1,
+        canonical_work_count=1,
+    )
+
+    diagnostic_review = DiagnosticClaimPriorArtReview(
+        hypothesis_id="hypothesis:test",
+        claim_id="claim:c1",
+        claim_text="Context B changes how A affects response Y.",
+        diagnostic_query_kind="LOWER_ORDER_RELATION",
+        diagnostic_execution_query="Context B response Y",
+        matches=[
+            DiagnosticPriorArtMatch(
+                work_id="work:diagnostic",
+                relationship="LOWER_ORDER_RELATION_PRIOR_ART",
+                confidence=0.94,
+                rationale=(
+                    "Supports one lower-order relation, not the "
+                    "higher-order moderation."
+                ),
+                relevance_score=0.92,
+                semantic_similarity=0.87,
+                lexical_coverage=0.78,
+                reaction_domain_relevance=1.0,
+                catalyst_scope_relevance=1.0,
+                title="Diagnostic lower-order evidence",
+                year=2021,
+                abstract_available=True,
+            )
+        ],
+        signal_work_ids=["work:diagnostic"],
+        interpretation="Diagnostic lower-order signal.",
+    )
+
+    diagnostic_review_report = build_diagnostic_review_report(
+        source_portfolio_id="portfolio:test",
+        source_query_plan_id="plan:diagnostic",
+        source_query_plan_sha256="plan-diagnostic-sha",
+        source_prior_art_packet_id=diagnostic_packet.packet_id,
+        source_prior_art_packet_sha256=diagnostic_packet.packet_sha256,
+        reviews=[diagnostic_review],
+    )
+
+    signal = scientific_review.claim_signals[0].model_copy(
+        update={
+            "lower_order_prior_art_work_ids": [
+                "work:diagnostic"
+            ]
+        }
+    )
+
+    scientific_review = scientific_review.model_copy(
+        update={
+            "claim_signals": [signal],
+            "referenced_diagnostic_prior_art_work_ids": [
+                "work:diagnostic"
+            ],
+        }
+    )
+
+    scientific_report = scientific_report.model_copy(
+        update={
+            "source_diagnostic_query_plan_id": "plan:diagnostic",
+            "source_diagnostic_query_plan_sha256": "plan-diagnostic-sha",
+            "source_diagnostic_prior_art_packet_id": diagnostic_packet.packet_id,
+            "source_diagnostic_prior_art_packet_sha256": diagnostic_packet.packet_sha256,
+            "source_diagnostic_review_report_id": diagnostic_review_report.report_id,
+            "source_diagnostic_review_report_sha256": diagnostic_review_report.report_sha256,
+            "reviews": [scientific_review],
+        }
+    )
+
+    return (
+        scientific_report,
+        scientific_review,
+        card,
+        packet,
+        diagnostic_packet,
+        diagnostic_review_report,
+    )
+
+
+def test_semantic_prompt_exposes_diagnostic_lower_order_evidence() -> None:
+    (
+        _report,
+        review,
+        card,
+        packet,
+        diagnostic_packet,
+        diagnostic_review_report,
+    ) = _semantic_diagnostic_fixture()
+
+    prompt = SemanticDistinctivenessPromptAssembler().build(
+        review,
+        card,
+        packet,
+        diagnostic_packet=diagnostic_packet,
+        diagnostic_review_report=diagnostic_review_report,
+    )
+
+    assert "work:diagnostic" in prompt.allowed_work_ids
+    assert "Diagnostic lower-order evidence" in prompt.user_prompt
+    assert "Context B is separately linked to response Y" in prompt.user_prompt
+    assert '"evidence_source": "diagnostic_prior_art_packet"' in prompt.user_prompt
+    assert '"relationship": "LOWER_ORDER_RELATION_PRIOR_ART"' in prompt.user_prompt
+
+
+def test_semantic_prompt_rejects_missing_diagnostic_bundle() -> None:
+    (
+        _report,
+        review,
+        card,
+        packet,
+        _diagnostic_packet,
+        _diagnostic_review_report,
+    ) = _semantic_diagnostic_fixture()
+
+    with pytest.raises(
+        ValueError,
+        match="requires diagnostic evidence bundle",
+    ):
+        SemanticDistinctivenessPromptAssembler().build(
+            review,
+            card,
+            packet,
+        )
+

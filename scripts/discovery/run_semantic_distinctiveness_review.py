@@ -4,6 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    DiagnosticPriorArtReviewReport,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
     PriorArtPacket,
@@ -46,6 +49,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--external-prior-art",
         required=True,
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--external-diagnostic-prior-art",
+        default=None,
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--external-diagnostic-review",
+        default=None,
         type=Path,
     )
 
@@ -286,6 +301,107 @@ def main() -> int:
         )
     )
 
+    diagnostic_paths = (
+        args.external_diagnostic_prior_art,
+        args.external_diagnostic_review,
+    )
+
+    if (
+        any(path is not None for path in diagnostic_paths)
+        and not all(path is not None for path in diagnostic_paths)
+    ):
+        raise ValueError(
+            "semantic diagnostic evidence requires both "
+            "--external-diagnostic-prior-art and "
+            "--external-diagnostic-review"
+        )
+
+    diagnostic_packet = (
+        PriorArtPacket.model_validate_json(
+            args.external_diagnostic_prior_art.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.external_diagnostic_prior_art is not None
+        else None
+    )
+
+    diagnostic_review_report = (
+        DiagnosticPriorArtReviewReport.model_validate_json(
+            args.external_diagnostic_review.read_text(
+                encoding="utf-8"
+            )
+        )
+        if args.external_diagnostic_review is not None
+        else None
+    )
+
+    scientific_has_diagnostic = (
+        scientific.source_diagnostic_prior_art_packet_id
+        is not None
+        or scientific.source_diagnostic_review_report_id
+        is not None
+        or scientific.source_diagnostic_query_plan_id
+        is not None
+    )
+
+    if scientific_has_diagnostic and diagnostic_packet is None:
+        raise ValueError(
+            "scientific report references diagnostic evidence but "
+            "semantic runner did not receive the diagnostic bundle"
+        )
+
+    if not scientific_has_diagnostic and diagnostic_packet is not None:
+        raise ValueError(
+            "semantic runner received diagnostic evidence but "
+            "scientific report has no diagnostic provenance"
+        )
+
+    if diagnostic_packet is not None:
+        assert diagnostic_review_report is not None
+
+        if (
+            scientific.source_diagnostic_prior_art_packet_id
+            != diagnostic_packet.packet_id
+            or scientific.source_diagnostic_prior_art_packet_sha256
+            != diagnostic_packet.packet_sha256
+        ):
+            raise ValueError(
+                "scientific/diagnostic prior-art provenance mismatch"
+            )
+
+        if (
+            scientific.source_diagnostic_review_report_id
+            != diagnostic_review_report.report_id
+            or scientific.source_diagnostic_review_report_sha256
+            != diagnostic_review_report.report_sha256
+        ):
+            raise ValueError(
+                "scientific/diagnostic review provenance mismatch"
+            )
+
+        if (
+            scientific.source_diagnostic_query_plan_id
+            != diagnostic_review_report.source_diagnostic_query_plan_id
+            or scientific.source_diagnostic_query_plan_sha256
+            != diagnostic_review_report.source_diagnostic_query_plan_sha256
+        ):
+            raise ValueError(
+                "scientific/diagnostic query-plan provenance mismatch"
+            )
+
+        if (
+            diagnostic_review_report
+            .source_diagnostic_prior_art_packet_id
+            != diagnostic_packet.packet_id
+            or diagnostic_review_report
+            .source_diagnostic_prior_art_packet_sha256
+            != diagnostic_packet.packet_sha256
+        ):
+            raise ValueError(
+                "diagnostic review/prior-art provenance mismatch"
+            )
+
     if (
         scientific
         .source_external_novelty_report_id
@@ -350,6 +466,10 @@ def main() -> int:
             scientific_review,
             external_card,
             packet,
+            diagnostic_packet=diagnostic_packet,
+            diagnostic_review_report=(
+                diagnostic_review_report
+            ),
         )
     )
 

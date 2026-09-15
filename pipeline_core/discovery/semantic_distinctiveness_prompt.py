@@ -4,6 +4,9 @@ import hashlib
 import json
 from dataclasses import dataclass
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    DiagnosticPriorArtReviewReport,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyCard,
     PriorArtPacket,
@@ -14,7 +17,7 @@ from pipeline_core.discovery.scientific_distinctiveness_contracts import (
 
 
 SEMANTIC_DISTINCTIVENESS_PROMPT_VERSION = (
-    "semantic-distinctiveness-critic-prompt-v2"
+    "semantic-distinctiveness-critic-prompt-v3"
 )
 
 
@@ -374,7 +377,34 @@ class SemanticDistinctivenessPromptAssembler:
         review: ScientificDistinctivenessReview,
         card: ExternalNoveltyCard,
         packet: PriorArtPacket,
+        *,
+        diagnostic_packet: PriorArtPacket | None = None,
+        diagnostic_review_report: (
+            DiagnosticPriorArtReviewReport | None
+        ) = None,
     ) -> SemanticDistinctivenessPrompt:
+
+        diagnostic_bundle = (
+            diagnostic_packet,
+            diagnostic_review_report,
+        )
+        if any(x is not None for x in diagnostic_bundle) and not all(
+            x is not None for x in diagnostic_bundle
+        ):
+            raise ValueError(
+                "semantic prompt diagnostic evidence requires "
+                "prior-art packet and review report together"
+            )
+
+        expected_diagnostic_work_ids = set(
+            review.referenced_diagnostic_prior_art_work_ids
+        )
+
+        if expected_diagnostic_work_ids and diagnostic_packet is None:
+            raise ValueError(
+                "semantic prompt requires diagnostic evidence bundle "
+                "for referenced diagnostic prior-art works"
+            )
 
         if (
             review.hypothesis_id
@@ -459,6 +489,65 @@ class SemanticDistinctivenessPromptAssembler:
             raise ValueError(
                 "duplicate prior-art work ID"
             )
+
+        diagnostic_works = {}
+        diagnostic_reviews = {}
+
+        if diagnostic_packet is not None:
+            assert diagnostic_review_report is not None
+
+            diagnostic_works = {
+                row.work_id:
+                    row
+                for row in diagnostic_packet.works
+            }
+            if len(diagnostic_works) != len(diagnostic_packet.works):
+                raise ValueError(
+                    "duplicate diagnostic prior-art work ID"
+                )
+
+            diagnostic_reviews = {
+                row.claim_id:
+                    row
+                for row in diagnostic_review_report.reviews
+            }
+            if (
+                len(diagnostic_reviews)
+                != len(diagnostic_review_report.reviews)
+            ):
+                raise ValueError(
+                    "duplicate diagnostic claim review ID"
+                )
+
+            resolved_diagnostic_ids = {
+                work_id
+                for row in diagnostic_review_report.reviews
+                for work_id in row.signal_work_ids
+            }
+
+            if not expected_diagnostic_work_ids.issubset(
+                resolved_diagnostic_ids
+            ):
+                missing = sorted(
+                    expected_diagnostic_work_ids
+                    - resolved_diagnostic_ids
+                )
+                raise ValueError(
+                    "semantic prompt diagnostic work IDs are not "
+                    f"resolved by diagnostic review report: {missing}"
+                )
+
+            if not expected_diagnostic_work_ids.issubset(
+                set(diagnostic_works)
+            ):
+                missing = sorted(
+                    expected_diagnostic_work_ids
+                    - set(diagnostic_works)
+                )
+                raise ValueError(
+                    "semantic prompt diagnostic work IDs are absent "
+                    f"from diagnostic prior-art packet: {missing}"
+                )
 
         allowed_work_ids = []
         claim_payloads = []
@@ -572,8 +661,102 @@ class SemanticDistinctivenessPromptAssembler:
                     }
                 )
 
-            claim_payloads.append(
-                {
+            diagnostic_match_payloads = []
+
+            if diagnostic_packet is not None:
+                diagnostic_review = diagnostic_reviews.get(
+                    claim_id
+                )
+
+                diagnostic_ids = [
+                    work_id
+                    for work_id
+                    in signal.lower_order_prior_art_work_ids
+                    if work_id in expected_diagnostic_work_ids
+                ]
+
+                if diagnostic_ids and diagnostic_review is None:
+                    raise ValueError(
+                        "semantic prompt diagnostic claim review "
+                        f"missing for {claim_id}"
+                    )
+
+                if diagnostic_review is not None:
+                    diagnostic_match_by_id = {
+                        match.work_id:
+                            match
+                        for match
+                        in diagnostic_review.matches
+                    }
+
+                    for work_id in diagnostic_ids:
+                        match = diagnostic_match_by_id.get(
+                            work_id
+                        )
+                        if match is None:
+                            raise ValueError(
+                                "semantic prompt diagnostic signal "
+                                "lacks compiled match: "
+                                f"{claim_id} {work_id}"
+                            )
+
+                        if (
+                            match.relationship
+                            != "LOWER_ORDER_RELATION_PRIOR_ART"
+                        ):
+                            raise ValueError(
+                                "semantic prompt diagnostic lower-order "
+                                "signal has wrong relationship: "
+                                f"{claim_id} {work_id}"
+                            )
+
+                        work = diagnostic_works.get(
+                            work_id
+                        )
+                        if work is None:
+                            raise ValueError(
+                                "semantic prompt diagnostic work missing: "
+                                f"{work_id}"
+                            )
+
+                        allowed_work_ids.append(
+                            work_id
+                        )
+
+                        diagnostic_match_payloads.append(
+                            {
+                                "evidence_source":
+                                    "diagnostic_prior_art_packet",
+                                "work_id":
+                                    work_id,
+                                "relationship":
+                                    match.relationship,
+                                "confidence":
+                                    match.confidence,
+                                "review_rationale":
+                                    match.rationale,
+                                "relevance_score":
+                                    match.relevance_score,
+                                "semantic_similarity":
+                                    match.semantic_similarity,
+                                "lexical_coverage":
+                                    match.lexical_coverage,
+                                "title":
+                                    work.title,
+                                "year":
+                                    work.year,
+                                "abstract_excerpt":
+                                    _excerpt(
+                                        work.abstract,
+                                        limit=(
+                                            self
+                                            .abstract_excerpt_chars
+                                        ),
+                                    ),
+                            }
+                        )
+
+            claim_payload = {
                     "claim_id":
                         claim_id,
 
@@ -621,7 +804,15 @@ class SemanticDistinctivenessPromptAssembler:
 
                     "reviewed_matches":
                         match_payloads,
-                }
+            }
+
+            if diagnostic_packet is not None:
+                claim_payload[
+                    "diagnostic_lower_order_matches"
+                ] = diagnostic_match_payloads
+
+            claim_payloads.append(
+                claim_payload
             )
 
         allowed_work_ids = _ordered_unique(

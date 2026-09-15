@@ -145,7 +145,7 @@ def test_e2e_forwards_custom_mechanism_index_to_embedding_consumers():
         source.count(
             "*_mechanism_index_args(args)"
         )
-        == 2
+        == 3
     )
 
 

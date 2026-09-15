@@ -176,6 +176,9 @@ class ScientificDistinctivenessReview(StrictModel):
     referenced_prior_art_work_ids: list[str] = Field(
         default_factory=list
     )
+    referenced_diagnostic_prior_art_work_ids: list[str] = Field(
+        default_factory=list
+    )
 
     source_aggregate_warnings: list[str] = Field(
         default_factory=list
@@ -212,6 +215,13 @@ class ScientificDistinctivenessReport(StrictModel):
 
     source_prior_art_packet_id: str
     source_prior_art_packet_sha256: str
+
+    source_diagnostic_query_plan_id: str | None = None
+    source_diagnostic_query_plan_sha256: str | None = None
+    source_diagnostic_prior_art_packet_id: str | None = None
+    source_diagnostic_prior_art_packet_sha256: str | None = None
+    source_diagnostic_review_report_id: str | None = None
+    source_diagnostic_review_report_sha256: str | None = None
 
     source_searched_at_utc: str
 

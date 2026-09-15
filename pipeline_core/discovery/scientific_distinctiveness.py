@@ -5,6 +5,9 @@ import json
 from collections import Counter
 from typing import Iterable
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    DiagnosticPriorArtReviewReport,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtReview,
     ExternalNoveltyCard,
@@ -165,11 +168,209 @@ def _validate_sources(
         )
 
 
+def _validated_diagnostic_lower_order_signal_map(
+    *,
+    report: ExternalNoveltyReport,
+    main_plan: LiteratureQueryPlan,
+    diagnostic_plan: LiteratureQueryPlan | None,
+    diagnostic_packet: PriorArtPacket | None,
+    diagnostic_review_report: DiagnosticPriorArtReviewReport | None,
+) -> dict[str, list[str]] | None:
+    # None means no diagnostic bundle: preserve historical main-only behavior.
+    bundle = (
+        diagnostic_plan,
+        diagnostic_packet,
+        diagnostic_review_report,
+    )
+    if not any(value is not None for value in bundle):
+        return None
+    if not all(value is not None for value in bundle):
+        raise ValueError(
+            "Scientific distinctiveness diagnostic prior-art provenance "
+            "requires query plan, prior-art packet, and review report together"
+        )
+
+    assert diagnostic_plan is not None
+    assert diagnostic_packet is not None
+    assert diagnostic_review_report is not None
+
+    source_portfolio_ids = {
+        report.source_portfolio_id,
+        main_plan.source_portfolio_id,
+        diagnostic_plan.source_portfolio_id,
+        diagnostic_packet.source_portfolio_id,
+        diagnostic_review_report.source_portfolio_id,
+    }
+    if len(source_portfolio_ids) != 1:
+        raise ValueError(
+            "Diagnostic prior-art source portfolio provenance mismatch: "
+            f"{sorted(source_portfolio_ids)}"
+        )
+
+    if diagnostic_packet.source_query_plan_id != diagnostic_plan.plan_id:
+        raise ValueError(
+            "Diagnostic prior-art packet source_query_plan_id mismatch"
+        )
+
+    if (
+        diagnostic_review_report.source_diagnostic_query_plan_id
+        != diagnostic_plan.plan_id
+        or diagnostic_review_report.source_diagnostic_query_plan_sha256
+        != diagnostic_plan.plan_sha256
+    ):
+        raise ValueError(
+            "Diagnostic review report / query-plan provenance mismatch"
+        )
+
+    if (
+        diagnostic_review_report.source_diagnostic_prior_art_packet_id
+        != diagnostic_packet.packet_id
+        or diagnostic_review_report.source_diagnostic_prior_art_packet_sha256
+        != diagnostic_packet.packet_sha256
+    ):
+        raise ValueError(
+            "Diagnostic review report / prior-art packet provenance mismatch"
+        )
+
+    if any(
+        row.query_kind != "claim_diagnostic"
+        for row in diagnostic_plan.queries
+    ):
+        raise ValueError(
+            "Diagnostic query plan contains non-diagnostic query"
+        )
+
+    main_claims = {
+        claim.claim_id: claim
+        for group in main_plan.claims
+        for claim in group.claims
+    }
+    diagnostic_claims = {
+        claim.claim_id: claim
+        for group in diagnostic_plan.claims
+        for claim in group.claims
+    }
+    if set(diagnostic_claims) != set(main_claims):
+        raise ValueError(
+            "Diagnostic query-plan claim set does not match main query plan"
+        )
+
+    for claim_id, claim in main_claims.items():
+        diagnostic_claim = diagnostic_claims[claim_id]
+        if (
+            diagnostic_claim.hypothesis_id != claim.hypothesis_id
+            or diagnostic_claim.text != claim.text
+            or diagnostic_claim.importance != claim.importance
+        ):
+            raise ValueError(
+                "Diagnostic query-plan claim provenance drift: "
+                f"{claim_id}"
+            )
+
+    rows = list(diagnostic_review_report.reviews)
+    review_claim_ids = [row.claim_id for row in rows]
+    if len(review_claim_ids) != len(set(review_claim_ids)):
+        raise ValueError("Duplicate diagnostic claim review IDs")
+
+    packet_works = {
+        row.work_id: row
+        for row in diagnostic_packet.works
+    }
+    if len(packet_works) != len(diagnostic_packet.works):
+        raise ValueError(
+            "Duplicate work_id in diagnostic prior-art packet"
+        )
+
+    projected: dict[str, list[str]] = {}
+
+    for review in rows:
+        planned = main_claims.get(review.claim_id)
+        if planned is None:
+            raise ValueError(
+                "Diagnostic review references unplanned claim_id: "
+                f"{review.claim_id}"
+            )
+        if review.hypothesis_id != planned.hypothesis_id:
+            raise ValueError(
+                "Diagnostic review hypothesis_id drift for "
+                f"{review.claim_id}"
+            )
+        if review.claim_text != planned.text:
+            raise ValueError(
+                "Diagnostic review text drift for "
+                f"{review.claim_id}"
+            )
+        if (
+            review.diagnostic_query_kind
+            != planned.diagnostic_query_kind
+        ):
+            raise ValueError(
+                "Diagnostic review kind drift for "
+                f"{review.claim_id}"
+            )
+
+        expected_query = str(
+            planned.diagnostic_execution_query or ""
+        ).strip()
+        if review.diagnostic_execution_query != expected_query:
+            raise ValueError(
+                "Diagnostic review execution-query drift for "
+                f"{review.claim_id}"
+            )
+
+        signal_ids = list(review.signal_work_ids)
+        if len(signal_ids) != len(set(signal_ids)):
+            raise ValueError(
+                "Duplicate diagnostic signal work IDs for "
+                f"{review.claim_id}"
+            )
+
+        match_by_id = {
+            match.work_id: match
+            for match in review.matches
+        }
+        for work_id in signal_ids:
+            match = match_by_id.get(work_id)
+            if match is None:
+                raise ValueError(
+                    "Diagnostic signal lacks compiled match for "
+                    f"{review.claim_id}: {work_id}"
+                )
+            if (
+                review.diagnostic_query_kind
+                == "LOWER_ORDER_RELATION"
+                and match.relationship
+                != "LOWER_ORDER_RELATION_PRIOR_ART"
+            ):
+                raise ValueError(
+                    "Lower-order diagnostic signal has wrong relationship for "
+                    f"{review.claim_id}: {work_id}"
+                )
+            work = packet_works.get(work_id)
+            if (
+                work is None
+                or not work.abstract
+                or not match.abstract_available
+            ):
+                raise ValueError(
+                    "Diagnostic signal lacks abstract-backed packet evidence "
+                    f"for {review.claim_id}: {work_id}"
+                )
+
+        if review.diagnostic_query_kind == "LOWER_ORDER_RELATION":
+            projected[review.claim_id] = signal_ids
+
+    return projected
+
+
 def _validate_card(
     card: ExternalNoveltyCard,
     planned_group,
     *,
     packet_work_ids: set[str],
+    diagnostic_lower_order_signals_by_claim: (
+        dict[str, list[str]] | None
+    ) = None,
 ) -> dict[str, object]:
 
     planned = {
@@ -203,6 +404,7 @@ def _validate_card(
         )
 
     referenced_work_ids: list[str] = []
+    referenced_diagnostic_work_ids: list[str] = []
 
     computed_lower_order_work_ids: list[str] = []
     computed_core_lower_order_work_ids: list[str] = []
@@ -254,13 +456,13 @@ def _validate_card(
             )
 
             if (
-                match.relationship
+                diagnostic_lower_order_signals_by_claim is None
+                and match.relationship
                 == "LOWER_ORDER_RELATION_PRIOR_ART"
             ):
                 computed_lower_order_work_ids.append(
                     match.work_id
                 )
-
                 if review.importance == "core":
                     computed_core_lower_order_work_ids.append(
                         match.work_id
@@ -274,17 +476,38 @@ def _validate_card(
                     match.work_id
                 )
 
-        if (
-            review.importance == "core"
-            and any(
-                match.relationship
-                == "LOWER_ORDER_RELATION_PRIOR_ART"
-                for match in review.matches
+        if diagnostic_lower_order_signals_by_claim is None:
+            if (
+                review.importance == "core"
+                and any(
+                    match.relationship
+                    == "LOWER_ORDER_RELATION_PRIOR_ART"
+                    for match in review.matches
+                )
+            ):
+                computed_core_lower_order_claim_ids.append(
+                    claim_id
+                )
+        else:
+            diagnostic_ids = list(
+                diagnostic_lower_order_signals_by_claim.get(
+                    claim_id,
+                    [],
+                )
             )
-        ):
-            computed_core_lower_order_claim_ids.append(
-                claim_id
+            computed_lower_order_work_ids.extend(
+                diagnostic_ids
             )
+            referenced_diagnostic_work_ids.extend(
+                diagnostic_ids
+            )
+            if review.importance == "core" and diagnostic_ids:
+                computed_core_lower_order_work_ids.extend(
+                    diagnostic_ids
+                )
+                computed_core_lower_order_claim_ids.append(
+                    claim_id
+                )
 
     # Card-level references must still resolve to the supplied packet.
     # However, several card fields below are redundant aggregates derived
@@ -294,15 +517,13 @@ def _validate_card(
     # Claim-level reviews remain authoritative for this diagnostic. Drift in
     # redundant aggregates is recorded explicitly instead of silently
     # accepted or treated as a primary-provenance failure.
-    card_work_fields = (
+    main_packet_card_work_fields = (
         card.strongest_prior_art_work_ids,
         card.contextual_conflict_work_ids,
-        card.lower_order_prior_art_work_ids,
-        card.lower_order_core_prior_art_work_ids,
         card.directional_counterevidence_work_ids,
     )
 
-    for values in card_work_fields:
+    for values in main_packet_card_work_fields:
         for work_id in values:
             if work_id not in packet_work_ids:
                 raise ValueError(
@@ -310,6 +531,29 @@ def _validate_card(
                     f"prior-art work_id {work_id!r}"
                 )
             referenced_work_ids.append(work_id)
+
+    validated_diagnostic_lower_order_ids = {
+        work_id
+        for values in (
+            diagnostic_lower_order_signals_by_claim or {}
+        ).values()
+        for work_id in values
+    }
+
+    for values in (
+        card.lower_order_prior_art_work_ids,
+        card.lower_order_core_prior_art_work_ids,
+    ):
+        for work_id in values:
+            if work_id in packet_work_ids:
+                referenced_work_ids.append(work_id)
+            elif work_id in validated_diagnostic_lower_order_ids:
+                referenced_diagnostic_work_ids.append(work_id)
+            else:
+                raise ValueError(
+                    "External novelty card references unknown "
+                    f"prior-art work_id {work_id!r}"
+                )
 
     aggregate_warnings: list[str] = []
 
@@ -422,6 +666,11 @@ def _validate_card(
         "referenced_work_ids":
             _ordered_unique(
                 referenced_work_ids
+            ),
+
+        "referenced_diagnostic_work_ids":
+            _ordered_unique(
+                referenced_diagnostic_work_ids
             ),
 
         "full_directional_work_ids":
@@ -648,12 +897,28 @@ class ScientificDistinctivenessAnalyzer:
         report: ExternalNoveltyReport,
         plan: LiteratureQueryPlan,
         packet: PriorArtPacket,
+        *,
+        diagnostic_plan: LiteratureQueryPlan | None = None,
+        diagnostic_packet: PriorArtPacket | None = None,
+        diagnostic_review_report: (
+            DiagnosticPriorArtReviewReport | None
+        ) = None,
     ) -> ScientificDistinctivenessReport:
 
         _validate_sources(
             report,
             plan,
             packet,
+        )
+
+        diagnostic_lower_order_signals_by_claim = (
+            _validated_diagnostic_lower_order_signal_map(
+                report=report,
+                main_plan=plan,
+                diagnostic_plan=diagnostic_plan,
+                diagnostic_packet=diagnostic_packet,
+                diagnostic_review_report=diagnostic_review_report,
+            )
         )
 
         plan_by_hypothesis = {
@@ -681,6 +946,9 @@ class ScientificDistinctivenessAnalyzer:
                 card,
                 group,
                 packet_work_ids=packet_work_ids,
+                diagnostic_lower_order_signals_by_claim=(
+                    diagnostic_lower_order_signals_by_claim
+                ),
             )
 
             planned = validation[
@@ -765,7 +1033,15 @@ class ScientificDistinctivenessAnalyzer:
                             )
                         ),
                         lower_order_prior_art_work_ids=(
-                            _match_work_ids(
+                            list(
+                                diagnostic_lower_order_signals_by_claim.get(
+                                    claim.claim_id,
+                                    [],
+                                )
+                            )
+                            if diagnostic_lower_order_signals_by_claim
+                            is not None
+                            else _match_work_ids(
                                 review,
                                 (
                                     "LOWER_ORDER_"
@@ -1040,6 +1316,11 @@ class ScientificDistinctivenessAnalyzer:
                             "referenced_work_ids"
                         ]
                     ),
+                    referenced_diagnostic_prior_art_work_ids=(
+                        validation[
+                            "referenced_diagnostic_work_ids"
+                        ]
+                    ),
                     source_aggregate_warnings=(
                         source_aggregate_warnings
                     ),
@@ -1066,6 +1347,11 @@ class ScientificDistinctivenessAnalyzer:
             report.report_id,
             plan.plan_id,
             packet.packet_id,
+            *(
+                [diagnostic_review_report.report_id]
+                if diagnostic_review_report is not None
+                else []
+            ),
             *[
                 (
                     f"{row.hypothesis_id}:"
@@ -1102,6 +1388,29 @@ class ScientificDistinctivenessAnalyzer:
 
             "source_prior_art_packet_sha256":
                 packet.packet_sha256,
+
+            **(
+                {
+                    "source_diagnostic_query_plan_id":
+                        diagnostic_plan.plan_id,
+                    "source_diagnostic_query_plan_sha256":
+                        diagnostic_plan.plan_sha256,
+                    "source_diagnostic_prior_art_packet_id":
+                        diagnostic_packet.packet_id,
+                    "source_diagnostic_prior_art_packet_sha256":
+                        diagnostic_packet.packet_sha256,
+                    "source_diagnostic_review_report_id":
+                        diagnostic_review_report.report_id,
+                    "source_diagnostic_review_report_sha256":
+                        diagnostic_review_report.report_sha256,
+                }
+                if (
+                    diagnostic_plan is not None
+                    and diagnostic_packet is not None
+                    and diagnostic_review_report is not None
+                )
+                else {}
+            ),
 
             "source_searched_at_utc":
                 report.searched_at_utc,

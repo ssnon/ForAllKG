@@ -45,6 +45,12 @@ from pipeline_core.discovery.novelty_inference_provenance import (
     attach_atomic_inference_provenance,
 )
 from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
+from pipeline_core.discovery.prior_art_coverage_probe import (
+    PriorArtPreReviewCoverageProbe,
+)
+from pipeline_core.discovery.external_novelty_downstream_gate import (
+    ExternalNoveltyDownstreamGate,
+)
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
 )
@@ -113,6 +119,24 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--reuse-prior-art", default=None)
     parser.add_argument(
+        "--pre-review-coverage-shadow",
+        action="store_true",
+        help=(
+            "Compute and save the deterministic pre-review coverage gate "
+            "before claim-review LLM calls, but continue the existing "
+            "external-novelty assessment unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--pre-review-coverage-only",
+        action="store_true",
+        help=(
+            "Compute and save the deterministic pre-review coverage gate "
+            "then stop before ordinary/diagnostic claim-review LLM calls. "
+            "No final ExternalNoveltyReport is written."
+        ),
+    )
+    parser.add_argument(
         "--prior-art-memory-query-plan",
         default=None,
         help=(
@@ -137,6 +161,17 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--output-prefix", required=True)
+    parser.add_argument(
+        "--downstream-gate-shadow",
+        action="store_true",
+        help=(
+            "After the ordinary external-novelty assessment, combine the "
+            "pre-review coverage sidecar with the final external report and "
+            "write a deterministic downstream-authorization gate sidecar. "
+            "Requires --pre-review-coverage-shadow. This does not change "
+            "production selection or novelty authority."
+        ),
+    )
     parser.add_argument("--save-prompts", action="store_true")
     return parser.parse_args()
 
@@ -398,6 +433,18 @@ def _attach_inference_provenance(
 
 def main() -> None:
     args = parse_args()
+    if args.downstream_gate_shadow and not args.pre_review_coverage_shadow:
+        raise ValueError(
+            "--downstream-gate-shadow requires "
+            "--pre-review-coverage-shadow"
+        )
+    if args.downstream_gate_shadow and args.pre_review_coverage_only:
+        raise ValueError(
+            "--downstream-gate-shadow cannot be combined with "
+            "--pre-review-coverage-only because no final external report "
+            "is produced in coverage-only mode"
+        )
+
 
     memory_args = (
         args.prior_art_memory_query_plan,
@@ -524,11 +571,21 @@ def main() -> None:
     )
 
     report_path = prefix.with_suffix(".report.json")
-    # Remove a stale final report before the assessment starts. If the
-    # assessment crashes, downstream stages cannot accidentally consume a
-    # report from an older portfolio/run.
+    pre_review_coverage_path = prefix.with_suffix(
+        ".pre_review_coverage.json"
+    )
+    downstream_gate_path = prefix.with_suffix(
+        ".downstream_gate.json"
+    )
+    # Remove stale terminal/sidecar artifacts before the assessment starts.
+    # If the assessment crashes or the shadow probe is disabled, downstream
+    # stages cannot accidentally consume artifacts from an older run.
     if report_path.exists():
         report_path.unlink()
+    if pre_review_coverage_path.exists():
+        pre_review_coverage_path.unlink()
+    if downstream_gate_path.exists():
+        downstream_gate_path.unlink()
     _write(prefix.with_suffix(".claims_queries.json"), plan)
 
     provider_plan = None
@@ -725,6 +782,69 @@ def main() -> None:
         max_ranked_works_per_claim=policy.max_ranked_works_per_claim,
         domain_profile=domain_profile,
     )
+
+    pre_review_coverage = None
+    if (
+        args.pre_review_coverage_shadow
+        or args.pre_review_coverage_only
+    ):
+        pre_review_coverage = PriorArtPreReviewCoverageProbe(
+            ranker,
+            policy=policy,
+        ).build(
+            portfolio,
+            plan,
+            packet,
+        )
+        _write(
+            pre_review_coverage_path,
+            pre_review_coverage,
+        )
+
+        print("Pre-review coverage probe complete")
+        print(
+            "Keep for claim review:",
+            pre_review_coverage.keep_for_claim_review_count,
+            "/",
+            len(pre_review_coverage.hypotheses),
+        )
+        print(
+            "Evidence required:",
+            pre_review_coverage.evidence_required_count,
+            "/",
+            len(pre_review_coverage.hypotheses),
+        )
+        for row in pre_review_coverage.hypotheses:
+            print(
+                "    ",
+                row.hypothesis_id,
+                row.gate_decision,
+                "works=",
+                row.coverage.unique_work_count,
+                "abstracts=",
+                row.coverage.abstract_work_count,
+                "core_covered=",
+                (
+                    f"{row.coverage.core_claims_with_minimum_abstract_coverage}/"
+                    f"{row.coverage.core_claim_count}"
+                ),
+                "reasons=",
+                ",".join(row.reason_codes) or "-",
+            )
+        print(
+            "Saved pre-review coverage:",
+            pre_review_coverage_path,
+        )
+
+        if args.pre_review_coverage_only:
+            print("PRE_REVIEW_COVERAGE_ONLY=True")
+            print("CLAIM_REVIEW_LLM_PERFORMED=False")
+            print("DIAGNOSTIC_REVIEW_LLM_PERFORMED=False")
+            print("FINAL_EXTERNAL_REPORT_WRITTEN=False")
+            print("NOVELTY_AUTHORITY_CREATED=False")
+            print("PRODUCTION_SELECTION_CHANGED=False")
+            return
+
     compiler = ClaimPriorArtCompiler(
         min_match_confidence=policy.min_match_confidence,
         direct_match_confidence=policy.direct_match_confidence,
@@ -814,6 +934,56 @@ def main() -> None:
             lineage=lineage,
         )
     _write(report_path, report)
+
+    downstream_gate = None
+    if args.downstream_gate_shadow:
+        if pre_review_coverage is None:
+            raise RuntimeError(
+                "downstream gate requested without a pre-review "
+                "coverage artifact"
+            )
+        downstream_gate = ExternalNoveltyDownstreamGate().build(
+            external_report=report,
+            pre_review_report=pre_review_coverage,
+        )
+        _write(
+            downstream_gate_path,
+            downstream_gate,
+        )
+
+        print("Downstream evidence gate shadow complete")
+        print(
+            "Continue downstream:",
+            downstream_gate.continue_count,
+            "/",
+            len(downstream_gate.dispositions),
+        )
+        print(
+            "Hold for evidence:",
+            downstream_gate.hold_for_evidence_count,
+            "/",
+            len(downstream_gate.dispositions),
+        )
+        for row in downstream_gate.dispositions:
+            print(
+                "    ",
+                row.hypothesis_id,
+                row.decision,
+                "external=",
+                row.external_status,
+                "pre_review=",
+                row.pre_review_gate_decision,
+                "reasons=",
+                ",".join(row.reason_codes) or "-",
+            )
+        print(
+            "Saved downstream gate:",
+            downstream_gate_path,
+        )
+        print("DOWNSTREAM_GATE_SHADOW=True")
+        print("GATE_NOVELTY_AUTHORITY=False")
+        print("GATE_SELECTION_CLASS_ASSIGNED=False")
+        print("PRODUCTION_SELECTION_CHANGED=False")
 
     if args.save_prompts:
         prompt_dir = prefix.parent / (prefix.name + ".prompts")
@@ -914,6 +1084,20 @@ def main() -> None:
                 "(reuse-prior-art or no diagnostic queries)"
             ),
         )
+    if pre_review_coverage is not None:
+        print(
+            "Saved pre-review coverage:",
+            pre_review_coverage_path,
+        )
+        print("PRE_REVIEW_COVERAGE_SHADOW=True")
+        print("PRE_REVIEW_COVERAGE_ENFORCED=False")
+    if downstream_gate is not None:
+        print(
+            "Saved downstream gate:",
+            downstream_gate_path,
+        )
+        print("DOWNSTREAM_GATE_SHADOW=True")
+        print("DOWNSTREAM_GATE_ENFORCED=False")
     print("Saved report:", report_path)
 
 

@@ -727,6 +727,68 @@ def _run_scientific_novelty_action_shadow_chain(
         / "scientific_distinctiveness_a10.shadow.json"
     )
 
+    report_suffix = ".report.json"
+    if not external_report.name.endswith(report_suffix):
+        raise RuntimeError(
+            "Scientific novelty shadow expected an external report ending "
+            f"with {report_suffix!r}: {external_report}"
+        )
+
+    external_stem = external_report.name[:-len(report_suffix)]
+    external_diagnostic_plan = (
+        external_report.parent
+        / f"{external_stem}.diagnostic_queries.json"
+    )
+    external_diagnostic_prior = (
+        external_report.parent
+        / f"{external_stem}.diagnostic_prior_art.json"
+    )
+    external_diagnostic_review = (
+        external_report.parent
+        / f"{external_stem}.diagnostic_review.json"
+    )
+
+    diagnostic_paths = (
+        external_diagnostic_plan,
+        external_diagnostic_prior,
+        external_diagnostic_review,
+    )
+    diagnostic_presence = tuple(
+        path.is_file()
+        for path in diagnostic_paths
+    )
+
+    if any(diagnostic_presence) and not all(diagnostic_presence):
+        raise RuntimeError(
+            "External novelty diagnostic provenance is partial: "
+            f"query_plan={external_diagnostic_plan.is_file()} "
+            f"prior_art={external_diagnostic_prior.is_file()} "
+            f"review={external_diagnostic_review.is_file()}"
+        )
+
+    scientific_diagnostic_args = (
+        [
+            "--external-diagnostic-query-plan",
+            str(external_diagnostic_plan),
+            "--external-diagnostic-prior-art",
+            str(external_diagnostic_prior),
+            "--external-diagnostic-review",
+            str(external_diagnostic_review),
+        ]
+        if all(diagnostic_presence)
+        else []
+    )
+    semantic_diagnostic_args = (
+        [
+            "--external-diagnostic-prior-art",
+            str(external_diagnostic_prior),
+            "--external-diagnostic-review",
+            str(external_diagnostic_review),
+        ]
+        if all(diagnostic_presence)
+        else []
+    )
+
     runner.run_stage(
         "[10S-a/13] Scientific distinctiveness shadow",
         "scripts.discovery."
@@ -738,6 +800,7 @@ def _run_scientific_novelty_action_shadow_chain(
             str(external_plan),
             "--external-prior-art",
             str(external_prior),
+            *scientific_diagnostic_args,
             "--output",
             str(scientific_report),
         ],
@@ -843,6 +906,7 @@ def _run_scientific_novelty_action_shadow_chain(
                     str(external_report),
                     "--external-prior-art",
                     str(external_prior),
+                    *semantic_diagnostic_args,
                     "--hypothesis-id",
                     hypothesis_id,
                     "--output",
