@@ -38,6 +38,9 @@ from pipeline_core.discovery.hypothesis_evidence_diversity import (
     HypothesisEvidenceDiversityAssessor,
 )
 from pipeline_core.discovery.node_mapping import NodeMapper
+from pipeline_core.discovery.open_world_discovery_axis import (
+    OpenWorldExternalAxisBundle,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -240,6 +243,18 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--external-axis-bundle",
+        type=Path,
+        default=None,
+        help=(
+            "Source-validated OpenWorldExternalAxisBundle for an "
+            "external_open_world frozen axis plan. Context reviewers may "
+            "consume it as inspiration-only provenance; it never becomes "
+            "positive-premise or novelty authority."
+        ),
+    )
+
+    parser.add_argument(
         "--axis-plan-input",
         type=Path,
         default=None,
@@ -393,6 +408,63 @@ def main() -> int:
         args=args,
         dual=dual,
     )
+
+    external_axes = [
+        axis
+        for axis in plan.axes
+        if axis.source_mode == "external_open_world"
+    ]
+    external_axis_bundle = None
+
+    if external_axes:
+        if args.external_axis_bundle is None:
+            raise RuntimeError(
+                "external_open_world axis plan requires "
+                "--external-axis-bundle for provenance-aware context review"
+            )
+        if not args.external_axis_bundle.is_file():
+            raise FileNotFoundError(
+                "external axis bundle does not exist: "
+                f"{args.external_axis_bundle}"
+            )
+
+        external_axis_bundle = (
+            OpenWorldExternalAxisBundle.model_validate_json(
+                args.external_axis_bundle.read_text(encoding="utf-8")
+            )
+        )
+
+        if external_axis_bundle.source_dual_context_id != dual.dual_context_id:
+            raise RuntimeError(
+                "external axis bundle dual_context_id mismatch"
+            )
+        if (
+            external_axis_bundle.source_dual_context_sha256
+            != dual.dual_context_sha256
+        ):
+            raise RuntimeError(
+                "external axis bundle dual_context_sha256 mismatch"
+            )
+
+        plan_axis_ids = {
+            axis.axis_id
+            for axis in external_axes
+        }
+        provenance_axis_ids = {
+            row.axis_id
+            for row in external_axis_bundle.provenance
+        }
+        if plan_axis_ids != provenance_axis_ids:
+            raise RuntimeError(
+                "external axis plan/bundle axis IDs differ: "
+                f"plan={sorted(plan_axis_ids)}, "
+                f"bundle={sorted(provenance_axis_ids)}"
+            )
+    elif args.external_axis_bundle is not None:
+        raise RuntimeError(
+            "--external-axis-bundle was supplied for a plan with no "
+            "external_open_world axes"
+        )
 
     plan_path = Path(
         str(args.output_prefix)
@@ -603,6 +675,19 @@ def main() -> int:
                 extra_headers=dict(args.header),
             )
         )
+
+        if external_axis_bundle is not None:
+            binder = getattr(
+                context_reviewer,
+                "bind_external_axis_bundle",
+                None,
+            )
+            if not callable(binder):
+                raise RuntimeError(
+                    "active context reviewer does not support "
+                    "external_open_world provenance"
+                )
+            binder(external_axis_bundle)
 
     runtime = DiscoveryAxisSynthesisRuntime(
         backend,
@@ -826,6 +911,27 @@ def main() -> int:
             ),
             "review_history_count": len(
                 outcome.context_review_history
+            ),
+
+            "external_axis_bundle": (
+                str(args.external_axis_bundle)
+                if args.external_axis_bundle is not None
+                else None
+            ),
+            "external_axis_bundle_sha256": (
+                _sha256_file(args.external_axis_bundle)
+                if args.external_axis_bundle is not None
+                else None
+            ),
+            "external_axis_authority": (
+                "INSPIRATION_ONLY"
+                if args.external_axis_bundle is not None
+                else None
+            ),
+            "external_axis_context_projection": (
+                "TRACEABLE_TYPED_CONTEXT_UNKNOWN_V1"
+                if args.external_axis_bundle is not None
+                else None
             ),
 
             "action_policy_applied": False,

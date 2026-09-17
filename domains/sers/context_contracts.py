@@ -75,6 +75,7 @@ SERSContextProvenanceKind = Literal[
     "grounded_bridge_owner",
     "grounded_bridge_owner_applies_to",
     "grounded_structural_edge",
+    "external_axis_source_span",
     "hypothesis_assertion",
     "question",
 ]

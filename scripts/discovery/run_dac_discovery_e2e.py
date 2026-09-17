@@ -974,6 +974,7 @@ def _run_realization_candidate_chain(
     domain_profile_id: str,
     literature_provider_plan_path: Path,
     context_review_enabled: bool,
+    external_axis_bundle: Path | None = None,
 ) -> dict[str, object]:
     """Run one independent realization over an already frozen axis plan.
 
@@ -1094,6 +1095,14 @@ def _run_realization_candidate_chain(
             ),
             "--axis-plan-input",
             str(frozen_axis_plan),
+            *(
+                [
+                    "--external-axis-bundle",
+                    str(external_axis_bundle),
+                ]
+                if external_axis_bundle is not None
+                else []
+            ),
             "--output-prefix",
             str(axis_prefix),
             "--save-prompts",
@@ -1653,6 +1662,7 @@ def _run_realization_search_production_stage8(
     domain_profile_id: str,
     context_review_enabled: bool,
     frozen_axis_plan_input: Path | None = None,
+    external_axis_bundle: Path | None = None,
 ) -> None:
     """Production-authoritative width-3 search over one frozen axis plan."""
 
@@ -1848,6 +1858,9 @@ def _run_realization_search_production_stage8(
                 ),
                 context_review_enabled=(
                     context_review_enabled
+                ),
+                external_axis_bundle=(
+                    external_axis_bundle
                 ),
             )
         )
@@ -3070,6 +3083,54 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
     dual_context = task_conditioned_dual_context
 
+    if args.higher_order_shadow:
+        if args.accepted_patterns is None:
+            raise RuntimeError(
+                "--higher-order-shadow requires --accepted-patterns so "
+                "confirmed-known composition authority is explicit."
+            )
+        if int(args.higher_order_max_contexts) < 1:
+            raise RuntimeError("--higher-order-max-contexts must be >= 1")
+
+        higher_order_dir = run / "higher_order_shadow"
+        higher_order_report = higher_order_dir / "generation_report.json"
+        runner.run_stage(
+            "[7.55/13] Higher-order composition/generation shadow",
+            "scripts.discovery.run_higher_order_shadow_lane",
+            [
+                "--context", str(context),
+                "--accepted-patterns", str(args.accepted_patterns),
+                "--task-axis-report", str(task_conditioned_axis_report),
+                "--output-dir", str(higher_order_dir),
+                "--max-contexts", str(args.higher_order_max_contexts),
+                "--model", str(args.model),
+                *(["--base-url", str(args.base_url)] if args.base_url else []),
+                "--api-key-env", str(args.api_key_env),
+                "--parse-retries", str(args.hypothesis_parse_retries),
+            ],
+            expected=[higher_order_report],
+        )
+        ho_payload = _load_json(higher_order_report)
+        runner.manifest["higher_order_shadow"] = {
+            "enabled": True,
+            "report": str(higher_order_report),
+            "strict_backbone_count": ho_payload.get("strict_backbone_count"),
+            "eligible_modifier_count": ho_payload.get("eligible_modifier_count"),
+            "higher_order_topology_count": ho_payload.get("higher_order_topology_count"),
+            "selected_context_count": ho_payload.get("selected_context_count", 0),
+            "proposed_count": ho_payload.get("proposed_count", 0),
+            "shadow_only": True,
+            "production_selection_changed": False,
+            "legacy_portfolio_mutated": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["higher_order_shadow"] = {
+            "enabled": False,
+            "production_selection_changed": False,
+        }
+        runner._save_manifest()
+
     open_world_outputs: dict[str, Path] | None = None
     if args.open_world_discovery:
         open_world_outputs = (
@@ -3207,6 +3268,13 @@ def run_pipeline(args: argparse.Namespace) -> int:
             frozen_axis_plan_input=(
                 stage8_axis_plan_input
             ),
+            external_axis_bundle=(
+                None
+                if open_world_outputs is None
+                else open_world_outputs[
+                    "external_axis_bundle"
+                ]
+            ),
         )
     else:
         runner.run_stage(
@@ -3231,6 +3299,18 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 ),
                 "--axis-plan-input",
                 str(stage8_axis_plan_input),
+                *(
+                    [
+                        "--external-axis-bundle",
+                        str(
+                            open_world_outputs[
+                                "external_axis_bundle"
+                            ]
+                        ),
+                    ]
+                    if open_world_outputs is not None
+                    else []
+                ),
                 "--output-prefix", str(axis_prefix),
                 "--save-prompts",
             ],
@@ -4847,6 +4927,21 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--max-axes", type=int, default=5)
+    parser.add_argument(
+        "--higher-order-shadow",
+        action="store_true",
+        help=(
+            "Run the authority-neutral S24 higher-order composition and "
+            "canonical hypothesis-generation lane in parallel. Requires "
+            "--accepted-patterns; legacy production selection is unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--higher-order-max-contexts",
+        type=int,
+        default=12,
+        help="Maximum deterministic modifier-coverage contexts in the shadow lane.",
+    )
     parser.add_argument(
         "--open-world-discovery",
         action="store_true",

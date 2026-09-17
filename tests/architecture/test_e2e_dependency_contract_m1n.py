@@ -31,6 +31,7 @@ EXPECTED_DYNAMIC_STAGES = {
     "scripts.discovery.run_feasibility_e2e",
     "scripts.discovery.run_graph_explorer",
     "scripts.discovery.run_graph_traversal",
+    "scripts.discovery.run_higher_order_shadow_lane",
     "scripts.discovery.run_hypothesis_semantic_critic",
     "scripts.discovery.run_n10_bounded_post_generation_continuation",
     "scripts.discovery.run_nonobviousness_full_shadow",

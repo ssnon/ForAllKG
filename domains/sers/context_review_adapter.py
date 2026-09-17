@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 from typing import Any
 
 from domains.sers.context_comparator import (
@@ -16,6 +18,11 @@ from domains.sers.hypothesis_context_interpreter import (
 from domains.sers.hypothesis_context_llm import (
     InstructorOpenAICompatibleHypothesisContextBackend,
 )
+from domains.sers.context_contracts import (
+    SERSContextFact,
+    SERSContextProvenance,
+    SERSContextSignature,
+)
 from pipeline_core.discovery.discovery_axis_contracts import (
     DiscoveryAxis,
 )
@@ -25,9 +32,39 @@ from pipeline_core.discovery.discovery_axis_context_runtime import (
 from pipeline_core.discovery.dual_hypothesis_context import (
     DualHypothesisContext,
 )
+from pipeline_core.discovery.open_world_discovery_axis import (
+    ExternalAxisProvenance,
+    OpenWorldExternalAxisBundle,
+)
 
 
 SERS_AU_AG_CONTEXT_REVIEW_ADAPTER_ID = "sers_au_ag"
+
+_EXTERNAL_UNKNOWN_CONTEXT_DIMENSIONS = (
+    ("substrate", "plasmonic_substrate"),
+    ("material_identity", "component"),
+    ("material_state", "material_state"),
+    ("support", "support"),
+    ("morphology", "morphology"),
+    ("architecture", "architecture"),
+    ("structural_motif", "structural_motif"),
+    ("gap_regime", "gap_regime"),
+    ("optical_condition", "optical_condition"),
+    ("analyte", "analyte"),
+    ("reporter", "reporter"),
+    ("measurement_geometry", "measurement_geometry"),
+    ("environment", "environment"),
+)
+
+
+def _stable_external_context_id(prefix: str, payload: object) -> str:
+    raw = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return f"{prefix}:{hashlib.sha256(raw).hexdigest()[:20]}"
 
 
 class SERSDiscoveryAxisContextReviewer:
@@ -93,6 +130,135 @@ class SERSDiscoveryAxisContextReviewer:
 
         self.interpreter = interpreter
         self.comparator = comparator
+        self.external_axis_bundle: OpenWorldExternalAxisBundle | None = None
+
+    def bind_external_axis_bundle(
+        self,
+        bundle: OpenWorldExternalAxisBundle,
+    ) -> None:
+        # Provenance binding only. This does not mutate DualHypothesisContext
+        # and does not promote external literature to positive-premise or
+        # novelty authority.
+        if not isinstance(bundle, OpenWorldExternalAxisBundle):
+            raise TypeError(
+                "external axis context provenance must be an "
+                "OpenWorldExternalAxisBundle"
+            )
+        self.external_axis_bundle = bundle
+
+    def _external_axis_provenance(
+        self,
+        *,
+        dual: DualHypothesisContext,
+        axis: DiscoveryAxis,
+    ) -> ExternalAxisProvenance:
+        bundle = self.external_axis_bundle
+        if bundle is None:
+            raise AxisContextReviewUnavailableError(
+                "external_open_world axis requires a bound, source-validated "
+                "external-axis provenance bundle"
+            )
+
+        if bundle.source_dual_context_id != dual.dual_context_id:
+            raise RuntimeError(
+                "external-axis provenance dual_context_id mismatch"
+            )
+        if bundle.source_dual_context_sha256 != dual.dual_context_sha256:
+            raise RuntimeError(
+                "external-axis provenance dual_context_sha256 mismatch"
+            )
+
+        rows = [
+            row
+            for row in bundle.provenance
+            if row.axis_id == axis.axis_id
+        ]
+        if len(rows) != 1:
+            raise RuntimeError(
+                "external axis requires exactly one provenance row: "
+                f"axis={axis.axis_id}, found={len(rows)}"
+            )
+
+        row = rows[0]
+        if not row.source_work_ids or not row.source_evidence_spans:
+            raise RuntimeError(
+                "external axis provenance lacks source works/evidence spans: "
+                f"axis={axis.axis_id}"
+            )
+        return row
+
+    @staticmethod
+    def _external_axis_unknown_signature(
+        *,
+        axis: DiscoveryAxis,
+        provenance: ExternalAxisProvenance,
+    ) -> SERSContextSignature:
+        # External literature is source-validated for the discovery axis, but
+        # it is not graph-typed SERS context. Preserve that uncertainty rather
+        # than inferring morphology/material/optical values from prose.
+        excerpt = "\n\n".join(
+            str(value).strip()
+            for value in provenance.source_evidence_spans
+            if str(value).strip()
+        )
+
+        facts = []
+        for dimension, role in _EXTERNAL_UNKNOWN_CONTEXT_DIMENSIONS:
+            fact_id = _stable_external_context_id(
+                "sers_context_fact",
+                {
+                    "kind": "external_open_world_unknown_context",
+                    "axis_id": axis.axis_id,
+                    "inspiration_id": axis.inspiration_id,
+                    "dimension": dimension,
+                    "role": role,
+                    "source_work_ids": sorted(provenance.source_work_ids),
+                },
+            )
+            facts.append(
+                SERSContextFact(
+                    fact_id=fact_id,
+                    dimension=dimension,
+                    scientific_role=role,
+                    knowledge_state="unknown",
+                    value=None,
+                    normalized_value=None,
+                    binding=None,
+                    provenance=[
+                        SERSContextProvenance(
+                            kind="external_axis_source_span",
+                            paper_ids=sorted(provenance.source_work_ids),
+                            statement_ids=sorted(
+                                provenance.compatible_grounded_statement_ids
+                            ),
+                            excerpt=excerpt,
+                        )
+                    ],
+                    tags=[
+                        "external_open_world",
+                        "inspiration_only",
+                        "typed_context_unknown",
+                    ],
+                )
+            )
+
+        signature_id = _stable_external_context_id(
+            "sers_context_signature",
+            {
+                "kind": "external_open_world_unknown_context",
+                "axis_id": axis.axis_id,
+                "inspiration_id": axis.inspiration_id,
+                "fact_ids": [row.fact_id for row in facts],
+            },
+        )
+
+        return SERSContextSignature(
+            signature_id=signature_id,
+            domain_profile_id="sers_au_ag",
+            scope="axis_inspiration",
+            source_ref_id=axis.inspiration_id,
+            facts=facts,
+        )
 
     @classmethod
     def build(
@@ -222,15 +388,28 @@ class SERSDiscoveryAxisContextReviewer:
             label="discovery inspiration",
         )
 
-        try:
-            inspiration = inspirations[
-                axis.inspiration_id
-            ]
-        except KeyError as exc:
-            raise RuntimeError(
-                "assigned discovery inspiration is absent "
-                f"from DualHypothesisContext: {axis.inspiration_id}"
-            ) from exc
+        inspiration = inspirations.get(
+            axis.inspiration_id
+        )
+        external_axis_provenance = None
+
+        if inspiration is None:
+            if (
+                getattr(
+                    axis,
+                    "source_mode",
+                    "",
+                )
+                != "external_open_world"
+            ):
+                raise RuntimeError(
+                    "assigned discovery inspiration is absent "
+                    f"from DualHypothesisContext: {axis.inspiration_id}"
+                )
+            external_axis_provenance = self._external_axis_provenance(
+                dual=dual,
+                axis=axis,
+            )
 
         evidence = self._index_unique(
             list(
@@ -284,22 +463,48 @@ class SERSDiscoveryAxisContextReviewer:
             in premise_ids
         ]
 
-        # Inspiration remains inspiration-only. It is compiled separately
-        # from positive-premise context and appended as exactly one axis
-        # signature.
-        try:
-            axis_signature = (
-                self.axis_compiler
-                .compile_axis_inspiration(
-                    inspiration
+        # Inspiration remains inspiration-only. Persistent-KG inspirations
+        # keep the original graph-compiled path. Source-validated open-world
+        # axes use a traceable UNKNOWN typed-context projection rather than
+        # inventing graph context or positive premises.
+        if inspiration is not None:
+            try:
+                axis_signature = (
+                    self.axis_compiler
+                    .compile_axis_inspiration(
+                        inspiration
+                    )
                 )
+            except SERSContextCompilationError as exc:
+                raise AxisContextReviewUnavailableError(
+                    "assigned discovery inspiration cannot produce "
+                    "claim-local SERS scientific context: "
+                    f"{axis.inspiration_id}: {exc}"
+                ) from exc
+        else:
+            if external_axis_provenance is None:
+                raise RuntimeError(
+                    "external axis context provenance was not resolved"
+                )
+
+            missing_compatible = sorted(
+                set(
+                    external_axis_provenance
+                    .compatible_grounded_statement_ids
+                )
+                - set(evidence)
             )
-        except SERSContextCompilationError as exc:
-            raise AxisContextReviewUnavailableError(
-                "assigned discovery inspiration cannot produce "
-                "claim-local SERS scientific context: "
-                f"{axis.inspiration_id}: {exc}"
-            ) from exc
+            if missing_compatible:
+                raise RuntimeError(
+                    "external axis provenance references grounded statements "
+                    "absent from the active context: "
+                    + ", ".join(missing_compatible)
+                )
+
+            axis_signature = self._external_axis_unknown_signature(
+                axis=axis,
+                provenance=external_axis_provenance,
+            )
 
         source_signatures.append(
             axis_signature
