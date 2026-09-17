@@ -58,6 +58,16 @@ class DiscoveryAxis(StrictModel):
     proposed_object: str = ""
     rendered_path: str
     source_mode: str
+    inspiration_role: Literal[
+        "EXPLORATORY_AXIS",
+        "KNOWN_RELATION_COMPONENT",
+    ] = "EXPLORATORY_AXIS"
+    external_relation_source_mode: Literal[
+        "NOT_APPLICABLE",
+        "SOURCE_REPORTED",
+        "BOUNDED_SYNTHESIS",
+    ] = "NOT_APPLICABLE"
+    second_order_gap_required: bool = False
     exploration_score: float
     candidate_unit_score: float = 0.0
     planner_score: float

@@ -203,6 +203,55 @@ class EndpointEquivalenceWitness(StrictModel):
         return self
 
 
+class MediatorEquivalenceWitness(StrictModel):
+    """
+    Explicit, auditable mediator-equivalence evidence.
+
+    The lexical mediator gate remains unchanged. This witness is a separate
+    authority path used only when lexical mediator compatibility fails.
+    """
+
+    schema_version: str = "mediator-equivalence-witness-v1"
+
+    witness_id: str
+    left_mediator: str
+    right_mediator: str
+    canonical_mediator: str
+
+    witness_kind: Literal[
+        "explicit_alias",
+        "registry_identity",
+        "domain_profile_normalization",
+        "domain_profile_alias",
+        "document_coreference",
+        "task_supplied",
+    ]
+
+    provenance_ids: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_witness(
+        self,
+    ) -> "MediatorEquivalenceWitness":
+        required = (
+            self.witness_id,
+            self.left_mediator,
+            self.right_mediator,
+            self.canonical_mediator,
+        )
+        if not all(str(value).strip() for value in required):
+            raise ValueError(
+                "mediator-equivalence witness requires complete identity text"
+            )
+
+        if not lexical_tokens(self.canonical_mediator):
+            raise ValueError(
+                "mediator-equivalence canonical_mediator produced no tokens"
+            )
+
+        return self
+
+
 class RelationComponentBindingView(StrictModel):
     task_slot: RelationArgumentSlot
     mediator_slot: RelationArgumentSlot
@@ -901,6 +950,51 @@ def _endpoint_equivalence_witness(
     return None
 
 
+def resolve_mediator_equivalence_witness(
+    *,
+    left_mediator: str,
+    right_mediator: str,
+    witnesses: Sequence[
+        MediatorEquivalenceWitness
+    ],
+) -> MediatorEquivalenceWitness | None:
+    """
+    Resolve only an explicitly supplied mediator equivalence.
+
+    No embedding similarity, ontology expansion, or lexical-threshold
+    relaxation occurs here.
+    """
+
+    for witness in witnesses:
+        forward = (
+            _endpoint_text_exact(
+                left_mediator,
+                witness.left_mediator,
+            )
+            and
+            _endpoint_text_exact(
+                right_mediator,
+                witness.right_mediator,
+            )
+        )
+        reverse = (
+            _endpoint_text_exact(
+                left_mediator,
+                witness.right_mediator,
+            )
+            and
+            _endpoint_text_exact(
+                right_mediator,
+                witness.left_mediator,
+            )
+        )
+
+        if forward or reverse:
+            return witness
+
+    return None
+
+
 def _slot_text(
     component: RelationComponentView,
     slot: RelationArgumentSlot,
@@ -1155,6 +1249,66 @@ def _mediator_compatibility(
     )
 
 
+def _mediator_compatibility_with_witness(
+    *,
+    source_text: str,
+    target_text: str,
+    source_tokens: frozenset[str],
+    target_tokens: frozenset[str],
+    mediator_equivalences: Sequence[
+        MediatorEquivalenceWitness
+    ],
+) -> tuple[
+    frozenset[str],
+    float,
+    MediatorEquivalenceWitness | None,
+] | None:
+    """
+    Preserve the frozen lexical gate, then try explicit equivalence only.
+
+    A witnessed equivalent mediator is represented downstream with tokens from
+    its explicit canonical_mediator so existing materialization still has a
+    non-empty shared mediator representation.
+    """
+
+    lexical = _mediator_compatibility(
+        source_tokens=source_tokens,
+        target_tokens=target_tokens,
+    )
+
+    if lexical is not None:
+        shared, score = lexical
+        return (
+            shared,
+            score,
+            None,
+        )
+
+    witness = resolve_mediator_equivalence_witness(
+        left_mediator=source_text,
+        right_mediator=target_text,
+        witnesses=mediator_equivalences,
+    )
+
+    if witness is None:
+        return None
+
+    canonical_tokens = lexical_tokens(
+        witness.canonical_mediator
+    )
+
+    if not canonical_tokens:
+        raise RuntimeError(
+            "validated mediator-equivalence witness lost canonical tokens"
+        )
+
+    return (
+        canonical_tokens,
+        1.0,
+        witness,
+    )
+
+
 def compose_relation_component_topologies(
     *,
     components: Sequence[
@@ -1165,6 +1319,9 @@ def compose_relation_component_topologies(
     max_topologies: int = 12,
     endpoint_equivalences: Sequence[
         EndpointEquivalenceWitness
+    ] = (),
+    mediator_equivalences: Sequence[
+        MediatorEquivalenceWitness
     ] = (),
     require_confirmed_known: bool = False,
     require_candidate_anchor: bool = False,
@@ -1180,7 +1337,10 @@ def compose_relation_component_topologies(
       1. task source and target must anchor to explicit subject/object slots;
       2. the opposite argument slots are the mediator slots;
       3. mediator compatibility is checked only between those slots;
-      4. lexical relation-wide overlap is not an eligibility condition.
+      4. the frozen lexical mediator gate is tried first;
+      5. if lexical compatibility fails, only an explicit mediator-equivalence
+         witness may authorize the bridge;
+      6. lexical relation-wide overlap is not an eligibility condition.
 
     Component authority is preserved. A composed topology is always
     inspiration-only and always requires verification; this function does
@@ -1256,6 +1416,10 @@ def compose_relation_component_topologies(
         source_mediator = frozenset(
             source_binding.mediator_tokens
         )
+        source_mediator_text = _slot_text(
+            source_component,
+            source_binding.mediator_slot,
+        )
 
         for (
             target_component,
@@ -1304,14 +1468,19 @@ def compose_relation_component_topologies(
             target_mediator = frozenset(
                 target_binding.mediator_tokens
             )
+            target_mediator_text = _slot_text(
+                target_component,
+                target_binding.mediator_slot,
+            )
 
             compatibility = (
-                _mediator_compatibility(
-                    source_tokens=(
-                        source_mediator
-                    ),
-                    target_tokens=(
-                        target_mediator
+                _mediator_compatibility_with_witness(
+                    source_text=source_mediator_text,
+                    target_text=target_mediator_text,
+                    source_tokens=source_mediator,
+                    target_tokens=target_mediator,
+                    mediator_equivalences=(
+                        mediator_equivalences
                     ),
                 )
             )
@@ -1322,18 +1491,34 @@ def compose_relation_component_topologies(
             (
                 shared,
                 score,
+                mediator_witness,
             ) = compatibility
 
-            topology_id = _stable_id(
-                "relational_topology",
-                source_component.component_id,
-                source_binding.task_slot,
-                source_binding.mediator_slot,
-                target_component.component_id,
-                target_binding.task_slot,
-                target_binding.mediator_slot,
-                *sorted(shared),
-            )
+            if mediator_witness is None:
+                # Preserve all pre-S25e lexical topology IDs exactly.
+                topology_id = _stable_id(
+                    "relational_topology",
+                    source_component.component_id,
+                    source_binding.task_slot,
+                    source_binding.mediator_slot,
+                    target_component.component_id,
+                    target_binding.task_slot,
+                    target_binding.mediator_slot,
+                    *sorted(shared),
+                )
+            else:
+                topology_id = _stable_id(
+                    "relational_topology",
+                    source_component.component_id,
+                    source_binding.task_slot,
+                    source_binding.mediator_slot,
+                    target_component.component_id,
+                    target_binding.task_slot,
+                    target_binding.mediator_slot,
+                    "mediator_equivalence",
+                    mediator_witness.witness_id,
+                    *sorted(shared),
+                )
 
             rows.append(
                 RelationalTopologyView(
@@ -1412,6 +1597,22 @@ def compose_relation_component_topologies(
                         ),
                         "endpoint_binding_fidelity_preserved",
                         "mediator_argument_slots_compatible",
+                        *(
+                            [
+                                (
+                                    "mediator_equivalence_witness:"
+                                    + mediator_witness.witness_id
+                                ),
+                                (
+                                    "mediator_equivalence_kind:"
+                                    + mediator_witness.witness_kind
+                                ),
+                                "mediator_argument_slots_equivalent",
+                                "mediator_canonical_tokens_from_explicit_witness",
+                            ]
+                            if mediator_witness is not None
+                            else []
+                        ),
                         "topology_inspiration_only",
                         "topology_requires_verification",
                     ],

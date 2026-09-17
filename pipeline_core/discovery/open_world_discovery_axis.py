@@ -111,6 +111,20 @@ class ExternalAxisValidationResult(StrictModel):
     )
 
 
+
+class ExternalAxisNoveltyRole(StrictModel):
+    inspiration_role: Literal[
+        "EXPLORATORY_AXIS",
+        "KNOWN_RELATION_COMPONENT",
+    ]
+    external_relation_source_mode: Literal[
+        "SOURCE_REPORTED",
+        "BOUNDED_SYNTHESIS",
+    ]
+    second_order_gap_required: bool
+    reason_codes: list[str] = Field(default_factory=list)
+
+
 class ExternalAxisProvenance(StrictModel):
     axis_id: str
     raw_local_id: str
@@ -119,6 +133,15 @@ class ExternalAxisProvenance(StrictModel):
     compatible_grounded_statement_ids: list[str]
     bounded_synthesis_note: str
     max_control_similarity: float
+    inspiration_role: Literal[
+        "EXPLORATORY_AXIS",
+        "KNOWN_RELATION_COMPONENT",
+    ] = "EXPLORATORY_AXIS"
+    external_relation_source_mode: Literal[
+        "SOURCE_REPORTED",
+        "BOUNDED_SYNTHESIS",
+    ] = "BOUNDED_SYNTHESIS"
+    second_order_gap_required: bool = False
 
 
 class OpenWorldExternalAxisBundle(StrictModel):
@@ -564,6 +587,40 @@ def _axis_text_from_parts(
     return " | ".join([subject, relation, obj])
 
 
+
+def _s25d_external_axis_novelty_role(
+    axis: ExternalAxisDraft,
+) -> ExternalAxisNoveltyRole:
+    # The pre-existing S17 contract requires every accepted external axis
+    # relation to be source-supported OR explicitly marked as a bounded
+    # synthesis between supplied source spans. S25d uses only that frozen
+    # provenance distinction; it does not make a new novelty judgment.
+    if str(axis.bounded_synthesis_note or "").strip():
+        return ExternalAxisNoveltyRole(
+            inspiration_role="EXPLORATORY_AXIS",
+            external_relation_source_mode="BOUNDED_SYNTHESIS",
+            second_order_gap_required=False,
+            reason_codes=[
+                "S25D_BOUNDED_SYNTHESIS_REMAINS_EXPLORATORY",
+                "S25D_NO_NOVELTY_AUTHORITY",
+                "S25D_EXTERNAL_LITERATURE_REMAINS_INSPIRATION_ONLY",
+            ],
+        )
+
+    return ExternalAxisNoveltyRole(
+        inspiration_role="KNOWN_RELATION_COMPONENT",
+        external_relation_source_mode="SOURCE_REPORTED",
+        second_order_gap_required=True,
+        reason_codes=[
+            "S25D_KNOWN_RELATION_COMPONENT",
+            "S25D_SOURCE_REPORTED_RELATION_NOT_NOVELTY_TARGET",
+            "S25D_SECOND_ORDER_GAP_REQUIRED",
+            "S25D_NO_NOVELTY_AUTHORITY",
+            "S25D_EXTERNAL_LITERATURE_REMAINS_INSPIRATION_ONLY",
+        ],
+    )
+
+
 def build_external_axis_plan(
     *,
     dual: DualHypothesisContext,
@@ -692,6 +749,9 @@ def build_external_axis_plan(
         evidence_preview = " ; ".join(
             raw.source_evidence_spans[:3]
         )
+        s25d_role = _s25d_external_axis_novelty_role(
+            raw
+        )
 
         accepted_axes.append(
             DiscoveryAxis(
@@ -719,6 +779,13 @@ def build_external_axis_plan(
                     + evidence_preview
                 ),
                 source_mode="external_open_world",
+                inspiration_role=s25d_role.inspiration_role,
+                external_relation_source_mode=(
+                    s25d_role.external_relation_source_mode
+                ),
+                second_order_gap_required=(
+                    s25d_role.second_order_gap_required
+                ),
                 exploration_score=1.0,
                 candidate_unit_score=1.0,
                 planner_score=max(
@@ -738,6 +805,7 @@ def build_external_axis_plan(
                     "EXTERNAL_INSPIRATION_ONLY",
                     "NOT_POSITIVE_PREMISE",
                     "EXACT_SOURCE_SPANS_VALIDATED",
+                    *s25d_role.reason_codes,
                 ],
             )
         )
@@ -752,6 +820,13 @@ def build_external_axis_plan(
                 compatible_grounded_statement_ids=compatible_ids,
                 bounded_synthesis_note=raw.bounded_synthesis_note,
                 max_control_similarity=max_similarity,
+                inspiration_role=s25d_role.inspiration_role,
+                external_relation_source_mode=(
+                    s25d_role.external_relation_source_mode
+                ),
+                second_order_gap_required=(
+                    s25d_role.second_order_gap_required
+                ),
             )
         )
 

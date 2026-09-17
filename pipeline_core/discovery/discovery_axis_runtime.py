@@ -163,6 +163,9 @@ class DiscoveryAxisSynthesisRuntime:
         draft_backend: HypothesisDraftBackend,
         mapper: Any,
         *,
+        task_source: str | None = None,
+        task_target: str | None = None,
+        task_question: str | None = None,
         compiler: HypothesisCompiler | None = None,
         validator: HypothesisValidator | None = None,
         fidelity_critic: DiscoveryAxisFidelityCritic | None = None,
@@ -191,8 +194,20 @@ class DiscoveryAxisSynthesisRuntime:
             raise ValueError(
                 "max_inference_repairs must be 0, 1, or 2 in alpha4"
             )
+        source_text = str(task_source or "").strip()
+        target_text = str(task_target or "").strip()
+        question_text = str(task_question or "").strip()
+
+        if bool(source_text) != bool(target_text):
+            raise ValueError(
+                "S26a task anchoring requires both task_source and task_target"
+            )
+
         self.backend = draft_backend
         self.mapper = mapper
+        self.task_source = source_text if source_text else None
+        self.task_target = target_text if target_text else None
+        self.task_question = question_text if question_text else None
         self.compiler = compiler or HypothesisCompiler()
         self.validator = validator or HypothesisValidator()
         self.fidelity_critic = fidelity_critic or DiscoveryAxisFidelityCritic()
@@ -326,10 +341,27 @@ class DiscoveryAxisSynthesisRuntime:
         context_review_history: list[AxisContextReviewRecord] = []
 
         for axis in plan.axes:
-            assembler = DiscoveryAxisHypothesisPromptAssembler(
-                axis,
-                family_hierarchy=self.family_hierarchy,
-            )
+            if (
+                self.task_source is None
+                and self.task_target is None
+            ):
+                # Backward-compatible path for callers/tests that do not
+                # request S26a task anchoring. Preserve the historical
+                # assembler constructor contract exactly.
+                assembler = DiscoveryAxisHypothesisPromptAssembler(
+                    axis,
+                    family_hierarchy=self.family_hierarchy,
+                )
+            else:
+                # S26a production path: canonical E2E supplies both original
+                # task endpoints, so generation receives explicit anchoring.
+                assembler = DiscoveryAxisHypothesisPromptAssembler(
+                    axis,
+                    task_source=self.task_source,
+                    task_target=self.task_target,
+                    task_question=self.task_question,
+                    family_hierarchy=self.family_hierarchy,
+                )
             initial_runtime = HypothesisMakerAgentRuntime(
                 self.backend,
                 prompt_assembler=assembler,

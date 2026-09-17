@@ -16,6 +16,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyPolicy,
     ExternalNoveltyReport,
     HypothesisSearchCoverage,
+    HypothesisNoveltyDepthProfile,
     LiteratureQueryPlan,
     PriorArtPacket,
 )
@@ -193,6 +194,182 @@ def _lower_order_gap_annotation(
         supported_core_claim_ids,
         gap_claim_ids,
         core_work_ids,
+    )
+
+
+_RELATION_BACKED_CLAIM_STATUSES = frozenset({
+    "DIRECT_PRIOR_ART",
+    "PARTIAL_PRIOR_ART",
+})
+
+_GAP_LIKE_CLAIM_STATUSES = frozenset({
+    "COMPONENTS_ONLY",
+    "NO_DIRECT_MATCH_FOUND",
+})
+
+
+def _novelty_depth_profile(
+    *,
+    hypothesis_id: str,
+    reviews: list[ClaimPriorArtReview],
+    claims_by_id: dict[str, Any],
+) -> HypothesisNoveltyDepthProfile:
+    core_reviews = [
+        review
+        for review in reviews
+        if review.importance == "core"
+    ] or list(reviews)
+
+    relation_backed_core = [
+        review
+        for review in core_reviews
+        if review.status in _RELATION_BACKED_CLAIM_STATUSES
+    ]
+
+    core_count = len(core_reviews)
+    known_fraction = (
+        len(relation_backed_core) / core_count
+        if core_count
+        else 0.0
+    )
+
+    role_binding_complete = True
+    novelty_bearing_reviews: list[ClaimPriorArtReview] = []
+
+    for review in core_reviews:
+        claim = claims_by_id.get(review.claim_id)
+
+        if claim is None or claim.hypothesis_id != hypothesis_id:
+            raise ValueError(
+                "S25b novelty-depth profile claim provenance drift: "
+                + review.claim_id
+            )
+
+        role = getattr(claim, "novelty_selection_role", None)
+
+        if role is None:
+            role_binding_complete = False
+            continue
+
+        if role == "NOVELTY_BEARING":
+            novelty_bearing_reviews.append(review)
+
+    novelty_bearing_ids = [
+        review.claim_id
+        for review in novelty_bearing_reviews
+    ]
+
+    relation_backed_ids = [
+        review.claim_id
+        for review in novelty_bearing_reviews
+        if review.status in _RELATION_BACKED_CLAIM_STATUSES
+    ]
+
+    gap_like_ids = [
+        review.claim_id
+        for review in novelty_bearing_reviews
+        if review.status in _GAP_LIKE_CLAIM_STATUSES
+    ]
+
+    conflicting_ids = [
+        review.claim_id
+        for review in novelty_bearing_reviews
+        if review.status == "CONFLICTING_PRIOR_ART"
+    ]
+
+    classified_ids = (
+        set(relation_backed_ids)
+        | set(gap_like_ids)
+        | set(conflicting_ids)
+    )
+
+    unresolved_ids = [
+        claim_id
+        for claim_id in novelty_bearing_ids
+        if claim_id not in classified_ids
+    ]
+
+    novelty_count = len(novelty_bearing_ids)
+
+    relation_backed_fraction = (
+        len(relation_backed_ids) / novelty_count
+        if novelty_count
+        else 0.0
+    )
+
+    if not role_binding_complete:
+        gap_centrality = "UNRESOLVED"
+    elif novelty_count == 0:
+        gap_centrality = "NONE"
+    elif novelty_count == 1:
+        gap_centrality = "CENTRAL"
+    else:
+        gap_centrality = "DISTRIBUTED"
+
+    if novelty_count == 0:
+        prior_art_state = "NONE"
+    elif conflicting_ids:
+        prior_art_state = "CONFLICTING"
+    elif unresolved_ids:
+        prior_art_state = "UNRESOLVED"
+    elif len(relation_backed_ids) == novelty_count:
+        prior_art_state = "ALL_RELATION_BACKED"
+    elif len(gap_like_ids) == novelty_count:
+        prior_art_state = "ALL_GAP_LIKE"
+    else:
+        prior_art_state = "MIXED"
+
+    reason_codes: list[str] = [
+        "s25b_diagnostic_only",
+        "s25b_existing_novelty_selection_roles_only",
+    ]
+
+    if not role_binding_complete:
+        reason_codes.append(
+            "s25b_incomplete_core_role_binding"
+        )
+
+    if novelty_count == 0:
+        reason_codes.append(
+            "s25b_no_explicit_novelty_bearing_core_claim"
+        )
+    elif novelty_count == 1:
+        reason_codes.append(
+            "s25b_single_explicit_novelty_bearing_core_claim"
+        )
+    else:
+        reason_codes.append(
+            "s25b_multiple_explicit_novelty_bearing_core_claims"
+        )
+
+    if relation_backed_ids:
+        reason_codes.append(
+            "s25b_novelty_bearing_relation_backed_prior_art_present"
+        )
+
+    if gap_like_ids:
+        reason_codes.append(
+            "s25b_novelty_bearing_gap_like_claim_present"
+        )
+
+    return HypothesisNoveltyDepthProfile(
+        hypothesis_id=hypothesis_id,
+        role_binding_complete=role_binding_complete,
+        core_claim_count=core_count,
+        relation_backed_core_claim_count=len(relation_backed_core),
+        known_core_relation_fraction=float(known_fraction),
+        novelty_bearing_claim_ids=novelty_bearing_ids,
+        novelty_bearing_claim_count=novelty_count,
+        novelty_bearing_relation_backed_claim_ids=relation_backed_ids,
+        novelty_bearing_gap_like_claim_ids=gap_like_ids,
+        novelty_bearing_conflicting_claim_ids=conflicting_ids,
+        novelty_bearing_unresolved_claim_ids=unresolved_ids,
+        novelty_bearing_relation_backed_fraction=float(
+            relation_backed_fraction
+        ),
+        gap_centrality=gap_centrality,
+        novelty_bearing_prior_art_state=prior_art_state,
+        reason_codes=sorted(set(reason_codes)),
     )
 
 
@@ -829,6 +1006,11 @@ class ExternalNoveltyAssessor:
             rows = [review_by_id[claim_id] for claim_id in ordered_claim_ids]
             coverage = self._coverage(hypothesis, rows, packet, plan)
             status, reasons, interpretation = self._status(rows, coverage)
+            novelty_depth_profile = _novelty_depth_profile(
+                hypothesis_id=hypothesis.hypothesis_id,
+                reviews=rows,
+                claims_by_id=planned_by_id,
+            )
             gap_absence_sufficient = (
                 self._relational_gap_absence_sufficient(
                     rows,
@@ -968,6 +1150,7 @@ class ExternalNoveltyAssessor:
                     status=status,
                     claim_reviews=rows,
                     coverage=coverage,
+                    novelty_depth_profile=novelty_depth_profile,
                     strongest_prior_art_work_ids=strongest_ids,
                     contextual_conflict_work_ids=contextual_conflict_ids[:5],
                     lower_order_prior_art_work_ids=lower_order_ids[:5],

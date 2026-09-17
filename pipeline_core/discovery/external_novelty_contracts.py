@@ -534,6 +534,104 @@ class ExternalNoveltyPolicy(StrictModel):
     min_catalyst_scope_for_conflict: float = 0.75
 
 
+NoveltyGapCentrality = Literal[
+    "NONE",
+    "CENTRAL",
+    "DISTRIBUTED",
+    "UNRESOLVED",
+]
+
+NoveltyBearingPriorArtState = Literal[
+    "NONE",
+    "ALL_RELATION_BACKED",
+    "MIXED",
+    "ALL_GAP_LIKE",
+    "CONFLICTING",
+    "UNRESOLVED",
+]
+
+
+class HypothesisNoveltyDepthProfile(StrictModel):
+    schema_version: Literal[
+        "hypothesis-novelty-depth-profile-v1"
+    ] = "hypothesis-novelty-depth-profile-v1"
+
+    hypothesis_id: str
+    role_binding_complete: bool
+
+    core_claim_count: int = Field(ge=0)
+    relation_backed_core_claim_count: int = Field(ge=0)
+    known_core_relation_fraction: float = Field(ge=0.0, le=1.0)
+
+    novelty_bearing_claim_ids: list[str] = Field(default_factory=list)
+    novelty_bearing_claim_count: int = Field(ge=0)
+
+    novelty_bearing_relation_backed_claim_ids: list[str] = Field(
+        default_factory=list
+    )
+    novelty_bearing_gap_like_claim_ids: list[str] = Field(default_factory=list)
+    novelty_bearing_conflicting_claim_ids: list[str] = Field(
+        default_factory=list
+    )
+    novelty_bearing_unresolved_claim_ids: list[str] = Field(
+        default_factory=list
+    )
+
+    novelty_bearing_relation_backed_fraction: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
+    gap_centrality: NoveltyGapCentrality
+    novelty_bearing_prior_art_state: NoveltyBearingPriorArtState
+
+    diagnostic_only: Literal[True] = True
+    production_selection_authority: Literal[False] = False
+    novelty_certification_authority: Literal[False] = False
+
+    reason_codes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_depth_profile(self) -> "HypothesisNoveltyDepthProfile":
+        if self.relation_backed_core_claim_count > self.core_claim_count:
+            raise ValueError(
+                "relation-backed core count exceeds core claim count"
+            )
+
+        if self.novelty_bearing_claim_count != len(
+            self.novelty_bearing_claim_ids
+        ):
+            raise ValueError(
+                "novelty-bearing claim count/id mismatch"
+            )
+
+        categories = (
+            self.novelty_bearing_relation_backed_claim_ids,
+            self.novelty_bearing_gap_like_claim_ids,
+            self.novelty_bearing_conflicting_claim_ids,
+            self.novelty_bearing_unresolved_claim_ids,
+        )
+
+        flattened = [
+            claim_id
+            for values in categories
+            for claim_id in values
+        ]
+
+        if len(flattened) != len(set(flattened)):
+            raise ValueError(
+                "novelty-bearing prior-art categories overlap"
+            )
+
+        if set(flattened) != set(self.novelty_bearing_claim_ids):
+            raise ValueError(
+                "novelty-bearing prior-art categories do not "
+                "cover the novelty-bearing claim set"
+            )
+
+        return self
+
+
 RelationalGapKind = Literal[
     "NONE",
     "HIGHER_ORDER_RELATIONAL_GAP",
@@ -546,6 +644,7 @@ class ExternalNoveltyCard(StrictModel):
     status: ExternalNoveltyStatus
     claim_reviews: list[ClaimPriorArtReview] = Field(default_factory=list)
     coverage: HypothesisSearchCoverage
+    novelty_depth_profile: HypothesisNoveltyDepthProfile | None = None
     strongest_prior_art_work_ids: list[str] = Field(default_factory=list)
     contextual_conflict_work_ids: list[str] = Field(default_factory=list)
     lower_order_prior_art_work_ids: list[str] = Field(default_factory=list)

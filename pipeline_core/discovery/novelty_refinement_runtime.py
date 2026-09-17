@@ -270,6 +270,331 @@ def _post_generation_novelty_observability(
     }
 
 
+# ---------------------------------------------------------------------------
+# S25a: cumulative prior-art monotonicity for targeted reassessment.
+# Applies only to the exact unchanged source hypothesis during cumulative
+# targeted search. Fresh Alpha6 refinements/re-axes still receive fresh review.
+# ---------------------------------------------------------------------------
+
+_S25A_MATCH_STRENGTH = {
+    "CONFLICTING_PRIOR_ART": 100,
+    "DIRECT_PRIOR_ART": 90,
+    "PARTIAL_PRIOR_ART": 80,
+    "LOWER_ORDER_RELATION_PRIOR_ART": 70,
+    "DIRECTIONAL_COUNTEREVIDENCE": 65,
+    "CONTEXTUAL_CONFLICT": 60,
+    "COMPONENT_ONLY": 50,
+    "TITLE_ONLY_NEIGHBOR": 40,
+    "UNRELATED": 10,
+    "INSUFFICIENT_METADATA": 0,
+}
+
+_S25A_STICKY_CLAIM_STATUS = {
+    "CONFLICTING_PRIOR_ART": 3,
+    "DIRECT_PRIOR_ART": 2,
+    "PARTIAL_PRIOR_ART": 1,
+}
+
+_S25A_PRIOR_ART_BACKED_HYPOTHESIS_STATUSES = {
+    "WELL_ESTABLISHED",
+    "LITERATURE_SUPPORTED_EXTENSION",
+}
+
+_S25A_MORE_NOVEL_HYPOTHESIS_STATUSES = {
+    "NEW_COMBINATION_OF_KNOWN_EFFECTS",
+    "KNOWN_COMPONENTS_WITH_RELATIONAL_GAP",
+    "PLAUSIBLY_NOVEL",
+}
+
+
+def _s25a_match_score(match: Any) -> tuple[float, float, float, str]:
+    return (
+        float(_S25A_MATCH_STRENGTH.get(str(match.relationship), -1)),
+        float(match.confidence),
+        float(match.relevance_score),
+        str(match.work_id),
+    )
+
+
+def _s25a_merge_matches(
+    source_matches: list[Any],
+    targeted_matches: list[Any],
+) -> list[Any]:
+    by_work: dict[str, Any] = {}
+    for match in [*source_matches, *targeted_matches]:
+        work_id = str(match.work_id)
+        existing = by_work.get(work_id)
+        if (
+            existing is None
+            or _s25a_match_score(match) > _s25a_match_score(existing)
+        ):
+            by_work[work_id] = match
+
+    rows = list(by_work.values())
+    rows.sort(
+        key=lambda row: (
+            -_s25a_match_score(row)[0],
+            -float(row.confidence),
+            -float(row.relevance_score),
+            str(row.work_id),
+        )
+    )
+    return rows
+
+
+def _s25a_claim_status_floor(
+    source_status: str,
+    targeted_status: str,
+) -> str:
+    source_rank = _S25A_STICKY_CLAIM_STATUS.get(str(source_status), 0)
+    targeted_rank = _S25A_STICKY_CLAIM_STATUS.get(str(targeted_status), 0)
+
+    if (
+        str(source_status) == "CONFLICTING_PRIOR_ART"
+        or str(targeted_status) == "CONFLICTING_PRIOR_ART"
+    ):
+        return "CONFLICTING_PRIOR_ART"
+
+    if source_rank > targeted_rank:
+        return str(source_status)
+
+    return str(targeted_status)
+
+
+def _s25a_merge_claim_review(
+    source_review: Any,
+    targeted_review: Any,
+) -> Any:
+    for field in (
+        "hypothesis_id",
+        "claim_id",
+        "claim_text",
+        "importance",
+    ):
+        if getattr(source_review, field) != getattr(targeted_review, field):
+            raise RuntimeError(
+                "S25a targeted prior-art monotonicity "
+                f"identity drift: {field}"
+            )
+
+    merged_status = _s25a_claim_status_floor(
+        source_review.status,
+        targeted_review.status,
+    )
+
+    source_coverage = source_review.coverage
+    targeted_coverage = targeted_review.coverage
+
+    if source_coverage.claim_id != targeted_coverage.claim_id:
+        raise RuntimeError(
+            "S25a targeted prior-art monotonicity coverage claim_id drift"
+        )
+
+    merged_coverage = targeted_coverage.model_copy(
+        update={
+            "query_count": max(
+                int(source_coverage.query_count),
+                int(targeted_coverage.query_count),
+            ),
+            "successful_query_count": max(
+                int(source_coverage.successful_query_count),
+                int(targeted_coverage.successful_query_count),
+            ),
+            "unique_work_count": max(
+                int(source_coverage.unique_work_count),
+                int(targeted_coverage.unique_work_count),
+            ),
+            "abstract_work_count": max(
+                int(source_coverage.abstract_work_count),
+                int(targeted_coverage.abstract_work_count),
+            ),
+            "reviewed_work_count": max(
+                int(source_coverage.reviewed_work_count),
+                int(targeted_coverage.reviewed_work_count),
+            ),
+        }
+    )
+
+    reason_codes = sorted(
+        set(source_review.reason_codes)
+        | set(targeted_review.reason_codes)
+    )
+    if merged_status != targeted_review.status:
+        reason_codes = sorted(
+            set(reason_codes)
+            | {"s25a_prior_art_positive_evidence_monotonic_floor"}
+        )
+
+    unknown_ids = sorted(
+        set(source_review.reviewer_unknown_work_ids)
+        | set(targeted_review.reviewer_unknown_work_ids)
+    )
+
+    interpretation = targeted_review.interpretation
+    if merged_status != targeted_review.status:
+        interpretation = (
+            interpretation.rstrip()
+            + " Cumulative targeted reassessment preserves stronger "
+              "prior-art evidence already compiled for this unchanged "
+              "atomic claim."
+        )
+
+    return targeted_review.model_copy(
+        update={
+            "status": merged_status,
+            "matches": _s25a_merge_matches(
+                list(source_review.matches),
+                list(targeted_review.matches),
+            ),
+            "coverage": merged_coverage,
+            "reason_codes": reason_codes,
+            "reviewer_unknown_work_ids": unknown_ids,
+            "interpretation": interpretation,
+        }
+    )
+
+
+def _s25a_recompile_targeted_report_with_prior_art_floor(
+    *,
+    external_assessor: Any,
+    portfolio: HypothesisPortfolio,
+    source_card: ExternalNoveltyCard,
+    targeted_report: ExternalNoveltyReport,
+    targeted_plan: LiteratureQueryPlan,
+    targeted_packet: PriorArtPacket,
+    lineage: Alpha6LineageInput,
+) -> ExternalNoveltyReport:
+    targeted_cards = {
+        card.hypothesis_id: card
+        for card in targeted_report.cards
+    }
+    targeted_card = targeted_cards.get(source_card.hypothesis_id)
+    if targeted_card is None:
+        raise RuntimeError(
+            "S25a targeted report is missing focal hypothesis"
+        )
+
+    source_reviews = {
+        review.claim_id: review
+        for review in source_card.claim_reviews
+    }
+    targeted_reviews = {
+        review.claim_id: review
+        for review in targeted_card.claim_reviews
+    }
+
+    packet_work_ids = {
+        work.work_id
+        for work in targeted_packet.works
+    }
+    source_match_work_ids = {
+        match.work_id
+        for review in source_card.claim_reviews
+        for match in review.matches
+    }
+    missing_source_work_ids = sorted(
+        source_match_work_ids - packet_work_ids
+    )
+    if missing_source_work_ids:
+        raise RuntimeError(
+            "S25a targeted merged packet lost source prior-art works: "
+            + ",".join(missing_source_work_ids)
+        )
+
+    if set(source_reviews) != set(targeted_reviews):
+        raise RuntimeError(
+            "S25a targeted reassessment changed the atomic claim set "
+            "for an unchanged hypothesis"
+        )
+
+    merged_reviews: list[Any] = []
+
+    for card in targeted_report.cards:
+        if card.hypothesis_id != source_card.hypothesis_id:
+            merged_reviews.extend(card.claim_reviews)
+            continue
+
+        for review in card.claim_reviews:
+            merged_reviews.append(
+                _s25a_merge_claim_review(
+                    source_reviews[review.claim_id],
+                    review,
+                )
+            )
+
+    return external_assessor.compile_report_from_claim_reviews(
+        portfolio,
+        targeted_plan,
+        targeted_packet,
+        merged_reviews,
+        lineage=lineage,
+    )
+
+
+def _s25a_assert_unchanged_hypothesis_no_prior_art_upgrade(
+    *,
+    source_status: str,
+    targeted_status: str,
+) -> None:
+    if (
+        str(source_status)
+        in _S25A_PRIOR_ART_BACKED_HYPOTHESIS_STATUSES
+        and str(targeted_status)
+        in _S25A_MORE_NOVEL_HYPOTHESIS_STATUSES
+    ):
+        raise RuntimeError(
+            "S25a invariant violation: cumulative targeted search "
+            "made an unchanged prior-art-backed hypothesis more novel "
+            f"({source_status} -> {targeted_status})"
+        )
+
+# ---------------------------------------------------------------------------
+# S25c: bounded same-premise gap sharpening.
+# ---------------------------------------------------------------------------
+
+def _s25c_should_bypass_resolved_candidate_exit(action: str) -> bool:
+    return str(action) == "gap_sharpen"
+
+
+def _s25c_should_attempt_fresh_reaxis(
+    *,
+    action: str,
+    ordinary_should_attempt: bool,
+) -> bool:
+    if str(action) == "gap_sharpen":
+        return False
+    return bool(ordinary_should_attempt)
+
+
+def _s25c_gap_sharpen_final_rejection_reason(
+    final_card: Any,
+) -> str | None:
+    status = str(final_card.status)
+
+    if status == "LITERATURE_SUPPORTED_EXTENSION":
+        return (
+            "s25c_gap_sharpen_remained_"
+            "literature_supported_extension"
+        )
+
+    if status != "NEW_COMBINATION_OF_KNOWN_EFFECTS":
+        return None
+
+    profile = getattr(final_card, "novelty_depth_profile", None)
+
+    if profile is None or not profile.role_binding_complete:
+        return (
+            "s25c_gap_sharpen_missing_or_incomplete_depth_profile"
+        )
+
+    if not profile.novelty_bearing_gap_like_claim_ids:
+        return (
+            "s25c_gap_sharpen_no_novelty_bearing_gap_after_refinement"
+        )
+
+    return None
+
+
 @dataclass(frozen=True)
 class NoveltyRefinementOutcome:
     portfolio: HypothesisPortfolio
@@ -1179,9 +1504,27 @@ class TargetedNoveltyRefinementRuntime:
                         targeted.merged_packet,
                         lineage=lineage,
                     )
+
+                reassessed = (
+                    _s25a_recompile_targeted_report_with_prior_art_floor(
+                        external_assessor=self.external_assessor,
+                        portfolio=portfolio,
+                        source_card=source_external,
+                        targeted_report=reassessed,
+                        targeted_plan=targeted.augmented_plan,
+                        targeted_packet=targeted.merged_packet,
+                        lineage=lineage,
+                    )
+                )
+
                 targeted_card = next(
                     x for x in reassessed.cards
                     if x.hypothesis_id == original.hypothesis_id
+                )
+
+                _s25a_assert_unchanged_hypothesis_no_prior_art_upgrade(
+                    source_status=source_external.status,
+                    targeted_status=targeted_card.status,
                 )
 
                 def keep_original_after_failed_refinement(
@@ -1255,6 +1598,9 @@ class TargetedNoveltyRefinementRuntime:
             if (
                 targeted_card.status
                 in self.RESOLVED_CANDIDATE_EXTERNAL
+                and not _s25c_should_bypass_resolved_candidate_exit(
+                    gap.action
+                )
             ):
                 if not (
                     n10_resolution_directive
@@ -1345,9 +1691,14 @@ class TargetedNoveltyRefinementRuntime:
                 )
             )
 
-            if self._should_attempt_fresh_reaxis(
-                targeted_card.status,
-                unused_reaxis_ids,
+            if _s25c_should_attempt_fresh_reaxis(
+                action=gap.action,
+                ordinary_should_attempt=(
+                    self._should_attempt_fresh_reaxis(
+                        targeted_card.status,
+                        unused_reaxis_ids,
+                    )
+                ),
             ):
                 allowed_reaxis_ids = sorted(
                     set(
@@ -2048,7 +2399,19 @@ class TargetedNoveltyRefinementRuntime:
             fresh = self._fresh_external(compiled)
             final_external_artifacts.append(fresh)
             final_card = fresh.report.cards[0]
-            if final_card.status in self.REJECT_EXTERNAL:
+
+            s25c_gap_sharpen_rejection = (
+                _s25c_gap_sharpen_final_rejection_reason(
+                    final_card
+                )
+                if gap.action == "gap_sharpen"
+                else None
+            )
+
+            if (
+                final_card.status in self.REJECT_EXTERNAL
+                or s25c_gap_sharpen_rejection is not None
+            ):
                 if self._original_fallback_allowed(
                     targeted_card.status,
                     hypothesis_id=original.hypothesis_id,
@@ -2056,10 +2419,24 @@ class TargetedNoveltyRefinementRuntime:
                 ):
                     keep_original_after_failed_refinement(
                         "external_novelty_rejected",
-                        reason_codes=list(final_card.reason_codes),
+                        reason_codes=[
+                            *list(final_card.reason_codes),
+                            *(
+                                [s25c_gap_sharpen_rejection]
+                                if s25c_gap_sharpen_rejection is not None
+                                else []
+                            ),
+                        ],
                         failure_interpretation=(
-                            "The refined wording hit direct/conflicting prior art under "
-                            "a fresh search and is therefore discarded. "
+                            (
+                                "The S25c gap-sharpening refinement did not "
+                                "produce a sufficiently distinct novelty-bearing "
+                                "relational gap under fresh assessment. "
+                                if s25c_gap_sharpen_rejection is not None
+                                else
+                                "The refined wording hit direct/conflicting prior "
+                                "art under a fresh search and is therefore discarded. "
+                            )
                             + final_card.interpretation
                         ),
                         axis_fidelity_status=fidelity_status,
@@ -2080,8 +2457,23 @@ class TargetedNoveltyRefinementRuntime:
                             internal_novelty_status=internal.status,
                             grounding_preserved=True,
                             refinement_generated=True,
-                            reason_codes=list(final_card.reason_codes),
-                            interpretation=final_card.interpretation,
+                            reason_codes=[
+                                *list(final_card.reason_codes),
+                                *(
+                                    [s25c_gap_sharpen_rejection]
+                                    if s25c_gap_sharpen_rejection is not None
+                                    else []
+                                ),
+                            ],
+                            interpretation=(
+                                (
+                                    "S25c gap sharpening failed its fresh "
+                                    "relational-gap check. "
+                                    if s25c_gap_sharpen_rejection is not None
+                                    else ""
+                                )
+                                + final_card.interpretation
+                            ),
                         )
                     )
                 continue
@@ -2201,6 +2593,11 @@ class TargetedNoveltyRefinementRuntime:
                     internal_novelty_status=internal.status,
                     grounding_preserved=True,
                     refinement_generated=True,
+                    reason_codes=(
+                        ["s25c_gap_sharpen_accepted"]
+                        if gap.action == "gap_sharpen"
+                        else []
+                    ),
                     interpretation=(
                         "One bounded refinement preserved grounding and axis scope, "
                         "passed corpus-internal novelty, and avoided direct/conflicting "

@@ -17,7 +17,17 @@ GapAction = Literal[
     "targeted_search_then_refine",
     "targeted_search_only",
     "refine_away_from_conflict",
+    "gap_sharpen",
     "reject",
+]
+
+GapSharpeningOperator = Literal[
+    "MODERATOR",
+    "INTERACTION",
+    "RESIDUAL",
+    "BOUNDARY",
+    "PROXY_DECOUPLING",
+    "COMPENSATION_LIMIT",
 ]
 TargetedGapQueryRole = Literal[
     "relation_primary",
@@ -61,6 +71,9 @@ class NoveltyGap(StrictModel):
     unresolved_boundary: list[str] = Field(default_factory=list)
     contextual_conflict_work_ids: list[str] = Field(default_factory=list)
     targeted_queries: list[TargetedGapQuery] = Field(default_factory=list)
+    sharpening_operators: list[GapSharpeningOperator] = Field(
+        default_factory=list
+    )
     reason_codes: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -72,6 +85,21 @@ class NoveltyGap(StrictModel):
                 "targeted query claim_id must be present in target_claim_ids: "
                 f"{unknown}"
             )
+
+        if self.action == "gap_sharpen":
+            if not self.target_claim_ids:
+                raise ValueError(
+                    "gap_sharpen requires target_claim_ids"
+                )
+            if not self.sharpening_operators:
+                raise ValueError(
+                    "gap_sharpen requires sharpening_operators"
+                )
+        elif self.sharpening_operators:
+            raise ValueError(
+                "sharpening_operators are valid only for gap_sharpen"
+            )
+
         return self
 
 

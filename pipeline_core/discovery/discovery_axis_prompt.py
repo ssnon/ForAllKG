@@ -33,6 +33,104 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+
+_KNOWN_RELATION_COMPONENT_SYSTEM_APPENDIX = r'''
+S25d KNOWN-RELATION-COMPONENT SPECIAL CASE
+==========================================
+For this assigned axis, the external source provenance indicates that the
+axis subject-relation-object is source-reported rather than an explicit
+bounded synthesis. This changes ONLY its novelty-generation role.
+
+The axis remains inspiration-only, unverified in the grounded context, and is
+NOT a positive premise. Do not treat the retrieved literature as evidence for
+the hypothesis.
+
+However, do NOT use the source-reported axis relation itself as the central
+novelty-bearing claim. Preserve it only as the baseline inspiration relation
+that the hypothesis is trying to go beyond.
+
+The central proposed dependency must instead be ONE grounded, testable
+second-order relation selected from these domain-neutral forms:
+- MODERATOR
+- INTERACTION
+- RESIDUAL
+- BOUNDARY
+- PROXY_DECOUPLING
+- COMPENSATION_LIMIT
+
+Every moderator, factor, correction, observable, regime, proxy, or contextual
+state needed to instantiate that second-order relation must already be
+supported by eligible grounded HypothesisContext statements. Do not invent
+scientific content merely to instantiate an operator.
+
+The prediction and matching falsifier must discriminate the second-order
+dependency from the simpler source-reported baseline relation.
+
+If the grounded context cannot support such a second-order dependency, abstain.
+
+This special case overrides any generic instruction above that would otherwise
+make the assigned source-reported S-R-O relation itself the central exploratory
+claim. It does NOT promote external literature into evidence and does NOT
+create novelty authority.
+'''.strip()
+
+
+def _s25d_known_relation_component_guidance(
+    axis: DiscoveryAxis,
+) -> str:
+    if not axis.second_order_gap_required:
+        return ""
+
+    return "\\n".join(
+        [
+            "S25d KNOWN RELATION COMPONENT MODE",
+            "==================================",
+            (
+                "axis_novelty_role: "
+                + axis.inspiration_role
+            ),
+            (
+                "external_relation_source_mode: "
+                + axis.external_relation_source_mode
+            ),
+            (
+                "baseline_external_relation: "
+                + axis.proposed_subject
+                + " | "
+                + axis.proposed_relation
+                + " | "
+                + axis.proposed_object
+            ),
+            "",
+            (
+                "The baseline external relation is NOT the novelty target and "
+                "is NOT a positive premise."
+            ),
+            (
+                "Generate a testable second-order dependency only when the "
+                "needed scientific content is already present in eligible "
+                "grounded statements."
+            ),
+            (
+                "Allowed reasoning operators: MODERATOR, INTERACTION, "
+                "RESIDUAL, BOUNDARY, PROXY_DECOUPLING, COMPENSATION_LIMIT."
+            ),
+            (
+                "Do not invent variables, mechanisms, regimes, corrections, "
+                "proxies, materials, or conditions to force an operator."
+            ),
+            (
+                "At least one prediction and matching falsifier must "
+                "distinguish the second-order dependency from the baseline "
+                "relation."
+            ),
+            (
+                "If no grounded second-order dependency is supportable, abstain."
+            ),
+        ]
+    )
+
+
 _SYSTEM_APPENDIX = r"""
 DISCOVERY-AXIS SYNTHESIS POLICY
 ===============================
@@ -92,12 +190,98 @@ This policy strengthens discovery-intent transfer only. It does not authorize
 an external novelty claim.
 """.strip()
 
+def _s26a_task_generation_guidance(
+    *,
+    task_source: str | None,
+    task_target: str | None,
+    task_question: str | None,
+) -> str:
+    """
+    Generation-time task anchoring.
+
+    These strings are orchestration constraints, not scientific evidence.
+    They never become premise IDs or novelty authority.
+    """
+
+    source = str(task_source or "").strip()
+    target = str(task_target or "").strip()
+    question = str(task_question or "").strip()
+
+    if bool(source) != bool(target):
+        raise ValueError(
+            "S26a task anchoring requires both task_source and task_target"
+        )
+
+    if not source:
+        return ""
+
+    lines = [
+        "S26a ORIGINAL-TASK PRESERVATION",
+        "================================",
+        (
+            "The orchestration layer supplied the original scientific task "
+            "endpoints below. They are generation constraints, NOT evidence."
+        ),
+        f"task_source: {source}",
+        f"task_target: {target}",
+    ]
+
+    if question:
+        lines.append(f"original_question: {question}")
+
+    lines.extend(
+        [
+            "",
+            (
+                "The central hypothesis MUST remain about how the task_source "
+                "relates to the task_target. Preserve both scientific roles; "
+                "paraphrase is allowed, endpoint replacement is not."
+            ),
+            (
+                "The assigned discovery axis may contribute only as a "
+                "mediator, moderator, interaction, boundary condition, "
+                "residual structure, proxy-decoupling condition, "
+                "compensation-limit condition, or other subordinate "
+                "dependency that changes or explains the task_source -> "
+                "task_target relationship."
+            ),
+            (
+                "Do NOT turn the discovery-axis subject/object into a new "
+                "task that replaces either original endpoint."
+            ),
+            (
+                "A hypothesis about axis_source -> axis_object is invalid "
+                "when the original task_source/task_target relation has "
+                "disappeared or become merely decorative."
+            ),
+            (
+                "At least one predicted observation and matching falsifier "
+                "must test the task-preserving axis-conditioned relation."
+            ),
+            (
+                "The task endpoints are not positive premises. Scientific "
+                "support must still come only from eligible grounded "
+                "HypothesisContext statements."
+            ),
+            (
+                "If the assigned axis cannot be connected to the original "
+                "task without inventing unsupported scientific content, "
+                "ABSTAIN instead of replacing the task."
+            ),
+        ]
+    )
+
+    return "\n".join(lines)
+
 
 class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
     def __init__(
         self,
         axis: DiscoveryAxis,
         *,
+        task_source: str | None = None,
+        task_target: str | None = None,
+        task_question: str | None = None,
         statement_text_limit: int = 1100,
         family_hierarchy: EvidenceFamilyHierarchy | None = None,
     ) -> None:
@@ -107,10 +291,38 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
         )
         self.axis = axis
         self.family_hierarchy = family_hierarchy
+        self.task_source = (
+            str(task_source).strip()
+            if task_source is not None
+            else None
+        )
+        self.task_target = (
+            str(task_target).strip()
+            if task_target is not None
+            else None
+        )
+        self.task_question = (
+            str(task_question).strip()
+            if task_question is not None
+            else None
+        )
+
+        _s26a_task_generation_guidance(
+            task_source=self.task_source,
+            task_target=self.task_target,
+            task_question=self.task_question,
+        )
 
     def build(self, context: HypothesisContext) -> HypothesisPrompt:
         base = super().build(context)
         axis = self.axis
+        task_guidance = (
+            _s26a_task_generation_guidance(
+                task_source=self.task_source,
+                task_target=self.task_target,
+                task_question=self.task_question,
+            )
+        )
         lines = [
             "",
             "ASSIGNED DISCOVERY AXIS (INSPIRATION ONLY; NOT EVIDENCE)",
@@ -131,6 +343,15 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
             f"mechanistic_continuity: {axis.mechanistic_continuity_band}",
             f"reaction_domain_switch_penalty: {axis.reaction_domain_switch_penalty:.2f}",
             f"route_context: {axis.rendered_path}",
+            f"axis_novelty_role: {axis.inspiration_role}",
+            (
+                "external_relation_source_mode: "
+                + axis.external_relation_source_mode
+            ),
+            (
+                "second_order_gap_required: "
+                + str(axis.second_order_gap_required).lower()
+            ),
             "STATUS: unverified inspiration; eligible_as_positive_premise=false",
             "",
             "AXIS-SPECIFIC OUTPUT DISCIPLINE",
@@ -143,7 +364,33 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
             "- Do not simply restate a fully exposed corpus chain even if it is well grounded.",
             "- If the axis cannot be integrated without overclaiming, return hypotheses=[] and a concise abstention_reason.",
         ]
-        system_prompt = base.system_prompt.rstrip() + "\n\n" + _SYSTEM_APPENDIX + "\n"
+        if task_guidance:
+            lines.extend(
+                [
+                    "",
+                    task_guidance,
+                ]
+            )
+
+        system_prompt = (
+            base.system_prompt.rstrip()
+            + "\n\n"
+            + _SYSTEM_APPENDIX
+            + "\n"
+        )
+
+        s25d_guidance = (
+            _s25d_known_relation_component_guidance(
+                axis
+            )
+        )
+        if s25d_guidance:
+            system_prompt = (
+                system_prompt.rstrip()
+                + "\n\n"
+                + _KNOWN_RELATION_COMPONENT_SYSTEM_APPENDIX
+                + "\n"
+            )
 
         user_sections = [base.user_prompt.rstrip()]
         prompt_version = PROMPT_VERSION
@@ -154,8 +401,24 @@ class DiscoveryAxisHypothesisPromptAssembler(HypothesisPromptAssembler):
                 )
             )
             prompt_version = FAMILY_AWARE_PROMPT_VERSION
+
+        if s25d_guidance:
+            user_sections.append(
+                s25d_guidance
+            )
+            prompt_version = (
+                prompt_version
+                + "-s25d-known-relation-component"
+            )
+
         user_sections.append("\n".join(lines))
         user_prompt = "\n\n".join(user_sections).rstrip() + "\n"
+
+        if task_guidance:
+            prompt_version = (
+                prompt_version
+                + "-s26a-task-anchored"
+            )
 
         canonical = _compact_json(
             {

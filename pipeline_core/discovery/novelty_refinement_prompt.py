@@ -142,6 +142,10 @@ class NoveltyRefinementPromptAssembler:
 
     prompt_version = "novelty-refinement-prompt-v2.8.1-a6-relgap-boundary"
 
+    gap_sharpen_prompt_version = (
+        "novelty-refinement-prompt-v2.9-s25c-gap-sharpen"
+    )
+
     diagnostic_prompt_version = (
         "novelty-refinement-prompt-v2.8.2-a6-n10-specification-diagnostic"
     )
@@ -247,6 +251,68 @@ A useful refinement introduces a more precise moderator, mediator, conditional d
                 "If this cannot be done without treating external prior art as evidence or changing scientific scope, abstain.",
             ]
         )
+        if self.gap.action == "gap_sharpen":
+            operator_lines = [
+                "- MODERATOR: test whether an already-grounded condition changes the strength, direction, or form of a known relation.",
+                "- INTERACTION: test whether two already-grounded factors jointly determine an outcome beyond either factor alone.",
+                "- RESIDUAL: test whether a structured residual remains after an already-grounded correction, normalization, or known effect is accounted for.",
+                "- BOUNDARY: test the regime or condition under which a known relation weakens, fails, reverses, or changes form.",
+                "- PROXY_DECOUPLING: test whether an already-grounded observable ceases to track another target observable under a grounded condition.",
+                "- COMPENSATION_LIMIT: test whether a known mitigation/correction remains equally effective across grounded structural or contextual states.",
+            ]
+
+            user = (
+                user
+                + "\n\n"
+                + "\n".join(
+                    [
+                        "S25c GAP-SHARPENING MODE",
+                        "========================",
+                        (
+                            "The targeted novelty-bearing relation is already "
+                            "represented by DIRECT/PARTIAL prior art. Do NOT "
+                            "merely restate it with extra adjectives."
+                        ),
+                        (
+                            "Choose at most ONE operator from the allowed "
+                            "domain-neutral operator set below, and only if the "
+                            "required scientific variables/conditions are "
+                            "already supported by the SAME grounded premise "
+                            "statements."
+                        ),
+                        *operator_lines,
+                        "",
+                        (
+                            "Allowed operators for this gap: "
+                            + json.dumps(
+                                self.gap.sharpening_operators,
+                                ensure_ascii=False,
+                            )
+                        ),
+                        (
+                            "The operator name is a reasoning template, NOT "
+                            "scientific evidence. External prior art remains "
+                            "exclusion/boundary information only."
+                        ),
+                        (
+                            "Do not invent a moderator, correction, proxy, "
+                            "regime, mechanism, material, or condition merely "
+                            "to instantiate an operator."
+                        ),
+                        (
+                            "The refined prediction and falsifier must directly "
+                            "discriminate the new second-order relation from the "
+                            "already-known baseline relation."
+                        ),
+                        (
+                            "If none of these operators can be instantiated from "
+                            "the existing grounded premises without unsupported "
+                            "scientific content, abstain."
+                        ),
+                    ]
+                )
+            )
+
         relational_gap_boundary = (
             render_higher_order_relational_gap_boundary(
                 self.targeted_card
@@ -261,7 +327,9 @@ A useful refinement introduces a more precise moderator, mediator, conditional d
             )
 
         prompt_version = (
-            self.prompt_version
+            self.gap_sharpen_prompt_version
+            if self.gap.action == "gap_sharpen"
+            else self.prompt_version
         )
 
         if (

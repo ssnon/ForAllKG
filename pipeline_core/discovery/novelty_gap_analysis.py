@@ -279,13 +279,139 @@ class NoveltyGapAnalyzer:
         self.queries_per_gap = max(1, int(queries_per_gap))
         self.domain_profile = domain_profile
 
+    GAP_SHARPENING_OPERATORS = (
+        "MODERATOR",
+        "INTERACTION",
+        "RESIDUAL",
+        "BOUNDARY",
+        "PROXY_DECOUPLING",
+        "COMPENSATION_LIMIT",
+    )
+
     def _action(self, card: ExternalNoveltyCard) -> str:
+        if card.status == "NEW_COMBINATION_OF_KNOWN_EFFECTS":
+            profile = getattr(
+                card,
+                "novelty_depth_profile",
+                None,
+            )
+            if (
+                profile is not None
+                and profile.role_binding_complete
+                and bool(
+                    profile.novelty_bearing_relation_backed_claim_ids
+                )
+            ):
+                return "gap_sharpen"
+
         try:
             return self.ACTION_BY_STATUS[card.status]
         except KeyError as exc:
             raise ValueError(
                 f"unsupported external novelty status for gap planning: {card.status}"
             ) from exc
+
+    def _gap_sharpen_targets(
+        self,
+        card: ExternalNoveltyCard,
+    ) -> list[ClaimPriorArtReview]:
+        if self._action(card) != "gap_sharpen":
+            return []
+
+        profile = card.novelty_depth_profile
+        if profile is None:
+            raise RuntimeError(
+                "S25c gap_sharpen requires novelty_depth_profile"
+            )
+
+        wanted = list(
+            profile.novelty_bearing_relation_backed_claim_ids
+        )
+        by_id = {
+            review.claim_id: review
+            for review in card.claim_reviews
+        }
+
+        missing = [
+            claim_id
+            for claim_id in wanted
+            if claim_id not in by_id
+        ]
+        if missing:
+            raise RuntimeError(
+                "S25c novelty-depth target claim missing from card: "
+                + ",".join(sorted(missing))
+            )
+
+        targets = [by_id[claim_id] for claim_id in wanted]
+
+        if any(
+            review.importance != "core"
+            or review.status not in {
+                "DIRECT_PRIOR_ART",
+                "PARTIAL_PRIOR_ART",
+            }
+            for review in targets
+        ):
+            raise RuntimeError(
+                "S25c gap_sharpen target lost core relation-backed status"
+            )
+
+        return targets[: self.max_target_claims]
+
+    def _gap_sharpen_queries(
+        self,
+        targets: list[ClaimPriorArtReview],
+        existing_plan: LiteratureQueryPlan,
+    ) -> list[TargetedGapQuery]:
+        existing = {
+            (
+                q.claim_id,
+                q.query_text.strip().lower(),
+            )
+            for q in existing_plan.queries
+            if q.claim_id is not None
+        }
+
+        suffixes = (
+            "moderator interaction boundary condition",
+            "residual correction compensation limit",
+            "proxy decoupling divergence",
+        )
+
+        rows: list[TargetedGapQuery] = []
+        seen = set(existing)
+
+        for review in targets:
+            core = _query_terms(
+                review.claim_text,
+                max_chars=205,
+            )
+            if not core:
+                continue
+
+            for suffix in suffixes:
+                query_text = (
+                    core + " " + suffix
+                )[:300].strip()
+                key = (
+                    review.claim_id,
+                    query_text.lower(),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append(
+                    TargetedGapQuery(
+                        claim_id=review.claim_id,
+                        query_role="relation_variant",
+                        query_text=query_text,
+                    )
+                )
+                if len(rows) >= self.queries_per_gap:
+                    return rows
+
+        return rows
 
     def _exact_higher_order_verification_targets(
         self,
@@ -517,6 +643,13 @@ class NoveltyGapAnalyzer:
                 card.claim_reviews,
                 key=_claim_priority,
             )
+
+            gap_sharpen_targets = (
+                self._gap_sharpen_targets(card)
+                if action == "gap_sharpen"
+                else []
+            )
+
             if action == "refine_away_from_conflict":
                 conflicting = [
                     row
@@ -532,7 +665,11 @@ class NoveltyGapAnalyzer:
             targets = (
                 exact_verification_targets
                 if exact_verification_mode
-                else ordered[: self.max_target_claims]
+                else (
+                    gap_sharpen_targets
+                    if action == "gap_sharpen"
+                    else ordered[: self.max_target_claims]
+                )
             )
 
             known = []
@@ -552,6 +689,15 @@ class NoveltyGapAnalyzer:
             reasons = [
                 f"source_status:{card.status}"
             ]
+
+            if action == "gap_sharpen":
+                reasons.extend(
+                    [
+                        "s25c_gap_sharpen",
+                        "s25c_explicit_novelty_bearing_relation_already_prior_art_backed",
+                        "s25c_same_grounded_premises_only",
+                    ]
+                )
 
             if exact_verification_mode:
                 reasons.append(
@@ -598,17 +744,29 @@ class NoveltyGapAnalyzer:
                         []
                         if action == "keep"
                         else (
-                            self._exact_higher_order_verification_queries(
+                            self._gap_sharpen_queries(
                                 targets,
                                 existing_plan,
                             )
-                            if exact_verification_mode
-                            else self._queries(
-                                card,
-                                targets,
-                                existing_plan,
+                            if action == "gap_sharpen"
+                            else (
+                                self._exact_higher_order_verification_queries(
+                                    targets,
+                                    existing_plan,
+                                )
+                                if exact_verification_mode
+                                else self._queries(
+                                    card,
+                                    targets,
+                                    existing_plan,
+                                )
                             )
                         )
+                    ),
+                    sharpening_operators=(
+                        list(self.GAP_SHARPENING_OPERATORS)
+                        if action == "gap_sharpen"
+                        else []
                     ),
                     reason_codes=sorted(set(reasons)),
                 )
