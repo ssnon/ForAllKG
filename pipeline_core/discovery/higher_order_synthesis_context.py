@@ -12,6 +12,9 @@ from pipeline_core.discovery.higher_order_topology_carrier import (
 from pipeline_core.discovery.higher_order_topology_composition import (
     HigherOrderAttachmentRole,
 )
+from pipeline_core.discovery.task_backbone_chain import (
+    TaskBackboneChainView,
+)
 from pipeline_core.discovery.relation_component_composition import (
     RelationComponentAuthority,
     RelationComponentView,
@@ -24,6 +27,7 @@ class StrictModel(BaseModel):
 
 SynthesisPremiseRole = Literal[
     "source_backbone_relation",
+    "middle_backbone_relation",
     "target_backbone_relation",
     "modifier_relation",
 ]
@@ -177,7 +181,7 @@ class HigherOrderSynthesisContext(StrictModel):
 
     premises: list[HigherOrderSynthesisPremiseView] = Field(
         min_length=3,
-        max_length=3,
+        max_length=4,
     )
     structural_opportunity: HigherOrderStructuralOpportunityView
     guard: HigherOrderSynthesisGuardView = Field(
@@ -224,19 +228,42 @@ class HigherOrderSynthesisContext(StrictModel):
                 "higher-order synthesis context requires complete identity"
             )
 
-        roles = {
-            premise.premise_role
-            for premise in self.premises
+        role_counts = {
+            role: sum(
+                1
+                for premise in self.premises
+                if premise.premise_role == role
+            )
+            for role in (
+                "source_backbone_relation",
+                "middle_backbone_relation",
+                "target_backbone_relation",
+                "modifier_relation",
+            )
         }
-        expected_roles = {
+
+        for required_role in (
             "source_backbone_relation",
             "target_backbone_relation",
             "modifier_relation",
-        }
-        if roles != expected_roles:
+        ):
+            if role_counts[required_role] != 1:
+                raise ValueError(
+                    "higher-order synthesis context requires exactly one "
+                    + required_role
+                )
+
+        expected_middle_count = (
+            1
+            if self.lineage.middle_component_id is not None
+            else 0
+        )
+        if (
+            role_counts["middle_backbone_relation"]
+            != expected_middle_count
+        ):
             raise ValueError(
-                "higher-order synthesis context requires exactly one "
-                "source-backbone, target-backbone, and modifier premise"
+                "higher-order synthesis middle-backbone premise/lineage mismatch"
             )
 
         by_role = {
@@ -259,6 +286,14 @@ class HigherOrderSynthesisContext(StrictModel):
             "modifier_relation":
                 self.lineage.modifier_provenance_source_id,
         }
+
+        if self.lineage.middle_component_id is not None:
+            expected_component_ids[
+                "middle_backbone_relation"
+            ] = self.lineage.middle_component_id
+            expected_provenance_ids[
+                "middle_backbone_relation"
+            ] = self.lineage.middle_provenance_source_id
 
         for role, component_id in expected_component_ids.items():
             premise = by_role[role]
@@ -386,6 +421,14 @@ def higher_order_synthesis_context(
 
     source_component = backbone.source_component
     target_component = backbone.target_component
+    middle_component = (
+        backbone.middle_component
+        if isinstance(
+            backbone,
+            TaskBackboneChainView,
+        )
+        else None
+    )
     modifier_component = topology.modifier_component
 
     source_mediator_text = _slot_text(
@@ -401,6 +444,16 @@ def higher_order_synthesis_context(
         _premise_from_component(
             role="source_backbone_relation",
             component=source_component,
+        ),
+        *(
+            [
+                _premise_from_component(
+                    role="middle_backbone_relation",
+                    component=middle_component,
+                )
+            ]
+            if middle_component is not None
+            else []
         ),
         _premise_from_component(
             role="target_backbone_relation",

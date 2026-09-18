@@ -13,6 +13,14 @@ from pipeline_core.discovery.relation_component_composition import (
     RelationalTopologyView,
     topology_has_materializable_endpoint_fidelity,
 )
+from pipeline_core.discovery.task_backbone_chain import (
+    TaskBackboneChainView,
+    TaskBackboneLike,
+    task_backbone_component_ids,
+    task_backbone_components,
+    task_backbone_has_materializable_endpoint_fidelity,
+    task_backbone_role_aliases_for_composition,
+)
 from pipeline_core.discovery.task_bridge_candidate_composition import (
     lexical_tokens,
 )
@@ -158,6 +166,7 @@ class HigherOrderRoleBindingView(StrictModel):
 
     anchor_match_mode: Literal[
         "exact_endpoint",
+        "compatible_endpoint",
         "compatible_mediator",
     ]
     anchor_overlap_tokens: list[str] = Field(
@@ -203,7 +212,7 @@ class HigherOrderTopologyCandidate(StrictModel):
     topology_id: str
     backbone_topology_id: str
 
-    backbone: RelationalTopologyView
+    backbone: TaskBackboneLike
     modifier_component: RelationComponentView
     modifier_eligibility: ModifierEligibilityWitness
     role_binding: HigherOrderRoleBindingView
@@ -287,7 +296,7 @@ class HigherOrderTopologyCandidate(StrictModel):
             raise ValueError(
                 "higher-order modifier text lost upstream authority"
             )
-        if not topology_has_materializable_endpoint_fidelity(
+        if not task_backbone_has_materializable_endpoint_fidelity(
             self.backbone
         ):
             raise ValueError(
@@ -406,77 +415,14 @@ def _append_unique(
 
 
 def _backbone_role_aliases(
-    backbone: RelationalTopologyView,
+    backbone: TaskBackboneLike,
 ) -> dict[
     HigherOrderAttachmentRole,
     list[str],
 ]:
-    source = backbone.source_component
-    target = backbone.target_component
-
-    source_endpoint_text = _slot_text(
-        source,
-        backbone.source_binding.task_slot,
+    return task_backbone_role_aliases_for_composition(
+        backbone
     )
-    target_endpoint_text = _slot_text(
-        target,
-        backbone.target_binding.task_slot,
-    )
-
-    source_mediator_text = _slot_text(
-        source,
-        backbone.source_binding.mediator_slot,
-    )
-    target_mediator_text = _slot_text(
-        target,
-        backbone.target_binding.mediator_slot,
-    )
-
-    aliases: dict[
-        HigherOrderAttachmentRole,
-        list[str],
-    ] = {
-        "source": [],
-        "mediator": [],
-        "target": [],
-    }
-
-    _append_unique(
-        aliases["source"],
-        source_endpoint_text,
-    )
-    _append_unique(
-        aliases["source"],
-        backbone.source_binding.matched_endpoint_atom,
-    )
-
-    _append_unique(
-        aliases["target"],
-        target_endpoint_text,
-    )
-    _append_unique(
-        aliases["target"],
-        backbone.target_binding.matched_endpoint_atom,
-    )
-
-    _append_unique(
-        aliases["mediator"],
-        source_mediator_text,
-    )
-    _append_unique(
-        aliases["mediator"],
-        target_mediator_text,
-    )
-
-    if backbone.shared_mediator_tokens:
-        _append_unique(
-            aliases["mediator"],
-            " ".join(
-                backbone.shared_mediator_tokens
-            ),
-        )
-
-    return aliases
 
 
 def _mediator_anchor_compatibility(
@@ -563,14 +509,59 @@ def _mediator_anchor_compatibility(
     return best
 
 
+def _endpoint_anchor_compatibility(
+    left: str,
+    right: str,
+) -> tuple[
+    list[str],
+    float,
+] | None:
+    """
+    Re-verify upstream endpoint-role containment without reinterpreting
+    scientific identity.
+
+    This mirrors the frozen higher-order modifier screen:
+      containment(shared / min(|left|, |right|)) >= 0.80
+
+    It is used only for TaskBackboneChainView endpoint anchors. Legacy
+    two-component higher-order topology composition remains exact-only.
+    """
+    left_tokens = lexical_tokens(left)
+    right_tokens = lexical_tokens(right)
+
+    if not left_tokens or not right_tokens:
+        return None
+
+    shared = left_tokens & right_tokens
+    if not shared:
+        return None
+
+    containment = (
+        len(shared)
+        / min(
+            len(left_tokens),
+            len(right_tokens),
+        )
+    )
+    if containment < 0.80:
+        return None
+
+    return (
+        sorted(shared),
+        float(containment),
+    )
+
+
 def _match_slot_to_role(
     *,
     slot_text: str,
     role: HigherOrderAttachmentRole,
     aliases: Sequence[str],
+    allow_compatible_endpoint: bool = False,
 ) -> tuple[
     Literal[
         "exact_endpoint",
+        "compatible_endpoint",
         "compatible_mediator",
     ],
     list[str],
@@ -594,7 +585,36 @@ def _match_slot_to_role(
                     tokens,
                     1.0,
                 )
-        return None
+
+        if not allow_compatible_endpoint:
+            return None
+
+        best = None
+        for alias in aliases:
+            compatibility = _endpoint_anchor_compatibility(
+                slot_text,
+                alias,
+            )
+            if compatibility is None:
+                continue
+
+            shared, score = compatibility
+            candidate = (
+                "compatible_endpoint",
+                shared,
+                score,
+            )
+            if (
+                best is None
+                or candidate[2] > best[2]
+                or (
+                    candidate[2] == best[2]
+                    and len(candidate[1]) > len(best[1])
+                )
+            ):
+                best = candidate
+
+        return best
 
     best = None
 
@@ -650,7 +670,7 @@ def _modifier_leaks_exactly_into_backbone(
 def compose_higher_order_topologies(
     *,
     backbones: Sequence[
-        RelationalTopologyView
+        TaskBackboneLike
     ],
     modifiers: Sequence[
         EligibleModifierComponent
@@ -691,20 +711,19 @@ def compose_higher_order_topologies(
     rows = []
 
     for backbone in backbones:
-        if not topology_has_materializable_endpoint_fidelity(
+        if not task_backbone_has_materializable_endpoint_fidelity(
             backbone
         ):
             continue
 
         if (
             require_confirmed_known_backbone
-            and
-            (
-                backbone.source_component.authority
+            and any(
+                component.authority
                 != RelationComponentAuthority.CONFIRMED_KNOWN
-                or
-                backbone.target_component.authority
-                != RelationComponentAuthority.CONFIRMED_KNOWN
+                for component in task_backbone_components(
+                    backbone
+                )
             )
         ):
             continue
@@ -713,10 +732,11 @@ def compose_higher_order_topologies(
             backbone
         )
 
-        backbone_component_ids = {
-            backbone.source_component.component_id,
-            backbone.target_component.component_id,
-        }
+        backbone_component_ids = (
+            task_backbone_component_ids(
+                backbone
+            )
+        )
 
         for modifier in modifiers:
             component = modifier.component
@@ -754,6 +774,10 @@ def compose_higher_order_topologies(
                 slot_text=anchor_text,
                 role=role,
                 aliases=aliases[role],
+                allow_compatible_endpoint=isinstance(
+                    backbone,
+                    TaskBackboneChainView,
+                ),
             )
 
             if match is None:
@@ -764,6 +788,10 @@ def compose_higher_order_topologies(
                     slot_text=anchor_text,
                     role=other_role,
                     aliases=aliases[other_role],
+                    allow_compatible_endpoint=isinstance(
+                        backbone,
+                        TaskBackboneChainView,
+                    ),
                 )
                 is not None
                 for other_role in (

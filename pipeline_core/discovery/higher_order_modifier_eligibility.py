@@ -12,6 +12,10 @@ from pipeline_core.discovery.relation_component_composition import (
     RelationComponentView,
     RelationalTopologyView,
 )
+from pipeline_core.discovery.task_backbone_chain import (
+    TaskBackboneLike,
+    task_backbone_role_vocabulary_for_modifier_screen,
+)
 from pipeline_core.discovery.task_bridge_candidate_composition import lexical_tokens
 
 
@@ -106,7 +110,7 @@ def _compatible_role_text(value: str, reference: str) -> bool:
 
 
 def _role_vocabulary(
-    backbones: Sequence[RelationalTopologyView],
+    backbones: Sequence[TaskBackboneLike],
 ) -> dict[str, tuple[str, ...]]:
     roles: dict[str, list[str]] = {
         "source": [],
@@ -122,37 +126,14 @@ def _role_vocabulary(
             roles[role].append(text)
 
     for backbone in backbones:
-        source_mediator_slot = backbone.source_binding.mediator_slot
-        target_mediator_slot = backbone.target_binding.mediator_slot
-
-        add(
-            "source",
-            _slot_text(
-                backbone.source_component,
-                _other_slot(source_mediator_slot),
-            ),
+        projected = (
+            task_backbone_role_vocabulary_for_modifier_screen(
+                backbone
+            )
         )
-        add(
-            "mediator",
-            _slot_text(
-                backbone.source_component,
-                source_mediator_slot,
-            ),
-        )
-        add(
-            "mediator",
-            _slot_text(
-                backbone.target_component,
-                target_mediator_slot,
-            ),
-        )
-        add(
-            "target",
-            _slot_text(
-                backbone.target_component,
-                _other_slot(target_mediator_slot),
-            ),
-        )
+        for role, values in projected.items():
+            for value in values:
+                add(role, value)
 
     return {
         role: tuple(values)
@@ -199,7 +180,7 @@ def _stable_witness_id(
 
 def screen_confirmed_known_modifiers(
     *,
-    backbones: Sequence[RelationalTopologyView],
+    backbones: Sequence[TaskBackboneLike],
     components: Sequence[RelationComponentView],
     dedup_jaccard_threshold: float = 0.80,
 ) -> ModifierEligibilityScreenResult:

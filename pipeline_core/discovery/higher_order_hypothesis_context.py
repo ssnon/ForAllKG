@@ -88,13 +88,21 @@ class HigherOrderHypothesisStatementLineage(StrictModel):
                 "higher-order hypothesis statement lineage requires "
                 "complete identity and provenance"
             )
-        if (
+        if self.premise_role == "modifier_relation":
+            if self.authority not in {
+                RelationComponentAuthority.CONFIRMED_KNOWN,
+                RelationComponentAuthority.CANDIDATE_INSPIRATION,
+            }:
+                raise ValueError(
+                    "higher-order modifier lineage has unsupported authority"
+                )
+        elif (
             self.authority
             != RelationComponentAuthority.CONFIRMED_KNOWN
         ):
             raise ValueError(
-                "S24a1 production materialization accepts only "
-                "CONFIRMED_KNOWN higher-order components"
+                "higher-order task-backbone lineage must remain "
+                "CONFIRMED_KNOWN"
             )
         return self
 
@@ -125,7 +133,7 @@ class HigherOrderHypothesisContextMaterialization(StrictModel):
         HigherOrderHypothesisStatementLineage
     ] = Field(
         min_length=3,
-        max_length=3,
+        max_length=4,
     )
 
     shadow_only: Literal[True] = True
@@ -176,14 +184,26 @@ class HigherOrderHypothesisContextMaterialization(StrictModel):
             raise ValueError(
                 "duplicate higher-order generated premise role"
             )
-        if set(roles) != {
+        role_set = set(roles)
+        legacy_roles = {
             "source_backbone_relation",
             "target_backbone_relation",
             "modifier_relation",
-        }:
+        }
+        chain_roles = {
+            "source_backbone_relation",
+            "middle_backbone_relation",
+            "target_backbone_relation",
+            "modifier_relation",
+        }
+
+        if (
+            role_set != legacy_roles
+            and role_set != chain_roles
+        ):
             raise ValueError(
-                "materialization requires exactly one source-backbone, "
-                "target-backbone, and modifier lineage row"
+                "materialization requires source/target/modifier lineage, "
+                "with exactly one optional middle-backbone lineage row"
             )
 
         statement_ids = [
@@ -355,6 +375,16 @@ def _validate_higher_order_context(
         )
 
     for premise in context.premises:
+        if premise.premise_role == "modifier_relation":
+            if premise.authority not in {
+                RelationComponentAuthority.CONFIRMED_KNOWN,
+                RelationComponentAuthority.CANDIDATE_INSPIRATION,
+            }:
+                raise ValueError(
+                    "higher-order modifier has unsupported component authority"
+                )
+            continue
+
         if (
             premise.authority
             != RelationComponentAuthority.CONFIRMED_KNOWN
@@ -362,8 +392,8 @@ def _validate_higher_order_context(
             != "confirmed_known_component"
         ):
             raise ValueError(
-                "S24a1 production materialization accepts only "
-                "CONFIRMED_KNOWN higher-order components"
+                "higher-order task-backbone relations must remain "
+                "CONFIRMED_KNOWN"
             )
 
 
@@ -391,7 +421,12 @@ def _restricted_statement(
             "for the generated source-target hypothesis: "
             f"{premise.subject} --{premise.relation}--> {premise.object}."
         ),
-        epistemic_role="reported",
+        epistemic_role=(
+            "reported"
+            if premise.authority
+            == RelationComponentAuthority.CONFIRMED_KNOWN
+            else "unresolved"
+        ),
         claim_kind="higher_order_composition_inspiration",
         # The compact higher-order context preserves accepted-pattern source
         # IDs, not complete paper/chunk provenance. Do not fabricate paper IDs.
@@ -400,7 +435,10 @@ def _restricted_statement(
         scientific_support_edge_ids=[],
         support_path_ids=[],
         alignment_path_ids=[],
-        requires_verification=False,
+        requires_verification=(
+            premise.authority
+            == RelationComponentAuthority.CANDIDATE_INSPIRATION
+        ),
         eligible_as_premise=False,
         eligible_as_gap=False,
         premise_restrictions=list(_HIGHER_ORDER_RESTRICTIONS),
@@ -423,7 +461,7 @@ def materialize_higher_order_hypothesis_context(
     higher_order_context: HigherOrderSynthesisContext,
 ) -> HigherOrderHypothesisContextProjection:
     """
-    Deterministically add exactly three restricted higher-order inspiration
+    Deterministically add restricted higher-order inspiration
     statements to a canonical HypothesisContext.
 
     No LLM call, ranking, novelty judgment, discovery-axis materialization,
@@ -634,10 +672,11 @@ class HigherOrderShadowHypothesisPromptAssembler(
                 *relation_lines,
                 "",
                 (
-                    "These three relations are CONFIRMED_KNOWN structural "
-                    "components. They are inspiration only for the proposed "
-                    "higher-order interaction and are NOT positive premises "
-                    "for that interaction."
+                    "The recorded backbone relations are CONFIRMED_KNOWN; "
+                    "the modifier retains its recorded component authority. "
+                    "All recorded composition relations are restricted "
+                    "inspiration only and are NOT positive premises for the "
+                    "proposed higher-order interaction."
                 ),
                 "",
                 "CANONICAL POSITIVE PREMISE IDS:",

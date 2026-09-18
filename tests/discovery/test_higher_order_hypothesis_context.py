@@ -279,19 +279,41 @@ def test_materialization_preserves_exact_higher_order_lineage() -> None:
     )
 
 
-def test_materialization_rejects_candidate_inspiration_component() -> None:
-    with pytest.raises(
-        ValueError,
-        match="accepts only CONFIRMED_KNOWN",
-    ):
-        materialize_higher_order_hypothesis_context(
-            source_context=_source_context(),
-            higher_order_context=_higher_order_context(
-                modifier_authority=(
-                    RelationComponentAuthority.CANDIDATE_INSPIRATION
-                )
-            ),
-        )
+def test_materialization_allows_candidate_modifier_only_as_restricted_nonpremise() -> None:
+    projection = materialize_higher_order_hypothesis_context(
+        source_context=_source_context(),
+        higher_order_context=_higher_order_context(
+            modifier_authority=(
+                RelationComponentAuthority.CANDIDATE_INSPIRATION
+            )
+        ),
+    )
+
+    lineage = next(
+        row
+        for row in projection.materialization.generated_statement_lineage
+        if row.premise_role == "modifier_relation"
+    )
+    statement = next(
+        row
+        for row in projection.context.evidence_statements
+        if row.statement_id == lineage.statement_id
+    )
+
+    assert (
+        lineage.authority
+        == RelationComponentAuthority.CANDIDATE_INSPIRATION
+    )
+    assert statement.eligible_as_premise is False
+    assert statement.eligible_as_gap is False
+    assert statement.requires_verification is True
+
+    positive = [
+        row.statement_id
+        for row in projection.context.evidence_statements
+        if row.eligible_as_premise
+    ]
+    assert positive == ["stmt:positive:1"]
 
 
 def test_materialization_does_not_authorize_llm_or_selection() -> None:

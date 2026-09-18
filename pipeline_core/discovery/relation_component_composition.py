@@ -155,6 +155,7 @@ RelationArgumentSlot = Literal[
 EndpointBindingAuthority = Literal[
     "exact",
     "equivalent",
+    "structured",
     "partial",
 ]
 

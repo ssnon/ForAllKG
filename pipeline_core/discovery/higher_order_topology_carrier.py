@@ -9,6 +9,9 @@ from pipeline_core.discovery.higher_order_topology_composition import (
     HigherOrderAttachmentRole,
     HigherOrderTopologyCandidate,
 )
+from pipeline_core.discovery.task_backbone_chain import (
+    TaskBackboneChainView,
+)
 from pipeline_core.discovery.relation_component_composition import (
     EndpointBindingAuthority,
     RelationArgumentSlot,
@@ -44,6 +47,10 @@ class HigherOrderSynthesisLineageView(StrictModel):
 
     source_provenance_source_id: str
     target_provenance_source_id: str
+
+    middle_component_id: str | None = None
+    middle_provenance_source_id: str | None = None
+
     modifier_provenance_source_id: str
 
     source_endpoint_binding_authority: EndpointBindingAuthority
@@ -80,6 +87,14 @@ class HigherOrderSynthesisLineageView(StrictModel):
         if not all(str(value).strip() for value in required):
             raise ValueError(
                 "higher-order synthesis lineage requires complete identities"
+            )
+
+        if (
+            (self.middle_component_id is None)
+            != (self.middle_provenance_source_id is None)
+        ):
+            raise ValueError(
+                "middle backbone component/provenance lineage must be paired"
             )
 
         for authority, witness_id in (
@@ -208,6 +223,26 @@ class HigherOrderSynthesisCarrier(StrictModel):
             "modifier_text": topology.role_binding.modifier_text,
         }
 
+        if isinstance(
+            backbone,
+            TaskBackboneChainView,
+        ):
+            expected.update(
+                {
+                    "middle_component_id":
+                        backbone.middle_component.component_id,
+                    "middle_provenance_source_id":
+                        backbone.middle_component.provenance.source_id,
+                }
+            )
+        elif (
+            lineage.middle_component_id is not None
+            or lineage.middle_provenance_source_id is not None
+        ):
+            raise ValueError(
+                "two-component backbone cannot carry middle-component lineage"
+            )
+
         for field_name, value in expected.items():
             if getattr(lineage, field_name) != value:
                 raise ValueError(
@@ -323,6 +358,14 @@ def topology_native_synthesis_carrier(
     source_component = backbone.source_component
     target_component = backbone.target_component
     modifier_component = topology.modifier_component
+    middle_component = (
+        backbone.middle_component
+        if isinstance(
+            backbone,
+            TaskBackboneChainView,
+        )
+        else None
+    )
 
     lineage = HigherOrderSynthesisLineageView(
         higher_order_topology_id=topology.topology_id,
@@ -338,6 +381,16 @@ def topology_native_synthesis_carrier(
         ),
         target_provenance_source_id=(
             target_component.provenance.source_id
+        ),
+        middle_component_id=(
+            None
+            if middle_component is None
+            else middle_component.component_id
+        ),
+        middle_provenance_source_id=(
+            None
+            if middle_component is None
+            else middle_component.provenance.source_id
         ),
         modifier_provenance_source_id=(
             modifier_component.provenance.source_id
