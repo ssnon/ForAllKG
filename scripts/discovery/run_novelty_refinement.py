@@ -508,6 +508,34 @@ def main() -> int:
 
         _write(Path(str(stem) + ".claims_queries.json"), row.query_plan)
         _write(Path(str(stem) + ".prior_art.json"), row.prior_art)
+
+        if row.diagnostic_query_plan is not None:
+            _write(
+                Path(
+                    str(stem)
+                    + ".diagnostic_queries.json"
+                ),
+                row.diagnostic_query_plan,
+            )
+
+        if row.diagnostic_prior_art is not None:
+            _write(
+                Path(
+                    str(stem)
+                    + ".diagnostic_prior_art.json"
+                ),
+                row.diagnostic_prior_art,
+            )
+
+        if row.diagnostic_review_report is not None:
+            _write(
+                Path(
+                    str(stem)
+                    + ".diagnostic_review.json"
+                ),
+                row.diagnostic_review_report,
+            )
+
         _write(Path(str(stem) + ".report.json"), row.report)
 
     print()

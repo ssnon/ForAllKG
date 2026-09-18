@@ -4,7 +4,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from pipeline_core.discovery.external_novelty_contracts import ExternalNoveltyStatus
+from pipeline_core.discovery.external_novelty_contracts import (
+    ExternalNoveltyStatus,
+    HypothesisSearchCoverage,
+)
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 
 
@@ -55,6 +58,7 @@ RefinementDecision = Literal[
     "internal_novelty_rejected",
     "external_novelty_rejected",
     "search_insufficient",
+    "held_for_evidence",
     "scientific_novelty_rejected",
     "question_task_rejected",
 ]
@@ -152,6 +156,12 @@ class RefinementAttempt(StrictModel):
     original_external_status: ExternalNoveltyStatus
     targeted_external_status: ExternalNoveltyStatus | None = None
     final_external_status: ExternalNoveltyStatus | None = None
+
+    # S26b observability only. This is the fresh external-search coverage
+    # attached to a fresh-context re-axis attempt. It does not certify
+    # novelty and does not turn missing prior art into positive evidence.
+    reaxis_search_coverage: HypothesisSearchCoverage | None = None
+
     axis_fidelity_status: str | None = None
     internal_novelty_status: str | None = None
 
@@ -194,6 +204,7 @@ class NoveltyRefinementReport(StrictModel):
     accepted_refinement_count: int = 0
     accepted_reaxis_count: int = 0
     kept_original_count: int = 0
+    held_for_evidence_count: int = 0
     rejected_count: int = 0
     max_refinements_per_hypothesis: Literal[1] = 1
     max_reaxes_per_hypothesis: Literal[1] = 1

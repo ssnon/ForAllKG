@@ -14,6 +14,7 @@ from domains.sers.context_compiler import (
 )
 from domains.sers.hypothesis_context_interpreter import (
     SERSHypothesisContextInterpreter,
+    HypothesisContextInterpreterValidationError,
 )
 from domains.sers.hypothesis_context_llm import (
     InstructorOpenAICompatibleHypothesisContextBackend,
@@ -510,12 +511,22 @@ class SERSDiscoveryAxisContextReviewer:
             axis_signature
         )
 
-        interpretation_outcome = (
-            self.interpreter.interpret(
-                card=card,
-                source_signatures=source_signatures,
+        try:
+            interpretation_outcome = (
+                self.interpreter.interpret(
+                    card=card,
+                    source_signatures=source_signatures,
+                )
             )
-        )
+        except HypothesisContextInterpreterValidationError as exc:
+            # Final interpreter validation failure is axis-local.
+            # Keep strict context validation intact; the discovery
+            # runtime already converts this unavailable review into
+            # context_rejected and continues to the next axis.
+            raise AxisContextReviewUnavailableError(
+                "SERS hypothesis-context interpretation unavailable: "
+                + str(exc)
+            ) from exc
 
         interpretation = getattr(
             interpretation_outcome,

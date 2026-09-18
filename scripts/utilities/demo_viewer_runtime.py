@@ -179,6 +179,252 @@ def _refinement_attempt_by_final_hypothesis(
     return result
 
 
+def _external_cards_from_refinement_sidecars(
+    run_dir: Path,
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+]:
+    # Viewer/provenance input only; no scientific authority changes.
+    #
+    # Alpha6 targeted reports may contain cards for the full portfolio.
+    # The serializer encodes the PerHypothesisExternalArtifacts.hypothesis_id
+    # (the focal assessed hypothesis) in the sidecar filename:
+    #   targeted_02_<focal-id-suffix>.report.json
+    # Therefore only the card whose hypothesis-id suffix matches the file's
+    # focal suffix is eligible for viewer binding. Never flatten all cards
+    # from each reassessment report into one global map.
+    detail_dir = (
+        run_dir
+        / "novelty_refinement_a6.external"
+    )
+
+    final_cards: dict[
+        str,
+        dict[str, Any],
+    ] = {}
+    targeted_cards: dict[
+        str,
+        dict[str, Any],
+    ] = {}
+
+    for prefix, destination in (
+        ("final_", final_cards),
+        ("targeted_", targeted_cards),
+    ):
+        if not detail_dir.exists():
+            continue
+
+        for path in sorted(
+            detail_dir.glob(
+                f"{prefix}*.report.json"
+            )
+        ):
+            report = (
+                _read_json_if_exists(path)
+                or {}
+            )
+
+            artifact_stem = path.name.removesuffix(
+                ".report.json"
+            )
+            parts = artifact_stem.split(
+                "_",
+                2,
+            )
+            if (
+                len(parts) != 3
+                or not parts[2]
+            ):
+                continue
+            focal_suffix = parts[2]
+
+            matches: list[
+                tuple[str, dict[str, Any]]
+            ] = []
+            for card in _list(
+                report.get("cards")
+            ):
+                if not isinstance(card, dict):
+                    continue
+
+                hypothesis_id = _text(
+                    card.get(
+                        "hypothesis_id"
+                    )
+                )
+                if not hypothesis_id:
+                    continue
+
+                if (
+                    hypothesis_id
+                    .split(":")[-1]
+                    == focal_suffix
+                ):
+                    matches.append(
+                        (
+                            hypothesis_id,
+                            dict(card),
+                        )
+                    )
+
+            # Fail closed on malformed/ambiguous artifact identity.
+            if len(matches) != 1:
+                continue
+
+            hypothesis_id, card = matches[0]
+            destination[
+                hypothesis_id
+            ] = card
+
+    return (
+        final_cards,
+        targeted_cards,
+    )
+
+
+
+
+def _viewer_novelty_card(
+    *,
+    final_hypothesis_id: str,
+    refinement: dict[str, Any],
+    initial_cards: dict[
+        str,
+        dict[str, Any],
+    ],
+    final_cards: dict[
+        str,
+        dict[str, Any],
+    ],
+    targeted_cards: dict[
+        str,
+        dict[str, Any],
+    ],
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+]:
+    # Bind the novelty card that actually produced the final disposition.
+    # Refined finals use the fresh candidate card. Kept originals prefer
+    # targeted reassessment. Missing/mismatched cards fail closed.
+    original_id = _text(
+        refinement.get(
+            "original_hypothesis_id"
+        )
+    )
+    candidate_id = _text(
+        refinement.get(
+            "candidate_hypothesis_id"
+        )
+    )
+    decision = _text(
+        refinement.get("decision")
+    )
+    expected_status = _text(
+        refinement.get(
+            "final_external_status"
+        )
+    )
+
+    source_kind = "initial"
+    source_id = final_hypothesis_id
+    card: dict[str, Any] | None = None
+
+    if decision.startswith("accepted_"):
+        source_kind = "fresh_final"
+        source_id = candidate_id
+        if candidate_id:
+            card = final_cards.get(
+                candidate_id
+            )
+
+    elif decision == "kept_original":
+        source_kind = "targeted"
+        source_id = (
+            candidate_id
+            or original_id
+        )
+
+        if source_id:
+            card = targeted_cards.get(
+                source_id
+            )
+
+        if card is None and original_id:
+            initial = initial_cards.get(
+                original_id
+            )
+            if (
+                initial is not None
+                and (
+                    not expected_status
+                    or _text(
+                        initial.get("status")
+                    )
+                    == expected_status
+                )
+            ):
+                source_kind = "initial"
+                source_id = original_id
+                card = initial
+
+    else:
+        card = initial_cards.get(
+            final_hypothesis_id
+        )
+        if card is None and original_id:
+            source_id = original_id
+            card = initial_cards.get(
+                original_id
+            )
+
+    if (
+        card is not None
+        and expected_status
+        and _text(
+            card.get("status")
+        )
+        != expected_status
+    ):
+        card = None
+
+    binding = {
+        "final_hypothesis_id": (
+            final_hypothesis_id
+        ),
+        "source_kind": source_kind,
+        "source_hypothesis_id": (
+            source_id
+        ),
+        "expected_final_external_status": (
+            expected_status
+        ),
+        "source_card_found": (
+            card is not None
+        ),
+        "status_consistent": (
+            bool(
+                card is not None
+                and (
+                    not expected_status
+                    or _text(
+                        card.get(
+                            "status"
+                        )
+                    )
+                    == expected_status
+                )
+            )
+        ),
+    }
+
+    return (
+        dict(card or {}),
+        binding,
+    )
+
+
 def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     """Build a domain-neutral viewer payload from core discovery artifacts."""
     run_dir = run_dir.resolve()
@@ -234,6 +480,12 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
         for card in _list(external_report.get("cards"))
         if isinstance(card, dict) and _text(card.get("hypothesis_id"))
     }
+    (
+        final_novelty_by_hypothesis,
+        targeted_novelty_by_hypothesis,
+    ) = _external_cards_from_refinement_sidecars(
+        run_dir
+    )
     refinement_by_hypothesis = _refinement_attempt_by_final_hypothesis(
         refinement_report
     )
@@ -282,17 +534,42 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
             _semantic_summary(semantic_rows)
         )
 
-        refinement = refinement_by_hypothesis.get(hypothesis_id, {})
-        original_id = _text(refinement.get("original_hypothesis_id"))
-        novelty = novelty_by_hypothesis.get(hypothesis_id)
-        if novelty is None and original_id:
-            novelty = novelty_by_hypothesis.get(original_id)
-        novelty = dict(novelty or {})
+        refinement = refinement_by_hypothesis.get(
+            hypothesis_id,
+            {},
+        )
+        (
+            novelty,
+            novelty_binding,
+        ) = _viewer_novelty_card(
+            final_hypothesis_id=(
+                hypothesis_id
+            ),
+            refinement=refinement,
+            initial_cards=(
+                novelty_by_hypothesis
+            ),
+            final_cards=(
+                final_novelty_by_hypothesis
+            ),
+            targeted_cards=(
+                targeted_novelty_by_hypothesis
+            ),
+        )
 
         novelty_status = (
-            _text(refinement.get("final_external_status"))
+            _text(
+                refinement.get(
+                    "final_external_status"
+                )
+            )
             or _text(novelty.get("status"))
-            or _text(card.get("novelty_status"), "not_assessed")
+            or _text(
+                card.get(
+                    "novelty_status"
+                ),
+                "not_assessed",
+            )
         )
 
         source_papers = [
@@ -359,6 +636,9 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
                 },
                 "semantic": semantic_rows,
                 "novelty": novelty,
+                "novelty_binding": (
+                    novelty_binding
+                ),
                 "refinement": dict(refinement),
                 "novelty_certification": dict(
                     certification_by_hypothesis.get(

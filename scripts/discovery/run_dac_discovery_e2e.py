@@ -1071,6 +1071,12 @@ def _run_realization_candidate_chain(
         [
             "--dual-context",
             str(dual_context),
+            "--task-question",
+            str(args.question),
+            "--task-source",
+            str(args.source),
+            "--task-target",
+            str(args.target),
             *_base_model_args(args),
             *_mechanism_index_args(args),
             "--max-axes",

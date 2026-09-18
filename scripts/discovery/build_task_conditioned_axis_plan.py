@@ -30,6 +30,7 @@ from pipeline_core.discovery.dual_hypothesis_context import (
 )
 from pipeline_core.discovery.relation_component_composition import (
     EndpointEquivalenceWitness,
+    MediatorEquivalenceWitness,
     RelationComponentAuthority,
     RelationComponentView,
     candidate_inspiration_component,
@@ -174,6 +175,73 @@ def _load_endpoint_equivalences(
         witnesses.append(witness)
 
     return tuple(witnesses)
+
+
+def _normalize_mediator_identity(value: object) -> str:
+    return " ".join(str(value or "").split()).casefold()
+
+
+def _mediator_pair_key(
+    witness: MediatorEquivalenceWitness,
+) -> tuple[str, str]:
+    left = _normalize_mediator_identity(witness.left_mediator)
+    right = _normalize_mediator_identity(witness.right_mediator)
+    return tuple(sorted((left, right)))
+
+
+def _merge_mediator_equivalences(
+    *groups: tuple[MediatorEquivalenceWitness, ...],
+) -> tuple[MediatorEquivalenceWitness, ...]:
+    by_pair = {}
+    by_id = {}
+    for group in groups:
+        for witness in group:
+            existing_id = by_id.get(witness.witness_id)
+            if existing_id is not None and existing_id != witness:
+                raise ValueError(
+                    "conflicting mediator-equivalence witness_id: "
+                    + witness.witness_id
+                )
+            by_id[witness.witness_id] = witness
+            pair = _mediator_pair_key(witness)
+            existing = by_pair.get(pair)
+            if existing is None:
+                by_pair[pair] = witness
+                continue
+            if (
+                _normalize_mediator_identity(existing.canonical_mediator)
+                != _normalize_mediator_identity(witness.canonical_mediator)
+            ):
+                raise ValueError(
+                    "conflicting canonical mediator for equivalent pair: "
+                    + repr(pair)
+                )
+            if witness.witness_id < existing.witness_id:
+                by_pair[pair] = witness
+    return tuple(by_pair[key] for key in sorted(by_pair))
+
+
+def _profile_mediator_equivalences(
+    domain_profile: str,
+) -> tuple[MediatorEquivalenceWitness, ...]:
+    profile = str(domain_profile or "").strip().casefold()
+    if profile != "sers_au_ag":
+        return ()
+    return (
+        MediatorEquivalenceWitness(
+            witness_id=(
+                "mediator:eq:profile:sers:"
+                "surface-enhanced-raman-scattering"
+            ),
+            left_mediator="surface-enhanced Raman scattering",
+            right_mediator="SERS",
+            canonical_mediator="sers",
+            witness_kind="domain_profile_normalization",
+            provenance_ids=[
+                "domain_profile:sers_au_ag:surface-enhanced Raman scattering=SERS"
+            ],
+        ),
+    )
 
 
 def _used_endpoint_equivalence_witness_ids(
@@ -882,6 +950,10 @@ def main() -> int:
         )
     )
 
+    mediator_equivalences = _merge_mediator_equivalences(
+        _profile_mediator_equivalences(args.domain_profile),
+    )
+
     scratch_bundle = (
         args.output_report.parent
         / ".a17f.generic_bundle.replay.json"
@@ -1110,6 +1182,9 @@ def main() -> int:
                     endpoint_equivalences=(
                         endpoint_equivalences
                     ),
+                    mediator_equivalences=(
+                        mediator_equivalences
+                    ),
                     max_topologies=12,
                     require_confirmed_known=True,
                 )
@@ -1129,6 +1204,9 @@ def main() -> int:
                     ),
                     endpoint_equivalences=(
                         endpoint_equivalences
+                    ),
+                    mediator_equivalences=(
+                        mediator_equivalences
                     ),
                     max_topologies=12,
                     require_confirmed_known=True,
@@ -1150,6 +1228,9 @@ def main() -> int:
                     ),
                     endpoint_equivalences=(
                         endpoint_equivalences
+                    ),
+                    mediator_equivalences=(
+                        mediator_equivalences
                     ),
                     max_topologies=12,
                     require_confirmed_known=True,

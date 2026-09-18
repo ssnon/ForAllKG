@@ -158,6 +158,30 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--dual-context", required=True, type=Path)
     parser.add_argument(
+        "--task-source",
+        default=None,
+        help=(
+            "Optional canonical task source endpoint used only as a "
+            "generation-time anchoring constraint."
+        ),
+    )
+    parser.add_argument(
+        "--task-target",
+        default=None,
+        help=(
+            "Optional canonical task target endpoint used only as a "
+            "generation-time anchoring constraint."
+        ),
+    )
+    parser.add_argument(
+        "--task-question",
+        default=None,
+        help=(
+            "Optional canonical task question used only as a "
+            "generation-time anchoring constraint."
+        ),
+    )
+    parser.add_argument(
         "--evidence-family-decomposition-report",
         type=Path,
         default=None,
@@ -692,6 +716,9 @@ def main() -> int:
     runtime = DiscoveryAxisSynthesisRuntime(
         backend,
         mapper,
+        task_source=args.task_source,
+        task_target=args.task_target,
+        task_question=args.task_question,
         inference_critic=inference_critic,
         context_reviewer=context_reviewer,
         max_compile_repairs=args.max_compile_repairs,

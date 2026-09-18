@@ -11,6 +11,12 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
+from pipeline_core.discovery.diagnostic_prior_art_report import (
+    build_diagnostic_review_report,
+)
+from pipeline_core.discovery.diagnostic_prior_art_retrieval import (
+    build_diagnostic_query_plan,
+)
 from pipeline_core.discovery.discovery_axis_contracts import DiscoveryAxisPlan
 from pipeline_core.discovery.n10_alpha6_lineage_loader import (
     Alpha6LineageInput,
@@ -129,6 +135,13 @@ class PerHypothesisExternalArtifacts:
         dict[str, object],
         ...,
     ] = ()
+
+    # S26c: preserve the same diagnostic external-novelty lane used by
+    # the canonical Alpha5 assessment. These artifacts do not alter
+    # ordinary claim coverage or absence-based novelty authority.
+    diagnostic_query_plan: LiteratureQueryPlan | None = None
+    diagnostic_prior_art: PriorArtPacket | None = None
+    diagnostic_review_report: Any | None = None
 
 
 def _fresh_specification_sanitization_slice(
@@ -639,6 +652,19 @@ class TargetedNoveltyRefinementRuntime:
         "LITERATURE_SUPPORTED_EXTENSION",
         "CONFLICTING_PRIOR_ART",
     }
+
+    @staticmethod
+    def _reaxis_replacement_evidence_ready(
+        card: ExternalNoveltyCard,
+    ) -> bool:
+        # S26b replacement authority only; this is not novelty certification.
+        # "Not rejected" is weaker than "allowed to replace the canonical
+        # candidate". Missing/insufficient search must never count as novelty.
+        return bool(
+            card.status
+            != "INSUFFICIENT_SEARCH_EVIDENCE"
+            and card.coverage.sufficient_for_absence_based_novelty
+        )
 
     # Targeted search can itself resolve an initially weak novelty status.
     # In that case do not regenerate merely for the sake of regeneration.
@@ -1254,6 +1280,50 @@ class TargetedNoveltyRefinementRuntime:
 
         plan = LiteratureQueryPlanner().build(portfolio, decompositions)
         packet = self.targeted_retriever.retriever.retrieve(plan).packet
+
+        # S26c parity: Alpha6 fresh-final assessment must execute the same
+        # bounded diagnostic lane as canonical Alpha5 external novelty.
+        # Diagnostic evidence remains separate from ordinary query coverage:
+        # it can annotate lower-order/boundary prior art but cannot make
+        # absence-based coverage sufficient.
+        diagnostic_plan = build_diagnostic_query_plan(plan)
+        diagnostic_packet = None
+        diagnostic_reviews = []
+        diagnostic_review_report = None
+
+        if diagnostic_plan.queries:
+            diagnostic_packet = (
+                self.targeted_retriever
+                .retriever
+                .retrieve(diagnostic_plan)
+                .packet
+            )
+            diagnostic_reviews = (
+                self.external_assessor
+                .review_diagnostic_prior_art(
+                    diagnostic_plan,
+                    diagnostic_packet,
+                )
+            )
+            diagnostic_review_report = (
+                build_diagnostic_review_report(
+                    source_portfolio_id=(
+                        diagnostic_plan.source_portfolio_id
+                    ),
+                    source_query_plan_id=diagnostic_plan.plan_id,
+                    source_query_plan_sha256=(
+                        diagnostic_plan.plan_sha256
+                    ),
+                    source_prior_art_packet_id=(
+                        diagnostic_packet.packet_id
+                    ),
+                    source_prior_art_packet_sha256=(
+                        diagnostic_packet.packet_sha256
+                    ),
+                    reviews=diagnostic_reviews,
+                )
+            )
+
         with prior_art_review_audit_scope(
             assessment_kind="alpha6_fresh_final",
             focal_hypothesis_id=portfolio.hypotheses[0].hypothesis_id,
@@ -1265,6 +1335,13 @@ class TargetedNoveltyRefinementRuntime:
                 portfolio,
                 plan,
                 packet,
+                diagnostic_plan=(
+                    diagnostic_plan
+                    if diagnostic_packet is not None
+                    else None
+                ),
+                diagnostic_packet=diagnostic_packet,
+                diagnostic_reviews=diagnostic_reviews,
             )
         return PerHypothesisExternalArtifacts(
             hypothesis_id=portfolio.hypotheses[0].hypothesis_id,
@@ -1274,6 +1351,15 @@ class TargetedNoveltyRefinementRuntime:
             source_portfolio=portfolio,
             specification_sanitization_records=(
                 fresh_sanitization_records
+            ),
+            diagnostic_query_plan=(
+                diagnostic_plan
+                if diagnostic_packet is not None
+                else None
+            ),
+            diagnostic_prior_art=diagnostic_packet,
+            diagnostic_review_report=(
+                diagnostic_review_report
             ),
         )
 
@@ -1738,6 +1824,7 @@ class TargetedNoveltyRefinementRuntime:
                 reaxis_context_grounding_valid = False
                 reaxis_internal_status = None
                 reaxis_final_status = None
+                reaxis_search_coverage = None
                 reaxis_failure_decision = None
                 reaxis_reason_codes = [
                     "fresh_context_reaxis",
@@ -1865,6 +1952,9 @@ class TargetedNoveltyRefinementRuntime:
                                 reaxis_final_status = (
                                     reaxis_final_card.status
                                 )
+                                reaxis_search_coverage = (
+                                    reaxis_final_card.coverage
+                                )
 
                                 reaxis_task_assessment = None
 
@@ -1894,6 +1984,9 @@ class TargetedNoveltyRefinementRuntime:
                                     is not None
                                     and reaxis_final_card.status
                                     not in self.REAXIS_REJECT_EXTERNAL
+                                    and self._reaxis_replacement_evidence_ready(
+                                        reaxis_final_card
+                                    )
                                     and (
                                         reaxis_task_assessment is None
                                         or reaxis_task_assessment.task_class
@@ -1993,6 +2086,41 @@ class TargetedNoveltyRefinementRuntime:
                                     )
 
                                 elif (
+                                    not self._reaxis_replacement_evidence_ready(
+                                        reaxis_final_card
+                                    )
+                                ):
+                                    reaxis_failure_decision = (
+                                        "held_for_evidence"
+                                    )
+                                    reaxis_reason_codes.extend(
+                                        [
+                                            "fresh_reaxis_held_for_evidence",
+                                            (
+                                                "fresh_reaxis_external_status_"
+                                                + reaxis_final_card.status.lower()
+                                            ),
+                                        ]
+                                    )
+                                    if not (
+                                        reaxis_final_card
+                                        .coverage
+                                        .sufficient_for_absence_based_novelty
+                                    ):
+                                        reaxis_reason_codes.append(
+                                            "fresh_reaxis_replacement_coverage_insufficient"
+                                        )
+                                    reaxis_failure_interpretation = (
+                                        "Fresh-context re-axis was not "
+                                        "scientifically rejected, but its "
+                                        "fresh external evidence did not earn "
+                                        "canonical replacement authority. "
+                                        "The candidate is held for evidence; "
+                                        "absence or insufficient search is not "
+                                        "treated as novelty."
+                                    )
+
+                                elif (
                                     reaxis_post_generation_scientific_assessment
                                     is not None
                                     and
@@ -2064,6 +2192,9 @@ class TargetedNoveltyRefinementRuntime:
                                             final_external_status=(
                                                 reaxis_final_card.status
                                             ),
+                                            reaxis_search_coverage=(
+                                                reaxis_final_card.coverage
+                                            ),
                                             axis_fidelity_status=(
                                                 "fresh_reaxis_context_bound"
                                             ),
@@ -2127,6 +2258,9 @@ class TargetedNoveltyRefinementRuntime:
                         ),
                         final_external_status=(
                             reaxis_final_status
+                        ),
+                        reaxis_search_coverage=(
+                            reaxis_search_coverage
                         ),
                         axis_fidelity_status=(
                             "fresh_reaxis_context_bound"
@@ -2665,11 +2799,15 @@ class TargetedNoveltyRefinementRuntime:
             x.decision == "accepted_reaxis" for x in attempts
         )
         kept_count = sum(x.decision == "kept_original" for x in attempts)
+        held_for_evidence_count = sum(
+            x.decision == "held_for_evidence" for x in attempts
+        )
         rejected_count = (
             len(attempts)
             - accepted_count
             - accepted_reaxis_count
             - kept_count
+            - held_for_evidence_count
         )
         report_id = _stable_id(
             "novelty_refinement_report",
@@ -2691,6 +2829,7 @@ class TargetedNoveltyRefinementRuntime:
             "accepted_refinement_count": accepted_count,
             "accepted_reaxis_count": accepted_reaxis_count,
             "kept_original_count": kept_count,
+            "held_for_evidence_count": held_for_evidence_count,
             "rejected_count": rejected_count,
             "max_refinements_per_hypothesis": 1,
             "max_reaxes_per_hypothesis": 1,
