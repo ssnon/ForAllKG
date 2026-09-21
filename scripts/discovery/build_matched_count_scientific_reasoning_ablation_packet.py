@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from pipeline_core.discovery.reframing.ablation_evaluation import (
+    ScientificReasoningAblationBlindKey,
+    ScientificReasoningAblationPacket,
+)
+from pipeline_core.discovery.reframing.ablation_matched_count import (
+    build_matched_count_ablation_packet,
+)
+
+
+def _write_json(path: Path, value) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = value.model_dump(mode="json") if hasattr(value, "model_dump") else value
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build a schema-normalized, candidate-count-matched blind ablation packet. "
+            "The reframing arm is evaluated through deterministic leave-one-out subsets, "
+            "so every comparison uses the same candidate count as RELATIONAL_ONLY."
+        )
+    )
+    parser.add_argument("--packet", required=True, type=Path)
+    parser.add_argument("--key", required=True, type=Path)
+    parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--output-key", type=Path, default=None)
+    parser.add_argument("--report", type=Path, default=None)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    packet_path = args.packet.expanduser().resolve()
+    key_path = args.key.expanduser().resolve()
+    packet = ScientificReasoningAblationPacket.model_validate_json(
+        packet_path.read_text(encoding="utf-8")
+    )
+    key = ScientificReasoningAblationBlindKey.model_validate_json(
+        key_path.read_text(encoding="utf-8")
+    )
+    matched_packet, matched_key, report = build_matched_count_ablation_packet(
+        packet=packet,
+        key=key,
+    )
+
+    output = (
+        args.output.expanduser().resolve()
+        if args.output is not None
+        else packet_path.parent / "scientific_reasoning_ablation_matched_count_packet.json"
+    )
+    output_key = (
+        args.output_key.expanduser().resolve()
+        if args.output_key is not None
+        else packet_path.parent / "scientific_reasoning_ablation_matched_count_key.json"
+    )
+    report_path = (
+        args.report.expanduser().resolve()
+        if args.report is not None
+        else packet_path.parent / "scientific_reasoning_ablation_matched_count_build_report.json"
+    )
+    _write_json(output, matched_packet)
+    _write_json(output_key, matched_key)
+    _write_json(report_path, report)
+
+    print("Matched-count scientific reasoning ablation packet complete")
+    print("LLM calls: 0")
+    print(f"Source packet: {report.source_packet_id}")
+    print(
+        "Source candidate counts: "
+        f"RELATIONAL_ONLY={report.source_relational_candidate_count}, "
+        f"REFRAMING_ONLY={report.source_reframing_candidate_count}"
+    )
+    print(f"Matched candidates per arm: {report.matched_candidate_count_per_arm}")
+    print(f"Leave-one-out comparisons: {report.leave_one_out_comparison_count}")
+    for row in report.comparisons:
+        print(
+            f"  {row.comparison_alias}: 3v3; "
+            f"payload_ratio={row.payload_character_ratio:.3f}; "
+            f"omitted_blind_candidate={row.omitted_reframing_candidate_alias}"
+        )
+    print("Candidate-count parity established: true")
+    print("Schema-normalized input required: true")
+    print("Payload-length parity targeted: false")
+    print("Evaluation judgment performed: false")
+    print("Scientific quality ranking performed: false")
+    print("Production selection changed: false")
+    print(f"Packet: {output}")
+    print(f"Blind key (do not supply to evaluator): {output_key}")
+    print(f"Build report (do not supply to evaluator): {report_path}")
+
+
+if __name__ == "__main__":
+    main()
