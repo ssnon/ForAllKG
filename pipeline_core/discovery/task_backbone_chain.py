@@ -34,6 +34,65 @@ StructuredEndpointBindingMode = Literal[
 ]
 
 
+EndpointFacetCoverageStatus = Literal[
+    "core_facet_unresolved",
+    "facet_core_supported_no_qualifier_obligation",
+    "facet_and_qualifier_locally_supported",
+    "facet_supported_qualifier_only_component_level",
+    "facet_core_supported_qualifier_unresolved",
+]
+
+
+EndpointCoverageStatus = Literal[
+    "not_applicable",
+    "complete",
+    "partial_or_qualifier_unresolved",
+    "unresolved",
+]
+
+
+class TaskEndpointFacetCoverageView(StrictModel):
+    schema_version: str = "task-endpoint-facet-coverage-v1"
+
+    core_endpoint: str
+    facet_tokens: list[str] = Field(default_factory=list)
+    shared_qualifier_tokens: list[str] = Field(default_factory=list)
+
+    core_binding_count: int = 0
+    task_slot_qualified_binding_count: int = 0
+    component_qualified_binding_count: int = 0
+
+    core_binding_component_ids: list[str] = Field(default_factory=list)
+    task_slot_qualified_component_ids: list[str] = Field(default_factory=list)
+    component_qualified_component_ids: list[str] = Field(default_factory=list)
+
+    status: EndpointFacetCoverageStatus
+
+    diagnostic_only: Literal[True] = True
+    coverage_authority: Literal[False] = False
+    scientific_equivalence_asserted: Literal[False] = False
+
+
+class TaskEndpointCoverageLedger(StrictModel):
+    schema_version: str = "task-endpoint-coverage-ledger-v1"
+
+    original_endpoint: str
+    coordinated: bool
+    shared_qualifier_tokens: list[str] = Field(default_factory=list)
+    head_tokens: list[str] = Field(default_factory=list)
+    facet_tokens: list[list[str]] = Field(default_factory=list)
+    facets: list[TaskEndpointFacetCoverageView] = Field(default_factory=list)
+
+    status: EndpointCoverageStatus
+
+    diagnostic_only: Literal[True] = True
+    coverage_authority: Literal[False] = False
+    task_filter_relaxed: Literal[False] = False
+    positive_premise_authority_created: Literal[False] = False
+    novelty_authority_created: Literal[False] = False
+    scientific_equivalence_asserted: Literal[False] = False
+
+
 class TaskBackboneChainView(StrictModel):
     """
     Confirmed-known three-component task backbone.
@@ -190,25 +249,80 @@ def _coordinated_head_facet_spec(
     return head_tokens, tuple(facets)
 
 
+def _coordinated_endpoint_coverage_spec(
+    text: str,
+) -> tuple[
+    tuple[str, ...],
+    frozenset[str],
+    tuple[frozenset[str], ...],
+] | None:
+    parts = [
+        " ".join(part.split()).strip()
+        for part in re.split(
+            r"\s*(?:,|\band\b|\bor\b)\s*",
+            str(text),
+            flags=re.IGNORECASE,
+        )
+        if " ".join(part.split()).strip()
+    ]
+    if len(parts) < 2:
+        return None
+
+    first_surface = _surface_tokens(parts[0])
+    later = [_surface_tokens(part) for part in parts[1:]]
+
+    if (
+        len(first_surface) < 2
+        or any(len(tokens) != 1 for tokens in later)
+    ):
+        return None
+
+    shared_qualifiers = tuple(first_surface[:-2])
+    head_tokens = lexical_tokens(first_surface[-2])
+    first_facet = lexical_tokens(first_surface[-1])
+
+    if not head_tokens or not first_facet:
+        return None
+
+    facets = [first_facet]
+    for tokens in later:
+        facet = lexical_tokens(tokens[0])
+        if not facet:
+            return None
+        facets.append(facet)
+
+    return shared_qualifiers, head_tokens, tuple(facets)
+
+
 def _structured_task_binding(
     *,
     component: RelationComponentView,
     task_endpoint: str,
     endpoint_equivalences: Sequence[EndpointEquivalenceWitness],
 ) -> tuple[RelationComponentBindingView, StructuredEndpointBindingMode] | None:
+    endpoint_atoms = _endpoint_atoms(task_endpoint)
+
     legacy = _task_binding(
         component=component,
         task_endpoint=task_endpoint,
-        endpoint_atoms=_endpoint_atoms(task_endpoint),
+        endpoint_atoms=endpoint_atoms,
         endpoint_equivalences=endpoint_equivalences,
     )
+
+    coordination = _coordinated_head_facet_spec(task_endpoint)
+
     if (
         legacy is not None
         and legacy.binding_authority in {"exact", "equivalent"}
+        and len(endpoint_atoms) <= 1
     ):
         return legacy, "legacy_exact_or_equivalent"
 
-    coordination = _coordinated_head_facet_spec(task_endpoint)
+    # S28 cross-domain whole-endpoint guard:
+    # for a multi-atom task endpoint, an exact/equivalent match to only one
+    # atom is not whole-endpoint authority. Fall through to the structured
+    # whole-endpoint path instead. This changes no thresholds and creates no
+    # synonym/equivalence authority.
     rows = []
 
     for task_slot, mediator_slot in (
@@ -300,6 +414,161 @@ def _structured_task_binding(
         return None
 
     return rows[0][3], rows[0][4]
+
+
+def build_task_endpoint_coverage_ledger(
+    *,
+    components: Sequence[RelationComponentView],
+    task_endpoint: str,
+    endpoint_equivalences: Sequence[EndpointEquivalenceWitness] = (),
+) -> TaskEndpointCoverageLedger:
+    # Diagnostic-only coverage ledger for coordinated task endpoints.
+    # Compound endpoints are represented as:
+    # shared qualifier obligation + head + facet atoms.
+    # No endpoint-equivalence, positive-premise, novelty, selection,
+    # rejection, task-filter, or backbone-eligibility authority is created.
+    original_endpoint = " ".join(str(task_endpoint).split()).strip()
+    spec = _coordinated_endpoint_coverage_spec(original_endpoint)
+
+    if spec is None:
+        return TaskEndpointCoverageLedger(
+            original_endpoint=original_endpoint,
+            coordinated=False,
+            status="not_applicable",
+        )
+
+    shared_qualifiers, head_tokens, facets = spec
+    qualifier_tokens = frozenset(
+        token
+        for value in shared_qualifiers
+        for token in lexical_tokens(value)
+    )
+
+    known = [
+        component
+        for component in components
+        if component.authority
+        == RelationComponentAuthority.CONFIRMED_KNOWN
+    ]
+
+    facet_rows: list[TaskEndpointFacetCoverageView] = []
+
+    for facet in facets:
+        core_endpoint = " ".join(
+            [
+                *sorted(head_tokens),
+                *sorted(facet),
+            ]
+        )
+
+        core_ids = []
+        local_qualified_ids = []
+        component_qualified_ids = []
+
+        for component in known:
+            resolved = _structured_task_binding(
+                component=component,
+                task_endpoint=core_endpoint,
+                endpoint_equivalences=endpoint_equivalences,
+            )
+            if resolved is None:
+                continue
+
+            binding, _mode = resolved
+            core_ids.append(component.component_id)
+
+            if not qualifier_tokens:
+                local_qualified_ids.append(component.component_id)
+                component_qualified_ids.append(component.component_id)
+                continue
+
+            task_slot_tokens = _slot_tokens(
+                component,
+                binding.task_slot,
+            )
+            other_slot = (
+                "object"
+                if binding.task_slot == "subject"
+                else "subject"
+            )
+            component_tokens = frozenset(
+                set(task_slot_tokens)
+                | set(_slot_tokens(component, other_slot))
+            )
+
+            if qualifier_tokens.issubset(task_slot_tokens):
+                local_qualified_ids.append(component.component_id)
+
+            if qualifier_tokens.issubset(component_tokens):
+                component_qualified_ids.append(component.component_id)
+
+        core_ids = sorted(set(core_ids))
+        local_qualified_ids = sorted(set(local_qualified_ids))
+        component_qualified_ids = sorted(
+            set(component_qualified_ids)
+        )
+
+        if not core_ids:
+            status: EndpointFacetCoverageStatus = (
+                "core_facet_unresolved"
+            )
+        elif not qualifier_tokens:
+            status = "facet_core_supported_no_qualifier_obligation"
+        elif local_qualified_ids:
+            status = "facet_and_qualifier_locally_supported"
+        elif component_qualified_ids:
+            status = "facet_supported_qualifier_only_component_level"
+        else:
+            status = "facet_core_supported_qualifier_unresolved"
+
+        facet_rows.append(
+            TaskEndpointFacetCoverageView(
+                core_endpoint=core_endpoint,
+                facet_tokens=sorted(facet),
+                shared_qualifier_tokens=sorted(qualifier_tokens),
+                core_binding_count=len(core_ids),
+                task_slot_qualified_binding_count=len(
+                    local_qualified_ids
+                ),
+                component_qualified_binding_count=len(
+                    component_qualified_ids
+                ),
+                core_binding_component_ids=core_ids,
+                task_slot_qualified_component_ids=local_qualified_ids,
+                component_qualified_component_ids=(
+                    component_qualified_ids
+                ),
+                status=status,
+            )
+        )
+
+    complete_statuses = {
+        "facet_core_supported_no_qualifier_obligation",
+        "facet_and_qualifier_locally_supported",
+    }
+
+    if facet_rows and all(
+        row.status in complete_statuses
+        for row in facet_rows
+    ):
+        ledger_status: EndpointCoverageStatus = "complete"
+    elif any(row.core_binding_count > 0 for row in facet_rows):
+        ledger_status = "partial_or_qualifier_unresolved"
+    else:
+        ledger_status = "unresolved"
+
+    return TaskEndpointCoverageLedger(
+        original_endpoint=original_endpoint,
+        coordinated=True,
+        shared_qualifier_tokens=sorted(qualifier_tokens),
+        head_tokens=sorted(head_tokens),
+        facet_tokens=[
+            sorted(facet)
+            for facet in facets
+        ],
+        facets=facet_rows,
+        status=ledger_status,
+    )
 
 
 def compose_three_component_task_backbones(

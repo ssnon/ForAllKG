@@ -12,6 +12,27 @@ from typing import Any
 from pipeline_core.discovery.discovery_bundle import DiscoveryPolicy
 from pipeline_core.discovery.discovery_contracts import DiscoveryBundle
 from pipeline_core.discovery.higher_order_external_shadow_plan import build_higher_order_external_shadow_batch_plan
+from pipeline_core.discovery.higher_order_semantic_critic import (
+    critique_higher_order_shadow_batch,
+)
+from pipeline_core.discovery.higher_order_tension_extractor import (
+    extract_scientific_tension_candidates,
+)
+from pipeline_core.discovery.higher_order_competing_explanations import (
+    generate_competing_explanations,
+)
+from pipeline_core.discovery.higher_order_discriminating_experiments import (
+    generate_discriminating_experiments,
+)
+from pipeline_core.discovery.higher_order_experiment_critic import (
+    critique_discriminating_experiments,
+)
+from pipeline_core.discovery.higher_order_experiment_repair import (
+    repair_discriminating_experiments,
+)
+from pipeline_core.discovery.higher_order_operationalization_witness import (
+    build_operationalization_witness_requirements,
+)
 from pipeline_core.discovery.higher_order_hypothesis_batch import HigherOrderShadowBatchRuntime
 from pipeline_core.discovery.higher_order_modifier_eligibility import screen_confirmed_known_modifiers
 from pipeline_core.discovery.higher_order_synthesis_context import build_higher_order_synthesis_contexts
@@ -25,7 +46,14 @@ from pipeline_core.discovery.relation_component_composition import (
     compose_relation_component_topologies,
 )
 from pipeline_core.discovery.task_backbone_chain import (
+    build_task_endpoint_coverage_ledger,
     compose_three_component_task_backbones,
+)
+from pipeline_core.discovery.task_endpoint_unary_qualifier import (
+    build_task_endpoint_unary_qualifier_obligations,
+)
+from pipeline_core.discovery.task_endpoint_coverage_critic import (
+    critique_task_endpoint_coverage,
 )
 from pipeline_core.discovery.task_bridge_candidate_composition import (
     candidate_relation_from_mapping,
@@ -640,6 +668,63 @@ def main() -> int:
 
     source_context = HypothesisContext.model_validate_json(args.context.read_text(encoding="utf-8"))
     components = _load_components(args.accepted_patterns)
+    endpoint_unary_qualifier_obligations = (
+        build_task_endpoint_unary_qualifier_obligations(
+            components=components,
+            requested_source=requested_source,
+            requested_target=requested_target,
+        )
+    )
+    endpoint_unary_qualifier_path = (
+        out / "endpoint_unary_qualifier_obligations.json"
+    )
+    _write(
+        endpoint_unary_qualifier_path,
+        endpoint_unary_qualifier_obligations,
+    )
+
+
+    source_endpoint_coverage = build_task_endpoint_coverage_ledger(
+        components=components,
+        task_endpoint=requested_source,
+    )
+    target_endpoint_coverage = build_task_endpoint_coverage_ledger(
+        components=components,
+        task_endpoint=requested_target,
+    )
+    endpoint_coverage_path = out / "endpoint_coverage.json"
+    _write(
+        endpoint_coverage_path,
+        {
+            "schema_version": "higher-order-endpoint-coverage-bundle-v1",
+            "requested_source": requested_source,
+            "requested_target": requested_target,
+            "source": source_endpoint_coverage.model_dump(
+                mode="json"
+            ),
+            "target": target_endpoint_coverage.model_dump(
+                mode="json"
+            ),
+            "diagnostic_only": True,
+            "coverage_authority": False,
+            "task_filter_relaxed": False,
+            "positive_premise_authority_created": False,
+            "novelty_authority_created": False,
+            "production_selection_changed": False,
+        },
+    )
+
+    endpoint_coverage_critic = critique_task_endpoint_coverage(
+        source=source_endpoint_coverage,
+        target=target_endpoint_coverage,
+    )
+    endpoint_coverage_critic_path = (
+        out / "endpoint_coverage_critic.json"
+    )
+    _write(
+        endpoint_coverage_critic_path,
+        endpoint_coverage_critic,
+    )
 
     strict_two_component_backbones = (
         compose_relation_component_topologies(
@@ -761,7 +846,49 @@ def main() -> int:
         ),
         "source_context_id": source_context.context_id,
         "source_context_sha256": source_context.context_sha256,
+        "endpoint_coverage_artifact": str(endpoint_coverage_path),
+        "endpoint_coverage_critic_artifact": str(
+            endpoint_coverage_critic_path
+        ),
+        "source_endpoint_coverage_status": (
+            source_endpoint_coverage.status
+        ),
+        "target_endpoint_coverage_status": (
+            target_endpoint_coverage.status
+        ),
+        "endpoint_coverage_issue_codes": (
+            endpoint_coverage_critic.issue_codes
+        ),
+        "endpoint_coverage_diagnostic_only": True,
+        "endpoint_coverage_blocking": False,
+        "endpoint_coverage_rejection_authority": False,
+        "endpoint_coverage_selection_authority": False,
+        "endpoint_coverage_authority": False,
         "accepted_pattern_component_count": len(components),
+        "endpoint_unary_qualifier_artifact": str(
+            endpoint_unary_qualifier_path
+        ),
+        "source_endpoint_unary_qualifier_status": (
+            endpoint_unary_qualifier_obligations
+            .source.status.value
+        ),
+        "target_endpoint_unary_qualifier_status": (
+            endpoint_unary_qualifier_obligations
+            .target.status.value
+        ),
+        "source_endpoint_unary_qualifier_candidate": (
+            endpoint_unary_qualifier_obligations
+            .source.candidate_qualifier_surface
+        ),
+        "target_endpoint_unary_qualifier_candidate": (
+            endpoint_unary_qualifier_obligations
+            .target.candidate_qualifier_surface
+        ),
+        "endpoint_unary_qualifier_diagnostic_only": True,
+        "endpoint_unary_qualifier_blocking": False,
+        "endpoint_unary_qualifier_selection_authority": False,
+        "endpoint_unary_qualifier_rejection_authority": False,
+        "endpoint_substitution_performed": False,
         "strict_backbone_count": len(backbones),
         "strict_two_component_backbone_count": len(
             strict_two_component_backbones
@@ -886,6 +1013,109 @@ def main() -> int:
         contexts=generation_contexts,
         max_contexts=len(generation_contexts),
     )
+    semantic_critique = critique_higher_order_shadow_batch(
+        outcome
+    )
+    semantic_critique_path = (
+        out / "higher_order.semantic_critic.json"
+    )
+    _write(
+        semantic_critique_path,
+        semantic_critique,
+    )
+
+    tension_candidates = extract_scientific_tension_candidates(
+        outcome=outcome,
+        semantic_critique=semantic_critique,
+    )
+    tension_candidates_path = (
+        out / "higher_order.tension_candidates.json"
+    )
+    _write(
+        tension_candidates_path,
+        tension_candidates,
+    )
+
+    competing_explanations = generate_competing_explanations(
+        tension_candidates
+    )
+    competing_explanations_path = (
+        out / "higher_order.competing_explanations.json"
+    )
+    _write(
+        competing_explanations_path,
+        competing_explanations,
+    )
+
+    discriminating_experiments = generate_discriminating_experiments(
+        explanations=competing_explanations,
+        tensions=tension_candidates,
+    )
+    discriminating_experiments_path = (
+        out / "higher_order.discriminating_experiments.json"
+    )
+    _write(
+        discriminating_experiments_path,
+        discriminating_experiments,
+    )
+
+    experiment_critique = critique_discriminating_experiments(
+        discriminating_experiments
+    )
+    experiment_critique_path = (
+        out / "higher_order.discriminating_experiment_critic.json"
+    )
+    _write(
+        experiment_critique_path,
+        experiment_critique,
+    )
+
+    experiment_repairs = repair_discriminating_experiments(
+        experiments=discriminating_experiments,
+        critique=experiment_critique,
+    )
+    experiment_repairs_path = (
+        out / "higher_order.discriminating_experiment_repairs.json"
+    )
+    repaired_experiments_path = (
+        out / "higher_order.discriminating_experiments.repaired.json"
+    )
+    _write(
+        experiment_repairs_path,
+        experiment_repairs,
+    )
+    _write(
+        repaired_experiments_path,
+        experiment_repairs.repaired_experiments,
+    )
+
+    repaired_experiment_critique = (
+        critique_discriminating_experiments(
+            experiment_repairs.repaired_experiments
+        )
+    )
+    repaired_experiment_critique_path = (
+        out
+        / "higher_order.discriminating_experiment_critic.repaired.json"
+    )
+    _write(
+        repaired_experiment_critique_path,
+        repaired_experiment_critique,
+    )
+
+    operationalization_requirements = (
+        build_operationalization_witness_requirements(
+            experiment_repairs
+        )
+    )
+    operationalization_requirements_path = (
+        out / "higher_order.operationalization_witness_requirements.json"
+    )
+    _write(
+        operationalization_requirements_path,
+        operationalization_requirements,
+    )
+
     arms = []
     for index, arm in enumerate(outcome.arms, start=1):
         arm_dir = out / f"{index:02d}"
@@ -906,6 +1136,132 @@ def main() -> int:
         "canonical_rejected_count": outcome.record.canonical_rejected_count,
         "shadow_contract_rejected_count": outcome.record.shadow_contract_rejected_count,
         "batch_record": outcome.record.model_dump(mode="json"),
+        "semantic_critic": {
+            "path": str(semantic_critique_path),
+            "schema_version": semantic_critique.schema_version,
+            "arm_count": semantic_critique.arm_count,
+            "candidate_backed_arm_count": (
+                semantic_critique.candidate_backed_arm_count
+            ),
+            "known_backed_arm_count": (
+                semantic_critique.known_backed_arm_count
+            ),
+            "flagged_arm_count": semantic_critique.flagged_arm_count,
+            "issue_counts": semantic_critique.issue_counts,
+            "candidate_issue_counts": (
+                semantic_critique.candidate_issue_counts
+            ),
+            "known_context_duplicate_pair_count": (
+                semantic_critique.known_context_duplicate_pair_count
+            ),
+            "diagnostic_only": True,
+            "rejection_authority": False,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
+        "tension_candidates": {
+            "path": str(tension_candidates_path),
+            "schema_version": tension_candidates.schema_version,
+            "candidate_count": tension_candidates.candidate_count,
+            "type_counts": tension_candidates.type_counts,
+            "candidate_inspiration_candidate_count": (
+                tension_candidates.candidate_inspiration_candidate_count
+            ),
+            "diagnostic_only": True,
+            "competing_explanation_generation_authorized": False,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
+        "competing_explanations": {
+            "path": str(competing_explanations_path),
+            "schema_version": competing_explanations.schema_version,
+            "pair_count": competing_explanations.pair_count,
+            "explanation_count": competing_explanations.explanation_count,
+            "type_counts": competing_explanations.type_counts,
+            "candidate_inspiration_pair_count": (
+                competing_explanations.candidate_inspiration_pair_count
+            ),
+            "diagnostic_only": True,
+            "explanation_selection_performed": False,
+            "discriminating_hypothesis_generation_authorized": False,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
+        "discriminating_experiments": {
+            "path": str(discriminating_experiments_path),
+            "schema_version": discriminating_experiments.schema_version,
+            "experiment_count": discriminating_experiments.experiment_count,
+            "type_counts": discriminating_experiments.type_counts,
+            "candidate_inspiration_experiment_count": (
+                discriminating_experiments
+                .candidate_inspiration_experiment_count
+            ),
+            "deterministic_generation": True,
+            "llm_generation_used": False,
+            "diagnostic_only": True,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+            "external_novelty_review_bypass_authorized": False,
+        },
+        "discriminating_experiment_critic": {
+            "path": str(experiment_critique_path),
+            "schema_version": experiment_critique.schema_version,
+            "experiment_count": experiment_critique.experiment_count,
+            "flagged_experiment_count": (
+                experiment_critique.flagged_experiment_count
+            ),
+            "issue_counts": experiment_critique.issue_counts,
+            "candidate_issue_counts": (
+                experiment_critique.candidate_issue_counts
+            ),
+            "diagnostic_only": True,
+            "experiment_selection_performed": False,
+            "rejection_authority": False,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
+        "discriminating_experiment_repairs": {
+            "path": str(experiment_repairs_path),
+            "repaired_experiments_path": str(repaired_experiments_path),
+            "repaired_critic_path": str(
+                repaired_experiment_critique_path
+            ),
+            "schema_version": experiment_repairs.schema_version,
+            "changed_experiment_count": (
+                experiment_repairs.changed_experiment_count
+            ),
+            "deferred_experiment_count": (
+                experiment_repairs.deferred_experiment_count
+            ),
+            "repaired_flagged_experiment_count": (
+                repaired_experiment_critique.flagged_experiment_count
+            ),
+            "repaired_issue_counts": (
+                repaired_experiment_critique.issue_counts
+            ),
+            "deterministic_repair_only": True,
+            "llm_repair_used": False,
+            "original_artifact_mutated": False,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
+        "operationalization_witness_requirements": {
+            "path": str(operationalization_requirements_path),
+            "schema_version": operationalization_requirements.schema_version,
+            "requirement_count": (
+                operationalization_requirements.requirement_count
+            ),
+            "candidate_inspiration_requirement_count": (
+                operationalization_requirements
+                .candidate_inspiration_requirement_count
+            ),
+            "corpus_lookup_performed": False,
+            "measurement_independence_verified_count": 0,
+            "witness_candidate_count": 0,
+            "diagnostic_only": True,
+            "production_selection_authority": False,
+            "novelty_authority": False,
+        },
         "external_shadow_plan": str(external_plan_path) if external_plan_path else None,
         "arms": arms,
         "status": "HIGHER_ORDER_SHADOW_GENERATION_COMPLETE",
@@ -946,6 +1302,124 @@ def main() -> int:
     )
     print("selected contexts:", outcome.record.selected_context_count)
     print("proposed:", outcome.record.proposed_count)
+    print(
+        "semantic critic flagged arms:",
+        semantic_critique.flagged_arm_count,
+    )
+    print(
+        "semantic critic issues:",
+        semantic_critique.issue_counts,
+    )
+    print(
+        "semantic critic candidate issues:",
+        semantic_critique.candidate_issue_counts,
+    )
+    print(
+        "semantic critic known-context duplicate pairs:",
+        semantic_critique.known_context_duplicate_pair_count,
+    )
+    print("semantic critic:", semantic_critique_path)
+    print(
+        "tension candidates:",
+        tension_candidates.candidate_count,
+    )
+    print(
+        "tension candidate types:",
+        tension_candidates.type_counts,
+    )
+    print(
+        "candidate-inspiration tensions:",
+        tension_candidates.candidate_inspiration_candidate_count,
+    )
+    print("tension candidates artifact:", tension_candidates_path)
+    print(
+        "competing explanation pairs:",
+        competing_explanations.pair_count,
+    )
+    print(
+        "competing explanations:",
+        competing_explanations.explanation_count,
+    )
+    print(
+        "competing explanation types:",
+        competing_explanations.type_counts,
+    )
+    print(
+        "candidate-inspiration explanation pairs:",
+        competing_explanations.candidate_inspiration_pair_count,
+    )
+    print(
+        "competing explanations artifact:",
+        competing_explanations_path,
+    )
+    print(
+        "discriminating experiments:",
+        discriminating_experiments.experiment_count,
+    )
+    print(
+        "discriminating experiment types:",
+        discriminating_experiments.type_counts,
+    )
+    print(
+        "candidate-inspiration experiments:",
+        discriminating_experiments
+        .candidate_inspiration_experiment_count,
+    )
+    print(
+        "discriminating experiments artifact:",
+        discriminating_experiments_path,
+    )
+    print(
+        "experiment critic flagged:",
+        experiment_critique.flagged_experiment_count,
+    )
+    print(
+        "experiment critic issues:",
+        experiment_critique.issue_counts,
+    )
+    print(
+        "experiment critic candidate issues:",
+        experiment_critique.candidate_issue_counts,
+    )
+    print(
+        "experiment critic artifact:",
+        experiment_critique_path,
+    )
+    print(
+        "deterministically repaired experiments:",
+        experiment_repairs.changed_experiment_count,
+    )
+    print(
+        "deferred experiments:",
+        experiment_repairs.deferred_experiment_count,
+    )
+    print(
+        "repaired critic flagged:",
+        repaired_experiment_critique.flagged_experiment_count,
+    )
+    print(
+        "repaired critic issues:",
+        repaired_experiment_critique.issue_counts,
+    )
+    print("experiment repairs artifact:", experiment_repairs_path)
+    print("repaired experiments artifact:", repaired_experiments_path)
+    print(
+        "repaired experiment critic artifact:",
+        repaired_experiment_critique_path,
+    )
+    print(
+        "operationalization witness requirements:",
+        operationalization_requirements.requirement_count,
+    )
+    print(
+        "candidate-inspiration witness requirements:",
+        operationalization_requirements
+        .candidate_inspiration_requirement_count,
+    )
+    print(
+        "operationalization witness requirements artifact:",
+        operationalization_requirements_path,
+    )
     print("report:", report_path)
     print("PRODUCTION_SELECTION_CHANGED=False")
     return 0
