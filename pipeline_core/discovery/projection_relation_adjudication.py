@@ -349,10 +349,11 @@ class ProjectionRelationClaimReview(StrictModel):
 
     matches: list[CompiledProjectionRelationMatch]
 
-    # Audit coverage. All candidates are presented to the adjudicator, while
-    # the model is explicitly allowed to omit records that do not need
-    # discussion. Keep the legacy reviewed_work_count as the number of emitted
-    # compiled match records, and expose the actual prompt coverage separately.
+    # Audit coverage. All candidates are presented and exhaustive
+    # classification is requested. If the model nevertheless omits a work,
+    # it remains explicitly unclassified and therefore cannot contribute to
+    # bounded review closure. Keep reviewed_work_count as the number of
+    # emitted compiled match records.
     presented_work_count: int = Field(ge=0)
     classified_work_count: int = Field(ge=0)
     unclassified_work_ids: list[str] = Field(default_factory=list)
@@ -1728,7 +1729,11 @@ WORK-ID CONTRACT
 - basis_projection_ids must be copied from ALLOWED_PROJECTION_IDS.
 - Do not invent IDs.
 
-Return at most one record per work. Omit records that do not need discussion. Your interpretation must be bounded to the supplied reviewed set."""
+Return exactly one record for every work in ALLOWED_WORK_IDS.
+Return at most one record per work. Do not omit any allowed work.
+If a record has no material bearing, use UNRELATED; if metadata is insufficient,
+use INSUFFICIENT_METADATA. Do not use omission as a relationship label.
+Your interpretation must be bounded to the supplied reviewed set."""
 
 
 def _prompt_for_claim(
@@ -1808,6 +1813,10 @@ def _prompt_for_claim(
             "ALLOWED_PROJECTION_IDS",
             "======================",
             *row.projection_ids,
+            "",
+            "CLASSIFICATION COVERAGE CONTRACT",
+            "Return exactly one match record for every ALLOWED_WORK_ID.",
+            "Every presented work must receive one allowed relationship label.",
             "",
             "Do not infer literature-wide absence.",
             "Do not make a novelty or non-obviousness judgment.",
