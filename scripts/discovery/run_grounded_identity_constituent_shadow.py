@@ -27,9 +27,18 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--candidate-portfolio", required=True, type=Path)
     parser.add_argument("--atomic-report", required=True, type=Path)
-    parser.add_argument("--detail-root", required=True, type=Path)
+    parser.add_argument("--detail-root", type=Path, default=None)
     parser.add_argument("--annotation-output", required=True, type=Path)
-    parser.add_argument("--ablation-output", required=True, type=Path)
+    parser.add_argument("--ablation-output", type=Path, default=None)
+    parser.add_argument(
+        "--annotation-only",
+        action="store_true",
+        help=(
+            "Materialize exact-source grounded identity annotations only. "
+            "This mode is independent of N9/N10 closure detail artifacts and "
+            "does not run the diagnostic negative-closure ablation."
+        ),
+    )
     parser.add_argument("--prompt-output", type=Path, default=None)
     parser.add_argument("--model", required=True)
     parser.add_argument("--base-url", default=None)
@@ -80,6 +89,23 @@ def main() -> int:
             + "\n",
             encoding="utf-8",
         )
+
+    if args.annotation_only:
+        print("Grounded identity constituent annotation complete")
+        print("Annotation LLM calls:", annotation_report.llm_calls_performed)
+        print("Negative-closure ablation performed: false")
+        print("N9/N10 closure detail dependency: false")
+        print("N9 contract changed: false")
+        print("N10 contract changed: false")
+        print("Production authority: false")
+        print("Production selection changed: false")
+        print("Annotation:", args.annotation_output)
+        return 0
+
+    if args.detail_root is None:
+        raise SystemExit("--detail-root is required unless --annotation-only is set")
+    if args.ablation_output is None:
+        raise SystemExit("--ablation-output is required unless --annotation-only is set")
 
     ablation = analyze_current_claims(
         detail_root=args.detail_root,

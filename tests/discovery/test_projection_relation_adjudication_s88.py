@@ -767,3 +767,142 @@ def test_adjudication_coverage_distinguishes_presented_from_classified_records()
     assert review.classified_work_count == 1
     assert review.reviewed_work_count == 1
     assert review.unclassified_work_ids == ["w2"]
+
+
+def test_exhaustive_followup_reasks_only_omitted_presented_work_ids():
+    from pipeline_core.discovery.projection_relation_adjudication import (
+        _review_claim_with_exhaustive_followup,
+    )
+
+    candidates = [
+        _candidate(work_id=work_id, typed_state="DOMAIN_COMPATIBLE")
+        for work_id in ("w1", "w2", "w3")
+    ]
+    candidate_set = ProjectionRelationClaimCandidateSet(
+        hypothesis_id="h1",
+        claim_id="claim:1",
+        relation_ir_id="relation:1",
+        claim_text="Full typed relation.",
+        endpoint_terms=["endpoint A", "endpoint B"],
+        identity_terms=["synthetic identity"],
+        projection_ids=["p-base", "p-lower", "p-full"],
+        full_projection_ids=["p-full"],
+        lower_order_projection_ids=["p-base", "p-lower"],
+        candidates=candidates,
+        candidate_count=3,
+        abstract_candidate_count=3,
+        typed_identity_excluded_work_count=0,
+        source_unique_work_count=3,
+        max_review_works=20,
+    )
+
+    class OnePerRoundBackend:
+        backend_name = "test"
+        model_name = "test"
+
+        def __init__(self):
+            self.presented_ids = []
+
+        def review(self, *, candidate_set, projection_by_id):
+            del projection_by_id
+            self.presented_ids.append(
+                [row.review_work_id for row in candidate_set.candidates]
+            )
+            work_id = candidate_set.candidates[0].review_work_id
+            return ProjectionRelationClaimReviewDraft(
+                matches=[
+                    ProjectionRelationMatchDraft(
+                        work_id=work_id,
+                        relationship="UNRELATED",
+                        confidence=0.8,
+                        rationale="bounded test classification",
+                    )
+                ],
+                interpretation="bounded round",
+            )
+
+    backend = OnePerRoundBackend()
+    draft, calls = _review_claim_with_exhaustive_followup(
+        candidate_set=candidate_set,
+        projection_by_id=PROJECTIONS,
+        backend=backend,
+        max_exhaustive_rounds=3,
+    )
+
+    assert calls == 3
+    assert backend.presented_ids == [
+        ["w1", "w2", "w3"],
+        ["w2", "w3"],
+        ["w3"],
+    ]
+
+    review = compile_projection_relation_claim_review(
+        candidate_set=candidate_set,
+        draft=draft,
+        projection_by_id=PROJECTIONS,
+    )
+    assert review.classified_work_count == 3
+    assert review.unclassified_work_ids == []
+
+
+def test_exhaustive_followup_stays_fail_closed_after_round_budget():
+    from pipeline_core.discovery.projection_relation_adjudication import (
+        _review_claim_with_exhaustive_followup,
+    )
+
+    candidates = [
+        _candidate(work_id=work_id, typed_state="DOMAIN_COMPATIBLE")
+        for work_id in ("w1", "w2", "w3", "w4")
+    ]
+    candidate_set = ProjectionRelationClaimCandidateSet(
+        hypothesis_id="h1",
+        claim_id="claim:1",
+        relation_ir_id="relation:1",
+        claim_text="Full typed relation.",
+        endpoint_terms=["endpoint A", "endpoint B"],
+        identity_terms=["synthetic identity"],
+        projection_ids=["p-base", "p-lower", "p-full"],
+        full_projection_ids=["p-full"],
+        lower_order_projection_ids=["p-base", "p-lower"],
+        candidates=candidates,
+        candidate_count=4,
+        abstract_candidate_count=4,
+        typed_identity_excluded_work_count=0,
+        source_unique_work_count=4,
+        max_review_works=20,
+    )
+
+    class OnePerRoundBackend:
+        backend_name = "test"
+        model_name = "test"
+
+        def review(self, *, candidate_set, projection_by_id):
+            del projection_by_id
+            work_id = candidate_set.candidates[0].review_work_id
+            return ProjectionRelationClaimReviewDraft(
+                matches=[
+                    ProjectionRelationMatchDraft(
+                        work_id=work_id,
+                        relationship="UNRELATED",
+                        confidence=0.8,
+                        rationale="bounded test classification",
+                    )
+                ],
+                interpretation="bounded round",
+            )
+
+    draft, calls = _review_claim_with_exhaustive_followup(
+        candidate_set=candidate_set,
+        projection_by_id=PROJECTIONS,
+        backend=OnePerRoundBackend(),
+        max_exhaustive_rounds=2,
+    )
+    assert calls == 2
+
+    review = compile_projection_relation_claim_review(
+        candidate_set=candidate_set,
+        draft=draft,
+        projection_by_id=PROJECTIONS,
+    )
+    assert review.classified_work_count == 2
+    assert review.unclassified_work_ids == ["w3", "w4"]

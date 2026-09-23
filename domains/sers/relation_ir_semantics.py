@@ -33,6 +33,37 @@ _REFRACTIVE_INDEX_SENSITIVITY = (
     r"refractive\s+index\s+sensitivity"
 )
 
+# General relation-IR concept families used by typed retrieval. These rules
+# identify what a source phrase denotes; they do not establish scientific
+# truth, novelty, evidence strength, or production authority.
+#
+# Enhancement factor is materially ambiguous outside Raman/SERS usage, so it
+# requires explicit SERS/Raman/plasmonic context. The remaining phrases carry
+# their scientific role directly in the source text and do not inherit a type
+# merely because the active domain profile is SERS.
+_SERS_ENHANCEMENT_FACTOR = (
+    r"\bsers\s+enhancement[- ]factor\b|"
+    r"\bsers\s+(?:ef|aef)\b|"
+    r"\benhancement[- ]factor\b"
+)
+_MEASUREMENT_REPRODUCIBILITY = (
+    r"\bmeasurement\s+(?:reproducib\w*|repeatab\w*)\b|"
+    r"\b(?:reproducib\w*|repeatab\w*)\b|"
+    r"\brelative\s+standard\s+deviation\b|"
+    r"\brsd\b"
+)
+_NANOSTRUCTURE_DESIGN_VARIABLE = (
+    r"\bnano[- ]?structure[- ]+design[- ]+modification\b|"
+    r"\bnano[- ]?structure[- ]+"
+    r"(?:design|geometry|morphology|size|spacing|separation|"
+    r"architecture|shape)\b"
+)
+_MATERIAL_COMPOSITION_VARIABLE = (
+    r"\b(?:substrate|surface|material)\s+composition\b|"
+    r"\bcomposition\s+of\s+(?:the\s+)?"
+    r"(?:substrate|surface|material)\b"
+)
+
 
 @dataclass(frozen=True)
 class SERSRelationTypingAdapter:
@@ -72,6 +103,24 @@ class SERSRelationTypingAdapter:
             )
         ):
             labels.append("refractive_index_sensitivity")
+
+        # General concept-family typing is surface-local. Context may
+        # disambiguate an enhancement-factor phrase, but it must not make an
+        # unrelated neighboring concept inherit the same type.
+        if (
+            _has(_SERS_ENHANCEMENT_FACTOR, surface)
+            and _has(_EM_CONTEXT, joined)
+        ):
+            labels.append("sers_enhancement_metric")
+
+        if _has(_MEASUREMENT_REPRODUCIBILITY, surface):
+            labels.append("measurement_reproducibility_metric")
+
+        if _has(_NANOSTRUCTURE_DESIGN_VARIABLE, surface):
+            labels.append("nanostructure_design_variable")
+
+        if _has(_MATERIAL_COMPOSITION_VARIABLE, surface):
+            labels.append("material_composition_variable")
 
         return tuple(dict.fromkeys(labels))
 

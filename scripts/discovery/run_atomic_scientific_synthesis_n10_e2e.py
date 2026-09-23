@@ -8,7 +8,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from domains.feasibility_registry import resolve_feasibility_adapter
+from domains.feasibility_registry import resolve_optional_feasibility_adapter
 from domains.registry import get_domain_profile
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
@@ -627,7 +627,7 @@ def main() -> int:
         _run("final_semantic", semantic_cmd, [semantic_review])
 
         profile = get_domain_profile(context.domain_profile_id)
-        feasibility = resolve_feasibility_adapter(profile)
+        feasibility = resolve_optional_feasibility_adapter(profile)
         if feasibility is not None:
             feasibility_cmd = [
                 "-m",

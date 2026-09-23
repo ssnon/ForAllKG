@@ -74,6 +74,15 @@ def main() -> int:
         type=int,
         default=20,
     )
+    parser.add_argument(
+        "--max-exhaustive-rounds",
+        type=int,
+        default=3,
+        help=(
+            "Bounded total adjudication rounds per claim. Later rounds "
+            "contain only presented work IDs omitted by earlier model output."
+        ),
+    )
     parser.add_argument("--output-prefix", required=True, type=Path)
     parser.add_argument(
         "--candidates-only",
@@ -237,6 +246,7 @@ def main() -> int:
         candidate_report=candidate_report,
         projection_report=projection,
         backend=backend,
+        max_exhaustive_rounds=args.max_exhaustive_rounds,
     )
     _write(report_path, report)
 
@@ -265,6 +275,10 @@ def main() -> int:
         report.unclassified_work_count,
     )
     print("LLM calls:", report.llm_calls_performed)
+    print(
+        "Max exhaustive rounds per claim:",
+        args.max_exhaustive_rounds,
+    )
     print(
         "Direct signals:",
         report.direct_signal_work_count,

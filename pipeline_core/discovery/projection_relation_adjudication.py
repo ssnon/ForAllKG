@@ -232,7 +232,7 @@ class ProjectionRelationClaimCandidateSet(StrictModel):
     scope_terms: list[str] = Field(default_factory=list)
     directional_terms: list[str] = Field(default_factory=list)
 
-    projection_ids: list[str] = Field(min_length=1)
+    projection_ids: list[str] = Field(default_factory=list)
     full_projection_ids: list[str] = Field(default_factory=list)
     lower_order_projection_ids: list[str] = Field(default_factory=list)
 
@@ -247,6 +247,11 @@ class ProjectionRelationClaimCandidateSet(StrictModel):
 
     @model_validator(mode="after")
     def validate_counts(self) -> "ProjectionRelationClaimCandidateSet":
+        if not self.projection_ids and self.candidates:
+            raise ValueError(
+                "unprojected relation cannot carry bounded review candidates"
+            )
+
         if self.candidate_count != len(self.candidates):
             raise ValueError("candidate_count mismatch")
         if self.abstract_candidate_count != sum(
@@ -970,7 +975,19 @@ def _candidate_compatibility(
             [domain_profile.novelty.domain_mismatch_reason],
         )
 
-    if relation_type_set & document_type_set:
+    shared_relation_types = relation_type_set & document_type_set
+
+    # A shared scientific concept type is not, by itself, domain identity.
+    # Generic concepts such as measurement reproducibility, composition, or
+    # nanostructure design occur across many fields. Promote a type overlap to
+    # TYPED_COMPATIBLE only when the document also carries explicit compatible
+    # domain context. Without that context, retain the work as neighboring
+    # literature rather than spending the highest-priority in-domain review
+    # budget on it.
+    if shared_relation_types and (
+        relation_domains & document_domain_set
+        or explicit_document_compatible
+    ):
         return (
             "TYPED_COMPATIBLE",
             relation_types,
@@ -998,6 +1015,16 @@ def _candidate_compatibility(
             document_ambiguity,
             document_domains,
             reasons,
+        )
+
+    if shared_relation_types:
+        return (
+            "NEIGHBORING_SCOPE",
+            relation_types,
+            document_types,
+            document_ambiguity,
+            document_domains,
+            ["typed_concept_overlap_without_explicit_domain_compatibility"],
         )
 
     if relation_scope & document_scope_set:
@@ -1980,6 +2007,15 @@ def _downgrade(
             ["strong_relation_downgraded_for_typed_identity_conflict"],
         )
 
+    if (
+        candidate.typed_compatibility_state == "EXPLICIT_DOMAIN_MISMATCH"
+        and relationship in _STRONG_ABSTRACT_RELATIONSHIPS
+    ):
+        return (
+            "UNRELATED",
+            ["strong_relation_downgraded_for_explicit_domain_mismatch"],
+        )
+
     valid_projection_ids = [
         projection_id
         for projection_id in basis_projection_ids
@@ -2263,7 +2299,11 @@ def compile_projection_relation_claim_review(
         hypothesis_id=candidate_set.hypothesis_id,
         claim_id=candidate_set.claim_id,
         relation_ir_id=candidate_set.relation_ir_id,
-        relation_state=_relation_state(compiled),
+        relation_state=(
+            "INSUFFICIENT_METADATA"
+            if not candidate_set.projection_ids
+            else _relation_state(compiled)
+        ),
         matches=compiled,
         presented_work_count=len(candidate_set.candidates),
         classified_work_count=len(compiled),
@@ -2392,12 +2432,150 @@ def build_projection_relation_adjudication_report(
     )
 
 
+def _subset_candidate_set_for_followup(
+    candidate_set: ProjectionRelationClaimCandidateSet,
+    work_ids: list[str],
+) -> ProjectionRelationClaimCandidateSet:
+    """Build a validated prompt-only subset for omitted-work follow-up.
+
+    The original bounded candidate universe remains authoritative. This helper
+    only narrows the next LLM prompt to work IDs that were presented previously
+    but not classified by the model. No relationship is filled
+    deterministically for an omitted work.
+    """
+
+    requested = set(work_ids)
+    candidates = [
+        row
+        for row in candidate_set.candidates
+        if row.review_work_id in requested
+    ]
+    if len(candidates) != len(requested):
+        found = {row.review_work_id for row in candidates}
+        missing = sorted(requested - found)
+        raise ValueError(
+            "follow-up work IDs are absent from original candidate set: "
+            + ", ".join(missing)
+        )
+
+    body = candidate_set.model_dump(mode="python")
+    body.update(
+        {
+            "candidates": candidates,
+            "candidate_count": len(candidates),
+            "abstract_candidate_count": sum(
+                bool(row.abstract) for row in candidates
+            ),
+            "source_unique_work_count": len(
+                {
+                    source_work_id
+                    for row in candidates
+                    for source_work_id in row.source_work_ids
+                }
+            ),
+        }
+    )
+    return ProjectionRelationClaimCandidateSet.model_validate(body)
+
+
+def _review_claim_with_exhaustive_followup(
+    *,
+    candidate_set: ProjectionRelationClaimCandidateSet,
+    projection_by_id: dict[str, GroundedFactorRelationProjection],
+    backend: InstructorProjectionRelationAdjudicationBackend,
+    max_exhaustive_rounds: int,
+) -> tuple[ProjectionRelationClaimReviewDraft, int]:
+    """Re-ask only omitted presented works, bounded and fail-closed.
+
+    A model may return fewer match records than requested even though the
+    prompt requires exhaustive classification. Rather than silently mapping
+    omitted works to UNRELATED, subsequent rounds contain only the still
+    unclassified IDs. If the bounded round budget is exhausted, those works
+    remain omitted in the merged draft and therefore become explicit
+    ``unclassified_work_ids`` during deterministic compilation.
+    """
+
+    if max_exhaustive_rounds < 1:
+        raise ValueError("max_exhaustive_rounds must be >= 1")
+
+    ordered_ids = [
+        row.review_work_id for row in candidate_set.candidates
+    ]
+    allowed_ids = set(ordered_ids)
+    remaining = list(ordered_ids)
+    known_matches: dict[str, ProjectionRelationMatchDraft] = {}
+    unknown_matches: dict[str, ProjectionRelationMatchDraft] = {}
+    interpretations: list[str] = []
+    calls = 0
+
+    for _round in range(max_exhaustive_rounds):
+        if not remaining:
+            break
+
+        prompt_set = _subset_candidate_set_for_followup(
+            candidate_set,
+            remaining,
+        )
+        draft = backend.review(
+            candidate_set=prompt_set,
+            projection_by_id=projection_by_id,
+        )
+        calls += 1
+        if draft.interpretation.strip():
+            interpretations.append(draft.interpretation.strip())
+
+        round_allowed = set(remaining)
+        for match in draft.matches:
+            if match.work_id in round_allowed:
+                known_matches.setdefault(match.work_id, match)
+            elif match.work_id not in allowed_ids:
+                # Preserve first-seen hallucinated IDs for deterministic audit
+                # in compile_projection_relation_claim_review().
+                unknown_matches.setdefault(match.work_id, match)
+            # A previously classified allowed ID repeated in a later round is
+            # ignored. The first bounded classification remains authoritative.
+
+        remaining = [
+            work_id
+            for work_id in ordered_ids
+            if work_id not in known_matches
+        ]
+
+    merged_matches = [
+        known_matches[work_id]
+        for work_id in ordered_ids
+        if work_id in known_matches
+    ]
+    merged_matches.extend(
+        unknown_matches[work_id]
+        for work_id in sorted(unknown_matches)
+    )
+
+    interpretation = " | ".join(dict.fromkeys(interpretations))
+    if not interpretation:
+        interpretation = (
+            "Bounded relation adjudication returned no interpretation."
+        )
+
+    return (
+        ProjectionRelationClaimReviewDraft(
+            matches=merged_matches,
+            interpretation=interpretation,
+        ),
+        calls,
+    )
+
+
 def run_projection_relation_adjudication(
     *,
     candidate_report: ProjectionRelationCandidateReport,
     projection_report: GroundedFactorProjectionReport,
     backend: InstructorProjectionRelationAdjudicationBackend,
+    max_exhaustive_rounds: int = 3,
 ) -> ProjectionRelationAdjudicationReport:
+    if max_exhaustive_rounds < 1:
+        raise ValueError("max_exhaustive_rounds must be >= 1")
+
     projection_by_id, _projection_by_claim = _projection_maps(
         projection_report
     )
@@ -2407,21 +2585,31 @@ def run_projection_relation_adjudication(
 
     for candidate_set in candidate_report.claims:
         if not candidate_set.candidates:
+            if not candidate_set.projection_ids:
+                interpretation = (
+                    "The typed relation was not ready for grounded projection, "
+                    "so bounded relation adjudication could not be performed."
+                )
+            else:
+                interpretation = (
+                    "No bounded review candidates were available."
+                )
             drafts[candidate_set.claim_id] = (
                 ProjectionRelationClaimReviewDraft(
                     matches=[],
-                    interpretation=(
-                        "No bounded review candidates were available."
-                    ),
+                    interpretation=interpretation,
                 )
             )
             continue
 
-        drafts[candidate_set.claim_id] = backend.review(
+        draft, claim_calls = _review_claim_with_exhaustive_followup(
             candidate_set=candidate_set,
             projection_by_id=projection_by_id,
+            backend=backend,
+            max_exhaustive_rounds=max_exhaustive_rounds,
         )
-        calls += 1
+        drafts[candidate_set.claim_id] = draft
+        calls += claim_calls
 
     return build_projection_relation_adjudication_report(
         candidate_report=candidate_report,

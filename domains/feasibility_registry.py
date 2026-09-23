@@ -52,6 +52,19 @@ def resolve_feasibility_adapter(
     return adapter
 
 
+def resolve_optional_feasibility_adapter(
+    profile: ScientificDomainProfile,
+) -> FeasibilityDomainAdapter | None:
+    """Resolve an explicitly declared domain feasibility capability.
+
+    Absence is a valid multidomain state. If a profile declares an adapter,
+    resolution remains strict so unknown or cross-domain adapters still fail.
+    """
+    if not (profile.feasibility_adapter_id or "").strip():
+        return None
+    return resolve_feasibility_adapter(profile)
+
+
 def get_feasibility_adapter(
     profile_id: str,
 ) -> FeasibilityDomainAdapter:

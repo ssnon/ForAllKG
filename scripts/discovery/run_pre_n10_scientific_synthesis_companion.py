@@ -78,6 +78,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--api-key-env", default="OPENAI_API_KEY")
     parser.add_argument("--save-prompts", action="store_true")
     parser.add_argument("--telemetry", default=None)
+    parser.add_argument(
+        "--candidate-contract-only",
+        action="store_true",
+        help=(
+            "Stop after materializing the production-facing candidate contract. "
+            "This is intended for prospective atomic synthesis wrappers and does "
+            "not run the older cross-lane synthesis/projection path."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -112,6 +121,7 @@ def main() -> int:
         "source_alpha6_portfolio": str(alpha6),
         "source_alpha6_hypothesis_count": len(alpha6_portfolio.hypotheses),
         "legacy_final_survivor_count_is_not_a_precondition": True,
+        "candidate_contract_only": bool(args.candidate_contract_only),
         "production_selection_changed": False,
         "canonical_graph_mutated": False,
         "n10_authority_created": False,
@@ -249,9 +259,18 @@ def main() -> int:
         ("reasoning_portfolio", reasoning_cmd, [reasoning]),
         ("pre_n10_cross_lane", cross_lane_cmd, [cross_lane]),
         ("pre_n10_candidate_contract", candidate_cmd, [candidates]),
-        ("pre_n10_cross_lane_synthesis", synthesis_cmd, [synthesis]),
-        ("synthesis_n10_projection", projection_cmd, [projected, projected_lineage]),
     ]
+    if not args.candidate_contract_only:
+        commands.extend(
+            [
+                ("pre_n10_cross_lane_synthesis", synthesis_cmd, [synthesis]),
+                (
+                    "synthesis_n10_projection",
+                    projection_cmd,
+                    [projected, projected_lineage],
+                ),
+            ]
+        )
     manifest["planned_stages"] = [
         {"name": name, "argv": argv}
         for name, argv, _ in commands
@@ -262,6 +281,7 @@ def main() -> int:
     print("Alpha6 hypotheses:", len(alpha6_portfolio.hypotheses))
     print("Legacy final survivor count is a precondition: false")
     print("Max possible LLM calls before abstention: 3")
+    print("Candidate-contract-only:", args.candidate_contract_only)
     print("N10 authority created: false")
     print("Production selection changed: false")
 
@@ -300,6 +320,25 @@ def main() -> int:
         _run("reasoning_portfolio", reasoning_cmd, [reasoning])
         _run("pre_n10_cross_lane", cross_lane_cmd, [cross_lane])
         _run("pre_n10_candidate_contract", candidate_cmd, [candidates])
+        if args.candidate_contract_only:
+            candidate_payload = _load(candidates)
+            candidate_rows = candidate_payload.get("candidates", [])
+            manifest["candidate_count"] = (
+                len(candidate_rows) if isinstance(candidate_rows, list) else 0
+            )
+            manifest["candidate_portfolio"] = str(candidates)
+            manifest["status"] = "complete_candidate_contract_only"
+            manifest["finished_at_utc"] = _now()
+            manifest["execution_performed"] = True
+            _write(manifest_path, manifest)
+            print()
+            print("Pre-N10 candidate contract complete")
+            print("Candidates:", manifest["candidate_count"])
+            print("N10 authority created: false")
+            print("Production selection changed: false")
+            print("Portfolio:", candidates)
+            print("Manifest:", manifest_path)
+            return 0
         _run("pre_n10_cross_lane_synthesis", synthesis_cmd, [synthesis])
         _run(
             "synthesis_n10_projection",

@@ -113,3 +113,20 @@ def test_model_authored_relation_nucleus_terms_are_forbidden():
         assert "relation_nucleus_terms" in str(exc)
     else:
         raise AssertionError("expected extra relation_nucleus_terms rejection")
+
+
+def test_response_model_validation_surfaces_text_contract_for_retry():
+    payload = _draft().model_dump(mode="json")
+    payload["text"] = (
+        "Accessible hotspot stability controls different calibration transfer error."
+    )
+    payload["directional_qualifier_spans"] = ["different"]
+    try:
+        AtomicSpecificationDraft.model_validate(payload)
+    except Exception as exc:
+        assert (
+            "directional_qualifier_spans phrase absent from required_bridge: different"
+            in str(exc)
+        )
+    else:
+        raise AssertionError("expected response-model text-contract rejection")

@@ -18,6 +18,12 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+RelationIRSourceContract = Literal[
+    "atomic-cross-lane-scientific-synthesis-report-v1",
+    "relational-atomic-projection-report-v1",
+]
+
+
 ConceptRole = Literal[
     "RELATION_ENDPOINT",
     "BRANCH_IDENTITY",
@@ -220,9 +226,9 @@ class ScientificRelationIR(StrictModel):
     typing_status: RelationTypingStatus
     reason_codes: list[str] = Field(default_factory=list)
 
-    source_contract: Literal[
+    source_contract: RelationIRSourceContract = (
         "atomic-cross-lane-scientific-synthesis-report-v1"
-    ] = "atomic-cross-lane-scientific-synthesis-report-v1"
+    )
     source_exact_spans_only: Literal[True] = True
 
     scientific_truth_authority: Literal[False] = False
@@ -254,6 +260,9 @@ class ScientificRelationIRReport(StrictModel):
 
     report_id: str
     source_atomic_report_id: str
+    source_contract: RelationIRSourceContract = (
+        "atomic-cross-lane-scientific-synthesis-report-v1"
+    )
     domain_profile_id: str
     typing_adapter_id: str
     relations: list[ScientificRelationIR]
@@ -397,6 +406,9 @@ def compile_atomic_specification_relation_ir(
     spec: CompiledAtomicSpecification,
     domain_profile: ScientificDomainProfile,
     typing_adapter: RelationTypingAdapter,
+    source_contract: RelationIRSourceContract = (
+        "atomic-cross-lane-scientific-synthesis-report-v1"
+    ),
 ) -> ScientificRelationIR:
     relation_context = " ".join(
         value
@@ -590,6 +602,7 @@ def compile_atomic_specification_relation_ir(
         ),
         typing_status=status,
         reason_codes=list(dict.fromkeys(reasons)),
+        source_contract=source_contract,
     )
 
 
@@ -626,6 +639,7 @@ def compile_atomic_report_relation_ir(
             *[row.relation_ir_id for row in relations],
         ),
         source_atomic_report_id=report.report_id,
+        source_contract="atomic-cross-lane-scientific-synthesis-report-v1",
         domain_profile_id=domain_profile.profile_id,
         typing_adapter_id=adapter.adapter_id,
         relations=relations,
@@ -745,6 +759,7 @@ def assess_relation_document_compatibility(
 __all__ = [
     "NullRelationTypingAdapter",
     "RelationDocumentCompatibility",
+    "RelationIRSourceContract",
     "RelationTypingAdapter",
     "ScientificConceptIR",
     "ScientificRelationIR",

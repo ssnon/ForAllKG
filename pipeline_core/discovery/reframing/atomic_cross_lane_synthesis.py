@@ -113,6 +113,14 @@ class AtomicSpecificationDraft(StrictModel):
                 raise ValueError(f"{label} must be unique")
         return self
 
+    @model_validator(mode="after")
+    def validate_text_contract_for_structured_retry(self) -> "AtomicSpecificationDraft":
+        # Keep the compiler fail-closed check below, but surface the same
+        # deterministic model-authored text contract here so Instructor can
+        # repair schema-valid-but-contract-invalid drafts within parse retries.
+        _validate_atomic_text_contract(self)
+        return self
+
 
 class AtomicCrossLaneHypothesisDraft(StrictModel):
     local_id: str = Field(min_length=1)
@@ -358,6 +366,9 @@ For each synthesized hypothesis, emit 1-4 ATOMIC scientific specifications at th
 
 Hard constraints:
 - Each hypothesis must cite at least one RELATIONAL_DISCOVERY candidate and at least one SCIENTIFIC_REFRAMING candidate.
+- Each synthesized hypothesis must include at least one atomic specification with novelty_selection_role exactly "NOVELTY_BEARING".
+- Use NOVELTY_BEARING only for a source-bounded differentiating scientific relation that downstream N9/N10 should evaluate for novelty; TESTING_PREDICTION alone is not sufficient.
+- If no source-bounded NOVELTY_BEARING relation is justified, abstain rather than emitting a hypothesis whose specifications are all enabling, testing, or auxiliary.
 - Use candidate_ref aliases exactly. Do not invent canonical IDs.
 - premise_statement_ids and gap_statement_ids must come only from cited candidates.
 - Every atomic specification must cite source_candidate_ids that are a subset of its parent synthesis source candidates.
