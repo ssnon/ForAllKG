@@ -149,6 +149,10 @@ def _compile(
 
 def test_direct_prior_art_requires_full_projection_and_exact_abstract_span():
     candidate = _candidate()
+    candidate.endpoint_supported_count = 2
+    candidate.all_endpoints_supported = True
+    candidate.relation_anchor_tier = "PAIR_OR_MULTI_ENDPOINT_ANCHORED"
+
     review = _compile(
         candidate,
         ProjectionRelationMatchDraft(
@@ -166,6 +170,37 @@ def test_direct_prior_art_requires_full_projection_and_exact_abstract_span():
     assert review.direct_prior_art_work_ids == ["w1"]
     assert review.matches[0].relationship == "DIRECT_PRIOR_ART"
     assert review.relation_state == "DIRECT_RELATION_FOUND"
+
+
+def test_direct_prior_art_requires_pair_or_multi_endpoint_anchor():
+    candidate = _candidate()
+    candidate.endpoint_supported_count = 1
+    candidate.all_endpoints_supported = False
+    candidate.relation_anchor_tier = "PARTIAL_ENDPOINT_ANCHORED"
+
+    review = _compile(
+        candidate,
+        ProjectionRelationMatchDraft(
+            work_id="w1",
+            relationship="DIRECT_PRIOR_ART",
+            confidence=0.9,
+            basis_projection_ids=["p-full"],
+            evidence_span=(
+                "Endpoint A is directly associated with endpoint B"
+            ),
+            rationale=(
+                "model proposed direct prior art despite only one "
+                "deterministically supported endpoint"
+            ),
+        ),
+    )
+
+    assert review.direct_prior_art_work_ids == []
+    assert review.matches[0].relationship == "PARTIAL_PRIOR_ART"
+    assert (
+        "direct_prior_art_requires_pair_or_multi_endpoint_anchor"
+        in review.matches[0].deterministic_reason_codes
+    )
 
 
 def test_strong_relation_without_exact_abstract_span_fails_closed():

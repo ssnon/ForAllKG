@@ -2033,6 +2033,19 @@ def _downgrade(
                 "direct_prior_art_requires_full_projection_basis"
             )
         elif (
+            not candidate.all_endpoints_supported
+            or candidate.relation_anchor_tier
+            != "PAIR_OR_MULTI_ENDPOINT_ANCHORED"
+        ):
+            compiled = (
+                "PARTIAL_PRIOR_ART"
+                if candidate.endpoint_supported_count > 0
+                else "COMPONENT_ONLY"
+            )
+            reasons.append(
+                "direct_prior_art_requires_pair_or_multi_endpoint_anchor"
+            )
+        elif (
             candidate.typed_compatibility_state
             not in {
                 "COMPATIBLE",
