@@ -10,6 +10,8 @@ from pathlib import Path
 
 from pipeline_core.discovery.prospective_relational_campaign import (
     ProspectiveCampaignStageRecord,
+    ProspectiveRelationalCampaignLaunch,
+    ProspectiveRelationalCaseResult,
     build_campaign_launch,
     build_campaign_result,
     build_case_result,
@@ -17,6 +19,9 @@ from pipeline_core.discovery.prospective_relational_campaign import (
 from pipeline_core.discovery.prospective_relational_execution_plan import (
     ProspectiveRelationalExecutionPlan,
     ProspectiveRelationalHypothesisSelection,
+)
+from pipeline_core.discovery.relational_atomic_binding_plan import (
+    RelationalAtomicBindingPlan,
 )
 from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     RelationalAtomicEndpointBindingReport,
@@ -185,6 +190,204 @@ def _setup_pinned_worktree(
         raise ValueError("pinned scientific worktree is dirty")
 
 
+def _expected_binding_plan_argv(case) -> list[str]:
+    return [
+        sys.executable,
+        "-m",
+        "scripts.discovery.build_relational_atomic_binding_plan",
+        "--run-dir",
+        str(Path(case.run_dir)),
+        "--output",
+        case.full_binding_plan_path,
+    ]
+
+
+def _expected_selection_argv(case) -> list[str]:
+    return [
+        sys.executable,
+        "-m",
+        "scripts.discovery.select_prospective_relational_binding_plan",
+        "--plan",
+        case.full_binding_plan_path,
+        "--selection-output",
+        case.selection_report_path,
+        "--selected-plan-output",
+        case.selected_binding_plan_path,
+    ]
+
+
+def _expected_endpoint_argv(
+    case,
+    plan: ProspectiveRelationalExecutionPlan,
+) -> list[str]:
+    return [
+        sys.executable,
+        "-m",
+        "scripts.discovery.run_relational_atomic_endpoint_binding",
+        "--plan",
+        case.selected_binding_plan_path,
+        "--output",
+        case.endpoint_binding_report_path,
+        "--prompt-output",
+        case.endpoint_binding_prompt_path,
+        "--model",
+        case.critic_model,
+        "--base-url",
+        plan.settings.base_url,
+        "--api-key-env",
+        plan.settings.api_key_env,
+        "--temperature",
+        str(plan.settings.endpoint_temperature),
+        "--parse-retries",
+        str(plan.settings.endpoint_parse_retries),
+        "--timeout",
+        str(plan.settings.endpoint_timeout_seconds),
+        "--telemetry",
+        case.endpoint_binding_telemetry_path,
+    ]
+
+
+def _stage_from_existing_log(
+    *,
+    stage_name: str,
+    argv: list[str],
+    log_path: Path,
+) -> ProspectiveCampaignStageRecord:
+    if not log_path.is_file():
+        raise ValueError(
+            "resume requires existing completed-stage log: " + str(log_path)
+        )
+    return ProspectiveCampaignStageRecord(
+        stage_name=stage_name,
+        argv=argv,
+        return_code=0,
+        log_path=str(log_path),
+    )
+
+
+def _recover_endpoint_abstention_result(
+    *,
+    case,
+    plan: ProspectiveRelationalExecutionPlan,
+    logs_dir: Path,
+    result_path: Path,
+) -> ProspectiveRelationalCaseResult | None:
+    run_dir = Path(case.run_dir)
+    main_manifest = run_dir / "e2e_runner.manifest.json"
+    full_plan_path = Path(case.full_binding_plan_path)
+    selection_path = Path(case.selection_report_path)
+    selected_plan_path = Path(case.selected_binding_plan_path)
+    endpoint_path = Path(case.endpoint_binding_report_path)
+
+    required = (
+        main_manifest,
+        full_plan_path,
+        selection_path,
+        selected_plan_path,
+        endpoint_path,
+    )
+    if not all(path.is_file() for path in required):
+        return None
+
+    main_status = _main_manifest_status(run_dir)
+    if main_status != "complete":
+        raise ValueError(
+            "resume found endpoint artifacts but main E2E manifest "
+            "is not complete"
+        )
+
+    full_plan = RelationalAtomicBindingPlan.model_validate_json(
+        full_plan_path.read_text(encoding="utf-8")
+    )
+    selection = ProspectiveRelationalHypothesisSelection.model_validate_json(
+        selection_path.read_text(encoding="utf-8")
+    )
+    selected_plan = RelationalAtomicBindingPlan.model_validate_json(
+        selected_plan_path.read_text(encoding="utf-8")
+    )
+    endpoint = RelationalAtomicEndpointBindingReport.model_validate_json(
+        endpoint_path.read_text(encoding="utf-8")
+    )
+
+    if selection.source_binding_plan_id != full_plan.plan_id:
+        raise ValueError("resume selection/full binding-plan ID mismatch")
+    if selection.source_binding_plan_sha256 != full_plan.plan_sha256:
+        raise ValueError("resume selection/full binding-plan SHA mismatch")
+    if selection.status != "SELECTED_BINDING_READY_HYPOTHESIS":
+        return None
+    if selection.selected_binding_plan_id != selected_plan.plan_id:
+        raise ValueError("resume selected binding-plan ID mismatch")
+    if selection.selected_binding_plan_sha256 != selected_plan.plan_sha256:
+        raise ValueError("resume selected binding-plan SHA mismatch")
+    if endpoint.source_binding_plan_id != selected_plan.plan_id:
+        raise ValueError("resume endpoint/selected-plan ID mismatch")
+    if endpoint.source_binding_plan_sha256 != selected_plan.plan_sha256:
+        raise ValueError("resume endpoint/selected-plan SHA mismatch")
+    if endpoint.novelty_bearing_bound_claim_count >= 1:
+        return None
+
+    case_logs = logs_dir / case.case_id
+    main_command = list(case.main_e2e_argv)
+    if main_command and main_command[0] == "python":
+        main_command[0] = sys.executable
+
+    stages = [
+        _stage_from_existing_log(
+            stage_name=case.case_id + ":main_e2e",
+            argv=main_command,
+            log_path=case_logs / "01_main_e2e.log",
+        ),
+        _stage_from_existing_log(
+            stage_name=case.case_id + ":build_binding_plan",
+            argv=_expected_binding_plan_argv(case),
+            log_path=case_logs / "02_build_binding_plan.log",
+        ),
+        _stage_from_existing_log(
+            stage_name=case.case_id + ":structural_selection",
+            argv=_expected_selection_argv(case),
+            log_path=case_logs / "03_structural_selection.log",
+        ),
+        _stage_from_existing_log(
+            stage_name=case.case_id + ":endpoint_binding",
+            argv=_expected_endpoint_argv(case, plan),
+            log_path=case_logs / "04_endpoint_binding.log",
+        ),
+    ]
+
+    result = build_case_result(
+        case_id=case.case_id,
+        source_task_id=case.source_task_id,
+        execution_plan_id=plan.plan_id,
+        scientific_repository_head_sha=(
+            plan.execution_plan_repository_head_sha
+        ),
+        disposition="ENDPOINT_BINDING_ABSTAINED",
+        stage_records=[row.model_dump(mode="json") for row in stages],
+        main_e2e_manifest_status=main_status,
+        selected_final_hypothesis_id=selection.selected_final_hypothesis_id,
+        selected_candidate_hypothesis_id=(
+            selection.selected_candidate_hypothesis_id
+        ),
+        selected_original_hypothesis_id=(
+            selection.selected_original_hypothesis_id
+        ),
+        endpoint_selected_claim_count=endpoint.selected_claim_count,
+        endpoint_bound_claim_count=endpoint.bound_claim_count,
+        endpoint_abstained_claim_count=endpoint.abstained_claim_count,
+        endpoint_novelty_bearing_bound_claim_count=(
+            endpoint.novelty_bearing_bound_claim_count
+        ),
+    )
+    write_json_exclusive(result_path, result)
+    print(
+        "Recovered existing case without scientific re-execution:",
+        case.case_id,
+    )
+    print("Case disposition:", result.disposition)
+    print("Case result:", result_path)
+    return result
+
+
 def _result_and_write(
     *,
     result_path: Path,
@@ -232,6 +435,14 @@ def main() -> int:
         default=Path.cwd(),
         type=Path,
     )
+    parser.add_argument(
+        "--resume-existing-campaign",
+        action="store_true",
+        help=(
+            "Resume a previously launched campaign without re-running "
+            "completed scientific stages."
+        ),
+    )
     args = parser.parse_args()
 
     plan_path = args.execution_plan.expanduser().resolve()
@@ -258,8 +469,6 @@ def main() -> int:
         plan.execution_plan_repository_head_sha,
         launcher_head,
     )
-    _ensure_case_dirs_fresh(plan)
-
     launch_path = campaign_root / "P06_P10.campaign_launch.json"
     final_path = campaign_root / "P06_P10.campaign_result.json"
     logs_dir = campaign_root / "P06_P10.logs"
@@ -268,30 +477,72 @@ def main() -> int:
         "_frozen_code_" + plan.execution_plan_repository_head_sha[:12]
     )
 
-    for reserved in (launch_path, final_path, logs_dir, results_dir, worktree_path):
-        if reserved.exists():
+    if final_path.exists():
+        raise ValueError(
+            "prospective campaign final result already exists: "
+            + str(final_path)
+        )
+
+    if args.resume_existing_campaign:
+        if not launch_path.is_file():
             raise ValueError(
-                "prospective campaign reserved path already exists: "
-                + str(reserved)
+                "resume requested but campaign launch artifact is missing"
             )
+        launch = ProspectiveRelationalCampaignLaunch.model_validate_json(
+            launch_path.read_text(encoding="utf-8")
+        )
+        if launch.execution_plan_id != plan.plan_id:
+            raise ValueError("resume launch/execution-plan ID mismatch")
+        if launch.execution_plan_sha256 != plan.plan_sha256:
+            raise ValueError("resume launch/execution-plan SHA mismatch")
+        if launch.execution_plan_file_sha256 != _sha256_file(plan_path):
+            raise ValueError("resume execution-plan file SHA mismatch")
+        if (
+            launch.scientific_repository_head_sha
+            != plan.execution_plan_repository_head_sha
+        ):
+            raise ValueError("resume scientific repository HEAD mismatch")
+        if Path(launch.pinned_worktree_path).resolve() != worktree_path:
+            raise ValueError("resume pinned-worktree path mismatch")
+        if not worktree_path.is_dir():
+            raise ValueError("resume pinned scientific worktree is missing")
+        if _git_head(worktree_path) != plan.execution_plan_repository_head_sha:
+            raise ValueError("resume pinned scientific worktree HEAD mismatch")
+        if _tracked_dirty(worktree_path):
+            raise ValueError("resume pinned scientific worktree is dirty")
+        _require_ancestor(launch.launcher_repository_head_sha, launcher_head)
+    else:
+        _ensure_case_dirs_fresh(plan)
+        for reserved in (
+            launch_path,
+            final_path,
+            logs_dir,
+            results_dir,
+            worktree_path,
+        ):
+            if reserved.exists():
+                raise ValueError(
+                    "prospective campaign reserved path already exists: "
+                    + str(reserved)
+                )
 
-    _setup_pinned_worktree(
-        repository_root=repository_root,
-        worktree_path=worktree_path,
-        scientific_head=plan.execution_plan_repository_head_sha,
-    )
+        _setup_pinned_worktree(
+            repository_root=repository_root,
+            worktree_path=worktree_path,
+            scientific_head=plan.execution_plan_repository_head_sha,
+        )
 
-    launch = build_campaign_launch(
-        execution_plan_id=plan.plan_id,
-        execution_plan_sha256=plan.plan_sha256,
-        execution_plan_file_sha256=_sha256_file(plan_path),
-        launcher_repository_head_sha=launcher_head,
-        scientific_repository_head_sha=(
-            plan.execution_plan_repository_head_sha
-        ),
-        pinned_worktree_path=str(worktree_path),
-    )
-    write_json_exclusive(launch_path, launch)
+        launch = build_campaign_launch(
+            execution_plan_id=plan.plan_id,
+            execution_plan_sha256=plan.plan_sha256,
+            execution_plan_file_sha256=_sha256_file(plan_path),
+            launcher_repository_head_sha=launcher_head,
+            scientific_repository_head_sha=(
+                plan.execution_plan_repository_head_sha
+            ),
+            pinned_worktree_path=str(worktree_path),
+        )
+        write_json_exclusive(launch_path, launch)
 
     results = []
     for case in plan.cases:
@@ -304,6 +555,41 @@ def main() -> int:
         case_log_dir = logs_dir / case.case_id
         result_path = results_dir / (case.case_id + ".json")
         stages: list[ProspectiveCampaignStageRecord] = []
+
+        if result_path.is_file():
+            if not args.resume_existing_campaign:
+                raise ValueError(
+                    "case result unexpectedly exists: " + str(result_path)
+                )
+            existing = ProspectiveRelationalCaseResult.model_validate_json(
+                result_path.read_text(encoding="utf-8")
+            )
+            if existing.case_id != case.case_id:
+                raise ValueError("resume case-result case ID mismatch")
+            if existing.execution_plan_id != plan.plan_id:
+                raise ValueError(
+                    "resume case-result execution-plan mismatch"
+                )
+            results.append(existing)
+            print("Reusing immutable case result:", result_path)
+            continue
+
+        if args.resume_existing_campaign:
+            recovered = _recover_endpoint_abstention_result(
+                case=case,
+                plan=plan,
+                logs_dir=logs_dir,
+                result_path=result_path,
+            )
+            if recovered is not None:
+                results.append(recovered)
+                continue
+            run_path = Path(case.run_dir)
+            if run_path.exists() and any(run_path.iterdir()):
+                raise ValueError(
+                    "resume found non-fresh case without a recognized "
+                    "immutable recovery state: " + str(run_path)
+                )
 
         main = _run_stage(
             stage_name=case.case_id + ":main_e2e",

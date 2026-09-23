@@ -115,6 +115,43 @@ def test_case_result_preserves_failure_without_replacement() -> None:
     assert row.settings_adapted_after_previous_case is False
 
 
+def test_sparse_case_result_hash_includes_optional_defaults() -> None:
+    row = build_case_result(
+        case_id="P06",
+        source_task_id="task:P06",
+        execution_plan_id="execution:1",
+        scientific_repository_head_sha="d" * 40,
+        disposition="ENDPOINT_BINDING_ABSTAINED",
+        stage_records=[],
+        main_e2e_manifest_status="complete",
+        selected_final_hypothesis_id="final:P06",
+        selected_candidate_hypothesis_id="candidate:P06",
+        selected_original_hypothesis_id="original:P06",
+        endpoint_selected_claim_count=1,
+        endpoint_bound_claim_count=0,
+        endpoint_abstained_claim_count=1,
+        endpoint_novelty_bearing_bound_claim_count=0,
+    )
+    assert row.disposition == "ENDPOINT_BINDING_ABSTAINED"
+    assert row.verifier_manifest_id is None
+    assert row.certification_decision is None
+
+
+def test_sparse_early_failure_case_result_hash_is_valid() -> None:
+    row = build_case_result(
+        case_id="P07",
+        source_task_id="task:P07",
+        execution_plan_id="execution:1",
+        scientific_repository_head_sha="d" * 40,
+        disposition="MAIN_E2E_STAGE_FAILED",
+        stage_records=[],
+        main_e2e_manifest_status="failed",
+    )
+    assert row.disposition == "MAIN_E2E_STAGE_FAILED"
+    assert row.selected_final_hypothesis_id is None
+    assert row.endpoint_selected_claim_count is None
+
+
 def test_verifier_complete_requires_complete_outcome() -> None:
     with pytest.raises(
         ValidationError,

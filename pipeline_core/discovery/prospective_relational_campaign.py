@@ -255,9 +255,68 @@ def build_campaign_launch(
 def build_case_result(
     **kwargs: object,
 ) -> ProspectiveRelationalCaseResult:
+    allowed = {
+        "case_id",
+        "source_task_id",
+        "execution_plan_id",
+        "scientific_repository_head_sha",
+        "disposition",
+        "stage_records",
+        "main_e2e_manifest_status",
+        "selected_final_hypothesis_id",
+        "selected_candidate_hypothesis_id",
+        "selected_original_hypothesis_id",
+        "endpoint_selected_claim_count",
+        "endpoint_bound_claim_count",
+        "endpoint_abstained_claim_count",
+        "endpoint_novelty_bearing_bound_claim_count",
+        "verifier_manifest_id",
+        "certification_decision",
+        "bounded_closure_state",
+        "bounded_external_distinctness_state",
+        "positive_nonobviousness_authority_state",
+        "fatal_blocker_state",
+    }
+    unexpected = sorted(set(kwargs) - allowed)
+    if unexpected:
+        raise ValueError(
+            "unexpected prospective case-result fields: "
+            + repr(unexpected)
+        )
+
     body = {
         "schema_version": "prospective-relational-case-result-v1",
-        **kwargs,
+        "case_id": kwargs["case_id"],
+        "source_task_id": kwargs["source_task_id"],
+        "execution_plan_id": kwargs["execution_plan_id"],
+        "scientific_repository_head_sha":
+            kwargs["scientific_repository_head_sha"],
+        "disposition": kwargs["disposition"],
+        "stage_records": kwargs["stage_records"],
+        "main_e2e_manifest_status":
+            kwargs.get("main_e2e_manifest_status"),
+        "selected_final_hypothesis_id":
+            kwargs.get("selected_final_hypothesis_id"),
+        "selected_candidate_hypothesis_id":
+            kwargs.get("selected_candidate_hypothesis_id"),
+        "selected_original_hypothesis_id":
+            kwargs.get("selected_original_hypothesis_id"),
+        "endpoint_selected_claim_count":
+            kwargs.get("endpoint_selected_claim_count"),
+        "endpoint_bound_claim_count":
+            kwargs.get("endpoint_bound_claim_count"),
+        "endpoint_abstained_claim_count":
+            kwargs.get("endpoint_abstained_claim_count"),
+        "endpoint_novelty_bearing_bound_claim_count":
+            kwargs.get("endpoint_novelty_bearing_bound_claim_count"),
+        "verifier_manifest_id": kwargs.get("verifier_manifest_id"),
+        "certification_decision": kwargs.get("certification_decision"),
+        "bounded_closure_state": kwargs.get("bounded_closure_state"),
+        "bounded_external_distinctness_state":
+            kwargs.get("bounded_external_distinctness_state"),
+        "positive_nonobviousness_authority_state":
+            kwargs.get("positive_nonobviousness_authority_state"),
+        "fatal_blocker_state": kwargs.get("fatal_blocker_state"),
         "case_replaced": False,
         "settings_adapted_after_previous_case": False,
         "endpoint_outcome_used_for_hypothesis_selection": False,
