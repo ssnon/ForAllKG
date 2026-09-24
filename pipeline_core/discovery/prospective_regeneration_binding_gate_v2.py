@@ -17,6 +17,9 @@ from pipeline_core.discovery.prospective_regeneration_downstream_n10_v2 import (
     ProspectiveRegenerationExternalN10ReportV2,
     RegenerationNoveltyCertificationReportV2,
 )
+from pipeline_core.discovery.prospective_regeneration_downstream_semantic_v2 import (
+    ProspectiveRegenerationDownstreamSemanticReportV2,
+)
 from pipeline_core.discovery.relational_atomic_binding_plan import (
     HypothesisBindingStatus,
     RelationalAtomicBindingHypothesisPlan,
@@ -92,10 +95,14 @@ class RegenerationBindingCompatibilityManifestV2(StrictModel):
 class RegenerationReachabilityLineageV2(StrictModel):
     source_final_hypothesis_id: str
     regenerated_hypothesis_id: str
+    semantic_status: str
+    external_n10_evaluated: bool
+    gate_evaluated: bool
     n10_certification_status: str
     n10_selection_class: str
     gate_ready: bool
     novelty_bearing_gate_ready_claim_ids: list[str] = Field(default_factory=list)
+    terminal_reason: str | None = None
 
 
 class RegenerationReachabilityComparisonV2(StrictModel):
@@ -105,6 +112,8 @@ class RegenerationReachabilityComparisonV2(StrictModel):
     report_id: str
     report_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     case_id: Literal["P16", "P17", "P18", "P19", "P20"]
+    source_semantic_report_id: str
+    source_semantic_report_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     source_external_n10_report_id: str
     source_binding_plan_id: str
     source_gate_report_id: str
@@ -112,9 +121,12 @@ class RegenerationReachabilityComparisonV2(StrictModel):
     initial_gate_ready_hypothesis_count: int = Field(ge=0)
     primary_gate_ready_hypothesis_count: int = Field(ge=0)
     regenerated_gate_ready_hypothesis_count: int = Field(ge=0)
+    gate_evaluated_lineage_count: int = Field(ge=0)
+    semantic_terminal_lineage_count: int = Field(ge=0)
     n10_certified_count: int = Field(ge=0)
     n10_unresolved_count: int = Field(ge=0)
     n10_rejected_count: int = Field(ge=0)
+    n10_not_evaluated_due_semantic_terminal_count: int = Field(ge=0)
     lineages: list[RegenerationReachabilityLineageV2]
     endpoint_binding_performed: Literal[False] = False
     verifier_performed: Literal[False] = False
@@ -128,6 +140,33 @@ class RegenerationReachabilityComparisonV2(StrictModel):
             raise ValueError("lineage_count mismatch")
         if self.regenerated_gate_ready_hypothesis_count != sum(x.gate_ready for x in self.lineages):
             raise ValueError("regenerated gate-ready count mismatch")
+        if self.gate_evaluated_lineage_count != sum(
+            x.gate_evaluated for x in self.lineages
+        ):
+            raise ValueError("gate-evaluated lineage count mismatch")
+        if self.semantic_terminal_lineage_count != sum(
+            not x.external_n10_evaluated for x in self.lineages
+        ):
+            raise ValueError("semantic-terminal lineage count mismatch")
+        if self.n10_not_evaluated_due_semantic_terminal_count != (
+            self.semantic_terminal_lineage_count
+        ):
+            raise ValueError("semantic-terminal N10 count mismatch")
+        if (
+            self.n10_certified_count
+            + self.n10_unresolved_count
+            + self.n10_rejected_count
+            + self.n10_not_evaluated_due_semantic_terminal_count
+            != self.lineage_count
+        ):
+            raise ValueError(
+                "N10 accounting does not cover all regenerated lineages"
+            )
+        if any(
+            row.gate_ready and not row.gate_evaluated
+            for row in self.lineages
+        ):
+            raise ValueError("non-evaluated lineage cannot be gate-ready")
         body = self.model_dump(mode="json")
         observed_id = body.pop("report_id")
         observed_sha = body.pop("report_sha256")
@@ -352,6 +391,7 @@ def build_regeneration_relational_atomic_binding_plan_v2(
 def build_reachability_comparison_v2(
     *,
     case_id: str,
+    semantic_report: ProspectiveRegenerationDownstreamSemanticReportV2,
     external_n10: ProspectiveRegenerationExternalN10ReportV2,
     binding_plan: RelationalAtomicBindingPlan,
     initial_gate: PreVerifierContractGateV2Report,
@@ -360,40 +400,138 @@ def build_reachability_comparison_v2(
 ) -> RegenerationReachabilityComparisonV2:
     if case_id != external_n10.case_id:
         raise ValueError("case/external-N10 mismatch")
+    if case_id != semantic_report.case_id:
+        raise ValueError("case/semantic-report mismatch")
+    if external_n10.source_semantic_report_id != semantic_report.report_id:
+        raise ValueError("external-N10/semantic report ID mismatch")
+    if (
+        external_n10.source_semantic_report_sha256
+        != semantic_report.report_sha256
+    ):
+        raise ValueError("external-N10/semantic report SHA mismatch")
+
     regenerated_ready = gate_ready_hypothesis_ids(regenerated_gate)
-    rows = []
-    for lineage in external_n10.lineages:
-        claim_ids = [
-            x.claim_id
-            for x in regenerated_gate.rows
-            if x.final_hypothesis_id == lineage.regenerated_hypothesis_id
-            and x.gate_status == "READY_FOR_LITERAL_ENDPOINT_BINDING"
-            and x.novelty_selection_role == "NOVELTY_BEARING"
-        ]
+    external_by_source = {
+        row.source_final_hypothesis_id: row
+        for row in external_n10.lineages
+    }
+    expected_external_sources = {
+        row.source_final_hypothesis_id
+        for row in semantic_report.lineages
+        if row.eligible_for_external_novelty
+    }
+    if set(external_by_source) != expected_external_sources:
+        raise ValueError(
+            "external-N10 population differs from semantic eligibility"
+        )
+
+    rows: list[RegenerationReachabilityLineageV2] = []
+    for semantic_row in semantic_report.lineages:
+        portfolio_path = Path(
+            semantic_row.regenerated_portfolio_path
+        ).expanduser().resolve()
+        portfolio = HypothesisPortfolio.model_validate_json(
+            portfolio_path.read_text(encoding="utf-8")
+        )
+        if len(portfolio.hypotheses) != 1:
+            raise ValueError(
+                "semantic regeneration lineage must resolve exactly one "
+                "hypothesis"
+            )
+        regenerated_id = portfolio.hypotheses[0].hypothesis_id
+
+        external_row = external_by_source.get(
+            semantic_row.source_final_hypothesis_id
+        )
+        if semantic_row.eligible_for_external_novelty:
+            if external_row is None:
+                raise ValueError(
+                    "semantic-eligible lineage missing from external-N10 report"
+                )
+            if external_row.regenerated_hypothesis_id != regenerated_id:
+                raise ValueError(
+                    "semantic/external regenerated hypothesis mismatch"
+                )
+            claim_ids = [
+                row.claim_id
+                for row in regenerated_gate.rows
+                if (
+                    row.final_hypothesis_id == regenerated_id
+                    and row.gate_status
+                    == "READY_FOR_LITERAL_ENDPOINT_BINDING"
+                    and row.novelty_selection_role == "NOVELTY_BEARING"
+                )
+            ]
+            external_evaluated = True
+            gate_evaluated = True
+            n10_status = external_row.certification_status
+            n10_class = external_row.n10_selection_class
+            terminal_reason = None
+        else:
+            if external_row is not None:
+                raise ValueError(
+                    "semantic-terminal lineage unexpectedly present in "
+                    "external-N10"
+                )
+            claim_ids = []
+            external_evaluated = False
+            gate_evaluated = False
+            n10_status = "NOT_EVALUATED_SEMANTIC_TERMINAL"
+            n10_class = "NOT_EVALUATED"
+            terminal_reason = semantic_row.status
+
         rows.append(
             RegenerationReachabilityLineageV2(
-                source_final_hypothesis_id=lineage.source_final_hypothesis_id,
-                regenerated_hypothesis_id=lineage.regenerated_hypothesis_id,
-                n10_certification_status=lineage.certification_status,
-                n10_selection_class=lineage.n10_selection_class,
-                gate_ready=lineage.regenerated_hypothesis_id in regenerated_ready,
+                source_final_hypothesis_id=(
+                    semantic_row.source_final_hypothesis_id
+                ),
+                regenerated_hypothesis_id=regenerated_id,
+                semantic_status=semantic_row.status,
+                external_n10_evaluated=external_evaluated,
+                gate_evaluated=gate_evaluated,
+                n10_certification_status=n10_status,
+                n10_selection_class=n10_class,
+                gate_ready=(
+                    gate_evaluated
+                    and regenerated_id in regenerated_ready
+                ),
                 novelty_bearing_gate_ready_claim_ids=claim_ids,
+                terminal_reason=terminal_reason,
             )
         )
+
     body = {
-        "schema_version": "regeneration-preverifier-reachability-comparison-v2",
+        "schema_version":
+            "regeneration-preverifier-reachability-comparison-v2",
         "case_id": case_id,
+        "source_semantic_report_id": semantic_report.report_id,
+        "source_semantic_report_sha256": semantic_report.report_sha256,
         "source_external_n10_report_id": external_n10.report_id,
         "source_binding_plan_id": binding_plan.plan_id,
         "source_gate_report_id": regenerated_gate.report_id,
         "lineage_count": len(rows),
-        "initial_gate_ready_hypothesis_count": len(gate_ready_hypothesis_ids(initial_gate)),
-        "primary_gate_ready_hypothesis_count": len(gate_ready_hypothesis_ids(primary_gate)),
-        "regenerated_gate_ready_hypothesis_count": len(regenerated_ready),
+        "initial_gate_ready_hypothesis_count": len(
+            gate_ready_hypothesis_ids(initial_gate)
+        ),
+        "primary_gate_ready_hypothesis_count": len(
+            gate_ready_hypothesis_ids(primary_gate)
+        ),
+        "regenerated_gate_ready_hypothesis_count": len(
+            regenerated_ready
+        ),
+        "gate_evaluated_lineage_count": sum(
+            row.gate_evaluated for row in rows
+        ),
+        "semantic_terminal_lineage_count": sum(
+            not row.external_n10_evaluated for row in rows
+        ),
         "n10_certified_count": external_n10.certified_count,
         "n10_unresolved_count": external_n10.unresolved_count,
         "n10_rejected_count": external_n10.rejected_count,
-        "lineages": [x.model_dump(mode="json") for x in rows],
+        "n10_not_evaluated_due_semantic_terminal_count": sum(
+            not row.external_n10_evaluated for row in rows
+        ),
+        "lineages": [row.model_dump(mode="json") for row in rows],
         "endpoint_binding_performed": False,
         "verifier_performed": False,
         "second_regeneration_performed": False,
@@ -403,6 +541,9 @@ def build_reachability_comparison_v2(
     digest = _sha256_json(body)
     return RegenerationReachabilityComparisonV2(
         **body,
-        report_id="regeneration_preverifier_reachability_comparison_v2:" + digest[:20],
+        report_id=(
+            "regeneration_preverifier_reachability_comparison_v2:"
+            + digest[:20]
+        ),
         report_sha256=digest,
     )

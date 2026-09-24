@@ -164,6 +164,7 @@ def main() -> int:
 
     comparison = build_reachability_comparison_v2(
         case_id=case.case_id,
+        semantic_report=semantic,
         external_n10=external_n10,
         binding_plan=plan,
         initial_gate=initial_gate,
@@ -210,12 +211,22 @@ def main() -> int:
         comparison.lineage_count,
     )
     print(
+        "Regeneration Gate evaluated / semantic-terminal:",
+        comparison.gate_evaluated_lineage_count,
+        "/",
+        comparison.semantic_terminal_lineage_count,
+    )
+    print(
         "N10 certified/unresolved/rejected:",
         comparison.n10_certified_count,
         "/",
         comparison.n10_unresolved_count,
         "/",
         comparison.n10_rejected_count,
+    )
+    print(
+        "N10 not evaluated after semantic terminal:",
+        comparison.n10_not_evaluated_due_semantic_terminal_count,
     )
     for row in comparison.lineages:
         print(
@@ -224,11 +235,17 @@ def main() -> int:
             row.regenerated_hypothesis_id,
             "| N10=",
             row.n10_certification_status,
+            "| semantic=",
+            row.semantic_status,
+            "| gate-evaluated=",
+            row.gate_evaluated,
             "| gate-ready=",
             row.gate_ready,
             "| novelty-ready claims=",
             row.novelty_bearing_gate_ready_claim_ids,
         )
+        if row.terminal_reason:
+            print("  terminal:", row.terminal_reason)
     print()
     print("Endpoint binding performed: false")
     print("Verifier performed: false")
