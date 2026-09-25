@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -39,6 +40,15 @@ def _write_json(path: Path, value: object) -> None:
         json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def _sha256_file(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    digest = hashlib.sha256()
+    with resolved.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -428,6 +438,74 @@ class PipelineRunner:
         self.manifest["status"] = "complete"
         self.manifest["finished_at_utc"] = _now()
         self._save_manifest()
+
+
+def _finish_after_initial_semantic_if_requested(
+    *,
+    runner: PipelineRunner,
+    args: argparse.Namespace,
+    portfolio_path: Path,
+    context_path: Path,
+    semantic_run_path: Path,
+    semantic_review_path: Path,
+    provider_plan_path: Path,
+) -> bool:
+    if not bool(getattr(args, "stop_after_initial_semantic", False)):
+        return False
+
+    required = {
+        "portfolio": portfolio_path,
+        "hypothesis_context": context_path,
+        "semantic_run": semantic_run_path,
+        "provider_plan": provider_plan_path,
+    }
+    missing = [
+        name
+        for name, path in required.items()
+        if not path.expanduser().resolve().is_file()
+    ]
+    if missing:
+        raise RuntimeError(
+            "Prospective initial-semantic cut point is missing required "
+            "artifacts: " + repr(missing)
+        )
+
+    artifacts: dict[str, object] = {}
+    for name, path in required.items():
+        resolved = path.expanduser().resolve()
+        artifacts[name] = {
+            "path": str(resolved),
+            "file_sha256": _sha256_file(resolved),
+        }
+
+    review_file = semantic_review_path.expanduser().resolve()
+    artifacts["semantic_review"] = (
+        {
+            "path": str(review_file),
+            "file_sha256": _sha256_file(review_file),
+        }
+        if review_file.is_file()
+        else None
+    )
+
+    runner.manifest["prospective_initial_semantic_cutpoint"] = {
+        "enabled": True,
+        "cut_after_stage": 9,
+        "artifacts": artifacts,
+        "semantic_review_optional_after_hard_gate_failure": True,
+        "external_novelty_performed": False,
+        "n9_performed": False,
+        "n10_performed": False,
+        "refinement_performed": False,
+        "final_semantic_performed": False,
+        "feasibility_performed": False,
+        "production_selection_changed": False,
+        "canonical_graph_mutated": False,
+    }
+    runner.manifest["status"] = "complete_after_initial_semantic"
+    runner.manifest["finished_at_utc"] = _now()
+    runner._save_manifest()
+    return True
 
 
 def _base_model_args(args: argparse.Namespace, *, critic: bool = False) -> list[str]:
@@ -3748,6 +3826,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         return 0
 
     semantic_a4_prefix = run / "semantic_axis_a4"
+    semantic_a4_run = run / "semantic_axis_a4.run.json"
     semantic_a4_review = run / "semantic_axis_a4.review.json"
     runner.run_stage(
         "[9/13] Semantic critic: alpha4 portfolio",
@@ -3759,8 +3838,28 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--output-prefix", str(semantic_a4_prefix),
             "--save-prompt",
         ],
-        expected=[semantic_a4_review],
+        expected=(
+            [semantic_a4_run]
+            if args.stop_after_initial_semantic
+            else [semantic_a4_review]
+        ),
     )
+
+    if _finish_after_initial_semantic_if_requested(
+        runner=runner,
+        args=args,
+        portfolio_path=axis_portfolio,
+        context_path=context,
+        semantic_run_path=semantic_a4_run,
+        semantic_review_path=semantic_a4_review,
+        provider_plan_path=literature_provider_plan_path,
+    ):
+        print(
+            "Prospective initial-semantic cut point reached. "
+            "External novelty, N9, N10, refinement, final semantic, "
+            "and feasibility were not executed."
+        )
+        return 0
 
     # ------------------------------------------------------------------
     # 10. External novelty. Fresh run directory + subprocess check=True
@@ -5007,6 +5106,18 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Delete the specified run directory before starting. Without this flag, "
             "the runner refuses non-empty directories to prevent stale-artifact mixing."
+        ),
+    )
+    parser.add_argument(
+        "--stop-after-initial-semantic",
+        action="store_true",
+        help=(
+            "Prospective-evaluation cut point. Run through Alpha4 hypothesis "
+            "generation and the initial semantic critic, then stop before "
+            "external novelty, N9, N10, refinement, final semantic, or "
+            "feasibility. In this mode semantic_axis_a4.run.json is the "
+            "required stage-9 authority artifact and semantic_axis_a4.review.json "
+            "is optional when the semantic hard gate fails. Default: disabled."
         ),
     )
     parser.add_argument(
