@@ -91,6 +91,82 @@ def _write_exact_or_validate(path: Path, payload: object) -> str:
     return hashlib.sha256(expected).hexdigest()
 
 
+def _build_decomposition_sanitization_audit_v1(
+    *,
+    source_hypothesis_id: str,
+    portfolio_path: Path,
+    portfolio: HypothesisPortfolio,
+    query_plan_path: Path,
+    query_plan: LiteratureQueryPlan,
+    contract_path: Path,
+    contract: object,
+    records: list[dict],
+) -> dict:
+    prediction_bound = 0
+    falsifier_bound = 0
+    both_bound = 0
+
+    for row in records:
+        fidelity = row.get("semantic_fidelity_shadow")
+        fidelity = fidelity if isinstance(fidelity, dict) else {}
+        prediction_id = str(
+            fidelity.get("prediction_observation_id") or ""
+        ).strip()
+        falsifier_id = str(
+            fidelity.get("falsification_criterion_id") or ""
+        ).strip()
+        if prediction_id:
+            prediction_bound += 1
+        if falsifier_id:
+            falsifier_bound += 1
+        if prediction_id and falsifier_id:
+            both_bound += 1
+
+    contract_id = str(getattr(contract, "report_id"))
+    contract_sha = str(getattr(contract, "report_sha256"))
+
+    return {
+        "schema_version": (
+            "pre-n10-regeneration-decomposition-"
+            "sanitization-audit-v1"
+        ),
+        "source_hypothesis_id": source_hypothesis_id,
+        "regenerated_portfolio_path": str(
+            portfolio_path.expanduser().resolve()
+        ),
+        "regenerated_portfolio_id": portfolio.portfolio_id,
+        "regenerated_portfolio_file_sha256": _sha256_file(
+            portfolio_path
+        ),
+        "query_plan_path": str(
+            query_plan_path.expanduser().resolve()
+        ),
+        "query_plan_id": query_plan.plan_id,
+        "query_plan_sha256": query_plan.plan_sha256,
+        "query_plan_file_sha256": _sha256_file(query_plan_path),
+        "contract_report_path": str(
+            contract_path.expanduser().resolve()
+        ),
+        "contract_report_id": contract_id,
+        "contract_report_sha256": contract_sha,
+        "contract_report_file_sha256": _sha256_file(contract_path),
+        "record_count": len(records),
+        "prediction_source_id_count": prediction_bound,
+        "falsifier_source_id_count": falsifier_bound,
+        "prediction_and_falsifier_source_id_count": both_bound,
+        "records": records,
+        "diagnostic_only": True,
+        "production_authority": False,
+        "scientific_content_mutated": False,
+        "query_plan_mutated_by_audit": False,
+        "contract_mutated_by_audit": False,
+        "retrieval_performed": False,
+        "external_novelty_performed": False,
+        "n9_performed": False,
+        "n10_performed": False,
+    }
+
+
 class SemanticRunner(Protocol):
     def run(
         self,
@@ -529,6 +605,25 @@ def execute_pre_n10_regeneration_reentry_v2(
         )
         contract_path = lineage_dir / "contract.json"
         _write_exact_or_validate(contract_path, contract)
+
+        sanitization_audit = (
+            _build_decomposition_sanitization_audit_v1(
+                source_hypothesis_id=source.source_hypothesis_id,
+                portfolio_path=portfolio_path,
+                portfolio=portfolio,
+                query_plan_path=query_plan_path,
+                query_plan=query_plan,
+                contract_path=contract_path,
+                contract=contract,
+                records=list(
+                    decomposer.specification_sanitization_records
+                ),
+            )
+        )
+        _write_exact_or_validate(
+            lineage_dir / "claim_decomposition.sanitization_audit.json",
+            sanitization_audit,
+        )
 
         ready = contract.disposition == "READY_FOR_N10"
         rows.append(
