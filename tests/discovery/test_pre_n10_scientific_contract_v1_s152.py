@@ -58,7 +58,7 @@ def _card() -> HypothesisCard:
 def _claim(
     *,
     claim_id: str = "claim:1",
-    role: str = "NOVELTY_BEARING",
+    role: str | None = "NOVELTY_BEARING",
     required_bridge: str | None = None,
     predicted_observation: str | None = None,
 ) -> NoveltyClaim:
@@ -158,6 +158,20 @@ def test_pre_n10_source_mismatch_routes_to_source_alignment(tmp_path: Path):
     assert any(
         reason.startswith("prediction_exact_source_binding_cardinality:")
         for reason in row.source_contract_reason_codes
+    )
+
+
+def test_pre_n10_missing_novelty_role_routes_to_specification_repair(tmp_path: Path):
+    report = _build(tmp_path, [_claim(role=None)])
+    row = report.hypotheses[0].claims[0]
+    assert report.disposition == "INTERVENTION_REQUIRED"
+    assert row.contract_status == "NOT_READY_FOR_N10_CONTRACT"
+    assert row.router_hint == "SPECIFICATION_REPAIR_REVIEW"
+    assert "missing_novelty_selection_role" in (
+        row.binding_contract_reason_codes
+    )
+    assert "missing_novelty_selection_role" in (
+        row.source_contract_reason_codes
     )
 
 

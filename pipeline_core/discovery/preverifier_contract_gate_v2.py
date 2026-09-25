@@ -52,6 +52,52 @@ RouterHint = Literal[
 ]
 
 
+_BINDING_SPECIFICATION_REASON_CODES = frozenset(
+    {
+        "missing_claim_text",
+        "missing_required_bridge",
+        "missing_predicted_observation",
+        "missing_falsification_condition",
+        "missing_prior_art_identity_terms",
+        "missing_novelty_selection_role",
+    }
+)
+_BINDING_SPECIFICATION_REASON_PREFIXES = (
+    "identity_not_literal_in_claim_text:",
+    "identity_not_literal_in_required_bridge:",
+    "identity_not_literal_in_predicted_observation:",
+    "identity_not_literal_in_falsification_condition:",
+)
+
+_SOURCE_DECOMPOSITION_REASON_PREFIXES = (
+    "unsupported_atomic_claim_kind:",
+)
+_SOURCE_ALIGNMENT_REASON_PREFIXES = (
+    "prediction_exact_source_binding_cardinality:",
+    "falsifier_exact_source_binding_cardinality:",
+)
+_SOURCE_ALIGNMENT_REASON_CODES = frozenset(
+    {
+        "prediction_falsifier_observable_identity_mismatch",
+        "observable_empty",
+    }
+)
+_SOURCE_SPECIFICATION_REASON_CODES = frozenset(
+    {
+        "missing_novelty_selection_role",
+    }
+)
+
+
+def _reason_known(
+    reason: str,
+    *,
+    exact: frozenset[str],
+    prefixes: tuple[str, ...],
+) -> bool:
+    return reason in exact or reason.startswith(prefixes)
+
+
 class PreVerifierContractGateV2Row(StrictModel):
     candidate_hypothesis_id: str
     final_hypothesis_id: str
@@ -77,6 +123,25 @@ class PreVerifierContractGateV2Row(StrictModel):
     literature_retrieval_performed: Literal[False] = False
     novelty_assessment_performed: Literal[False] = False
     production_selection_authority: Literal[False] = False
+
+    @model_validator(mode="after")
+    def validate_contract_route(self) -> "PreVerifierContractGateV2Row":
+        has_contract_failure = bool(
+            self.binding_contract_reason_codes
+            or self.source_contract_reason_codes
+        )
+        ready = self.gate_status == "READY_FOR_LITERAL_ENDPOINT_BINDING"
+        proceed = self.router_hint == "PROCEED_TO_LITERAL_ENDPOINT_BINDING"
+
+        if ready == has_contract_failure:
+            raise ValueError(
+                "gate status must be ready iff contract reason codes are empty"
+            )
+        if proceed != ready:
+            raise ValueError(
+                "router may proceed iff claim is contract-ready"
+            )
+        return self
 
 
 class PreVerifierContractGateV2Report(StrictModel):
@@ -205,29 +270,62 @@ def classify_router_hint(
     binding_reason_codes: list[str],
     source_reason_codes: list[str],
 ) -> RouterHint:
-    if any(
-        reason.startswith("unsupported_atomic_claim_kind:")
+    unknown_binding = sorted(
+        {
+            reason
+            for reason in binding_reason_codes
+            if not _reason_known(
+                reason,
+                exact=_BINDING_SPECIFICATION_REASON_CODES,
+                prefixes=_BINDING_SPECIFICATION_REASON_PREFIXES,
+            )
+        }
+    )
+    if unknown_binding:
+        raise ValueError(
+            "unclassified binding-contract reason codes: "
+            + repr(unknown_binding)
+        )
+
+    source_decomposition = [
+        reason
         for reason in source_reason_codes
-    ):
+        if reason.startswith(_SOURCE_DECOMPOSITION_REASON_PREFIXES)
+    ]
+    source_alignment = [
+        reason
+        for reason in source_reason_codes
+        if (
+            reason in _SOURCE_ALIGNMENT_REASON_CODES
+            or reason.startswith(_SOURCE_ALIGNMENT_REASON_PREFIXES)
+        )
+    ]
+    source_specification = [
+        reason
+        for reason in source_reason_codes
+        if reason in _SOURCE_SPECIFICATION_REASON_CODES
+    ]
+    known_source = set(
+        source_decomposition
+        + source_alignment
+        + source_specification
+    )
+    unknown_source = sorted(
+        set(source_reason_codes) - known_source
+    )
+    if unknown_source:
+        raise ValueError(
+            "unclassified source-contract reason codes: "
+            + repr(unknown_source)
+        )
+
+    if source_decomposition:
         return "DECOMPOSE_OR_REGENERATE_REVIEW"
 
-    if any(
-        reason.startswith(
-            (
-                "prediction_exact_source_binding_cardinality:",
-                "falsifier_exact_source_binding_cardinality:",
-            )
-        )
-        or reason
-        in {
-            "prediction_falsifier_observable_identity_mismatch",
-            "observable_empty",
-        }
-        for reason in source_reason_codes
-    ):
+    if source_alignment:
         return "SOURCE_CONTRACT_ALIGNMENT_OR_REGENERATE_REVIEW"
 
-    if binding_reason_codes:
+    if binding_reason_codes or source_specification:
         return "SPECIFICATION_REPAIR_REVIEW"
 
     return "PROCEED_TO_LITERAL_ENDPOINT_BINDING"

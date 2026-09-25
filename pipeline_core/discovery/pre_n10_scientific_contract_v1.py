@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan, NoveltyClaim
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.preverifier_contract_gate_v2 import (
+    RouterHint,
     _count_exact_observation_bindings,
     classify_router_hint,
 )
@@ -55,7 +56,7 @@ class PreN10ClaimContractRowV1(StrictModel):
     binding_contract_reason_codes: list[str] = Field(default_factory=list)
     source_contract_reason_codes: list[str] = Field(default_factory=list)
     contract_status: ClaimContractStatus
-    router_hint: str
+    router_hint: RouterHint
     atomic_kind_supported: bool
     prediction_exact_source_binding_count: int = Field(ge=0)
     falsifier_exact_source_binding_count: int = Field(ge=0)
@@ -65,6 +66,24 @@ class PreN10ClaimContractRowV1(StrictModel):
     n9_performed: Literal[False] = False
     n10_performed: Literal[False] = False
     scientific_content_mutated: Literal[False] = False
+
+    @model_validator(mode="after")
+    def validate_contract_route(self) -> "PreN10ClaimContractRowV1":
+        has_contract_failure = bool(
+            self.binding_contract_reason_codes
+            or self.source_contract_reason_codes
+        )
+        ready = self.contract_status == "READY_FOR_N10_CONTRACT"
+        proceed = self.router_hint == "PROCEED_TO_LITERAL_ENDPOINT_BINDING"
+        if ready == has_contract_failure:
+            raise ValueError(
+                "pre-N10 contract status must be ready iff reason codes are empty"
+            )
+        if proceed != ready:
+            raise ValueError(
+                "pre-N10 router may proceed iff claim contract is ready"
+            )
+        return self
 
 
 class PreN10HypothesisContractV1(StrictModel):

@@ -15,25 +15,50 @@ from pipeline_core.discovery.preverifier_contract_gate_v2 import (
 
 
 def _row(hint: str) -> PreVerifierContractGateV2Row:
+    binding_status = "READY_FOR_LITERAL_ENDPOINT_BINDING"
+    binding_reasons: list[str] = []
+    source_reasons: list[str] = []
+    claim_kind = "moderator_interaction"
+    atomic_kind_supported = True
+    prediction_count = 1
+    falsifier_count = 1
+    shared_identity: bool | None = True
+
+    if hint == "SPECIFICATION_REPAIR_REVIEW":
+        binding_status = "INELIGIBLE_INCOMPLETE_ATOMIC_SPECIFICATION"
+        binding_reasons = ["missing_required_bridge"]
+    elif hint == "SOURCE_CONTRACT_ALIGNMENT_OR_REGENERATE_REVIEW":
+        source_reasons = [
+            "prediction_exact_source_binding_cardinality:0"
+        ]
+        prediction_count = 0
+        shared_identity = None
+    elif hint == "DECOMPOSE_OR_REGENERATE_REVIEW":
+        source_reasons = ["unsupported_atomic_claim_kind:composite"]
+        claim_kind = "composite"
+        atomic_kind_supported = False
+    elif hint != "PROCEED_TO_LITERAL_ENDPOINT_BINDING":
+        raise AssertionError("unsupported fixture router hint: " + hint)
+
     return PreVerifierContractGateV2Row(
         candidate_hypothesis_id="candidate:1",
         final_hypothesis_id="final:1",
         claim_id="claim:" + hint,
         novelty_selection_role="NOVELTY_BEARING",
-        claim_kind="moderator_interaction",
-        binding_plan_status="READY_FOR_LITERAL_ENDPOINT_BINDING",
-        binding_contract_reason_codes=[],
-        source_contract_reason_codes=[],
+        claim_kind=claim_kind,
+        binding_plan_status=binding_status,
+        binding_contract_reason_codes=binding_reasons,
+        source_contract_reason_codes=source_reasons,
         gate_status=(
             "READY_FOR_LITERAL_ENDPOINT_BINDING"
             if hint == "PROCEED_TO_LITERAL_ENDPOINT_BINDING"
             else "NOT_READY_FOR_LITERAL_ENDPOINT_BINDING"
         ),
         router_hint=hint,
-        atomic_kind_supported=True,
-        prediction_exact_source_binding_count=1,
-        falsifier_exact_source_binding_count=1,
-        shared_observable_identity_satisfied=True,
+        atomic_kind_supported=atomic_kind_supported,
+        prediction_exact_source_binding_count=prediction_count,
+        falsifier_exact_source_binding_count=falsifier_count,
+        shared_observable_identity_satisfied=shared_identity,
     )
 
 
