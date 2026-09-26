@@ -9,7 +9,7 @@ from domains.sers.relation_ir_semantics import (
 from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimScientificStructure,
 )
-from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
+from pipeline_core.discovery.atomic_scientific_specification import (
     CompiledAtomicSpecification,
 )
 from pipeline_core.discovery.scientific_relation_ir import (

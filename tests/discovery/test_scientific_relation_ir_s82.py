@@ -4,7 +4,7 @@ from domains.registry import get_domain_profile
 from domains.sers.relation_ir_semantics import (
     SERS_RELATION_TYPING_ADAPTER,
 )
-from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
+from pipeline_core.discovery.atomic_scientific_specification import (
     CompiledAtomicSpecification,
 )
 from pipeline_core.discovery.external_novelty_contracts import (

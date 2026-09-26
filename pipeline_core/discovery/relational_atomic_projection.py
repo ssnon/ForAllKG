@@ -13,7 +13,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaim,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
-from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
+from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicClaimKind,
     CompiledAtomicSpecification,
 )
@@ -28,10 +28,9 @@ from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     selected_binding_claims,
 )
 from pipeline_core.discovery.scientific_relation_ir import (
-    NullRelationTypingAdapter,
     RelationTypingAdapter,
     ScientificRelationIRReport,
-    compile_atomic_specification_relation_ir,
+    compile_atomic_specifications_relation_ir_report,
 )
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
 
@@ -638,55 +637,18 @@ def compile_relational_atomic_projection_relation_ir(
     domain_profile: ScientificDomainProfile,
     typing_adapter: RelationTypingAdapter | None = None,
 ) -> ScientificRelationIRReport:
-    adapter: RelationTypingAdapter = (
-        typing_adapter
-        if typing_adapter is not None
-        else NullRelationTypingAdapter()
-    )
-
-    relations = [
-        compile_atomic_specification_relation_ir(
-            hypothesis_id=row.final_hypothesis_id,
-            spec=row.specification,
-            domain_profile=domain_profile,
-            typing_adapter=adapter,
-            source_contract="relational-atomic-projection-report-v1",
-        )
+    specifications = [
+        (row.final_hypothesis_id, row.specification)
         for row in report.rows
         if row.projection_status == "PROJECTED"
         and row.specification is not None
     ]
-
-    return ScientificRelationIRReport(
-        report_id=_stable_id(
-            "scientific_relation_ir_report",
-            report.report_id,
-            domain_profile.profile_id,
-            adapter.adapter_id,
-            *[row.relation_ir_id for row in relations],
-        ),
+    return compile_atomic_specifications_relation_ir_report(
         source_atomic_report_id=report.report_id,
         source_contract="relational-atomic-projection-report-v1",
-        domain_profile_id=domain_profile.profile_id,
-        typing_adapter_id=adapter.adapter_id,
-        relations=relations,
-        relation_count=len(relations),
-        ready_count=sum(
-            row.typing_status == "READY"
-            for row in relations
-        ),
-        partial_count=sum(
-            row.typing_status == "PARTIAL"
-            for row in relations
-        ),
-        ambiguous_count=sum(
-            row.typing_status == "AMBIGUOUS"
-            for row in relations
-        ),
-        structurally_invalid_count=sum(
-            row.typing_status == "STRUCTURALLY_INVALID"
-            for row in relations
-        ),
+        specifications=specifications,
+        domain_profile=domain_profile,
+        typing_adapter=typing_adapter,
     )
 
 

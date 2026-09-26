@@ -10,7 +10,7 @@ from domains.relation_ir_registry import (
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     AtomicCrossLaneSynthesisReport,
 )
-from pipeline_core.discovery.scientific_relation_ir import (
+from pipeline_core.discovery.reframing.atomic_cross_lane_relation_ir_adapter import (
     compile_atomic_report_relation_ir,
 )
 

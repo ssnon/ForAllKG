@@ -11,9 +11,6 @@ from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from pipeline_core.discovery.atomic_scientific_specification import (
     CompiledAtomicSpecification,
 )
-from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
-    AtomicCrossLaneSynthesisReport,
-)
 
 
 class StrictModel(BaseModel):
@@ -608,9 +605,11 @@ def compile_atomic_specification_relation_ir(
     )
 
 
-def compile_atomic_report_relation_ir(
+def compile_atomic_specifications_relation_ir_report(
     *,
-    report: AtomicCrossLaneSynthesisReport,
+    source_atomic_report_id: str,
+    source_contract: RelationIRSourceContract,
+    specifications: list[tuple[str, CompiledAtomicSpecification]],
     domain_profile: ScientificDomainProfile,
     typing_adapter: RelationTypingAdapter | None = None,
 ) -> ScientificRelationIRReport:
@@ -620,28 +619,27 @@ def compile_atomic_report_relation_ir(
         else NullRelationTypingAdapter()
     )
 
-    relations: list[ScientificRelationIR] = []
-    for hypothesis in report.hypotheses:
-        for spec in hypothesis.atomic_specifications:
-            relations.append(
-                compile_atomic_specification_relation_ir(
-                    hypothesis_id=hypothesis.hypothesis_id,
-                    spec=spec,
-                    domain_profile=domain_profile,
-                    typing_adapter=adapter,
-                )
-            )
+    relations = [
+        compile_atomic_specification_relation_ir(
+            hypothesis_id=hypothesis_id,
+            spec=spec,
+            domain_profile=domain_profile,
+            typing_adapter=adapter,
+            source_contract=source_contract,
+        )
+        for hypothesis_id, spec in specifications
+    ]
 
     return ScientificRelationIRReport(
         report_id=_stable_id(
             "scientific_relation_ir_report",
-            report.report_id,
+            source_atomic_report_id,
             domain_profile.profile_id,
             adapter.adapter_id,
             *[row.relation_ir_id for row in relations],
         ),
-        source_atomic_report_id=report.report_id,
-        source_contract="atomic-cross-lane-scientific-synthesis-report-v1",
+        source_atomic_report_id=source_atomic_report_id,
+        source_contract=source_contract,
         domain_profile_id=domain_profile.profile_id,
         typing_adapter_id=adapter.adapter_id,
         relations=relations,
@@ -656,6 +654,25 @@ def compile_atomic_report_relation_ir(
             row.typing_status == "STRUCTURALLY_INVALID"
             for row in relations
         ),
+    )
+
+
+def compile_atomic_report_relation_ir(
+    *,
+    report: object,
+    domain_profile: ScientificDomainProfile,
+    typing_adapter: RelationTypingAdapter | None = None,
+) -> ScientificRelationIRReport:
+    """Compatibility shim for the former cross-lane-specific core entrypoint."""
+
+    from pipeline_core.discovery.reframing.atomic_cross_lane_relation_ir_adapter import (
+        compile_atomic_report_relation_ir as compile_cross_lane_report,
+    )
+
+    return compile_cross_lane_report(
+        report=report,
+        domain_profile=domain_profile,
+        typing_adapter=typing_adapter,
     )
 
 
@@ -769,5 +786,6 @@ __all__ = [
     "assess_relation_document_compatibility",
     "compile_atomic_report_relation_ir",
     "compile_atomic_specification_relation_ir",
+    "compile_atomic_specifications_relation_ir_report",
     "lexical_content_tokens",
 ]

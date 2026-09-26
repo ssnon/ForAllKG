@@ -19,10 +19,12 @@ from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     CompiledLiteralEndpointBinding,
     RelationalAtomicEndpointBindingReport,
 )
+from pipeline_core.discovery.atomic_scientific_specification import (
+    CompiledAtomicSpecification,
+)
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     AtomicCrossLaneSynthesisReport,
     CompiledAtomicCrossLaneHypothesis,
-    CompiledAtomicSpecification,
 )
 from pipeline_core.discovery.reframing.production_candidate_contract import (
     ProductionCandidateFalsifier,
