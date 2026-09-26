@@ -17,6 +17,11 @@ from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimScientificStructure,
     NoveltyClaimSemanticFidelityBindingDraft,
 )
+from pipeline_core.discovery.atomic_scientific_specification import (
+    AtomicClaimKind,
+    AtomicSelectionRole,
+    CompiledAtomicSpecification,
+)
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
     HypothesisCard,
@@ -51,24 +56,6 @@ AtomicSynthesisKind = Literal[
     "measurement_model_integration",
     "cross_lane_explanatory_synthesis",
 ]
-
-AtomicClaimKind = Literal[
-    "mediator",
-    "moderator_interaction",
-    "context_condition",
-    "pathway_competition",
-    "descriptor_interaction",
-    "distinctive_prediction",
-    "mechanistic_link",
-]
-
-AtomicSelectionRole = Literal[
-    "NOVELTY_BEARING",
-    "REQUIRED_ENABLING_RELATION",
-    "TESTING_PREDICTION",
-    "AUXILIARY",
-]
-
 
 class AtomicSpecificationDraft(StrictModel):
     local_id: str = Field(min_length=1)
@@ -169,39 +156,6 @@ class AtomicCrossLaneSynthesisBatchDraft(StrictModel):
         if self.hypotheses and self.abstention_reason:
             raise ValueError("non-empty atomic synthesis must not carry abstention_reason")
         return self
-
-
-class CompiledAtomicSpecification(StrictModel):
-    local_id: str
-    claim_id: str
-    kind: AtomicClaimKind
-    importance: Literal["core", "supporting"]
-    novelty_selection_role: AtomicSelectionRole
-    text: str
-    rationale: str
-
-    source_candidate_ids: list[str]
-    premise_statement_ids: list[str]
-    gap_statement_ids: list[str]
-
-    prior_art_identity_terms: list[str]
-    relation_endpoint_anchors: list[str]
-    scope_qualifier_spans: list[str]
-    directional_qualifier_spans: list[str]
-    relation_nucleus_terms: list[str]
-    distinguishing_terms: list[str]
-
-    required_bridge: str
-    observable: str
-    predicted_observation: str
-    falsification_condition: str
-    prediction_observation_id: str
-    falsification_criterion_id: str
-
-    search_concepts: list[str]
-    search_queries: list[str]
-    scientific_structure: NoveltyClaimScientificStructure
-    scientific_structure_reason_codes: list[str]
 
 
 class CompiledAtomicCrossLaneHypothesis(StrictModel):

@@ -17,7 +17,7 @@ from pipeline_core.discovery.novelty_atomic_semantic_fidelity import (
     assess_atomic_semantic_fidelity,
     compile_atomic_semantic_fidelity_taxonomy_shadow,
 )
-from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
+from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicClaimKind,
     CompiledAtomicSpecification,
 )

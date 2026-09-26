@@ -8,9 +8,11 @@ from typing import Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
+from pipeline_core.discovery.atomic_scientific_specification import (
+    CompiledAtomicSpecification,
+)
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     AtomicCrossLaneSynthesisReport,
-    CompiledAtomicSpecification,
 )
 
 
