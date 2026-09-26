@@ -455,14 +455,24 @@ class SERSDiscoveryAxisContextReviewer:
                 + ", ".join(missing)
             )
 
-        source_signatures = [
-            self.grounded_compiler
-            .compile_grounded_statement(
-                evidence[statement_id]
+        source_signatures = []
+        for statement_id in premise_ids:
+            try:
+                signature = (
+                    self.grounded_compiler
+                    .compile_grounded_statement(
+                        evidence[statement_id]
+                    )
+                )
+            except SERSContextCompilationError as exc:
+                raise AxisContextReviewUnavailableError(
+                    "selected grounded premise cannot produce "
+                    "claim-local SERS scientific context: "
+                    f"{statement_id}: {exc}"
+                ) from exc
+            source_signatures.append(
+                signature
             )
-            for statement_id
-            in premise_ids
-        ]
 
         # Inspiration remains inspiration-only. Persistent-KG inspirations
         # keep the original graph-compiled path. Source-validated open-world
