@@ -587,6 +587,18 @@ class ExplorerDraftNormalizer:
                     ),
                 )
                 continue
+            statement = statement_map[unresolved.statement_local_id]
+            if statement.epistemic_role != "unresolved":
+                _drop_section_object(
+                    location=f"unresolved_connections[{index}]",
+                    local_id=unresolved.local_id,
+                    reason=(
+                        "Unresolved connection referenced a surviving statement "
+                        "whose epistemic_role is not 'unresolved'; the higher-order "
+                        "gap wrapper was removed without mutating the statement."
+                    ),
+                )
+                continue
             normalized_unresolved.append(unresolved)
 
         normalized_levers = []

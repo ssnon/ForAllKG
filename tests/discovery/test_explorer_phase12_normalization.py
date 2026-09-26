@@ -141,3 +141,71 @@ def test_strong_causal_unsupported_mechanism_is_dropped_with_cascade():
         row.action == "drop_unsupported_strong_causal_statement"
         for row in result.audit.actions
     )
+
+def test_unresolved_connection_to_navigation_note_is_dropped_without_mutating_statement():
+    draft = ExplorationDraft.model_validate(
+        {
+            "statements": [
+                {
+                    "local_id": "s_nav",
+                    "text": (
+                        "The selected route is navigation-heavy and does not by "
+                        "itself establish a scientific relation."
+                    ),
+                    "epistemic_role": "navigation_note",
+                    "claim_kind": "retrieval_note",
+                },
+                {
+                    "local_id": "s_gap",
+                    "text": (
+                        "The supplied packet is insufficient to determine the "
+                        "target relation."
+                    ),
+                    "epistemic_role": "unresolved",
+                    "claim_kind": "scope_limit",
+                },
+            ],
+            "unresolved_connections": [
+                {
+                    "local_id": "gap_drop",
+                    "statement_local_id": "s_nav",
+                    "reason": "navigation_heavy",
+                },
+                {
+                    "local_id": "gap_keep",
+                    "statement_local_id": "s_gap",
+                    "reason": "missing_direct_relation_in_packet",
+                },
+            ],
+        }
+    )
+
+    original_statements = [
+        row.model_dump(mode="json")
+        for row in draft.statements
+    ]
+
+    result = ExplorerDraftNormalizer(
+        domain_profile=DAC_HER_PROFILE
+    ).normalize(_packet(), draft)
+    normalized = result.draft
+
+    assert [
+        row.model_dump(mode="json")
+        for row in normalized.statements
+    ] == original_statements
+    assert [
+        row.local_id
+        for row in normalized.unresolved_connections
+    ] == ["gap_keep"]
+    assert result.audit.applied is True
+
+    drops = [
+        row
+        for row in result.audit.actions
+        if row.action == "drop_dependent_section_object"
+        and row.location == "unresolved_connections[0]"
+    ]
+    assert len(drops) == 1
+    assert drops[0].local_id == "gap_drop"
+    assert "without mutating the statement" in drops[0].reason
