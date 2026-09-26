@@ -8,14 +8,24 @@ from typing import Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+    project_atomic_scientific_source_binding_bundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.pre_n10_decomposition_primary_v1 import (
     execute_pre_n10_decomposition_primary_v1,
 )
+from pipeline_core.discovery.pre_n10_canonical_source_reference_v1 import (
+    build_pre_n10_canonical_source_reference_report_v1,
+)
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     PreN10ScientificContractReportV1,
     build_pre_n10_scientific_contract_v1,
+)
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    build_pre_n10_scientific_contract_v2,
 )
 from pipeline_core.discovery.preverifier_contract_gate_v2 import RouterHint
 from pipeline_core.discovery.pre_n10_source_alignment_primary_v1 import (
@@ -361,6 +371,7 @@ def execute_pre_n10_primary_router_v1(
     output_root: Path,
     specification_repair_backend_factory: SpecificationRepairBackendFactory | None = None,
     source_alignment_audit_backend_factory: SourceAlignmentAuditBackendFactory | None = None,
+    source_binding_bundle: AtomicScientificSourceBindingBundle | None = None,
 ) -> tuple[
     LiteratureQueryPlan,
     PreN10ScientificContractReportV1,
@@ -386,6 +397,20 @@ def execute_pre_n10_primary_router_v1(
     if source_plan.plan_id != contract_report.source_query_plan_id:
         raise ValueError("query-plan/contract ID mismatch")
 
+    if source_binding_bundle is not None:
+        if source_binding_bundle.source_portfolio_id != portfolio.portfolio_id:
+            raise ValueError(
+                "source-binding bundle/portfolio ID mismatch at primary router"
+            )
+        if source_binding_bundle.source_query_plan_id != source_plan.plan_id:
+            raise ValueError(
+                "source-binding bundle/query-plan ID mismatch at primary router"
+            )
+        if source_binding_bundle.source_query_plan_sha256 != source_plan.plan_sha256:
+            raise ValueError(
+                "source-binding bundle/query-plan SHA mismatch at primary router"
+            )
+
     contract_by_hypothesis = {
         row.hypothesis_id: row for row in contract_report.hypotheses
     }
@@ -394,6 +419,7 @@ def execute_pre_n10_primary_router_v1(
         raise ValueError("portfolio/contract hypothesis populations differ")
 
     working_plan = source_plan
+    working_bundle = source_binding_bundle
     provisional: dict[str, dict[str, object]] = {}
 
     for hypothesis_id in portfolio_ids:
@@ -512,11 +538,54 @@ def execute_pre_n10_primary_router_v1(
 
         if not child_path.is_file():
             raise ValueError("child primary report artifact missing: " + str(child_path))
-        working_plan = _merge_hypothesis_plan(
-            working_plan,
+
+        previous_plan = working_plan
+        merged_plan = _merge_hypothesis_plan(
+            previous_plan,
             hypothesis_id=hypothesis_id,
             child=child_plan,
         )
+
+        if working_bundle is not None:
+            source_id_overrides: dict[
+                tuple[str, str],
+                tuple[str, str],
+            ] = {}
+            if route == "SOURCE_ALIGNMENT":
+                for hypothesis_result in child_report.hypotheses:
+                    for alignment_result in (
+                        hypothesis_result.source_alignment_results
+                    ):
+                        if (
+                            alignment_result.status
+                            != "MATERIALIZED_ZERO_DELTA_SOURCE_ALIGNMENT"
+                        ):
+                            continue
+                        candidate = alignment_result.selected_candidate
+                        if candidate is None:
+                            raise ValueError(
+                                "materialized source alignment lacks selected candidate"
+                            )
+                        source_id_overrides[
+                            (
+                                alignment_result.hypothesis_id,
+                                alignment_result.claim_id,
+                            )
+                        ] = (
+                            candidate.prediction_observation_id,
+                            candidate.falsification_criterion_id,
+                        )
+
+            working_bundle = (
+                project_atomic_scientific_source_binding_bundle(
+                    source_bundle=working_bundle,
+                    source_query_plan=previous_plan,
+                    output_query_plan=merged_plan,
+                    source_id_overrides=source_id_overrides,
+                )
+            )
+
+        working_plan = merged_plan
         provisional[hypothesis_id] = {
             "source_contract_status": contract_h.contract_status,
             "observed_router_hints": observed,
@@ -541,6 +610,45 @@ def execute_pre_n10_primary_router_v1(
     )
     post_contract_path = root / "contract.after_primary_router.json"
     _write_exact_or_validate(post_contract_path, post_contract)
+
+    if working_bundle is not None:
+        post_bundle_path = (
+            root / "atomic_source_binding.after_primary.bundle.json"
+        )
+        _write_exact_or_validate(
+            post_bundle_path,
+            working_bundle,
+        )
+
+        post_canonical_path = (
+            root / "canonical_source_reference.after_primary.report.json"
+        )
+        post_canonical = (
+            build_pre_n10_canonical_source_reference_report_v1(
+                portfolio_path=portfolio_file,
+                query_plan_path=post_plan_path,
+                source_binding_bundle_path=post_bundle_path,
+            )
+        )
+        _write_exact_or_validate(
+            post_canonical_path,
+            post_canonical,
+        )
+
+        post_contract_v2_path = (
+            root / "contract_v2.after_primary_router.json"
+        )
+        post_contract_v2 = build_pre_n10_scientific_contract_v2(
+            portfolio_path=portfolio_file,
+            query_plan_path=post_plan_path,
+            canonical_source_reference_path=post_canonical_path,
+            claim_decomposition_request_count=0,
+        )
+        _write_exact_or_validate(
+            post_contract_v2_path,
+            post_contract_v2,
+        )
+
     post_by_hypothesis = {
         row.hypothesis_id: row for row in post_contract.hypotheses
     }

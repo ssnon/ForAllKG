@@ -1011,6 +1011,15 @@ def execute_pre_n10_prospective_campaign_v1(
     primary_root = root / "02_primary_router"
     post_query_path = primary_root / "post_primary.claims_queries.json"
     post_contract_path = primary_root / "contract.after_primary_router.json"
+    post_source_binding_bundle_path = (
+        primary_root / "atomic_source_binding.after_primary.bundle.json"
+    )
+    post_canonical_source_reference_path = (
+        primary_root / "canonical_source_reference.after_primary.report.json"
+    )
+    post_contract_v2_path = (
+        primary_root / "contract_v2.after_primary_router.json"
+    )
     primary_report_path = primary_root / "primary_router.report.json"
     primary_argv = [
         "-m",
@@ -1021,6 +1030,8 @@ def execute_pre_n10_prospective_campaign_v1(
         str(query_path),
         "--contract-report",
         str(contract_path),
+        "--source-binding-bundle",
+        str(source_binding_bundle_path),
         "--output-dir",
         str(primary_root),
         "--model",
@@ -1051,6 +1062,21 @@ def execute_pre_n10_prospective_campaign_v1(
         post_contract = PreN10ScientificContractReportV1.model_validate_json(
             post_contract_path.read_text(encoding="utf-8")
         )
+        post_source_binding_bundle = (
+            AtomicScientificSourceBindingBundle.model_validate_json(
+                post_source_binding_bundle_path.read_text(encoding="utf-8")
+            )
+        )
+        post_canonical_source_reference = (
+            PreN10CanonicalSourceReferenceReportV1.model_validate_json(
+                post_canonical_source_reference_path.read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+        post_contract_v2 = PreN10ScientificContractReportV2.model_validate_json(
+            post_contract_v2_path.read_text(encoding="utf-8")
+        )
         if report.source_contract_report_id != initial_contract.report_id:
             raise ValueError("campaign primary/source contract ID mismatch")
         if report.source_contract_report_sha256 != initial_contract.report_sha256:
@@ -1063,6 +1089,53 @@ def execute_pre_n10_prospective_campaign_v1(
             raise ValueError("campaign primary/post contract ID mismatch")
         if report.post_contract_report_sha256 != post_contract.report_sha256:
             raise ValueError("campaign primary/post contract SHA mismatch")
+
+        if (
+            post_source_binding_bundle.source_query_plan_id
+            != post_query.plan_id
+        ):
+            raise ValueError(
+                "campaign primary/post source-binding bundle query-plan ID mismatch"
+            )
+        if (
+            post_source_binding_bundle.source_query_plan_sha256
+            != post_query.plan_sha256
+        ):
+            raise ValueError(
+                "campaign primary/post source-binding bundle query-plan SHA mismatch"
+            )
+        if (
+            post_canonical_source_reference.source_binding_bundle_id
+            != post_source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "campaign primary/post canonical source-reference bundle ID mismatch"
+            )
+        if (
+            post_canonical_source_reference.source_binding_bundle_sha256
+            != post_source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "campaign primary/post canonical source-reference bundle SHA mismatch"
+            )
+        if (
+            post_contract_v2.canonical_source_reference_report_id
+            != post_canonical_source_reference.report_id
+        ):
+            raise ValueError(
+                "campaign primary/post contract-v2 canonical source-reference ID mismatch"
+            )
+        if (
+            post_contract_v2.canonical_source_reference_report_sha256
+            != post_canonical_source_reference.report_sha256
+        ):
+            raise ValueError(
+                "campaign primary/post contract-v2 canonical source-reference SHA mismatch"
+            )
+        if post_contract_v2.source_query_plan_id != post_query.plan_id:
+            raise ValueError(
+                "campaign primary/post contract-v2 query-plan ID mismatch"
+            )
         return report.report_id, report.report_sha256
 
     stages.append(
@@ -1074,6 +1147,9 @@ def execute_pre_n10_prospective_campaign_v1(
             expected_outputs=[
                 post_query_path,
                 post_contract_path,
+                post_source_binding_bundle_path,
+                post_canonical_source_reference_path,
+                post_contract_v2_path,
                 primary_report_path,
             ],
             validate=validate_primary,

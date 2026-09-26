@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+)
 from pipeline_core.discovery.pre_n10_primary_router_v1 import (
     PreN10PrimaryRouterReportV1,
     execute_pre_n10_primary_router_v1,
@@ -24,6 +27,7 @@ def execute_pre_n10_primary_router_runtime_v1(
     contract_report_path: Path,
     output_root: Path,
     model: str,
+    source_binding_bundle_path: Path | None = None,
     specification_repair_model: str | None = None,
     specification_audit_model: str | None = None,
     source_alignment_model: str | None = None,
@@ -49,6 +53,11 @@ def execute_pre_n10_primary_router_runtime_v1(
     query_file = query_plan_path.expanduser().resolve()
     contract_file = contract_report_path.expanduser().resolve()
     root = output_root.expanduser().resolve()
+    source_binding_bundle_file = (
+        source_binding_bundle_path.expanduser().resolve()
+        if source_binding_bundle_path is not None
+        else None
+    )
 
     for path, label in (
         (portfolio_file, "portfolio"),
@@ -57,6 +66,15 @@ def execute_pre_n10_primary_router_runtime_v1(
     ):
         if not path.is_file():
             raise ValueError(f"missing pre-N10 primary-router {label}: {path}")
+
+    if (
+        source_binding_bundle_file is not None
+        and not source_binding_bundle_file.is_file()
+    ):
+        raise ValueError(
+            "missing pre-N10 primary-router source-binding bundle: "
+            + str(source_binding_bundle_file)
+        )
 
     default_model = str(model).strip()
     if not default_model:
@@ -76,6 +94,13 @@ def execute_pre_n10_primary_router_runtime_v1(
 
     contract = PreN10ScientificContractReportV1.model_validate_json(
         contract_file.read_text(encoding="utf-8")
+    )
+    source_binding_bundle = (
+        AtomicScientificSourceBindingBundle.model_validate_json(
+            source_binding_bundle_file.read_text(encoding="utf-8")
+        )
+        if source_binding_bundle_file is not None
+        else None
     )
 
     def specification_factory(hypothesis_id: str, lineage_root: Path):
@@ -132,6 +157,7 @@ def execute_pre_n10_primary_router_runtime_v1(
         output_root=root,
         specification_repair_backend_factory=specification_factory,
         source_alignment_audit_backend_factory=source_alignment_factory,
+        source_binding_bundle=source_binding_bundle,
     )
 
 

@@ -20,6 +20,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--portfolio", required=True, type=Path)
     parser.add_argument("--query-plan", required=True, type=Path)
     parser.add_argument("--contract-report", required=True, type=Path)
+    parser.add_argument("--source-binding-bundle", type=Path, default=None)
     parser.add_argument("--output-dir", required=True, type=Path)
 
     parser.add_argument("--model", required=True)
@@ -44,6 +45,7 @@ def main() -> int:
             contract_report_path=args.contract_report,
             output_root=args.output_dir,
             model=args.model,
+            source_binding_bundle_path=args.source_binding_bundle,
             specification_repair_model=args.specification_repair_model,
             specification_audit_model=args.specification_audit_model,
             source_alignment_model=args.source_alignment_model,
