@@ -8,10 +8,14 @@ from domains.relation_ir_registry import get_relation_typing_adapter
 from pipeline_core.discovery.relational_atomic_binding_plan import (
     RelationalAtomicBindingPlan,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     RelationalAtomicEndpointBindingReport,
 )
 from pipeline_core.discovery.relational_atomic_projection import (
+    canonical_specifications_from_bundle_for_plan,
     compile_relational_atomic_projection,
     compile_relational_atomic_projection_relation_ir,
 )
@@ -29,6 +33,11 @@ def main() -> int:
     parser.add_argument("--plan", required=True, type=Path)
     parser.add_argument("--endpoint-report", required=True, type=Path)
     parser.add_argument("--domain-profile", required=True)
+    parser.add_argument(
+        "--canonical-spec-bundle",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--projection-output", required=True, type=Path)
     parser.add_argument("--relation-ir-output", required=True, type=Path)
     args = parser.parse_args()
@@ -42,9 +51,28 @@ def main() -> int:
         )
     )
 
+    canonical_specifications = None
+    if args.canonical_spec_bundle is not None:
+        bundle_path = args.canonical_spec_bundle.expanduser().resolve()
+        if not bundle_path.is_file():
+            raise ValueError(
+                "missing canonical specification bundle: "
+                + str(bundle_path)
+            )
+        bundle = AtomicScientificSpecificationBundle.model_validate_json(
+            bundle_path.read_text(encoding="utf-8")
+        )
+        canonical_specifications = (
+            canonical_specifications_from_bundle_for_plan(
+                bundle=bundle,
+                plan=plan,
+            )
+        )
+
     projection = compile_relational_atomic_projection(
         plan=plan,
         endpoint_report=endpoint_report,
+        canonical_specifications=canonical_specifications,
     )
 
     profile = get_domain_profile(args.domain_profile)
@@ -67,6 +95,14 @@ def main() -> int:
     )
 
     print("Relational atomic compatibility projection complete")
+    print(
+        "Source binding mode:",
+        (
+            "CANONICAL_STABLE_ID"
+            if args.canonical_spec_bundle is not None
+            else "LEGACY_EXACT_TEXT_FALLBACK"
+        ),
+    )
     print("Selected claims:", projection.selected_claim_count)
     print("Projected claims:", projection.projected_claim_count)
     print(

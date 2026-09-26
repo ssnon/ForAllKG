@@ -33,8 +33,12 @@ from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     RelationalAtomicEndpointBindingReport,
 )
 from pipeline_core.discovery.relational_atomic_projection import (
+    canonical_specifications_from_bundle_for_plan,
     compile_relational_atomic_projection,
     compile_relational_atomic_projection_relation_ir,
+)
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    build_atomic_scientific_specification_bundle,
 )
 from pipeline_core.discovery.scientific_relation_ir import (
     NullRelationTypingAdapter,
@@ -621,4 +625,52 @@ def test_canonical_mapping_rejects_unknown_claim_population(
             canonical_specifications={
                 "external_novelty_claim:unknown": canonical,
             },
+        )
+
+def test_bundle_resolves_exact_selected_claim_population(
+    tmp_path: Path,
+) -> None:
+    plan, _ = _fixture(tmp_path)
+    canonical = _canonical_specification(
+        observable=(
+            "Substrate composition changes the Raman-intensity response "
+            "to nanostructure spacing."
+        ),
+    )
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic_report:fixture",
+        source_contract="fixture",
+        hypotheses=[
+            (
+                "hypothesis:candidate",
+                [canonical],
+            )
+        ],
+    )
+
+    mapping = canonical_specifications_from_bundle_for_plan(
+        bundle=bundle,
+        plan=plan,
+    )
+    assert list(mapping) == [canonical.claim_id]
+    assert mapping[canonical.claim_id] == canonical
+
+
+def test_bundle_missing_selected_claim_fails_closed(
+    tmp_path: Path,
+) -> None:
+    plan, _ = _fixture(tmp_path)
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic_report:fixture",
+        source_contract="fixture",
+        hypotheses=[],
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="bundle missing selected claims",
+    ):
+        canonical_specifications_from_bundle_for_plan(
+            bundle=bundle,
+            plan=plan,
         )

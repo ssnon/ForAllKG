@@ -10,6 +10,9 @@ from pathlib import Path
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.relational_atomic_binding_plan import (
     RelationalAtomicBindingPlan,
@@ -86,6 +89,15 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--final-hypothesis-id", required=True)
     parser.add_argument("--domain-profile", required=True)
+    parser.add_argument(
+        "--canonical-spec-bundle",
+        type=Path,
+        default=None,
+    )
+    parser.add_argument(
+        "--canonical-spec-bundle-sha256",
+        default=None,
+    )
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument(
         "--model",
@@ -162,6 +174,18 @@ def main() -> int:
     provider_path = args.provider_plan.expanduser().resolve()
     external_path = args.source_external_report.expanduser().resolve()
     output_dir = args.output_dir.expanduser().resolve()
+    canonical_bundle_path = (
+        args.canonical_spec_bundle.expanduser().resolve()
+        if args.canonical_spec_bundle is not None
+        else None
+    )
+    if (
+        (canonical_bundle_path is None)
+        != (args.canonical_spec_bundle_sha256 is None)
+    ):
+        raise ValueError(
+            "canonical specification bundle path/SHA must be supplied together"
+        )
 
     for path in (plan_path, endpoint_path, provider_path, external_path):
         if not path.is_file():
@@ -176,6 +200,20 @@ def main() -> int:
     source_external = ExternalNoveltyReport.model_validate_json(
         external_path.read_text(encoding="utf-8")
     )
+    if canonical_bundle_path is not None:
+        if not canonical_bundle_path.is_file():
+            raise ValueError(
+                "missing frozen canonical specification bundle: "
+                + str(canonical_bundle_path)
+            )
+        observed_bundle_sha = sha256_file(canonical_bundle_path)
+        if observed_bundle_sha != args.canonical_spec_bundle_sha256:
+            raise ValueError(
+                "canonical specification bundle changed after V_post plan freeze"
+            )
+        AtomicScientificSpecificationBundle.model_validate_json(
+            canonical_bundle_path.read_text(encoding="utf-8")
+        )
 
     if endpoint.source_binding_plan_id != plan.plan_id:
         raise ValueError("endpoint report/binding plan ID mismatch")
@@ -286,6 +324,10 @@ def main() -> int:
         fingerprint_file(external_path),
         fingerprint_file(final_portfolio_path),
     ]
+    if canonical_bundle_path is not None:
+        frozen_inputs.append(
+            fingerprint_file(canonical_bundle_path)
+        )
     freeze = build_relational_scientific_verifier_input_freeze(
         repository_head_sha=repo_head,
         repository_worktree_dirty=repo_dirty,
@@ -387,6 +429,11 @@ def main() -> int:
         "--projection-output", str(relational_projection),
         "--relation-ir-output", str(relation_ir),
     ]
+    if canonical_bundle_path is not None:
+        relation_ir_cmd += [
+            "--canonical-spec-bundle",
+            str(canonical_bundle_path),
+        ]
     factor_projection_cmd = [
         "-m",
         "scripts.discovery.build_relational_atomic_factor_projection_shadow",

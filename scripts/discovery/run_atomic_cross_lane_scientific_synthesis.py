@@ -5,6 +5,9 @@ import os
 from pathlib import Path
 
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    build_atomic_scientific_specification_bundle,
+)
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     InstructorAtomicSynthesisBackend,
     build_atomic_synthesis_prompt,
@@ -29,6 +32,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--report-output", required=True, type=Path)
     parser.add_argument("--portfolio-output", required=True, type=Path)
     parser.add_argument("--query-plan-output", required=True, type=Path)
+    parser.add_argument(
+        "--canonical-spec-output",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--prompt-output", type=Path, default=None)
     parser.add_argument("--max-syntheses", type=int, default=2)
     parser.add_argument(
@@ -110,6 +118,17 @@ def main() -> int:
         backend=backend,
         max_syntheses=args.max_syntheses,
     )
+    canonical_bundle = build_atomic_scientific_specification_bundle(
+        source_report_id=report.report_id,
+        source_contract=report.schema_version,
+        hypotheses=[
+            (
+                row.hypothesis_id,
+                list(row.atomic_specifications),
+            )
+            for row in report.hypotheses
+        ],
+    )
 
     for path in (
         args.report_output,
@@ -130,6 +149,15 @@ def main() -> int:
         plan.model_dump_json(indent=2) + "\n",
         encoding="utf-8",
     )
+    if args.canonical_spec_output is not None:
+        args.canonical_spec_output.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        args.canonical_spec_output.write_text(
+            canonical_bundle.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
     if args.prompt_output is not None and prompt is not None:
         args.prompt_output.parent.mkdir(parents=True, exist_ok=True)
         args.prompt_output.write_text(
@@ -161,6 +189,14 @@ def main() -> int:
     print("Report:", args.report_output)
     print("Portfolio:", args.portfolio_output)
     print("Query plan:", args.query_plan_output)
+    print(
+        "Canonical specification bundle:",
+        (
+            args.canonical_spec_output
+            if args.canonical_spec_output is not None
+            else "not requested"
+        ),
+    )
     return 0
 
 

@@ -49,6 +49,11 @@ def main() -> int:
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--api-key-env", default="OPENAI_API_KEY")
     parser.add_argument("--output-root", required=True, type=Path)
+    parser.add_argument(
+        "--canonical-spec-bundle",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--save-prompts", action="store_true")
     parser.add_argument(
         "--allow-dirty-worktree",
@@ -73,6 +78,7 @@ def main() -> int:
         api_key_env=args.api_key_env,
         save_prompts=args.save_prompts,
         allow_dirty_worktree=args.allow_dirty_worktree,
+        canonical_spec_bundle_path=args.canonical_spec_bundle,
     )
     plan_path = root / "vpost_execution.plan.json"
     write_exact_or_validate(plan_path, execution_plan)

@@ -17,6 +17,9 @@ from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicClaimKind,
     CompiledAtomicSpecification,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.atomic_scientific_source_binding import (
     resolve_atomic_source_reference,
 )
@@ -481,6 +484,55 @@ def _canonical_specification_binding_reasons(
             )
 
     return prediction, falsifier, list(dict.fromkeys(reasons))
+
+
+def canonical_specifications_from_bundle_for_plan(
+    *,
+    bundle: AtomicScientificSpecificationBundle,
+    plan: RelationalAtomicBindingPlan,
+) -> dict[str, CompiledAtomicSpecification]:
+    selected = selected_binding_claims(plan)
+    selected_by_id = {row.claim_id: row for row in selected}
+    if len(selected_by_id) != len(selected):
+        raise ValueError(
+            "duplicate selected claim IDs in binding plan"
+        )
+
+    bundle_rows: dict[
+        tuple[str, str], CompiledAtomicSpecification
+    ] = {}
+    for hypothesis in bundle.hypotheses:
+        for specification in hypothesis.specifications:
+            key = (hypothesis.hypothesis_id, specification.claim_id)
+            if key in bundle_rows:
+                raise ValueError(
+                    "duplicate hypothesis/claim identity in canonical bundle"
+                )
+            bundle_rows[key] = specification
+
+    output: dict[str, CompiledAtomicSpecification] = {}
+    missing: list[str] = []
+    for claim in selected:
+        key = (
+            claim.candidate_hypothesis_id,
+            claim.claim_id,
+        )
+        specification = bundle_rows.get(key)
+        if specification is None:
+            missing.append(
+                claim.candidate_hypothesis_id
+                + "/"
+                + claim.claim_id
+            )
+            continue
+        output[claim.claim_id] = specification
+
+    if missing:
+        raise ValueError(
+            "canonical specification bundle missing selected claims: "
+            + ",".join(sorted(missing))
+        )
+    return output
 
 
 def compile_relational_atomic_projection(

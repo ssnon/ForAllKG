@@ -9,6 +9,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.pre_n10_relational_binding_bridge_v1 import (
     PreN10RelationalBindingBridgeReportV1,
 )
@@ -211,6 +214,11 @@ class PreN10VPostShadowPlanV1(StrictModel):
     source_binding_bridge_report_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     provider_plan_path: str
     provider_plan_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    canonical_spec_bundle_path: str | None = None
+    canonical_spec_bundle_file_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
 
     model: str
     base_url: str | None = None
@@ -244,6 +252,48 @@ class PreN10VPostShadowPlanV1(StrictModel):
         ids = [row.lineage_id for row in self.lineages]
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate V_post lineage ID")
+        if (
+            (self.canonical_spec_bundle_path is None)
+            != (self.canonical_spec_bundle_file_sha256 is None)
+        ):
+            raise ValueError(
+                "V_post canonical specification path/SHA mismatch"
+            )
+        for lineage in self.lineages:
+            verifier_stages = [
+                row
+                for row in lineage.stages
+                if row.stage == "relational_scientific_verifier"
+            ]
+            if not verifier_stages:
+                continue
+            argv = verifier_stages[0].argv
+            has_bundle = "--canonical-spec-bundle" in argv
+            if has_bundle != (
+                self.canonical_spec_bundle_path is not None
+            ):
+                raise ValueError(
+                    "V_post verifier canonical bundle argv mismatch"
+                )
+            if has_bundle:
+                bundle_index = argv.index(
+                    "--canonical-spec-bundle"
+                )
+                sha_index = argv.index(
+                    "--canonical-spec-bundle-sha256"
+                )
+                if argv[bundle_index + 1] != (
+                    self.canonical_spec_bundle_path
+                ):
+                    raise ValueError(
+                        "V_post verifier canonical bundle path mismatch"
+                    )
+                if argv[sha_index + 1] != (
+                    self.canonical_spec_bundle_file_sha256
+                ):
+                    raise ValueError(
+                        "V_post verifier canonical bundle SHA mismatch"
+                    )
         body = self.model_dump(mode="json")
         observed_id = body.pop("plan_id")
         observed_sha = body.pop("plan_sha256")
@@ -457,6 +507,7 @@ def compile_pre_n10_vpost_shadow_plan_v1(
     api_key_env: str = "OPENAI_API_KEY",
     save_prompts: bool = False,
     allow_dirty_worktree: bool = False,
+    canonical_spec_bundle_path: Path | None = None,
 ) -> PreN10VPostShadowPlanV1:
     if not str(model).strip():
         raise ValueError("V_post shadow requires a model")
@@ -465,6 +516,23 @@ def compile_pre_n10_vpost_shadow_plan_v1(
     provider = provider_plan_path.expanduser().resolve()
     if not provider.is_file():
         raise ValueError("missing frozen provider plan: " + str(provider))
+
+    canonical_bundle = (
+        canonical_spec_bundle_path.expanduser().resolve()
+        if canonical_spec_bundle_path is not None
+        else None
+    )
+    canonical_bundle_sha = None
+    if canonical_bundle is not None:
+        if not canonical_bundle.is_file():
+            raise ValueError(
+                "missing canonical specification bundle: "
+                + str(canonical_bundle)
+            )
+        AtomicScientificSpecificationBundle.model_validate_json(
+            canonical_bundle.read_text(encoding="utf-8")
+        )
+        canonical_bundle_sha = sha256_file(canonical_bundle)
 
     root = output_root.expanduser().resolve()
     lineages: list[PreN10VPostLineagePlanV1] = []
@@ -591,6 +659,14 @@ def compile_pre_n10_vpost_shadow_plan_v1(
             "--max-source-alias-variants-per-projection",
             "2",
         ]
+        if canonical_bundle is not None:
+            assert canonical_bundle_sha is not None
+            verifier_argv += [
+                "--canonical-spec-bundle",
+                str(canonical_bundle),
+                "--canonical-spec-bundle-sha256",
+                canonical_bundle_sha,
+            ]
         if base_url:
             verifier_argv += ["--base-url", base_url]
         if save_prompts:
@@ -653,6 +729,12 @@ def compile_pre_n10_vpost_shadow_plan_v1(
         "source_binding_bridge_report_sha256": bridge.report_sha256,
         "provider_plan_path": str(provider),
         "provider_plan_file_sha256": sha256_file(provider),
+        "canonical_spec_bundle_path": (
+            str(canonical_bundle)
+            if canonical_bundle is not None
+            else None
+        ),
+        "canonical_spec_bundle_file_sha256": canonical_bundle_sha,
         "model": model,
         "base_url": base_url,
         "api_key_env": api_key_env,

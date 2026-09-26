@@ -16,6 +16,9 @@ from pipeline_core.discovery.pre_n10_vpost_shadow_v1 import (
 from pipeline_core.discovery.relational_atomic_binding_plan import (
     RelationalAtomicBindingPlan,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    build_atomic_scientific_specification_bundle,
+)
 from pipeline_core.discovery.relational_atomic_endpoint_binding import (
     LiteralEndpointBindingBatchDraft,
     LiteralEndpointBindingDraft,
@@ -330,3 +333,43 @@ def test_vpost_plan_rejects_binding_plan_mutation_after_bridge(
             model="fixture-model",
             output_root=tmp_path / "vpost",
         )
+
+def test_vpost_plan_threads_explicit_canonical_bundle_to_verifier(
+    tmp_path: Path,
+) -> None:
+    bridge = _bridge(
+        tmp_path,
+        regenerated=False,
+        selection="CONDITIONAL",
+    )
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic_report:fixture",
+        source_contract="fixture",
+        hypotheses=[],
+    )
+    bundle_path = tmp_path / "canonical.atomic.bundle.json"
+    _write(bundle_path, bundle)
+
+    plan = compile_pre_n10_vpost_shadow_plan_v1(
+        bridge=bridge,
+        provider_plan_path=_provider(tmp_path / "providers.json"),
+        model="fixture-model",
+        output_root=tmp_path / "vpost",
+        canonical_spec_bundle_path=bundle_path,
+    )
+
+    assert plan.canonical_spec_bundle_path == str(
+        bundle_path.resolve()
+    )
+    assert plan.canonical_spec_bundle_file_sha256 is not None
+    row = plan.lineages[0]
+    verifier = row.stages[1]
+    assert "--canonical-spec-bundle" in verifier.argv
+    index = verifier.argv.index("--canonical-spec-bundle")
+    assert verifier.argv[index + 1] == str(bundle_path.resolve())
+    sha_index = verifier.argv.index(
+        "--canonical-spec-bundle-sha256"
+    )
+    assert verifier.argv[sha_index + 1] == (
+        plan.canonical_spec_bundle_file_sha256
+    )
