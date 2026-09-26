@@ -296,9 +296,184 @@ def build_atomic_scientific_source_binding_bundle(
     )
 
 
+
+
+_SOURCE_ID_UNCHANGED = object()
+
+
+def project_atomic_scientific_source_binding_bundle(
+    *,
+    source_bundle: AtomicScientificSourceBindingBundle,
+    source_query_plan: LiteratureQueryPlan,
+    output_query_plan: LiteratureQueryPlan,
+    source_id_overrides: dict[
+        tuple[str, str],
+        tuple[str, str],
+    ] | None = None,
+) -> AtomicScientificSourceBindingBundle:
+    """Project canonical source provenance across bounded pre-N10 transforms.
+
+    Supported transformations are:
+    - claim-surface rebasing with stable source identity preserved;
+    - audited source-ID replacement for an existing claim;
+    - removal of existing claims (for deterministic decomposition).
+
+    New claim identities are intentionally unsupported here. Regeneration or
+    fresh decomposition must compile new source provenance from its own draft.
+    """
+
+    if source_bundle.source_portfolio_id != (
+        source_query_plan.source_portfolio_id
+    ):
+        raise ValueError(
+            "source-binding bundle/source query-plan portfolio mismatch"
+        )
+    if source_bundle.source_query_plan_id != source_query_plan.plan_id:
+        raise ValueError(
+            "source-binding bundle/source query-plan ID mismatch"
+        )
+    if source_bundle.source_query_plan_sha256 != (
+        source_query_plan.plan_sha256
+    ):
+        raise ValueError(
+            "source-binding bundle/source query-plan SHA mismatch"
+        )
+    if output_query_plan.source_portfolio_id != (
+        source_query_plan.source_portfolio_id
+    ):
+        raise ValueError(
+            "source-binding projection changed source portfolio identity"
+        )
+
+    source_claims = {
+        (claim.hypothesis_id, claim.claim_id): claim
+        for group in source_query_plan.claims
+        for claim in group.claims
+    }
+    if sum(
+        len(group.claims)
+        for group in source_query_plan.claims
+    ) != len(source_claims):
+        raise ValueError(
+            "duplicate source claim identity during source-binding projection"
+        )
+
+    source_records = {
+        (row.hypothesis_id, row.claim_id): row
+        for row in source_bundle.records
+    }
+    if len(source_records) != len(source_bundle.records):
+        raise ValueError(
+            "duplicate source-binding record identity during projection"
+        )
+    if set(source_records) != set(source_claims):
+        missing = sorted(set(source_claims) - set(source_records))
+        extra = sorted(set(source_records) - set(source_claims))
+        raise ValueError(
+            "source-binding bundle/source plan population mismatch: "
+            + "missing="
+            + repr(missing)
+            + " extra="
+            + repr(extra)
+        )
+
+    for key, claim in source_claims.items():
+        record = source_records[key]
+        if record.claim_rank != claim.claim_rank:
+            raise ValueError(
+                "source-binding source claim-rank mismatch: "
+                + claim.claim_id
+            )
+        if record.source_claim_sha256 != _sha256_json(
+            claim.model_dump(mode="json")
+        ):
+            raise ValueError(
+                "source-binding source claim SHA mismatch: "
+                + claim.claim_id
+            )
+
+    output_claims = {
+        (claim.hypothesis_id, claim.claim_id): claim
+        for group in output_query_plan.claims
+        for claim in group.claims
+    }
+    if sum(
+        len(group.claims)
+        for group in output_query_plan.claims
+    ) != len(output_claims):
+        raise ValueError(
+            "duplicate output claim identity during source-binding projection"
+        )
+
+    added = sorted(set(output_claims) - set(source_claims))
+    if added:
+        raise ValueError(
+            "source-binding projection cannot add claim identities: "
+            + repr(added)
+        )
+
+    overrides = dict(source_id_overrides or {})
+    unknown_overrides = sorted(set(overrides) - set(output_claims))
+    if unknown_overrides:
+        raise ValueError(
+            "source-binding projection has override for absent claim: "
+            + repr(unknown_overrides)
+        )
+
+    projected_records: list[AtomicScientificSourceBindingRecord] = []
+    for group in output_query_plan.claims:
+        for claim in sorted(
+            group.claims,
+            key=lambda row: row.claim_rank,
+        ):
+            key = (claim.hypothesis_id, claim.claim_id)
+            source_claim = source_claims[key]
+            source_record = source_records[key]
+
+            if claim.claim_rank != source_claim.claim_rank:
+                raise ValueError(
+                    "source-binding projection changed claim rank: "
+                    + claim.claim_id
+                )
+
+            prediction_id = source_record.prediction_observation_id
+            falsifier_id = source_record.falsification_criterion_id
+
+            if key in overrides:
+                override_prediction, override_falsifier = overrides[key]
+                override_prediction = str(override_prediction or "").strip()
+                override_falsifier = str(override_falsifier or "").strip()
+                if not override_prediction or not override_falsifier:
+                    raise ValueError(
+                        "source-binding source-ID override requires both IDs: "
+                        + claim.claim_id
+                    )
+                prediction_id = override_prediction
+                falsifier_id = override_falsifier
+
+            projected_records.append(
+                source_record.model_copy(
+                    update={
+                        "source_claim_sha256": _sha256_json(
+                            claim.model_dump(mode="json")
+                        ),
+                        "prediction_observation_id": prediction_id,
+                        "falsification_criterion_id": falsifier_id,
+                    }
+                )
+            )
+
+    return build_atomic_scientific_source_binding_bundle(
+        source_portfolio_id=output_query_plan.source_portfolio_id,
+        query_plan=output_query_plan,
+        records=projected_records,
+    )
+
+
 __all__ = [
     "AtomicScientificSourceBindingBundle",
     "AtomicScientificSourceBindingRecord",
     "build_atomic_scientific_source_binding_bundle",
     "build_atomic_scientific_source_binding_record",
+    "project_atomic_scientific_source_binding_bundle",
 ]
