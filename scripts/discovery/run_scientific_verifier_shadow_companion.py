@@ -58,6 +58,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--candidate-portfolio", type=Path, default=None)
     parser.add_argument("--atomic-report", type=Path, default=None)
     parser.add_argument("--atomic-portfolio", type=Path, default=None)
+    parser.add_argument(
+        "--canonical-spec-bundle",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--atomic-n10-manifest", type=Path, default=None)
     parser.add_argument("--external-novelty", type=Path, default=None)
     parser.add_argument("--provider-plan", type=Path, default=None)
@@ -100,6 +105,7 @@ def main() -> int:
         candidate_portfolio=args.candidate_portfolio,
         atomic_report=args.atomic_report,
         atomic_portfolio=args.atomic_portfolio,
+        canonical_spec_bundle=args.canonical_spec_bundle,
         atomic_n10_manifest=args.atomic_n10_manifest,
         atomic_n10_external_report=args.external_novelty,
         atomic_n10_provider_plan=args.provider_plan,
@@ -178,6 +184,11 @@ def main() -> int:
         "--domain-profile", domain_profile_id,
         "--output", str(relation_ir),
     ]
+    if inputs.canonical_spec_bundle is not None:
+        relation_ir_cmd += [
+            "--canonical-spec-bundle",
+            inputs.canonical_spec_bundle,
+        ]
     relation_projection_cmd = [
         "-m", "scripts.discovery.build_scientific_relation_projection_shadow",
         "--relation-ir", str(relation_ir),
@@ -330,6 +341,19 @@ def main() -> int:
         "manifest_source_hypothesis_count_verified": (
             plan.lineage.manifest_source_hypothesis_count_verified
         ),
+        "canonical_spec_bundle": inputs.canonical_spec_bundle,
+        "canonical_spec_bundle_id": (
+            plan.lineage.canonical_spec_bundle_id
+        ),
+        "canonical_spec_bundle_sha256": (
+            plan.lineage.canonical_spec_bundle_sha256
+        ),
+        "canonical_spec_bundle_lineage_verified": (
+            plan.lineage.canonical_spec_bundle_lineage_verified
+        ),
+        "canonical_spec_bundle_is_relation_ir_authority": (
+            plan.lineage.canonical_spec_bundle_is_relation_ir_authority
+        ),
         "legacy_mode_is_historical_smoke_only": True,
         "prospective_validation_input_contract_satisfied": (
             plan.lineage.prospective_validation_input_contract_satisfied
@@ -368,6 +392,20 @@ def main() -> int:
     )
     print("Resolved atomic report:", inputs.atomic_report)
     print("Resolved atomic portfolio:", inputs.atomic_portfolio)
+    print(
+        "Canonical specification bundle:",
+        (
+            inputs.canonical_spec_bundle
+            if inputs.canonical_spec_bundle is not None
+            else "not supplied"
+        ),
+    )
+    print(
+        "Canonical bundle relation-IR authority:",
+        str(
+            plan.lineage.canonical_spec_bundle_is_relation_ir_authority
+        ).lower(),
+    )
     print(
         "Manifest source portfolio binding verified:",
         str(plan.lineage.manifest_source_portfolio_binding_verified).lower(),

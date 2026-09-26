@@ -6,6 +6,15 @@ from pathlib import Path
 
 import pytest
 
+from pipeline_core.discovery.atomic_scientific_specification import (
+    CompiledAtomicSpecification,
+)
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    build_atomic_scientific_specification_bundle,
+)
+from pipeline_core.discovery.external_novelty_contracts import (
+    NoveltyClaimScientificStructure,
+)
 from pipeline_core.discovery.scientific_verifier_shadow_companion import (
     build_scientific_verifier_shadow_companion_plan,
     resolve_scientific_verifier_shadow_inputs,
@@ -15,6 +24,8 @@ from pipeline_core.discovery.scientific_verifier_shadow_companion import (
 
 def _write(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    if hasattr(payload, "model_dump"):
+        payload = payload.model_dump(mode="json")
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
@@ -306,3 +317,106 @@ def test_dry_run_legacy_artifact_mode_is_explicitly_nonprospective(
         is False
     )
     assert verifier_manifest["verifier_result_consumed_by_production"] is False
+
+def _bundle_spec(claim_id: str, suffix: str) -> CompiledAtomicSpecification:
+    return CompiledAtomicSpecification(
+        local_id="atomic:" + suffix,
+        claim_id=claim_id,
+        kind="mechanistic_link",
+        importance="core",
+        novelty_selection_role="NOVELTY_BEARING",
+        text="Factor X affects response " + suffix + ".",
+        rationale="fixture",
+        source_candidate_ids=["candidate:1"],
+        premise_statement_ids=["statement:1"],
+        gap_statement_ids=[],
+        prior_art_identity_terms=["Factor X"],
+        relation_endpoint_anchors=[
+            "Factor X",
+            "response " + suffix,
+        ],
+        scope_qualifier_spans=[],
+        directional_qualifier_spans=[],
+        relation_nucleus_terms=[
+            "Factor X",
+            "response " + suffix,
+        ],
+        distinguishing_terms=[],
+        required_bridge="Factor X affects response " + suffix + ".",
+        observable="response " + suffix,
+        predicted_observation="response changes " + suffix,
+        falsification_condition="response does not change " + suffix,
+        prediction_observation_id="prediction:" + suffix,
+        falsification_criterion_id="falsifier:" + suffix,
+        search_concepts=["Factor X", "response " + suffix],
+        search_queries=["Factor X response " + suffix],
+        scientific_structure=NoveltyClaimScientificStructure(),
+        scientific_structure_reason_codes=[],
+    )
+
+
+def test_companion_verifies_explicit_canonical_bundle_lineage(
+    tmp_path: Path,
+) -> None:
+    run, _ = _fixture(tmp_path)
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic-report:1",
+        source_contract=(
+            "atomic-cross-lane-scientific-synthesis-report-v1"
+        ),
+        hypotheses=[
+            (
+                "hypothesis:1",
+                [
+                    _bundle_spec("claim:1", "1"),
+                    _bundle_spec("claim:2", "2"),
+                ],
+            )
+        ],
+    )
+    bundle_path = run / "canonical.bundle.json"
+    _write(bundle_path, bundle)
+
+    inputs = resolve_scientific_verifier_shadow_inputs(
+        run_dir=run,
+        canonical_spec_bundle=bundle_path,
+    )
+    lineage = validate_scientific_verifier_shadow_lineage(inputs)
+
+    assert lineage.canonical_spec_bundle_id == bundle.bundle_id
+    assert (
+        lineage.canonical_spec_bundle_sha256
+        == bundle.bundle_sha256
+    )
+    assert lineage.canonical_spec_bundle_lineage_verified is True
+    assert lineage.canonical_spec_bundle_is_relation_ir_authority is True
+
+
+def test_companion_rejects_canonical_bundle_claim_population_drift(
+    tmp_path: Path,
+) -> None:
+    run, _ = _fixture(tmp_path)
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic-report:1",
+        source_contract=(
+            "atomic-cross-lane-scientific-synthesis-report-v1"
+        ),
+        hypotheses=[
+            (
+                "hypothesis:1",
+                [_bundle_spec("claim:1", "1")],
+            )
+        ],
+    )
+    bundle_path = run / "canonical.bundle.json"
+    _write(bundle_path, bundle)
+
+    inputs = resolve_scientific_verifier_shadow_inputs(
+        run_dir=run,
+        canonical_spec_bundle=bundle_path,
+    )
+    with pytest.raises(
+        ValueError,
+        match="canonical bundle/atomic claim ID set mismatch",
+    ):
+        validate_scientific_verifier_shadow_lineage(inputs)

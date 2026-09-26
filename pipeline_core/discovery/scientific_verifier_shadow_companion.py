@@ -7,6 +7,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
+
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -18,6 +22,7 @@ class ScientificVerifierShadowInputs(StrictModel):
     candidate_portfolio: str
     atomic_report: str
     atomic_portfolio: str
+    canonical_spec_bundle: str | None = None
     atomic_n10_manifest: str
     atomic_n10_external_report: str
     atomic_n10_provider_plan: str
@@ -34,6 +39,10 @@ class ScientificVerifierShadowLineage(StrictModel):
     candidate_portfolio_id: str
     atomic_report_id: str
     atomic_portfolio_id: str
+    canonical_spec_bundle_id: str | None = None
+    canonical_spec_bundle_sha256: str | None = None
+    canonical_spec_bundle_lineage_verified: bool = False
+    canonical_spec_bundle_is_relation_ir_authority: bool = False
     atomic_hypothesis_ids: list[str]
     atomic_claim_ids: list[str]
     external_novelty_report_id: str
@@ -66,6 +75,20 @@ class ScientificVerifierShadowLineage(StrictModel):
             raise ValueError("atomic claim IDs must be unique")
         if self.source_hypothesis_count != len(self.atomic_hypothesis_ids):
             raise ValueError("source_hypothesis_count mismatch")
+        if (
+            (self.canonical_spec_bundle_id is None)
+            != (self.canonical_spec_bundle_sha256 is None)
+        ):
+            raise ValueError(
+                "canonical specification bundle ID/SHA mismatch"
+            )
+        if (
+            self.canonical_spec_bundle_is_relation_ir_authority
+            and not self.canonical_spec_bundle_lineage_verified
+        ):
+            raise ValueError(
+                "canonical relation-IR authority requires verified bundle lineage"
+            )
         return self
 
 
@@ -315,6 +338,7 @@ def resolve_scientific_verifier_shadow_inputs(
     candidate_portfolio: str | Path | None = None,
     atomic_report: str | Path | None = None,
     atomic_portfolio: str | Path | None = None,
+    canonical_spec_bundle: str | Path | None = None,
     atomic_n10_manifest: str | Path | None = None,
     atomic_n10_external_report: str | Path | None = None,
     atomic_n10_provider_plan: str | Path | None = None,
@@ -368,6 +392,11 @@ def resolve_scientific_verifier_shadow_inputs(
         candidate_portfolio=str(candidate_path),
         atomic_report=str(atomic_report_path),
         atomic_portfolio=str(atomic_portfolio_path),
+        canonical_spec_bundle=(
+            str(Path(canonical_spec_bundle).expanduser().resolve())
+            if canonical_spec_bundle is not None
+            else None
+        ),
         atomic_n10_manifest=str(manifest_path),
         atomic_n10_external_report=str(external_path),
         atomic_n10_provider_plan=str(provider_path),
@@ -383,6 +412,14 @@ def validate_scientific_verifier_shadow_lineage(
     candidate_path = _require_file(Path(inputs.candidate_portfolio), "candidate portfolio")
     atomic_report_path = _require_file(Path(inputs.atomic_report), "atomic synthesis report")
     atomic_portfolio_path = _require_file(Path(inputs.atomic_portfolio), "atomic portfolio")
+    canonical_bundle_path = (
+        _require_file(
+            Path(inputs.canonical_spec_bundle),
+            "canonical atomic specification bundle",
+        )
+        if inputs.canonical_spec_bundle is not None
+        else None
+    )
     n10_manifest_path = _require_file(Path(inputs.atomic_n10_manifest), "atomic N10 manifest")
     external_path = _require_file(
         Path(inputs.atomic_n10_external_report), "atomic N10 external novelty report"
@@ -393,6 +430,13 @@ def validate_scientific_verifier_shadow_lineage(
     candidate = _load_object(candidate_path)
     atomic_report = _load_object(atomic_report_path)
     atomic_portfolio = _load_object(atomic_portfolio_path)
+    canonical_bundle = (
+        AtomicScientificSpecificationBundle.model_validate_json(
+            canonical_bundle_path.read_text(encoding="utf-8")
+        )
+        if canonical_bundle_path is not None
+        else None
+    )
     n10_manifest = _load_object(n10_manifest_path)
     external = _load_object(external_path)
 
@@ -492,6 +536,40 @@ def validate_scientific_verifier_shadow_lineage(
     if not claim_ids:
         raise ValueError("atomic report contains no atomic claims")
 
+    canonical_bundle_id = None
+    canonical_bundle_sha = None
+    canonical_bundle_verified = False
+    if canonical_bundle is not None:
+        if canonical_bundle.source_report_id != atomic_report_id:
+            raise ValueError(
+                "canonical bundle/atomic report ID mismatch"
+            )
+        if canonical_bundle.source_contract != atomic_report.get(
+            "schema_version"
+        ):
+            raise ValueError(
+                "canonical bundle/atomic report contract mismatch"
+            )
+        bundle_hypothesis_ids = sorted(
+            row.hypothesis_id for row in canonical_bundle.hypotheses
+        )
+        bundle_claim_ids = sorted(
+            specification.claim_id
+            for row in canonical_bundle.hypotheses
+            for specification in row.specifications
+        )
+        if bundle_hypothesis_ids != sorted(portfolio_hypothesis_ids):
+            raise ValueError(
+                "canonical bundle/atomic hypothesis ID set mismatch"
+            )
+        if bundle_claim_ids != sorted(claim_ids):
+            raise ValueError(
+                "canonical bundle/atomic claim ID set mismatch"
+            )
+        canonical_bundle_id = canonical_bundle.bundle_id
+        canonical_bundle_sha = canonical_bundle.bundle_sha256
+        canonical_bundle_verified = True
+
     authority_mode = str(n10_manifest.get("authority_mode") or "").strip() or "unknown"
     lineage_id = _stable_lineage_id(
         [
@@ -511,6 +589,14 @@ def validate_scientific_verifier_shadow_lineage(
         candidate_portfolio_id=candidate_id,
         atomic_report_id=atomic_report_id,
         atomic_portfolio_id=atomic_portfolio_id,
+        canonical_spec_bundle_id=canonical_bundle_id,
+        canonical_spec_bundle_sha256=canonical_bundle_sha,
+        canonical_spec_bundle_lineage_verified=(
+            canonical_bundle_verified
+        ),
+        canonical_spec_bundle_is_relation_ir_authority=(
+            canonical_bundle is not None
+        ),
         atomic_hypothesis_ids=sorted(portfolio_hypothesis_ids),
         atomic_claim_ids=sorted(claim_ids),
         external_novelty_report_id=external_report_id,

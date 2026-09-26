@@ -10,6 +10,12 @@ from domains.relation_ir_registry import (
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     AtomicCrossLaneSynthesisReport,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
+from pipeline_core.discovery.atomic_scientific_specification_bundle_relation_ir import (
+    compile_atomic_specification_bundle_relation_ir,
+)
 from pipeline_core.discovery.reframing.atomic_cross_lane_relation_ir_adapter import (
     compile_atomic_report_relation_ir,
 )
@@ -24,6 +30,11 @@ def main() -> int:
         )
     )
     parser.add_argument("--atomic-report", required=True, type=Path)
+    parser.add_argument(
+        "--canonical-spec-bundle",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--domain-profile", required=True)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
@@ -34,11 +45,35 @@ def main() -> int:
     profile = get_domain_profile(args.domain_profile)
     adapter = get_relation_typing_adapter(profile.profile_id)
 
-    report = compile_atomic_report_relation_ir(
-        report=atomic_report,
-        domain_profile=profile,
-        typing_adapter=adapter,
-    )
+    if args.canonical_spec_bundle is not None:
+        bundle_path = args.canonical_spec_bundle.expanduser().resolve()
+        if not bundle_path.is_file():
+            raise ValueError(
+                "missing canonical atomic specification bundle: "
+                + str(bundle_path)
+            )
+        bundle = AtomicScientificSpecificationBundle.model_validate_json(
+            bundle_path.read_text(encoding="utf-8")
+        )
+        if bundle.source_report_id != atomic_report.report_id:
+            raise ValueError(
+                "canonical bundle/source atomic report ID mismatch"
+            )
+        if bundle.source_contract != atomic_report.schema_version:
+            raise ValueError(
+                "canonical bundle/source atomic report contract mismatch"
+            )
+        report = compile_atomic_specification_bundle_relation_ir(
+            bundle=bundle,
+            domain_profile=profile,
+            typing_adapter=adapter,
+        )
+    else:
+        report = compile_atomic_report_relation_ir(
+            report=atomic_report,
+            domain_profile=profile,
+            typing_adapter=adapter,
+        )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
@@ -47,6 +82,14 @@ def main() -> int:
     )
 
     print("Scientific relation IR shadow complete")
+    print(
+        "Scientific identity source:",
+        (
+            "CANONICAL_SPECIFICATION_BUNDLE"
+            if args.canonical_spec_bundle is not None
+            else "ATOMIC_REPORT_COMPATIBILITY"
+        ),
+    )
     print("Domain profile:", report.domain_profile_id)
     print("Typing adapter:", report.typing_adapter_id)
     print("Relations:", report.relation_count)

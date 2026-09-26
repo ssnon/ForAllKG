@@ -8,6 +8,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
     AtomicCrossLaneSynthesisReport,
@@ -63,6 +66,12 @@ class AtomicScientificVerifierProspectiveCohortFreeze(StrictModel):
     source_atomic_report_id: str
     atomic_portfolio_id: str
     atomic_query_plan_id: str
+    canonical_spec_bundle_id: str | None = None
+    canonical_spec_bundle_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    canonical_spec_bundle_population_verified: bool = False
 
     hypothesis_ids: list[str]
     claim_ids: list[str]
@@ -86,6 +95,20 @@ class AtomicScientificVerifierProspectiveCohortFreeze(StrictModel):
             raise ValueError("prospective freeze duplicate hypothesis IDs")
         if len(self.claim_ids) != len(set(self.claim_ids)):
             raise ValueError("prospective freeze duplicate claim IDs")
+        if (
+            (self.canonical_spec_bundle_id is None)
+            != (self.canonical_spec_bundle_sha256 is None)
+        ):
+            raise ValueError(
+                "prospective freeze canonical bundle ID/SHA mismatch"
+            )
+        if (
+            self.canonical_spec_bundle_id is not None
+            and not self.canonical_spec_bundle_population_verified
+        ):
+            raise ValueError(
+                "prospective freeze canonical bundle population unverified"
+            )
 
         body = self.model_dump(mode="json")
         observed_id = body.pop("freeze_id")
@@ -105,6 +128,7 @@ def build_atomic_scientific_verifier_prospective_cohort_freeze(
     atomic_report: AtomicCrossLaneSynthesisReport,
     atomic_portfolio: HypothesisPortfolio,
     query_plan: LiteratureQueryPlan,
+    canonical_bundle: AtomicScientificSpecificationBundle | None = None,
 ) -> AtomicScientificVerifierProspectiveCohortFreeze:
     if candidate_portfolio.source_context_id != context.context_id:
         raise ValueError("candidate/context ID mismatch")
@@ -158,6 +182,38 @@ def build_atomic_scientific_verifier_prospective_cohort_freeze(
 
     hypothesis_ids = sorted(portfolio_hypothesis_ids)
     claim_ids = sorted(report_claim_ids)
+
+    bundle_id = None
+    bundle_sha = None
+    bundle_population_verified = False
+    if canonical_bundle is not None:
+        if canonical_bundle.source_report_id != atomic_report.report_id:
+            raise ValueError("canonical bundle/atomic report ID mismatch")
+        if canonical_bundle.source_contract != atomic_report.schema_version:
+            raise ValueError(
+                "canonical bundle/atomic report contract mismatch"
+            )
+        bundle_hypothesis_ids = sorted(
+            row.hypothesis_id
+            for row in canonical_bundle.hypotheses
+        )
+        bundle_claim_ids = sorted(
+            specification.claim_id
+            for row in canonical_bundle.hypotheses
+            for specification in row.specifications
+        )
+        if bundle_hypothesis_ids != hypothesis_ids:
+            raise ValueError(
+                "canonical bundle/atomic hypothesis sets differ"
+            )
+        if bundle_claim_ids != claim_ids:
+            raise ValueError(
+                "canonical bundle/atomic claim sets differ"
+            )
+        bundle_id = canonical_bundle.bundle_id
+        bundle_sha = canonical_bundle.bundle_sha256
+        bundle_population_verified = True
+
     body = {
         "schema_version": "atomic-scientific-verifier-prospective-cohort-freeze-v1",
         "source_context_id": context.context_id,
@@ -167,6 +223,11 @@ def build_atomic_scientific_verifier_prospective_cohort_freeze(
         "source_atomic_report_id": atomic_report.report_id,
         "atomic_portfolio_id": atomic_portfolio.portfolio_id,
         "atomic_query_plan_id": query_plan.plan_id,
+        "canonical_spec_bundle_id": bundle_id,
+        "canonical_spec_bundle_sha256": bundle_sha,
+        "canonical_spec_bundle_population_verified": (
+            bundle_population_verified
+        ),
         "hypothesis_ids": hypothesis_ids,
         "claim_ids": claim_ids,
         "hypothesis_count": len(hypothesis_ids),

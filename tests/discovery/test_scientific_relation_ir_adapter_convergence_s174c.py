@@ -5,6 +5,12 @@ from domains.registry import get_domain_profile
 from pipeline_core.discovery.atomic_scientific_specification import (
     CompiledAtomicSpecification,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    build_atomic_scientific_specification_bundle,
+)
+from pipeline_core.discovery.atomic_scientific_specification_bundle_relation_ir import (
+    compile_atomic_specification_bundle_relation_ir,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimScientificStructure,
 )
@@ -138,3 +144,29 @@ def test_legacy_report_compiler_name_is_compatibility_equivalent():
         mode="json"
     )
     assert compatibility.report_id == adapted.report_id
+
+def test_canonical_bundle_adapter_is_byte_equivalent_to_cross_lane_adapter():
+    spec = _spec()
+    report = _report(spec)
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id=report.report_id,
+        source_contract=report.schema_version,
+        hypotheses=[("hypothesis:1", [spec])],
+    )
+    profile = get_domain_profile("sers_au_ag")
+    adapter = NullRelationTypingAdapter()
+
+    legacy = compile_cross_lane_relation_ir(
+        report=report,
+        domain_profile=profile,
+        typing_adapter=adapter,
+    )
+    canonical = compile_atomic_specification_bundle_relation_ir(
+        bundle=bundle,
+        domain_profile=profile,
+        typing_adapter=adapter,
+    )
+
+    assert canonical.model_dump(mode="json") == legacy.model_dump(
+        mode="json"
+    )

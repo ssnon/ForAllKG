@@ -258,3 +258,54 @@ def test_prospective_wrapper_does_not_poison_fresh_run_dir_before_legacy_e2e():
         legacy_call,
     )
     assert actual_manifest_write > legacy_call
+
+def test_prospective_freeze_binds_canonical_bundle_identity_and_population():
+    context, candidates, atomic_report, atomic_portfolio, query_plan = (
+        _freeze_inputs()
+    )
+    bundle = SimpleNamespace(
+        bundle_id="bundle:1",
+        bundle_sha256="b" * 64,
+        source_report_id=atomic_report.report_id,
+        source_contract="atomic-cross-lane-scientific-synthesis-report-v1",
+        hypotheses=[
+            SimpleNamespace(
+                hypothesis_id="h1",
+                specifications=[
+                    SimpleNamespace(claim_id="claim:1")
+                ],
+            )
+        ],
+    )
+    atomic_report.schema_version = (
+        "atomic-cross-lane-scientific-synthesis-report-v1"
+    )
+
+    freeze = build_atomic_scientific_verifier_prospective_cohort_freeze(
+        context=context,
+        candidate_portfolio=candidates,
+        atomic_report=atomic_report,
+        atomic_portfolio=atomic_portfolio,
+        query_plan=query_plan,
+        canonical_bundle=bundle,
+    )
+
+    assert freeze.canonical_spec_bundle_id == "bundle:1"
+    assert freeze.canonical_spec_bundle_sha256 == "b" * 64
+    assert freeze.canonical_spec_bundle_population_verified is True
+
+
+def test_prospective_wrapper_threads_canonical_bundle_to_verifier():
+    from pathlib import Path
+
+    source = (
+        Path(__file__).parents[2]
+        / "scripts"
+        / "discovery"
+        / "run_atomic_scientific_verifier_prospective_e2e.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"--canonical-spec-output"' in source
+    assert '"--canonical-spec-bundle"' in source
+    assert "canonical_spec_bundle_population_verified" in source
+    assert "canonical specification bundle SHA changed after cohort freeze" in source

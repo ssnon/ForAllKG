@@ -12,6 +12,9 @@ from pipeline_core.discovery.atomic_scientific_verifier_prospective import (
     build_atomic_scientific_verifier_prospective_cohort_freeze,
     build_atomic_scientific_verifier_prospective_comparison,
 )
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import HypothesisContext, HypothesisPortfolio
 from pipeline_core.discovery.reframing.atomic_cross_lane_synthesis import (
@@ -196,6 +199,9 @@ def main() -> int:
     atomic_report = run / "scientific_atomic_cross_lane.report.json"
     atomic_portfolio = run / "scientific_atomic_cross_lane.portfolio.json"
     atomic_query_plan = run / "scientific_atomic_cross_lane.query_plan.json"
+    atomic_bundle = (
+        run / "scientific_atomic_cross_lane.canonical_specifications.json"
+    )
     atomic_prompt = run / "scientific_atomic_cross_lane.prompt.txt"
     freeze_path = run / "scientific_atomic_verifier_prospective_cohort.json"
     old_n10_manifest = run / "scientific_atomic_n10_e2e_manifest.json"
@@ -337,6 +343,8 @@ def main() -> int:
                 str(atomic_portfolio),
                 "--query-plan-output",
                 str(atomic_query_plan),
+                "--canonical-spec-output",
+                str(atomic_bundle),
                 "--prompt-output",
                 str(atomic_prompt),
                 "--max-syntheses",
@@ -353,13 +361,19 @@ def main() -> int:
             _run(
                 "fresh_atomic_cross_lane_synthesis",
                 atomic_cmd,
-                [atomic_report, atomic_portfolio, atomic_query_plan],
+                [
+                    atomic_report,
+                    atomic_portfolio,
+                    atomic_query_plan,
+                    atomic_bundle,
+                ],
             )
         else:
             required_frozen = [
                 atomic_report,
                 atomic_portfolio,
                 atomic_query_plan,
+                atomic_bundle,
                 freeze_path,
             ]
             missing_frozen = [
@@ -383,6 +397,11 @@ def main() -> int:
         query_plan_model = LiteratureQueryPlan.model_validate_json(
             atomic_query_plan.read_text(encoding="utf-8")
         )
+        atomic_bundle_model = (
+            AtomicScientificSpecificationBundle.model_validate_json(
+                atomic_bundle.read_text(encoding="utf-8")
+            )
+        )
         if not atomic_portfolio_model.hypotheses:
             manifest["status"] = "abstained_no_atomic_hypotheses"
             manifest["finished_at_utc"] = _now()
@@ -396,6 +415,7 @@ def main() -> int:
             atomic_report=atomic_report_model,
             atomic_portfolio=atomic_portfolio_model,
             query_plan=query_plan_model,
+            canonical_bundle=atomic_bundle_model,
         )
         if args.resume_frozen_atomic_cohort:
             stored_freeze = _load_object(freeze_path)
@@ -416,6 +436,16 @@ def main() -> int:
             _write(freeze_path, freeze)
         manifest["cohort_freeze"] = str(freeze_path)
         manifest["cohort_freeze_id"] = freeze.freeze_id
+        manifest["canonical_spec_bundle"] = str(atomic_bundle)
+        manifest["canonical_spec_bundle_id"] = (
+            freeze.canonical_spec_bundle_id
+        )
+        manifest["canonical_spec_bundle_sha256"] = (
+            freeze.canonical_spec_bundle_sha256
+        )
+        manifest["canonical_spec_bundle_population_verified"] = (
+            freeze.canonical_spec_bundle_population_verified
+        )
         manifest["frozen_hypothesis_count"] = freeze.hypothesis_count
         manifest["frozen_claim_count"] = freeze.claim_count
         manifest["cohort_frozen_before_old_n10"] = True
@@ -508,6 +538,24 @@ def main() -> int:
         manifest["old_n10_completed_before_verifier_started"] = True
         manifest["old_n10_manifest"] = str(old_n10_manifest)
         manifest["old_n10_report"] = str(old_n10_report)
+
+        current_bundle = (
+            AtomicScientificSpecificationBundle.model_validate_json(
+                atomic_bundle.read_text(encoding="utf-8")
+            )
+        )
+        if current_bundle.bundle_id != freeze.canonical_spec_bundle_id:
+            raise RuntimeError(
+                "canonical specification bundle ID changed after cohort freeze"
+            )
+        if (
+            current_bundle.bundle_sha256
+            != freeze.canonical_spec_bundle_sha256
+        ):
+            raise RuntimeError(
+                "canonical specification bundle SHA changed after cohort freeze"
+            )
+
         _write(manifest_path, manifest)
 
         verifier_cmd = [
@@ -521,6 +569,8 @@ def main() -> int:
             str(atomic_report),
             "--atomic-portfolio",
             str(atomic_portfolio),
+            "--canonical-spec-bundle",
+            str(atomic_bundle),
             "--atomic-n10-manifest",
             str(old_n10_manifest),
             "--external-novelty",
