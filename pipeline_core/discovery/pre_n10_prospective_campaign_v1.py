@@ -9,6 +9,9 @@ from typing import Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
 )
@@ -40,8 +43,14 @@ from pipeline_core.discovery.pre_n10_regeneration_v1 import (
 from pipeline_core.discovery.pre_n10_relational_binding_bridge_v1 import (
     PreN10RelationalBindingBridgeReportV1,
 )
+from pipeline_core.discovery.pre_n10_canonical_source_reference_v1 import (
+    PreN10CanonicalSourceReferenceReportV1,
+)
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     PreN10ScientificContractReportV1,
+)
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    PreN10ScientificContractReportV2,
 )
 from pipeline_core.discovery.pre_n10_vpost_shadow_v1 import (
     PreN10VPostShadowReportV1,
@@ -844,6 +853,13 @@ def execute_pre_n10_prospective_campaign_v1(
     vpre_root = root / "01_initial_vpre"
     query_path = vpre_root / "claims_queries.json"
     contract_path = vpre_root / "contract.report.json"
+    source_binding_bundle_path = (
+        vpre_root / "atomic_source_binding.bundle.json"
+    )
+    canonical_source_reference_path = (
+        vpre_root / "canonical_source_reference.report.json"
+    )
+    contract_v2_path = vpre_root / "contract_v2.report.json"
     vpre_argv = [
         "-m",
         "scripts.discovery.run_pre_n10_scientific_contract_v1",
@@ -863,6 +879,12 @@ def execute_pre_n10_prospective_campaign_v1(
         str(query_path),
         "--contract-output",
         str(contract_path),
+        "--source-binding-bundle-output",
+        str(source_binding_bundle_path),
+        "--canonical-source-reference-output",
+        str(canonical_source_reference_path),
+        "--contract-v2-output",
+        str(contract_v2_path),
     ]
     if plan.base_url:
         vpre_argv += ["--base-url", plan.base_url]
@@ -884,6 +906,19 @@ def execute_pre_n10_prospective_campaign_v1(
         contract = PreN10ScientificContractReportV1.model_validate_json(
             contract_path.read_text(encoding="utf-8")
         )
+        source_binding_bundle = (
+            AtomicScientificSourceBindingBundle.model_validate_json(
+                source_binding_bundle_path.read_text(encoding="utf-8")
+            )
+        )
+        canonical_source_reference = (
+            PreN10CanonicalSourceReferenceReportV1.model_validate_json(
+                canonical_source_reference_path.read_text(encoding="utf-8")
+            )
+        )
+        contract_v2 = PreN10ScientificContractReportV2.model_validate_json(
+            contract_v2_path.read_text(encoding="utf-8")
+        )
         if query.source_portfolio_id != portfolio.portfolio_id:
             raise ValueError("campaign V_pre query-plan/portfolio mismatch")
         if contract.source_portfolio_id != portfolio.portfolio_id:
@@ -894,6 +929,62 @@ def execute_pre_n10_prospective_campaign_v1(
             raise ValueError("campaign V_pre contract/query-plan ID mismatch")
         if contract.source_query_plan_sha256 != sha256_file(query_path):
             raise ValueError("campaign V_pre contract/query-plan SHA mismatch")
+
+        if source_binding_bundle.source_portfolio_id != portfolio.portfolio_id:
+            raise ValueError(
+                "campaign V_pre source-binding bundle/portfolio mismatch"
+            )
+        if source_binding_bundle.source_query_plan_id != query.plan_id:
+            raise ValueError(
+                "campaign V_pre source-binding bundle/query-plan ID mismatch"
+            )
+        if (
+            canonical_source_reference.source_binding_bundle_id
+            != source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "campaign V_pre canonical source-reference/bundle ID mismatch"
+            )
+        if (
+            canonical_source_reference.source_binding_bundle_sha256
+            != source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "campaign V_pre canonical source-reference/bundle SHA mismatch"
+            )
+        if (
+            canonical_source_reference.source_query_plan_id
+            != query.plan_id
+        ):
+            raise ValueError(
+                "campaign V_pre canonical source-reference/query-plan ID mismatch"
+            )
+        if (
+            contract_v2.canonical_source_reference_report_id
+            != canonical_source_reference.report_id
+        ):
+            raise ValueError(
+                "campaign V_pre contract-v2/canonical source-reference ID mismatch"
+            )
+        if (
+            contract_v2.canonical_source_reference_report_sha256
+            != canonical_source_reference.report_sha256
+        ):
+            raise ValueError(
+                "campaign V_pre contract-v2/canonical source-reference SHA mismatch"
+            )
+        if contract_v2.source_binding_bundle_id != source_binding_bundle.bundle_id:
+            raise ValueError(
+                "campaign V_pre contract-v2/source-binding bundle ID mismatch"
+            )
+        if contract_v2.source_query_plan_id != query.plan_id:
+            raise ValueError(
+                "campaign V_pre contract-v2/query-plan ID mismatch"
+            )
+        if contract_v2.source_portfolio_id != portfolio.portfolio_id:
+            raise ValueError(
+                "campaign V_pre contract-v2/portfolio mismatch"
+            )
         return contract.report_id, contract.report_sha256
 
     stages.append(
@@ -902,7 +993,13 @@ def execute_pre_n10_prospective_campaign_v1(
             stage_name="initial_vpre",
             stage_root=vpre_root,
             argv=vpre_argv,
-            expected_outputs=[query_path, contract_path],
+            expected_outputs=[
+                query_path,
+                contract_path,
+                source_binding_bundle_path,
+                canonical_source_reference_path,
+                contract_v2_path,
+            ],
             validate=validate_vpre,
             runner=runner,
         )
