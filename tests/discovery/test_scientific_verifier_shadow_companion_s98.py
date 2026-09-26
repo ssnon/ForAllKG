@@ -187,6 +187,24 @@ def test_custom_output_directory_is_isolated_from_run(tmp_path: Path) -> None:
 
 def test_dry_run_materializes_frozen_stage_plan(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     run, _ = _fixture(tmp_path)
+    bundle = build_atomic_scientific_specification_bundle(
+        source_report_id="atomic-report:1",
+        source_contract=(
+            "atomic-cross-lane-scientific-synthesis-report-v1"
+        ),
+        hypotheses=[
+            (
+                "hypothesis:1",
+                [
+                    _bundle_spec("claim:1", "1"),
+                    _bundle_spec("claim:2", "2"),
+                ],
+            )
+        ],
+    )
+    bundle_path = run / "canonical.bundle.json"
+    _write(bundle_path, bundle)
+
     from scripts.discovery.run_scientific_verifier_shadow_companion import main
 
     monkeypatch.setattr(
@@ -196,6 +214,8 @@ def test_dry_run_materializes_frozen_stage_plan(tmp_path: Path, monkeypatch: pyt
             "run_scientific_verifier_shadow_companion",
             "--run-dir",
             str(run),
+            "--canonical-spec-bundle",
+            str(bundle_path),
             "--model",
             "test-model",
             "--dry-run",
@@ -216,6 +236,16 @@ def test_dry_run_materializes_frozen_stage_plan(tmp_path: Path, monkeypatch: pyt
         "exhaustive_relation_adjudication"
     )
     grounded = manifest["planned_stages"][0]["argv"]
+    relation_ir_stage = manifest["planned_stages"][1]["argv"]
+    assert "--canonical-spec-bundle" in relation_ir_stage
+    assert (
+        manifest["canonical_spec_bundle_is_relation_ir_authority"]
+        is True
+    )
+    assert (
+        manifest["atomic_report_relation_ir_compatibility_mode"]
+        is False
+    )
     assert "--annotation-only" in grounded
     assert "--detail-root" not in grounded
     assert manifest["grounded_identity_annotation_independent_of_n10_closure"] is True
@@ -297,6 +327,7 @@ def test_dry_run_legacy_artifact_mode_is_explicitly_nonprospective(
             "--model",
             "test-model",
             "--allow-legacy-atomic-n10-artifacts",
+            "--allow-atomic-report-compatibility",
             "--dry-run",
         ],
     )
@@ -312,6 +343,16 @@ def test_dry_run_legacy_artifact_mode_is_explicitly_nonprospective(
     assert verifier_manifest["legacy_atomic_n10_artifact_mode"] is True
     assert verifier_manifest["legacy_atomic_artifact_autoresolution_used"] is True
     assert verifier_manifest["legacy_mode_is_historical_smoke_only"] is True
+    assert (
+        verifier_manifest["atomic_report_relation_ir_compatibility_mode"]
+        is True
+    )
+    assert (
+        verifier_manifest[
+            "atomic_report_relation_ir_compatibility_explicitly_allowed"
+        ]
+        is True
+    )
     assert (
         verifier_manifest["prospective_validation_input_contract_satisfied"]
         is False
@@ -420,3 +461,70 @@ def test_companion_rejects_canonical_bundle_claim_population_drift(
         match="canonical bundle/atomic claim ID set mismatch",
     ):
         validate_scientific_verifier_shadow_lineage(inputs)
+
+def test_fresh_companion_rejects_missing_canonical_bundle_without_opt_in(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run, _ = _fixture(tmp_path)
+    from scripts.discovery.run_scientific_verifier_shadow_companion import main
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_scientific_verifier_shadow_companion",
+            "--run-dir",
+            str(run),
+            "--model",
+            "test-model",
+            "--dry-run",
+        ],
+    )
+    with pytest.raises(
+        ValueError,
+        match="fresh scientific verifier requires --canonical-spec-bundle",
+    ):
+        main()
+
+
+def test_completed_historical_companion_can_explicitly_opt_into_report_compatibility(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run, _ = _fixture(tmp_path)
+    from scripts.discovery.run_scientific_verifier_shadow_companion import main
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_scientific_verifier_shadow_companion",
+            "--run-dir",
+            str(run),
+            "--model",
+            "test-model",
+            "--allow-atomic-report-compatibility",
+            "--dry-run",
+        ],
+    )
+    assert main() == 0
+
+    manifest = json.loads(
+        (
+            run
+            / "scientific_verifier_shadow"
+            / "scientific_verifier_shadow_e2e_manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert manifest["atomic_n10_completion_verified"] is True
+    assert manifest["atomic_report_relation_ir_compatibility_mode"] is True
+    assert (
+        manifest[
+            "atomic_report_relation_ir_compatibility_explicitly_allowed"
+        ]
+        is True
+    )
+    relation_ir_stage = manifest["planned_stages"][1]["argv"]
+    assert "--allow-atomic-report-compatibility" in relation_ir_stage
+    assert "--canonical-spec-bundle" not in relation_ir_stage

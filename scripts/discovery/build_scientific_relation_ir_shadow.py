@@ -35,9 +35,36 @@ def main() -> int:
         type=Path,
         default=None,
     )
+    parser.add_argument(
+        "--allow-atomic-report-compatibility",
+        action="store_true",
+        help=(
+            "Historical/debug compatibility only. Permit relation-IR "
+            "scientific identity to be read directly from --atomic-report "
+            "when no canonical specification bundle is available."
+        ),
+    )
     parser.add_argument("--domain-profile", required=True)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
+
+    if (
+        args.canonical_spec_bundle is None
+        and not args.allow_atomic_report_compatibility
+    ):
+        raise ValueError(
+            "canonical specification bundle is required for fresh relation-IR "
+            "compilation; historical/debug callers must explicitly pass "
+            "--allow-atomic-report-compatibility"
+        )
+    if (
+        args.canonical_spec_bundle is not None
+        and args.allow_atomic_report_compatibility
+    ):
+        raise ValueError(
+            "--allow-atomic-report-compatibility cannot be combined with "
+            "--canonical-spec-bundle"
+        )
 
     atomic_report = AtomicCrossLaneSynthesisReport.model_validate_json(
         args.atomic_report.read_text(encoding="utf-8")
@@ -87,7 +114,7 @@ def main() -> int:
         (
             "CANONICAL_SPECIFICATION_BUNDLE"
             if args.canonical_spec_bundle is not None
-            else "ATOMIC_REPORT_COMPATIBILITY"
+            else "ATOMIC_REPORT_COMPATIBILITY_EXPLICIT"
         ),
     )
     print("Domain profile:", report.domain_profile_id)

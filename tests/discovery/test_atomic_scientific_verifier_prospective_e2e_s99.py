@@ -219,6 +219,7 @@ def test_prospective_wrapper_never_enables_legacy_smoke_mode():
     assert '"--authority-mode"' in source
     assert '"certification_only"' in source
     assert "--allow-legacy-atomic-n10-artifacts" not in source
+    assert "--allow-atomic-report-compatibility" not in source
     assert 'old_manifest.get("status") != "complete"' in source
 
 

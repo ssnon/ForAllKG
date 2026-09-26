@@ -93,6 +93,15 @@ def _parser() -> argparse.ArgumentParser:
             "input contract and must not be used to claim a completed atomic N10 run."
         ),
     )
+    parser.add_argument(
+        "--allow-atomic-report-compatibility",
+        action="store_true",
+        help=(
+            "Historical/debug compatibility only. Allow the scientific relation IR "
+            "stage to use the atomic synthesis report instead of a canonical "
+            "AtomicScientificSpecificationBundle."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -120,6 +129,24 @@ def main() -> int:
             args.allow_legacy_atomic_n10_artifacts
         ),
     )
+    if (
+        inputs.canonical_spec_bundle is None
+        and not args.allow_atomic_report_compatibility
+    ):
+        raise ValueError(
+            "fresh scientific verifier requires --canonical-spec-bundle; "
+            "historical/debug callers must explicitly pass "
+            "--allow-atomic-report-compatibility"
+        )
+    if (
+        inputs.canonical_spec_bundle is not None
+        and args.allow_atomic_report_compatibility
+    ):
+        raise ValueError(
+            "--allow-atomic-report-compatibility cannot be combined with "
+            "--canonical-spec-bundle"
+        )
+
     output = plan.outputs
     output_dir = Path(output.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -188,6 +215,10 @@ def main() -> int:
         relation_ir_cmd += [
             "--canonical-spec-bundle",
             inputs.canonical_spec_bundle,
+        ]
+    else:
+        relation_ir_cmd += [
+            "--allow-atomic-report-compatibility",
         ]
     relation_projection_cmd = [
         "-m", "scripts.discovery.build_scientific_relation_projection_shadow",
@@ -354,6 +385,13 @@ def main() -> int:
         "canonical_spec_bundle_is_relation_ir_authority": (
             plan.lineage.canonical_spec_bundle_is_relation_ir_authority
         ),
+        "canonical_bundle_required_for_fresh_relation_ir": True,
+        "atomic_report_relation_ir_compatibility_mode": (
+            inputs.canonical_spec_bundle is None
+        ),
+        "atomic_report_relation_ir_compatibility_explicitly_allowed": (
+            args.allow_atomic_report_compatibility
+        ),
         "legacy_mode_is_historical_smoke_only": True,
         "prospective_validation_input_contract_satisfied": (
             plan.lineage.prospective_validation_input_contract_satisfied
@@ -405,6 +443,10 @@ def main() -> int:
         str(
             plan.lineage.canonical_spec_bundle_is_relation_ir_authority
         ).lower(),
+    )
+    print(
+        "Atomic-report relation-IR compatibility mode:",
+        str(inputs.canonical_spec_bundle is None).lower(),
     )
     print(
         "Manifest source portfolio binding verified:",

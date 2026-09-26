@@ -17,7 +17,12 @@ def compile_atomic_report_relation_ir(
     domain_profile: ScientificDomainProfile,
     typing_adapter: RelationTypingAdapter | None = None,
 ) -> ScientificRelationIRReport:
-    """Adapt one cross-lane synthesis report into the neutral relation-IR compiler."""
+    """Compatibility-only adapter for historical cross-lane synthesis reports.
+
+    Fresh runtime scientific identity should be supplied through
+    AtomicScientificSpecificationBundle. This adapter remains deterministic
+    and authority-neutral for historical/debug compatibility.
+    """
 
     specifications = [
         (hypothesis.hypothesis_id, spec)
