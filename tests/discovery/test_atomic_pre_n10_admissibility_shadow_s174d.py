@@ -13,9 +13,9 @@ from pipeline_core.discovery.atomic_scientific_specification import (
 from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimScientificStructure,
 )
-from pipeline_core.discovery.legacy_atomic_specification_shadow import (
-    LegacyAtomicSpecificationShadowReport,
-    LegacyAtomicSpecificationShadowRow,
+from pipeline_core.discovery.atomic_scientific_admissibility import (
+    AtomicScientificAdmissibilityAssessment,
+    build_atomic_scientific_admissibility_assessment_report,
 )
 
 
@@ -75,9 +75,9 @@ def _row(
     compilation_status: str = "COMPILED_SHADOW",
     semantic_reasons: list[str] | None = None,
     specification_reasons: list[str] | None = None,
-) -> LegacyAtomicSpecificationShadowRow:
+) -> AtomicScientificAdmissibilityAssessment:
     compiled = compilation_status == "COMPILED_SHADOW"
-    return LegacyAtomicSpecificationShadowRow(
+    return AtomicScientificAdmissibilityAssessment(
         hypothesis_id="hypothesis:h1",
         claim_id=claim_id,
         claim_rank=claim_rank,
@@ -111,7 +111,6 @@ def _row(
             if semantic_status == "PASS"
             else ["atomic_claim_direction_qualifier_not_preserved"]
         ),
-        semantic_fidelity_taxonomy_shadow={},
         prediction_observation_id="prediction:1",
         falsification_criterion_id="falsifier:1",
         source_observable="outcome O",
@@ -119,54 +118,15 @@ def _row(
     )
 
 
-def _report(rows: list[LegacyAtomicSpecificationShadowRow]):
-    body = {
-        "schema_version": (
+def _report(rows: list[AtomicScientificAdmissibilityAssessment]):
+    return build_atomic_scientific_admissibility_assessment_report(
+        source_representation_id="legacy_atomic_specification_shadow:test",
+        source_representation_sha256="a" * 64,
+        source_representation_schema=(
             "legacy-atomic-scientific-specification-shadow-report-v1"
         ),
-        "hypothesis_id": "hypothesis:h1",
-        "row_count": len(rows),
-        "compiled_count": sum(
-            row.compilation_status == "COMPILED_SHADOW"
-            for row in rows
-        ),
-        "source_ready_count": sum(
-            row.source_reference_status == "READY"
-            for row in rows
-        ),
-        "semantic_pass_count": sum(
-            row.semantic_fidelity_status == "PASS"
-            for row in rows
-        ),
-        "semantic_review_count": sum(
-            row.semantic_fidelity_status == "REVIEW"
-            for row in rows
-        ),
-        "semantic_invalid_count": sum(
-            row.semantic_fidelity_status == "INVALID"
-            for row in rows
-        ),
-        "specification_complete_count": sum(
-            row.specification_status == "COMPLETE"
-            for row in rows
-        ),
-        "rows": [row.model_dump(mode="json") for row in rows],
-        "diagnostic_only": True,
-        "production_authority": False,
-        "canonical_claim_mutated": False,
-        "query_plan_mutated": False,
-        "vpre_contract_changed": False,
-        "retrieval_performed": False,
-        "novelty_assessment_performed": False,
-        "n9_performed": False,
-        "n10_performed": False,
-        "production_selection_changed": False,
-    }
-    digest = _sha(body)
-    return LegacyAtomicSpecificationShadowReport(
-        **body,
-        report_id="legacy_atomic_specification_shadow:" + digest[:20],
-        report_sha256=digest,
+        hypothesis_id="hypothesis:h1",
+        rows=rows,
     )
 
 

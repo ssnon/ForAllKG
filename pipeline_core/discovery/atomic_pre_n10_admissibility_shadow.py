@@ -7,9 +7,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from pipeline_core.discovery.legacy_atomic_specification_shadow import (
-    LegacyAtomicSpecificationShadowReport,
-    LegacyAtomicSpecificationShadowRow,
+from pipeline_core.discovery.atomic_scientific_admissibility import (
+    AtomicScientificAdmissibilityAssessment,
+    AtomicScientificAdmissibilityAssessmentReport,
 )
 
 
@@ -56,7 +56,7 @@ def _sha256_json(value: object) -> str:
 
 
 def _blocking_dimensions(
-    source: LegacyAtomicSpecificationShadowRow,
+    source: AtomicScientificAdmissibilityAssessment,
 ) -> list[BlockingDimension]:
     blockers: list[BlockingDimension] = []
 
@@ -265,7 +265,7 @@ class AtomicPreN10AdmissibilityShadowReport(StrictModel):
 
 
 def assess_atomic_pre_n10_shadow_row(
-    source: LegacyAtomicSpecificationShadowRow,
+    source: AtomicScientificAdmissibilityAssessment,
 ) -> AtomicPreN10ClaimShadowRow:
     blockers = _blocking_dimensions(source)
     ready = not blockers
@@ -311,7 +311,7 @@ def assess_atomic_pre_n10_shadow_row(
 
 
 def compile_atomic_pre_n10_admissibility_shadow(
-    source: LegacyAtomicSpecificationShadowReport,
+    source: AtomicScientificAdmissibilityAssessmentReport,
 ) -> AtomicPreN10AdmissibilityShadowReport:
     rows = [
         assess_atomic_pre_n10_shadow_row(row)
@@ -345,8 +345,10 @@ def compile_atomic_pre_n10_admissibility_shadow(
         "schema_version": (
             "atomic-pre-n10-admissibility-shadow-report-v1"
         ),
-        "source_atomic_shadow_report_id": source.report_id,
-        "source_atomic_shadow_report_sha256": source.report_sha256,
+        "source_atomic_shadow_report_id": source.source_representation_id,
+        "source_atomic_shadow_report_sha256": (
+            source.source_representation_sha256
+        ),
         "hypothesis_id": source.hypothesis_id,
         "claim_count": len(rows),
         "ready_claim_count": ready_count,
