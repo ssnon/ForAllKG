@@ -197,6 +197,64 @@ def _markers(pattern: re.Pattern[str], text: object) -> list[str]:
     )
 
 
+_COORDINATED_BRANCH_BOUNDARY_RE = re.compile(
+    r",\s+(?:and|but|whereas|while|or)\b",
+    flags=re.I,
+)
+
+
+def _context_condition_marker_partition(
+    basis: str,
+    contexts: list[dict[str, str]],
+) -> tuple[list[str], list[str]]:
+    # Partition context condition markers by structural locality.
+    # This remains surface-only and diagnostic; it does not infer semantic
+    # scope. A marker separated from the exact proposition basis by a
+    # coordinated-clause boundary is retained as ambiguous broader context,
+    # not promoted into claim-fidelity review authority.
+
+    basis_surface = _surface(basis)
+    if not basis_surface:
+        return [], []
+
+    bound: set[str] = set()
+    ambiguous: set[str] = set()
+
+    for row in contexts:
+        if not isinstance(row, dict):
+            continue
+        sentence = _surface(row.get("sentence"))
+        if not sentence:
+            continue
+
+        start = sentence.casefold().find(basis_surface.casefold())
+        if start < 0:
+            continue
+        end = start + len(basis_surface)
+
+        for match in _CONDITION_MARKER_RE.finditer(sentence):
+            marker = _surface(match.group(0))
+            if not marker:
+                continue
+
+            if match.end() <= start:
+                between = sentence[match.end():start]
+            elif match.start() >= end:
+                between = sentence[end:match.start()]
+            else:
+                bound.add(marker)
+                continue
+
+            if _COORDINATED_BRANCH_BOUNDARY_RE.search(between):
+                ambiguous.add(marker)
+            else:
+                bound.add(marker)
+
+    ambiguous.difference_update(bound)
+    key = lambda marker: (marker.casefold(), marker)
+    return sorted(bound, key=key), sorted(ambiguous, key=key)
+
+
 _ORDERED_LANGUAGE_REVIEW_REASON_CODES = {
     "atomic_claim_ordered_language_not_in_source_basis",
     "atomic_claim_ordered_language_not_in_source_context",
@@ -1078,6 +1136,13 @@ def assess_atomic_semantic_fidelity(
         _CONDITION_MARKER_RE,
         basis_context_text,
     )
+    (
+        source_context_bound_condition_markers,
+        source_context_ambiguous_condition_markers,
+    ) = _context_condition_marker_partition(
+        basis,
+        basis_source_contexts,
+    )
     claim_condition_markers = _markers(
         _CONDITION_MARKER_RE,
         " ".join(
@@ -1090,7 +1155,10 @@ def assess_atomic_semantic_fidelity(
 
     if basis_condition_markers and not claim_condition_markers:
         reason_codes.append("atomic_claim_condition_scope_may_be_dropped")
-    if source_context_condition_markers and not claim_condition_markers:
+    if (
+        source_context_bound_condition_markers
+        and not claim_condition_markers
+    ):
         reason_codes.append(
             "atomic_claim_context_condition_scope_may_be_dropped"
         )
@@ -1148,7 +1216,7 @@ def assess_atomic_semantic_fidelity(
 
     if (
         raw_bridge
-        and source_context_condition_markers
+        and source_context_bound_condition_markers
         and not bridge_condition_markers
     ):
         reason_codes.append(
@@ -1205,6 +1273,12 @@ def assess_atomic_semantic_fidelity(
         "source_context_ordered_markers": source_context_ordered_markers,
         "source_basis_condition_markers": basis_condition_markers,
         "source_context_condition_markers": source_context_condition_markers,
+        "source_context_bound_condition_markers": (
+            source_context_bound_condition_markers
+        ),
+        "source_context_ambiguous_condition_markers": (
+            source_context_ambiguous_condition_markers
+        ),
         "claim_condition_markers": claim_condition_markers,
         "bridge_condition_markers": bridge_condition_markers,
         "bridge_ordered_markers": bridge_ordered_markers,
