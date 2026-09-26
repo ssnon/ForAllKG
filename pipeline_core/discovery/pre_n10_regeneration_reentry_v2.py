@@ -736,7 +736,7 @@ def execute_pre_n10_regeneration_reentry_v2(
             sanitization_audit,
         )
 
-        ready = contract.disposition == "READY_FOR_N10"
+        ready = contract_v2.disposition == "READY_FOR_N10"
         rows.append(
             PreN10RegenerationReentryLineageV2(
                 source_hypothesis_id=source.source_hypothesis_id,
@@ -783,7 +783,7 @@ def execute_pre_n10_regeneration_reentry_v2(
                     contract_v2.disposition
                 ),
                 claim_decomposition_request_count=len(portfolio.hypotheses),
-                pre_n10_disposition=contract.disposition,
+                pre_n10_disposition=contract_v2.disposition,
                 final_status=(
                     "PRE_N10_READY"
                     if ready

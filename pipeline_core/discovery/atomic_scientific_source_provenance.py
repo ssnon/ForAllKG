@@ -470,10 +470,101 @@ def project_atomic_scientific_source_binding_bundle(
     )
 
 
+def subset_atomic_scientific_source_binding_bundle(
+    *,
+    source_bundle: AtomicScientificSourceBindingBundle,
+    source_query_plan: LiteratureQueryPlan,
+    output_query_plan: LiteratureQueryPlan,
+) -> AtomicScientificSourceBindingBundle:
+    """Rebind an exact claim subset to a downstream subset portfolio/plan.
+
+    This operation changes only container lineage. Claim identity, claim
+    surface SHA, and stable prediction/falsifier source IDs are preserved.
+    It cannot add claims or alter claim rank/surface.
+    """
+
+    if source_bundle.source_portfolio_id != source_query_plan.source_portfolio_id:
+        raise ValueError(
+            "source-binding subset/source query-plan portfolio mismatch"
+        )
+    if source_bundle.source_query_plan_id != source_query_plan.plan_id:
+        raise ValueError(
+            "source-binding subset/source query-plan ID mismatch"
+        )
+    if source_bundle.source_query_plan_sha256 != source_query_plan.plan_sha256:
+        raise ValueError(
+            "source-binding subset/source query-plan SHA mismatch"
+        )
+
+    source_claims = {
+        (claim.hypothesis_id, claim.claim_id): claim
+        for group in source_query_plan.claims
+        for claim in group.claims
+    }
+    source_records = {
+        (row.hypothesis_id, row.claim_id): row
+        for row in source_bundle.records
+    }
+    if set(source_claims) != set(source_records):
+        raise ValueError(
+            "source-binding subset source population mismatch"
+        )
+
+    output_claims = {
+        (claim.hypothesis_id, claim.claim_id): claim
+        for group in output_query_plan.claims
+        for claim in group.claims
+    }
+    if not output_claims:
+        raise ValueError(
+            "source-binding subset cannot materialize empty claim population"
+        )
+    extra = sorted(set(output_claims) - set(source_claims))
+    if extra:
+        raise ValueError(
+            "source-binding subset cannot add claim identities: "
+            + repr(extra)
+        )
+
+    records: list[AtomicScientificSourceBindingRecord] = []
+    for group in output_query_plan.claims:
+        for claim in sorted(group.claims, key=lambda row: row.claim_rank):
+            key = (claim.hypothesis_id, claim.claim_id)
+            source_claim = source_claims[key]
+            record = source_records[key]
+            if claim.claim_rank != source_claim.claim_rank:
+                raise ValueError(
+                    "source-binding subset changed claim rank: "
+                    + claim.claim_id
+                )
+            claim_sha = _sha256_json(claim.model_dump(mode="json"))
+            source_claim_sha = _sha256_json(
+                source_claim.model_dump(mode="json")
+            )
+            if claim_sha != source_claim_sha:
+                raise ValueError(
+                    "source-binding subset changed claim surface: "
+                    + claim.claim_id
+                )
+            if record.source_claim_sha256 != source_claim_sha:
+                raise ValueError(
+                    "source-binding subset source record is stale: "
+                    + claim.claim_id
+                )
+            records.append(record)
+
+    return build_atomic_scientific_source_binding_bundle(
+        source_portfolio_id=output_query_plan.source_portfolio_id,
+        query_plan=output_query_plan,
+        records=records,
+    )
+
+
 __all__ = [
     "AtomicScientificSourceBindingBundle",
     "AtomicScientificSourceBindingRecord",
     "build_atomic_scientific_source_binding_bundle",
     "build_atomic_scientific_source_binding_record",
     "project_atomic_scientific_source_binding_bundle",
+    "subset_atomic_scientific_source_binding_bundle",
 ]

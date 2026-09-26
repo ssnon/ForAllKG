@@ -1321,6 +1321,12 @@ def execute_pre_n10_prospective_campaign_v1(
         str(post_query_path),
         "--primary-router-report",
         str(primary_report_path),
+        "--initial-source-binding-bundle",
+        str(post_source_binding_bundle_path),
+        "--initial-canonical-source-reference",
+        str(post_canonical_source_reference_path),
+        "--initial-contract-v2",
+        str(post_contract_v2_path),
         "--output-dir",
         str(handoff_root),
     ]

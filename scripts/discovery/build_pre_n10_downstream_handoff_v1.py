@@ -39,6 +39,21 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--initial-portfolio", required=True, type=Path)
     parser.add_argument("--post-primary-query-plan", required=True, type=Path)
     parser.add_argument("--primary-router-report", required=True, type=Path)
+    parser.add_argument(
+        "--initial-source-binding-bundle",
+        type=Path,
+        default=None,
+    )
+    parser.add_argument(
+        "--initial-canonical-source-reference",
+        type=Path,
+        default=None,
+    )
+    parser.add_argument(
+        "--initial-contract-v2",
+        type=Path,
+        default=None,
+    )
     parser.add_argument("--regeneration-report", type=Path, default=None)
     parser.add_argument("--regeneration-reentry-report", type=Path, default=None)
     parser.add_argument("--output-dir", required=True, type=Path)
@@ -79,6 +94,13 @@ def main() -> int:
         initial_portfolio_path=args.initial_portfolio,
         post_primary_query_plan_path=args.post_primary_query_plan,
         primary_router_report=primary,
+        initial_source_binding_bundle_path=(
+            args.initial_source_binding_bundle
+        ),
+        initial_canonical_source_reference_path=(
+            args.initial_canonical_source_reference
+        ),
+        initial_contract_v2_path=args.initial_contract_v2,
         regeneration_report=regeneration,
         regeneration_reentry_report=reentry,
         output_root=args.output_dir,

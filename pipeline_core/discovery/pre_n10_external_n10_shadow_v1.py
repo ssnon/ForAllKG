@@ -8,6 +8,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
@@ -21,8 +24,14 @@ from pipeline_core.discovery.pre_n10_downstream_handoff_v1 import (
     PreN10DownstreamHandoffLineageV1,
     PreN10DownstreamHandoffReportV1,
 )
+from pipeline_core.discovery.pre_n10_canonical_source_reference_v1 import (
+    PreN10CanonicalSourceReferenceReportV1,
+)
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     PreN10ScientificContractReportV1,
+)
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    PreN10ScientificContractReportV2,
 )
 
 
@@ -359,6 +368,27 @@ def _validate_handoff_lineage(
     if row.semantic_disposition != "PASS" or row.pre_n10_status != "READY_FOR_N10":
         raise ValueError("handoff lineage lacks semantic/V_pre authority")
 
+    canonical_mode = bool(
+        row.stable_source_ids_used_for_pre_n10_authority
+    )
+    if canonical_mode:
+        if row.exact_text_reconstruction_used_for_pre_n10_authority:
+            raise ValueError(
+                "canonical handoff lineage cannot use exact-text pre-N10 authority"
+            )
+        canonical_values = (
+            row.source_binding_bundle_path,
+            row.source_binding_bundle_id,
+            row.source_binding_bundle_file_sha256,
+            row.canonical_source_reference_path,
+            row.canonical_source_reference_report_id,
+            row.canonical_source_reference_file_sha256,
+        )
+        if any(value is None for value in canonical_values):
+            raise ValueError(
+                "canonical handoff lineage lacks frozen canonical artifacts"
+            )
+
     paths = [
         (Path(row.portfolio_path), row.portfolio_file_sha256, "portfolio"),
         (Path(row.query_plan_path), row.query_plan_file_sha256, "query plan"),
@@ -369,6 +399,21 @@ def _validate_handoff_lineage(
             "semantic disposition",
         ),
     ]
+    if canonical_mode:
+        paths.extend(
+            [
+                (
+                    Path(str(row.source_binding_bundle_path)),
+                    str(row.source_binding_bundle_file_sha256),
+                    "source-binding bundle",
+                ),
+                (
+                    Path(str(row.canonical_source_reference_path)),
+                    str(row.canonical_source_reference_file_sha256),
+                    "canonical source-reference",
+                ),
+            ]
+        )
     for path, expected_sha, label in paths:
         resolved = path.expanduser().resolve()
         if not resolved.is_file():
@@ -382,9 +427,30 @@ def _validate_handoff_lineage(
     query_plan = LiteratureQueryPlan.model_validate_json(
         Path(row.query_plan_path).read_text(encoding="utf-8")
     )
-    contract = PreN10ScientificContractReportV1.model_validate_json(
-        Path(row.contract_report_path).read_text(encoding="utf-8")
-    )
+    if canonical_mode:
+        source_binding_bundle = (
+            AtomicScientificSourceBindingBundle.model_validate_json(
+                Path(str(row.source_binding_bundle_path)).read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+        canonical_source_reference = (
+            PreN10CanonicalSourceReferenceReportV1.model_validate_json(
+                Path(str(row.canonical_source_reference_path)).read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+        contract = PreN10ScientificContractReportV2.model_validate_json(
+            Path(row.contract_report_path).read_text(encoding="utf-8")
+        )
+    else:
+        source_binding_bundle = None
+        canonical_source_reference = None
+        contract = PreN10ScientificContractReportV1.model_validate_json(
+            Path(row.contract_report_path).read_text(encoding="utf-8")
+        )
     disposition = HypothesisSemanticDispositionV1.model_validate_json(
         Path(row.semantic_disposition_path).read_text(encoding="utf-8")
     )
@@ -403,6 +469,85 @@ def _validate_handoff_lineage(
         raise ValueError("handoff contract-report ID mismatch")
     if contract.disposition != "READY_FOR_N10":
         raise ValueError("handoff contract is not READY_FOR_N10")
+
+    if canonical_mode:
+        assert source_binding_bundle is not None
+        assert canonical_source_reference is not None
+        if source_binding_bundle.bundle_id != row.source_binding_bundle_id:
+            raise ValueError(
+                "handoff source-binding bundle ID mismatch"
+            )
+        if canonical_source_reference.report_id != (
+            row.canonical_source_reference_report_id
+        ):
+            raise ValueError(
+                "handoff canonical source-reference ID mismatch"
+            )
+        if canonical_source_reference.source_binding_bundle_id != (
+            source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "handoff canonical source-reference/bundle ID mismatch"
+            )
+        if canonical_source_reference.source_binding_bundle_sha256 != (
+            source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "handoff canonical source-reference/bundle SHA mismatch"
+            )
+        if contract.source_binding_bundle_id != (
+            source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "handoff V2 contract/source-binding bundle ID mismatch"
+            )
+        if contract.source_binding_bundle_sha256 != (
+            source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "handoff V2 contract/source-binding bundle SHA mismatch"
+            )
+        if contract.canonical_source_reference_report_id != (
+            canonical_source_reference.report_id
+        ):
+            raise ValueError(
+                "handoff V2 contract/canonical source-reference ID mismatch"
+            )
+        if contract.canonical_source_reference_report_sha256 != (
+            canonical_source_reference.report_sha256
+        ):
+            raise ValueError(
+                "handoff V2 contract/canonical source-reference SHA mismatch"
+            )
+        if contract.source_portfolio_id != portfolio.portfolio_id:
+            raise ValueError(
+                "handoff V2 contract/portfolio ID mismatch"
+            )
+        if contract.source_query_plan_id != query_plan.plan_id:
+            raise ValueError(
+                "handoff V2 contract/query-plan ID mismatch"
+            )
+        if contract.source_portfolio_file_sha256 != (
+            row.portfolio_file_sha256
+        ):
+            raise ValueError(
+                "handoff V2 contract/portfolio file SHA mismatch"
+            )
+        if contract.source_query_plan_file_sha256 != (
+            row.query_plan_file_sha256
+        ):
+            raise ValueError(
+                "handoff V2 contract/query-plan file SHA mismatch"
+            )
+        if not contract.stable_source_ids_used_for_readiness:
+            raise ValueError(
+                "handoff V2 contract lacks stable-ID readiness authority"
+            )
+        if contract.exact_text_reconstruction_used_for_readiness:
+            raise ValueError(
+                "handoff V2 contract unexpectedly uses exact-text readiness"
+            )
+
     if disposition.disposition_id != row.semantic_disposition_id:
         raise ValueError("handoff semantic disposition ID mismatch")
     if not disposition.semantic_admissible_for_pre_n10:

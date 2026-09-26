@@ -7,6 +7,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+    subset_atomic_scientific_source_binding_bundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.hypothesis_semantic_disposition import (
@@ -24,9 +28,17 @@ from pipeline_core.discovery.pre_n10_regeneration_reentry_v2 import (
 from pipeline_core.discovery.pre_n10_regeneration_v1 import (
     PreN10RegenerationExecutionReportV1,
 )
+from pipeline_core.discovery.pre_n10_canonical_source_reference_v1 import (
+    PreN10CanonicalSourceReferenceReportV1,
+    build_pre_n10_canonical_source_reference_report_v1,
+)
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     PreN10ScientificContractReportV1,
     build_pre_n10_scientific_contract_v1,
+)
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    PreN10ScientificContractReportV2,
+    build_pre_n10_scientific_contract_v2,
 )
 
 
@@ -111,6 +123,21 @@ class PreN10DownstreamHandoffLineageV1(StrictModel):
     contract_report_id: str
     contract_report_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
+    source_binding_bundle_path: str | None = None
+    source_binding_bundle_id: str | None = None
+    source_binding_bundle_file_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    canonical_source_reference_path: str | None = None
+    canonical_source_reference_report_id: str | None = None
+    canonical_source_reference_file_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    stable_source_ids_used_for_pre_n10_authority: bool = False
+    exact_text_reconstruction_used_for_pre_n10_authority: bool = True
+
     semantic_disposition_path: str
     semantic_disposition_id: str
     semantic_disposition_file_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
@@ -126,6 +153,41 @@ class PreN10DownstreamHandoffLineageV1(StrictModel):
     n10_performed: Literal[False] = False
     endpoint_binding_performed: Literal[False] = False
     verifier_performed: Literal[False] = False
+
+    @model_validator(mode="after")
+    def validate_canonical_authority(
+        self,
+    ) -> "PreN10DownstreamHandoffLineageV1":
+        canonical_fields = (
+            self.source_binding_bundle_path,
+            self.source_binding_bundle_id,
+            self.source_binding_bundle_file_sha256,
+            self.canonical_source_reference_path,
+            self.canonical_source_reference_report_id,
+            self.canonical_source_reference_file_sha256,
+        )
+        if self.stable_source_ids_used_for_pre_n10_authority:
+            if any(value is None for value in canonical_fields):
+                raise ValueError(
+                    "stable-ID downstream lineage requires canonical artifacts"
+                )
+            if self.exact_text_reconstruction_used_for_pre_n10_authority:
+                raise ValueError(
+                    "stable-ID downstream lineage cannot use exact text "
+                    "for pre-N10 authority"
+                )
+        else:
+            if any(value is not None for value in canonical_fields):
+                raise ValueError(
+                    "legacy downstream lineage cannot carry canonical "
+                    "authority artifacts"
+                )
+            if not self.exact_text_reconstruction_used_for_pre_n10_authority:
+                raise ValueError(
+                    "legacy downstream lineage must declare exact-text "
+                    "pre-N10 authority"
+                )
+        return self
 
 
 class PreN10BlockedRegenerationLineageV1(StrictModel):
@@ -306,6 +368,9 @@ def _materialize_ready_lineage(
     semantic_disposition_id: str,
     output_root: Path,
     lineage_key: str,
+    source_binding_bundle: AtomicScientificSourceBindingBundle | None = None,
+    source_canonical_reference: PreN10CanonicalSourceReferenceReportV1 | None = None,
+    source_contract_v2: PreN10ScientificContractReportV2 | None = None,
 ) -> PreN10DownstreamHandoffLineageV1:
     disposition_file = semantic_disposition_path.expanduser().resolve()
     if not disposition_file.is_file():
@@ -339,19 +404,127 @@ def _materialize_ready_lineage(
     root = output_root / "lineage" / _slug(lineage_key)
     portfolio_path = root / "portfolio.json"
     query_plan_path = root / "claims_queries.json"
-    contract_path = root / "contract.json"
     _write_exact_or_validate(portfolio_path, subset_portfolio)
     _write_exact_or_validate(query_plan_path, subset_plan)
-    contract = build_pre_n10_scientific_contract_v1(
-        portfolio_path=portfolio_path,
-        query_plan_path=query_plan_path,
-        claim_decomposition_request_count=0,
-    )
-    if contract.disposition != "READY_FOR_N10":
-        raise ValueError(
-            "handoff normalization lost pre-N10 readiness: " + hypothesis_id
+
+    canonical_mode = any(
+        value is not None
+        for value in (
+            source_binding_bundle,
+            source_canonical_reference,
+            source_contract_v2,
         )
-    _write_exact_or_validate(contract_path, contract)
+    )
+    if canonical_mode and any(
+        value is None
+        for value in (
+            source_binding_bundle,
+            source_canonical_reference,
+            source_contract_v2,
+        )
+    ):
+        raise ValueError(
+            "downstream canonical source chain must be supplied all-or-none"
+        )
+
+    subset_bundle = None
+    subset_canonical = None
+    if canonical_mode:
+        assert source_binding_bundle is not None
+        assert source_canonical_reference is not None
+        assert source_contract_v2 is not None
+
+        if source_binding_bundle.source_portfolio_id != source_portfolio.portfolio_id:
+            raise ValueError(
+                "downstream source bundle/portfolio mismatch"
+            )
+        if source_binding_bundle.source_query_plan_id != source_plan.plan_id:
+            raise ValueError(
+                "downstream source bundle/query-plan ID mismatch"
+            )
+        if source_binding_bundle.source_query_plan_sha256 != source_plan.plan_sha256:
+            raise ValueError(
+                "downstream source bundle/query-plan SHA mismatch"
+            )
+        if source_canonical_reference.source_binding_bundle_id != (
+            source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "downstream canonical source-reference/bundle ID mismatch"
+            )
+        if source_canonical_reference.source_binding_bundle_sha256 != (
+            source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "downstream canonical source-reference/bundle SHA mismatch"
+            )
+        if source_contract_v2.source_binding_bundle_id != (
+            source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "downstream source V2/bundle ID mismatch"
+            )
+        if source_contract_v2.canonical_source_reference_report_id != (
+            source_canonical_reference.report_id
+        ):
+            raise ValueError(
+                "downstream source V2/canonical report ID mismatch"
+            )
+        if source_contract_v2.source_query_plan_id != source_plan.plan_id:
+            raise ValueError(
+                "downstream source V2/query-plan ID mismatch"
+            )
+        if source_contract_v2.disposition != "READY_FOR_N10":
+            raise ValueError(
+                "downstream canonical source V2 is not READY_FOR_N10"
+            )
+
+        subset_bundle = subset_atomic_scientific_source_binding_bundle(
+            source_bundle=source_binding_bundle,
+            source_query_plan=source_plan,
+            output_query_plan=subset_plan,
+        )
+        bundle_path = root / "atomic_source_binding.bundle.json"
+        _write_exact_or_validate(bundle_path, subset_bundle)
+
+        subset_canonical = (
+            build_pre_n10_canonical_source_reference_report_v1(
+                portfolio_path=portfolio_path,
+                query_plan_path=query_plan_path,
+                source_binding_bundle_path=bundle_path,
+            )
+        )
+        canonical_path = root / "canonical_source_reference.report.json"
+        _write_exact_or_validate(canonical_path, subset_canonical)
+
+        contract = build_pre_n10_scientific_contract_v2(
+            portfolio_path=portfolio_path,
+            query_plan_path=query_plan_path,
+            canonical_source_reference_path=canonical_path,
+            claim_decomposition_request_count=0,
+        )
+        contract_path = root / "contract_v2.json"
+        if contract.disposition != "READY_FOR_N10":
+            raise ValueError(
+                "handoff canonical normalization lost pre-N10 readiness: "
+                + hypothesis_id
+            )
+        _write_exact_or_validate(contract_path, contract)
+    else:
+        contract_path = root / "contract.json"
+        contract = build_pre_n10_scientific_contract_v1(
+            portfolio_path=portfolio_path,
+            query_plan_path=query_plan_path,
+            claim_decomposition_request_count=0,
+        )
+        if contract.disposition != "READY_FOR_N10":
+            raise ValueError(
+                "handoff normalization lost pre-N10 readiness: "
+                + hypothesis_id
+            )
+        _write_exact_or_validate(contract_path, contract)
+        bundle_path = None
+        canonical_path = None
 
     return PreN10DownstreamHandoffLineageV1(
         lineage_id=(
@@ -364,6 +537,11 @@ def _materialize_ready_lineage(
                     "portfolio_id": subset_portfolio.portfolio_id,
                     "query_plan_id": subset_plan.plan_id,
                     "contract_report_id": contract.report_id,
+                    "source_binding_bundle_id": (
+                        subset_bundle.bundle_id
+                        if subset_bundle is not None
+                        else None
+                    ),
                     "semantic_disposition_id": disposition.disposition_id,
                 }
             )[:20]
@@ -380,6 +558,40 @@ def _materialize_ready_lineage(
         contract_report_path=str(contract_path.resolve()),
         contract_report_id=contract.report_id,
         contract_report_file_sha256=_sha256_file(contract_path),
+        source_binding_bundle_path=(
+            str(bundle_path.resolve())
+            if bundle_path is not None
+            else None
+        ),
+        source_binding_bundle_id=(
+            subset_bundle.bundle_id
+            if subset_bundle is not None
+            else None
+        ),
+        source_binding_bundle_file_sha256=(
+            _sha256_file(bundle_path)
+            if bundle_path is not None
+            else None
+        ),
+        canonical_source_reference_path=(
+            str(canonical_path.resolve())
+            if canonical_path is not None
+            else None
+        ),
+        canonical_source_reference_report_id=(
+            subset_canonical.report_id
+            if subset_canonical is not None
+            else None
+        ),
+        canonical_source_reference_file_sha256=(
+            _sha256_file(canonical_path)
+            if canonical_path is not None
+            else None
+        ),
+        stable_source_ids_used_for_pre_n10_authority=canonical_mode,
+        exact_text_reconstruction_used_for_pre_n10_authority=(
+            not canonical_mode
+        ),
         semantic_disposition_path=str(disposition_file),
         semantic_disposition_id=disposition.disposition_id,
         semantic_disposition_file_sha256=_sha256_file(disposition_file),
@@ -393,6 +605,9 @@ def build_pre_n10_downstream_handoff_v1(
     post_primary_query_plan_path: Path,
     primary_router_report: PreN10PrimaryRouterReportV1,
     output_root: Path,
+    initial_source_binding_bundle_path: Path | None = None,
+    initial_canonical_source_reference_path: Path | None = None,
+    initial_contract_v2_path: Path | None = None,
     regeneration_report: PreN10RegenerationExecutionReportV1 | None = None,
     regeneration_reentry_report: PreN10RegenerationReentryReportV2 | None = None,
 ) -> PreN10DownstreamHandoffReportV1:
@@ -436,6 +651,66 @@ def build_pre_n10_downstream_handoff_v1(
     if portfolio_ids != router_ids:
         raise ValueError("primary router/portfolio hypothesis populations differ")
 
+    initial_canonical_paths = (
+        initial_source_binding_bundle_path,
+        initial_canonical_source_reference_path,
+        initial_contract_v2_path,
+    )
+    supplied_initial_canonical = sum(
+        value is not None for value in initial_canonical_paths
+    )
+    if supplied_initial_canonical not in {0, 3}:
+        raise ValueError(
+            "initial downstream canonical source chain must be supplied all-or-none"
+        )
+
+    initial_bundle = None
+    initial_canonical = None
+    initial_contract_v2 = None
+    if supplied_initial_canonical == 3:
+        bundle_file = initial_source_binding_bundle_path.expanduser().resolve()
+        canonical_file = (
+            initial_canonical_source_reference_path.expanduser().resolve()
+        )
+        contract_v2_file = initial_contract_v2_path.expanduser().resolve()
+        for path, label in (
+            (bundle_file, "post-primary source-binding bundle"),
+            (canonical_file, "post-primary canonical source-reference"),
+            (contract_v2_file, "post-primary V2 contract"),
+        ):
+            if not path.is_file():
+                raise ValueError(
+                    "missing initial downstream canonical "
+                    + label
+                    + ": "
+                    + str(path)
+                )
+        initial_bundle = AtomicScientificSourceBindingBundle.model_validate_json(
+            bundle_file.read_text(encoding="utf-8")
+        )
+        initial_canonical = (
+            PreN10CanonicalSourceReferenceReportV1.model_validate_json(
+                canonical_file.read_text(encoding="utf-8")
+            )
+        )
+        initial_contract_v2 = (
+            PreN10ScientificContractReportV2.model_validate_json(
+                contract_v2_file.read_text(encoding="utf-8")
+            )
+        )
+        if initial_contract_v2.report_id != (
+            primary_router_report.post_contract_report_id
+        ):
+            raise ValueError(
+                "primary router/post V2 authority ID mismatch at handoff"
+            )
+        if initial_contract_v2.report_sha256 != (
+            primary_router_report.post_contract_report_sha256
+        ):
+            raise ValueError(
+                "primary router/post V2 authority SHA mismatch at handoff"
+            )
+
     lineages: list[PreN10DownstreamHandoffLineageV1] = []
     fallback_ids: set[str] = set()
     disposition_path = Path(initial_semantic_gate.semantic_disposition_path)
@@ -454,6 +729,9 @@ def build_pre_n10_downstream_handoff_v1(
                     ),
                     output_root=root,
                     lineage_key="initial:" + row.hypothesis_id,
+                    source_binding_bundle=initial_bundle,
+                    source_canonical_reference=initial_canonical,
+                    source_contract_v2=initial_contract_v2,
                 )
             )
         else:
@@ -509,9 +787,26 @@ def build_pre_n10_downstream_handoff_v1(
             regen_portfolio_path = Path(row.regenerated_portfolio_path).expanduser().resolve()
             regen_plan_path = Path(row.query_plan_path).expanduser().resolve()
             regen_contract_path = Path(str(row.contract_report_path)).expanduser().resolve()
-            for path in (regen_portfolio_path, regen_plan_path, regen_contract_path):
+            regen_bundle_path = Path(str(row.source_binding_bundle_path)).expanduser().resolve()
+            regen_canonical_path = Path(
+                str(row.canonical_source_reference_path)
+            ).expanduser().resolve()
+            regen_contract_v2_path = Path(
+                str(row.contract_v2_report_path)
+            ).expanduser().resolve()
+            for path in (
+                regen_portfolio_path,
+                regen_plan_path,
+                regen_contract_path,
+                regen_bundle_path,
+                regen_canonical_path,
+                regen_contract_v2_path,
+            ):
                 if not path.is_file():
-                    raise ValueError("ready regeneration source artifact missing: " + str(path))
+                    raise ValueError(
+                        "ready regeneration source artifact missing: "
+                        + str(path)
+                    )
             regen_portfolio = HypothesisPortfolio.model_validate_json(
                 regen_portfolio_path.read_text(encoding="utf-8")
             )
@@ -520,6 +815,19 @@ def build_pre_n10_downstream_handoff_v1(
             )
             regen_contract = PreN10ScientificContractReportV1.model_validate_json(
                 regen_contract_path.read_text(encoding="utf-8")
+            )
+            regen_bundle = AtomicScientificSourceBindingBundle.model_validate_json(
+                regen_bundle_path.read_text(encoding="utf-8")
+            )
+            regen_canonical = (
+                PreN10CanonicalSourceReferenceReportV1.model_validate_json(
+                    regen_canonical_path.read_text(encoding="utf-8")
+                )
+            )
+            regen_contract_v2 = (
+                PreN10ScientificContractReportV2.model_validate_json(
+                    regen_contract_v2_path.read_text(encoding="utf-8")
+                )
             )
             if len(regen_portfolio.hypotheses) != 1:
                 raise ValueError(
@@ -531,9 +839,31 @@ def build_pre_n10_downstream_handoff_v1(
             if regen_plan.plan_id != row.query_plan_id:
                 raise ValueError("re-entry/query-plan ID mismatch")
             if regen_contract.report_id != row.contract_report_id:
-                raise ValueError("re-entry/contract report ID mismatch")
-            if regen_contract.disposition != "READY_FOR_N10":
-                raise ValueError("ready re-entry lineage has non-ready contract")
+                raise ValueError("re-entry/compatibility contract report ID mismatch")
+            if regen_contract_v2.report_id != row.contract_v2_report_id:
+                raise ValueError("re-entry/V2 contract report ID mismatch")
+            if regen_contract_v2.report_sha256 != row.contract_v2_report_sha256:
+                raise ValueError("re-entry/V2 contract report SHA mismatch")
+            if regen_bundle.bundle_id != row.source_binding_bundle_id:
+                raise ValueError("re-entry/source-binding bundle ID mismatch")
+            if regen_bundle.bundle_sha256 != row.source_binding_bundle_sha256:
+                raise ValueError("re-entry/source-binding bundle SHA mismatch")
+            if regen_canonical.report_id != (
+                row.canonical_source_reference_report_id
+            ):
+                raise ValueError(
+                    "re-entry/canonical source-reference report ID mismatch"
+                )
+            if regen_canonical.report_sha256 != (
+                row.canonical_source_reference_report_sha256
+            ):
+                raise ValueError(
+                    "re-entry/canonical source-reference report SHA mismatch"
+                )
+            if regen_contract_v2.disposition != "READY_FOR_N10":
+                raise ValueError(
+                    "ready re-entry lineage has non-ready V2 contract"
+                )
             lineages.append(
                 _materialize_ready_lineage(
                     source_portfolio=regen_portfolio,
@@ -550,6 +880,9 @@ def build_pre_n10_downstream_handoff_v1(
                         + ":"
                         + hypothesis.hypothesis_id
                     ),
+                    source_binding_bundle=regen_bundle,
+                    source_canonical_reference=regen_canonical,
+                    source_contract_v2=regen_contract_v2,
                 )
             )
     else:
