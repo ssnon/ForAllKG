@@ -141,7 +141,7 @@ class PreN10ProspectiveCampaignPlanV1(StrictModel):
     plan_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
     portfolio: CampaignArtifactFingerprintV1
-    semantic_run: CampaignArtifactFingerprintV1
+    semantic_run: CampaignArtifactFingerprintV1 | None
     semantic_review: CampaignArtifactFingerprintV1 | None = None
     hypothesis_context: CampaignArtifactFingerprintV1
     regeneration_unit_freeze: CampaignArtifactFingerprintV1
@@ -180,6 +180,10 @@ class PreN10ProspectiveCampaignPlanV1(StrictModel):
     def validate_plan(self) -> "PreN10ProspectiveCampaignPlanV1":
         if self.stage_order != list(CAMPAIGN_STAGE_ORDER):
             raise ValueError("prospective campaign stage order mismatch")
+        if self.semantic_run is None and self.semantic_review is not None:
+            raise ValueError(
+                "semantic review cannot exist without semantic run"
+            )
         for name in (
             self.decomposition_model,
             self.primary_model,
@@ -255,6 +259,7 @@ class PreN10ProspectiveCampaignStageRecordV1(StrictModel):
 
 
 CampaignFinalStatusV1 = Literal[
+    "ZERO_HYPOTHESES_AFTER_ALPHA4",
     "INITIAL_SEMANTIC_TERMINAL",
     "PRE_N10_NO_EXTERNAL_ELIGIBLE_LINEAGE",
     "VPOST_SHADOW_COMPLETE",
@@ -307,7 +312,21 @@ class PreN10ProspectiveCampaignReportV1(StrictModel):
             raise ValueError("campaign report stage order mismatch")
 
         statuses = {row.stage_name: row.status for row in self.stages}
-        if self.final_status == "INITIAL_SEMANTIC_TERMINAL":
+        if self.final_status == "ZERO_HYPOTHESES_AFTER_ALPHA4":
+            if any(
+                statuses[name] != "SKIPPED_TERMINAL"
+                for name in CAMPAIGN_STAGE_ORDER
+            ):
+                raise ValueError(
+                    "zero-hypothesis campaign executed a downstream stage"
+                )
+            if self.initial_semantic_status != (
+                "NOT_RUN_ZERO_HYPOTHESES_AFTER_ALPHA4"
+            ):
+                raise ValueError(
+                    "zero-hypothesis campaign semantic status mismatch"
+                )
+        elif self.final_status == "INITIAL_SEMANTIC_TERMINAL":
             if statuses["initial_semantic_gate"] not in {
                 "EXECUTED",
                 "REUSED_VALIDATED",
@@ -420,10 +439,29 @@ def build_pre_n10_prospective_campaign_plan_v1(
         freeze_file.read_text(encoding="utf-8")
     )
 
+    zero_hypothesis_terminal = len(portfolio.hypotheses) == 0
+    semantic_run_file = semantic_run_path.expanduser().resolve()
+    if zero_hypothesis_terminal:
+        if semantic_run_file.exists():
+            raise ValueError(
+                "zero-hypothesis portfolio unexpectedly has semantic run artifact"
+            )
+        if semantic_review_path is not None:
+            raise ValueError(
+                "zero-hypothesis portfolio cannot carry semantic review"
+            )
+        semantic_run_fingerprint = None
+    else:
+        semantic_run_fingerprint = fingerprint(semantic_run_file)
+
     body = {
         "schema_version": "pre-n10-prospective-campaign-plan-v1",
         "portfolio": fingerprint(portfolio_file).model_dump(mode="json"),
-        "semantic_run": fingerprint(semantic_run_path).model_dump(mode="json"),
+        "semantic_run": (
+            semantic_run_fingerprint.model_dump(mode="json")
+            if semantic_run_fingerprint is not None
+            else None
+        ),
         "semantic_review": (
             fingerprint(semantic_review_path).model_dump(mode="json")
             if semantic_review_path is not None
@@ -566,13 +604,22 @@ def _report(
     plan: PreN10ProspectiveCampaignPlanV1,
     final_status: CampaignFinalStatusV1,
     stages: list[PreN10ProspectiveCampaignStageRecordV1],
-    semantic_gate: PreN10InitialSemanticGateReportV1,
+    semantic_gate: PreN10InitialSemanticGateReportV1 | None,
+    initial_semantic_status: str | None = None,
     primary: PreN10PrimaryRouterReportV1 | None = None,
     handoff: PreN10DownstreamHandoffReportV1 | None = None,
     external: PreN10ExternalN10ShadowReportV1 | None = None,
     bridge: PreN10RelationalBindingBridgeReportV1 | None = None,
     vpost: PreN10VPostShadowReportV1 | None = None,
 ) -> PreN10ProspectiveCampaignReportV1:
+    resolved_initial_semantic_status = initial_semantic_status
+    if resolved_initial_semantic_status is None:
+        if semantic_gate is None:
+            raise ValueError(
+                "campaign report requires semantic gate or explicit status"
+            )
+        resolved_initial_semantic_status = semantic_gate.status
+
     body = {
         "schema_version": "pre-n10-prospective-campaign-report-v1",
         "source_plan_id": plan.plan_id,
@@ -580,7 +627,7 @@ def _report(
         "final_status": final_status,
         "stages": [row.model_dump(mode="json") for row in stages],
         "stage_count": len(stages),
-        "initial_semantic_status": semantic_gate.status,
+        "initial_semantic_status": resolved_initial_semantic_status,
         "primary_regeneration_fallback_count": (
             primary.regeneration_fallback_required_count if primary else 0
         ),
@@ -649,7 +696,8 @@ def execute_pre_n10_prospective_campaign_v1(
         plan.regeneration_unit_freeze,
         plan.provider_plan,
     ):
-        _verify_fingerprint(source)
+        if source is not None:
+            _verify_fingerprint(source)
     if plan.semantic_review is not None:
         _verify_fingerprint(plan.semantic_review)
 
@@ -657,6 +705,57 @@ def execute_pre_n10_prospective_campaign_v1(
         return _validate_existing_campaign_report(path=report_path, plan=plan)
 
     portfolio_path = Path(plan.portfolio.path)
+    portfolio = HypothesisPortfolio.model_validate_json(
+        portfolio_path.read_text(encoding="utf-8")
+    )
+
+    if plan.semantic_run is None:
+        if portfolio.hypotheses:
+            raise ValueError(
+                "nonempty portfolio cannot omit semantic run"
+            )
+
+        unexpected = [
+            path
+            for path in root.rglob("*")
+            if path.is_file()
+            and path not in {plan_path, report_path}
+        ]
+        if unexpected:
+            raise ValueError(
+                "zero-hypothesis terminal campaign has unexpected "
+                "pre-existing stage artifacts: "
+                + repr([str(path) for path in unexpected])
+            )
+
+        stages = [
+            _skip_stage(
+                stage_index=index,
+                stage_name=name,
+                status="SKIPPED_TERMINAL",
+                reason=(
+                    "source portfolio contains zero hypotheses after alpha4"
+                ),
+            )
+            for index, name in enumerate(CAMPAIGN_STAGE_ORDER, start=1)
+        ]
+        report = _report(
+            plan=plan,
+            final_status="ZERO_HYPOTHESES_AFTER_ALPHA4",
+            stages=stages,
+            semantic_gate=None,
+            initial_semantic_status=(
+                "NOT_RUN_ZERO_HYPOTHESES_AFTER_ALPHA4"
+            ),
+        )
+        write_exact_or_validate(report_path, report)
+        return report
+
+    if not portfolio.hypotheses:
+        raise ValueError(
+            "zero-hypothesis portfolio must omit semantic run"
+        )
+
     semantic_run_path = Path(plan.semantic_run.path)
     semantic_review_path = (
         Path(plan.semantic_review.path) if plan.semantic_review is not None else None

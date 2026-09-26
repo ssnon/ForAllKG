@@ -936,6 +936,13 @@ def _collect_claim_set(
     return rows
 
 
+def is_terminal_before_initial_vpre_status(status: str) -> bool:
+    return status in {
+        "ZERO_HYPOTHESES_AFTER_ALPHA4",
+        "INITIAL_SEMANTIC_TERMINAL",
+    }
+
+
 def collect_prospective_atomic_admissibility_comparison_v5(
     freeze: ProspectiveAtomicAdmissibilityComparisonCollectorFreezeV5,
 ) -> ProspectiveAtomicAdmissibilityComparisonReportV5:
@@ -962,7 +969,9 @@ def collect_prospective_atomic_admissibility_comparison_v5(
         regen_decomp_count = 0
         regen_terminal_count = 0
 
-        if campaign.final_status == "INITIAL_SEMANTIC_TERMINAL":
+        if is_terminal_before_initial_vpre_status(
+            campaign.final_status
+        ):
             if initial_stage.status != "SKIPPED_TERMINAL":
                 raise ValueError(
                     "terminal campaign must mark initial_vpre SKIPPED_TERMINAL"
@@ -1190,5 +1199,6 @@ __all__ = [
     "classify_pair",
     "classify_reason_transition",
     "collect_prospective_atomic_admissibility_comparison_v5",
+    "is_terminal_before_initial_vpre_status",
     "sha256_file",
 ]
