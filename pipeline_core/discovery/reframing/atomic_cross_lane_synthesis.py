@@ -22,6 +22,9 @@ from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicSelectionRole,
     CompiledAtomicSpecification,
 )
+from pipeline_core.discovery.atomic_scientific_novelty_projection import (
+    project_compiled_atomic_specification_to_novelty_claim,
+)
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
     HypothesisCard,
@@ -835,33 +838,58 @@ def compile_atomic_synthesis(
                 falsification_criterion_id=falsifier_id,
             )
 
-            claim = NoveltyClaim(
+            specification = CompiledAtomicSpecification(
+                local_id=atomic.local_id,
                 claim_id=claim_id,
-                hypothesis_id=hypothesis_id,
-                claim_rank=atomic_index,
                 kind=atomic.kind,
                 importance=atomic.importance,
                 novelty_selection_role=atomic.novelty_selection_role,
                 text=atomic.text,
                 rationale=atomic.rationale,
-                search_concepts=list(dict.fromkeys(atomic.search_concepts)),
-                search_queries=list(dict.fromkeys(atomic.search_queries)),
-                distinguishing_terms=list(dict.fromkeys(atomic.distinguishing_terms)),
+                source_candidate_ids=list(atomic_source_ids),
+                premise_statement_ids=list(
+                    dict.fromkeys(atomic.premise_statement_ids)
+                ),
+                gap_statement_ids=list(
+                    dict.fromkeys(atomic.gap_statement_ids)
+                ),
                 prior_art_identity_terms=list(
                     dict.fromkeys(atomic.prior_art_identity_terms)
                 ),
+                relation_endpoint_anchors=list(
+                    dict.fromkeys(atomic.relation_endpoint_anchors)
+                ),
+                scope_qualifier_spans=list(
+                    dict.fromkeys(atomic.scope_qualifier_spans)
+                ),
+                directional_qualifier_spans=list(
+                    dict.fromkeys(atomic.directional_qualifier_spans)
+                ),
                 relation_nucleus_terms=list(base_relation_nucleus),
+                distinguishing_terms=list(
+                    dict.fromkeys(atomic.distinguishing_terms)
+                ),
                 required_bridge=atomic.required_bridge,
+                observable=atomic.observable,
                 predicted_observation=atomic.predicted_observation,
                 falsification_condition=atomic.falsification_condition,
+                prediction_observation_id=observation_id,
+                falsification_criterion_id=falsifier_id,
+                search_concepts=list(dict.fromkeys(atomic.search_concepts)),
+                search_queries=list(dict.fromkeys(atomic.search_queries)),
                 scientific_structure=structure,
                 scientific_structure_reason_codes=list(structure_reasons),
             )
+            claim = project_compiled_atomic_specification_to_novelty_claim(
+                hypothesis_id=hypothesis_id,
+                claim_rank=atomic_index,
+                specification=specification,
+            )
 
-            # The semantic-fidelity binding is provenance carried by the
-            # synthesis report. NoveltyClaim itself has no canonical binding
-            # field, so the directly materialized claim specification above
-            # remains the N9 input contract.
+            # NoveltyClaim is a deterministic novelty/search projection of the
+            # canonical atomic specification. Stable source identity remains in
+            # CompiledAtomicSpecification rather than being reconstructed from
+            # the novelty-facing natural-language surface.
             observations.append(
                 PredictedObservation(
                     observation_id=observation_id,
@@ -879,50 +907,7 @@ def compile_atomic_synthesis(
             )
             inferential_bridge_sentences.append(atomic.required_bridge)
             claims.append(claim)
-            compiled_specs.append(
-                CompiledAtomicSpecification(
-                    local_id=atomic.local_id,
-                    claim_id=claim_id,
-                    kind=atomic.kind,
-                    importance=atomic.importance,
-                    novelty_selection_role=atomic.novelty_selection_role,
-                    text=atomic.text,
-                    rationale=atomic.rationale,
-                    source_candidate_ids=list(atomic_source_ids),
-                    premise_statement_ids=list(
-                        dict.fromkeys(atomic.premise_statement_ids)
-                    ),
-                    gap_statement_ids=list(
-                        dict.fromkeys(atomic.gap_statement_ids)
-                    ),
-                    prior_art_identity_terms=list(
-                        dict.fromkeys(atomic.prior_art_identity_terms)
-                    ),
-                    relation_endpoint_anchors=list(
-                        dict.fromkeys(atomic.relation_endpoint_anchors)
-                    ),
-                    scope_qualifier_spans=list(
-                        dict.fromkeys(atomic.scope_qualifier_spans)
-                    ),
-                    directional_qualifier_spans=list(
-                        dict.fromkeys(atomic.directional_qualifier_spans)
-                    ),
-                    relation_nucleus_terms=list(base_relation_nucleus),
-                    distinguishing_terms=list(
-                        dict.fromkeys(atomic.distinguishing_terms)
-                    ),
-                    required_bridge=atomic.required_bridge,
-                    observable=atomic.observable,
-                    predicted_observation=atomic.predicted_observation,
-                    falsification_condition=atomic.falsification_condition,
-                    prediction_observation_id=observation_id,
-                    falsification_criterion_id=falsifier_id,
-                    search_concepts=list(dict.fromkeys(atomic.search_concepts)),
-                    search_queries=list(dict.fromkeys(atomic.search_queries)),
-                    scientific_structure=structure,
-                    scientific_structure_reason_codes=list(structure_reasons),
-                )
-            )
+            compiled_specs.append(specification)
 
             # Make sure the provenance object itself validates while keeping it
             # outside canonical NoveltyClaim authority.
