@@ -51,6 +51,67 @@ def project_compiled_atomic_specification_to_novelty_claim(
     )
 
 
+_SCIENTIFIC_PROJECTION_FIELDS = (
+    "claim_id",
+    "kind",
+    "importance",
+    "novelty_selection_role",
+    "text",
+    "rationale",
+    "search_concepts",
+    "search_queries",
+    "distinguishing_terms",
+    "prior_art_identity_terms",
+    "relation_nucleus_terms",
+    "required_bridge",
+    "predicted_observation",
+    "falsification_condition",
+    "scientific_structure",
+    "scientific_structure_reason_codes",
+)
+
+
+def novelty_projection_scientific_mismatch_reason_codes(
+    *,
+    hypothesis_id: str,
+    claim_rank: int,
+    specification: CompiledAtomicSpecification,
+    claim: NoveltyClaim,
+) -> list[str]:
+    """Audit one novelty projection against its canonical scientific source."""
+
+    projected = project_compiled_atomic_specification_to_novelty_claim(
+        hypothesis_id=hypothesis_id,
+        claim_rank=claim_rank,
+        specification=specification,
+    )
+    reasons: list[str] = []
+
+    if claim.hypothesis_id != hypothesis_id:
+        reasons.append(
+            "canonical_specification_projection_mismatch:hypothesis_id"
+        )
+    if claim.claim_rank != claim_rank:
+        reasons.append(
+            "canonical_specification_projection_mismatch:claim_rank"
+        )
+
+    for field in _SCIENTIFIC_PROJECTION_FIELDS:
+        left = getattr(projected, field)
+        right = getattr(claim, field)
+        if hasattr(left, "model_dump"):
+            left = left.model_dump(mode="json")
+        if hasattr(right, "model_dump"):
+            right = right.model_dump(mode="json")
+        if left != right:
+            reasons.append(
+                "canonical_specification_projection_mismatch:" + field
+            )
+
+    return reasons
+
+
 __all__ = [
+    "novelty_projection_scientific_mismatch_reason_codes",
     "project_compiled_atomic_specification_to_novelty_claim",
 ]

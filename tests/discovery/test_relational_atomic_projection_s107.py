@@ -11,6 +11,10 @@ from pipeline_core.discovery.external_novelty_contracts import (
     HypothesisNoveltyClaims,
     LiteratureQueryPlan,
     NoveltyClaim,
+    NoveltyClaimScientificStructure,
+)
+from pipeline_core.discovery.atomic_scientific_specification import (
+    CompiledAtomicSpecification,
 )
 from pipeline_core.discovery.hypothesis_contracts import (
     FalsificationCriterion,
@@ -448,3 +452,173 @@ def test_projection_report_hash_is_deterministic(
     )
     assert first.report_id == second.report_id
     assert first.report_sha256 == second.report_sha256
+
+def _canonical_specification(
+    *,
+    observable: str,
+    prediction_id: str = "prediction:1",
+    endpoints: list[str] | None = None,
+) -> CompiledAtomicSpecification:
+    claim = _claim()
+    return CompiledAtomicSpecification(
+        local_id="atomic:c1",
+        claim_id=claim.claim_id,
+        kind=claim.kind,
+        importance=claim.importance,
+        novelty_selection_role="NOVELTY_BEARING",
+        text=claim.text,
+        rationale=claim.rationale,
+        source_candidate_ids=["candidate:source"],
+        premise_statement_ids=["statement:1"],
+        gap_statement_ids=[],
+        prior_art_identity_terms=list(
+            claim.prior_art_identity_terms
+        ),
+        relation_endpoint_anchors=(
+            endpoints
+            if endpoints is not None
+            else ["Raman-intensity", "nanostructure spacing"]
+        ),
+        scope_qualifier_spans=[],
+        directional_qualifier_spans=[],
+        relation_nucleus_terms=list(claim.relation_nucleus_terms),
+        distinguishing_terms=list(claim.distinguishing_terms),
+        required_bridge=claim.required_bridge,
+        observable=observable,
+        predicted_observation=claim.predicted_observation,
+        falsification_condition=claim.falsification_condition,
+        prediction_observation_id=prediction_id,
+        falsification_criterion_id="falsifier:1",
+        search_concepts=list(claim.search_concepts),
+        search_queries=list(claim.search_queries),
+        scientific_structure=claim.scientific_structure,
+        scientific_structure_reason_codes=list(
+            claim.scientific_structure_reason_codes
+        ),
+    )
+
+
+def test_canonical_source_ids_bypass_legacy_prediction_text_reverse_lookup(
+    tmp_path: Path,
+) -> None:
+    source_observable = "Different prediction wording."
+    plan, endpoint = _fixture(
+        tmp_path,
+        prediction_observable=source_observable,
+    )
+
+    legacy = compile_relational_atomic_projection(
+        plan=plan,
+        endpoint_report=endpoint,
+    )
+    assert legacy.projected_claim_count == 0
+    assert legacy.rows[0].reason_codes == [
+        "prediction_exact_source_binding_cardinality:0"
+    ]
+
+    canonical = _canonical_specification(
+        observable=source_observable,
+    )
+    migrated = compile_relational_atomic_projection(
+        plan=plan,
+        endpoint_report=endpoint,
+        canonical_specifications={
+            canonical.claim_id: canonical,
+        },
+    )
+
+    assert migrated.projected_claim_count == 1
+    row = migrated.rows[0]
+    assert row.projection_status == "PROJECTED"
+    assert row.specification is not None
+    assert row.specification.prediction_observation_id == "prediction:1"
+    assert row.specification.falsification_criterion_id == "falsifier:1"
+    assert row.specification.observable == source_observable
+    assert row.specification.source_candidate_ids == [
+        "candidate:source"
+    ]
+
+
+def test_canonical_source_id_path_fails_closed_on_unknown_prediction_id(
+    tmp_path: Path,
+) -> None:
+    source_observable = "Different prediction wording."
+    plan, endpoint = _fixture(
+        tmp_path,
+        prediction_observable=source_observable,
+    )
+    canonical = _canonical_specification(
+        observable=source_observable,
+        prediction_id="prediction:unknown",
+    )
+
+    report = compile_relational_atomic_projection(
+        plan=plan,
+        endpoint_report=endpoint,
+        canonical_specifications={
+            canonical.claim_id: canonical,
+        },
+    )
+
+    assert report.projected_claim_count == 0
+    assert report.rows[0].projection_status == (
+        "ABSTAINED_SOURCE_BINDING"
+    )
+    assert report.rows[0].reason_codes == [
+        "prediction_source_id_cardinality:0"
+    ]
+
+
+def test_canonical_path_rejects_endpoint_identity_drift(
+    tmp_path: Path,
+) -> None:
+    source_observable = "Different prediction wording."
+    plan, endpoint = _fixture(
+        tmp_path,
+        prediction_observable=source_observable,
+    )
+    canonical = _canonical_specification(
+        observable=source_observable,
+        endpoints=[
+            "Substrate composition",
+            "nanostructure spacing",
+        ],
+    )
+
+    report = compile_relational_atomic_projection(
+        plan=plan,
+        endpoint_report=endpoint,
+        canonical_specifications={
+            canonical.claim_id: canonical,
+        },
+    )
+
+    assert report.projected_claim_count == 0
+    assert report.rows[0].reason_codes == [
+        "canonical_specification_literal_binding_mismatch:"
+        "relation_endpoint_anchors"
+    ]
+
+
+def test_canonical_mapping_rejects_unknown_claim_population(
+    tmp_path: Path,
+) -> None:
+    plan, endpoint = _fixture(tmp_path)
+    canonical = _canonical_specification(
+        observable=(
+            "Substrate composition changes the Raman-intensity response "
+            "to nanostructure spacing."
+        ),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="canonical specification population contains unknown claims",
+    ):
+        compile_relational_atomic_projection(
+            plan=plan,
+            endpoint_report=endpoint,
+            canonical_specifications={
+                "external_novelty_claim:unknown": canonical,
+            },
+        )

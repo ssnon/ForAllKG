@@ -21,6 +21,9 @@ from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicClaimKind,
     CompiledAtomicSpecification,
 )
+from pipeline_core.discovery.atomic_scientific_source_binding import (
+    resolve_atomic_source_reference,
+)
 
 
 class StrictModel(BaseModel):
@@ -302,52 +305,11 @@ def _source_reference_binding(
     object | None,
 ]:
     binding = draft_claim.semantic_fidelity_binding
-    prediction_id = _surface(binding.prediction_observation_id)
-    falsifier_id = _surface(binding.falsification_criterion_id)
-    reasons: list[str] = []
-
-    if not prediction_id:
-        reasons.append("missing_prediction_source_id")
-    if not falsifier_id:
-        reasons.append("missing_falsifier_source_id")
-
-    if reasons:
-        return "INCOMPLETE", reasons, None, None
-
-    predictions = [
-        row
-        for row in hypothesis.predicted_observations
-        if row.observation_id == prediction_id
-    ]
-    falsifiers = [
-        row
-        for row in hypothesis.falsification_criteria
-        if row.criterion_id == falsifier_id
-    ]
-
-    if len(predictions) != 1:
-        reasons.append(
-            "prediction_source_id_cardinality:" + str(len(predictions))
-        )
-    if len(falsifiers) != 1:
-        reasons.append(
-            "falsifier_source_id_cardinality:" + str(len(falsifiers))
-        )
-    if reasons:
-        return "INVALID", reasons, None, None
-
-    prediction = predictions[0]
-    falsifier = falsifiers[0]
-    if not _normalized(prediction.observable):
-        reasons.append("source_observable_empty")
-    elif _normalized(prediction.observable) != _normalized(
-        falsifier.observable
-    ):
-        reasons.append("source_observable_identity_mismatch")
-
-    if reasons:
-        return "INVALID", reasons, prediction, falsifier
-    return "READY", [], prediction, falsifier
+    return resolve_atomic_source_reference(
+        hypothesis=hypothesis,
+        prediction_observation_id=binding.prediction_observation_id,
+        falsification_criterion_id=binding.falsification_criterion_id,
+    )
 
 
 def _specification_reasons(

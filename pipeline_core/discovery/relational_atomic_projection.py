@@ -17,6 +17,12 @@ from pipeline_core.discovery.atomic_scientific_specification import (
     AtomicClaimKind,
     CompiledAtomicSpecification,
 )
+from pipeline_core.discovery.atomic_scientific_source_binding import (
+    resolve_atomic_source_reference,
+)
+from pipeline_core.discovery.atomic_scientific_novelty_projection import (
+    novelty_projection_scientific_mismatch_reason_codes,
+)
 from pipeline_core.discovery.relational_atomic_binding_plan import (
     RelationalAtomicBindingClaimPlan,
     RelationalAtomicBindingHypothesisPlan,
@@ -412,10 +418,78 @@ def _exact_observation_binding(
     return prediction, falsifier, []
 
 
+def _normalized_sequence(values: list[str]) -> list[str]:
+    return [_normalize_literal(value) for value in values]
+
+
+def _canonical_specification_binding_reasons(
+    *,
+    source_claim: NoveltyClaim,
+    candidate_card: object,
+    specification: CompiledAtomicSpecification,
+    binding: CompiledLiteralEndpointBinding,
+) -> tuple[object | None, object | None, list[str]]:
+    reasons = novelty_projection_scientific_mismatch_reason_codes(
+        hypothesis_id=source_claim.hypothesis_id,
+        claim_rank=source_claim.claim_rank,
+        specification=specification,
+        claim=source_claim,
+    )
+
+    status, source_reasons, prediction, falsifier = (
+        resolve_atomic_source_reference(
+            hypothesis=candidate_card,
+            prediction_observation_id=(
+                specification.prediction_observation_id
+            ),
+            falsification_criterion_id=(
+                specification.falsification_criterion_id
+            ),
+            expected_observable=specification.observable,
+            expected_falsification_condition=(
+                specification.falsification_condition
+            ),
+        )
+    )
+    reasons.extend(source_reasons)
+    if status != "READY" and not source_reasons:
+        reasons.append("canonical_source_reference_not_ready")
+
+    for label, observed, expected in (
+        (
+            "relation_endpoint_anchors",
+            list(binding.relation_endpoint_anchors),
+            list(specification.relation_endpoint_anchors),
+        ),
+        (
+            "scope_qualifier_spans",
+            list(binding.scope_qualifier_spans),
+            list(specification.scope_qualifier_spans),
+        ),
+        (
+            "directional_qualifier_spans",
+            list(binding.directional_qualifier_spans),
+            list(specification.directional_qualifier_spans),
+        ),
+    ):
+        if _normalized_sequence(observed) != _normalized_sequence(
+            expected
+        ):
+            reasons.append(
+                "canonical_specification_literal_binding_mismatch:"
+                + label
+            )
+
+    return prediction, falsifier, list(dict.fromkeys(reasons))
+
+
 def compile_relational_atomic_projection(
     *,
     plan: RelationalAtomicBindingPlan,
     endpoint_report: RelationalAtomicEndpointBindingReport,
+    canonical_specifications: dict[
+        str, CompiledAtomicSpecification
+    ] | None = None,
 ) -> RelationalAtomicProjectionReport:
     if endpoint_report.source_binding_plan_id != plan.plan_id:
         raise ValueError("endpoint report/source binding plan ID mismatch")
@@ -429,6 +503,22 @@ def compile_relational_atomic_projection(
         raise ValueError(
             "endpoint report population/order differs from frozen binding plan"
         )
+
+    canonical_by_id = dict(canonical_specifications or {})
+    unknown_canonical = sorted(
+        set(canonical_by_id) - set(expected_ids)
+    )
+    if unknown_canonical:
+        raise ValueError(
+            "canonical specification population contains unknown claims: "
+            + ",".join(unknown_canonical)
+        )
+    for claim_id, specification in canonical_by_id.items():
+        if specification.claim_id != claim_id:
+            raise ValueError(
+                "canonical specification mapping key/claim ID mismatch: "
+                + claim_id
+            )
 
     hypothesis_by_final, claim_by_id = _plan_claim_maps(plan)
     rows: list[RelationalAtomicProjectionRow] = []
@@ -497,12 +587,27 @@ def compile_relational_atomic_projection(
         if source_claim.novelty_selection_role is None:
             reasons.append("missing_novelty_selection_role")
 
-        prediction, falsifier, observation_reasons = (
-            _exact_observation_binding(
-                candidate_card=candidate_card,
-                claim=source_claim,
-            )
+        canonical_specification = canonical_by_id.get(
+            binding.claim_id
         )
+        if canonical_specification is None:
+            prediction, falsifier, observation_reasons = (
+                _exact_observation_binding(
+                    candidate_card=candidate_card,
+                    claim=source_claim,
+                )
+            )
+        else:
+            (
+                prediction,
+                falsifier,
+                observation_reasons,
+            ) = _canonical_specification_binding_reasons(
+                source_claim=source_claim,
+                candidate_card=candidate_card,
+                specification=canonical_specification,
+                binding=binding,
+            )
         reasons.extend(observation_reasons)
 
         if reasons:
@@ -531,55 +636,77 @@ def compile_relational_atomic_projection(
             ]
         )
 
-        specification = CompiledAtomicSpecification(
-            local_id=(
-                "RELATIONAL_ATOMIC_PROJECTION_"
-                + str(source_claim.claim_rank)
-            ),
-            claim_id=source_claim.claim_id,
-            kind=source_claim.kind,
-            importance=source_claim.importance,
-            novelty_selection_role=source_claim.novelty_selection_role,
-            text=source_claim.text,
-            rationale=source_claim.rationale,
-            source_candidate_ids=[
-                hypothesis_plan.candidate_hypothesis_id
-            ],
-            premise_statement_ids=list(
-                candidate_card.premise_statement_ids
-            ),
-            gap_statement_ids=list(
-                candidate_card.gap_statement_ids
-            ),
-            prior_art_identity_terms=list(
-                source_claim.prior_art_identity_terms
-            ),
-            relation_endpoint_anchors=list(
-                binding.relation_endpoint_anchors
-            ),
-            scope_qualifier_spans=list(
-                binding.scope_qualifier_spans
-            ),
-            directional_qualifier_spans=list(
-                binding.directional_qualifier_spans
-            ),
-            relation_nucleus_terms=relation_nucleus,
-            distinguishing_terms=list(
-                source_claim.distinguishing_terms
-            ),
-            required_bridge=source_claim.required_bridge,
-            observable=prediction.observable,
-            predicted_observation=source_claim.predicted_observation,
-            falsification_condition=source_claim.falsification_condition,
-            prediction_observation_id=prediction.observation_id,
-            falsification_criterion_id=falsifier.criterion_id,
-            search_concepts=list(source_claim.search_concepts),
-            search_queries=list(source_claim.search_queries),
-            scientific_structure=source_claim.scientific_structure,
-            scientific_structure_reason_codes=list(
-                source_claim.scientific_structure_reason_codes
-            ),
-        )
+        if canonical_specification is not None:
+            specification = canonical_specification.model_copy(
+                update={
+                    "local_id": (
+                        "RELATIONAL_ATOMIC_PROJECTION_"
+                        + str(source_claim.claim_rank)
+                    ),
+                    "relation_endpoint_anchors": list(
+                        binding.relation_endpoint_anchors
+                    ),
+                    "scope_qualifier_spans": list(
+                        binding.scope_qualifier_spans
+                    ),
+                    "directional_qualifier_spans": list(
+                        binding.directional_qualifier_spans
+                    ),
+                    "relation_nucleus_terms": list(
+                        canonical_specification.relation_nucleus_terms
+                    ),
+                }
+            )
+        else:
+            specification = CompiledAtomicSpecification(
+                local_id=(
+                    "RELATIONAL_ATOMIC_PROJECTION_"
+                    + str(source_claim.claim_rank)
+                ),
+                claim_id=source_claim.claim_id,
+                kind=source_claim.kind,
+                importance=source_claim.importance,
+                novelty_selection_role=source_claim.novelty_selection_role,
+                text=source_claim.text,
+                rationale=source_claim.rationale,
+                source_candidate_ids=[
+                    hypothesis_plan.candidate_hypothesis_id
+                ],
+                premise_statement_ids=list(
+                    candidate_card.premise_statement_ids
+                ),
+                gap_statement_ids=list(
+                    candidate_card.gap_statement_ids
+                ),
+                prior_art_identity_terms=list(
+                    source_claim.prior_art_identity_terms
+                ),
+                relation_endpoint_anchors=list(
+                    binding.relation_endpoint_anchors
+                ),
+                scope_qualifier_spans=list(
+                    binding.scope_qualifier_spans
+                ),
+                directional_qualifier_spans=list(
+                    binding.directional_qualifier_spans
+                ),
+                relation_nucleus_terms=relation_nucleus,
+                distinguishing_terms=list(
+                    source_claim.distinguishing_terms
+                ),
+                required_bridge=source_claim.required_bridge,
+                observable=prediction.observable,
+                predicted_observation=source_claim.predicted_observation,
+                falsification_condition=source_claim.falsification_condition,
+                prediction_observation_id=prediction.observation_id,
+                falsification_criterion_id=falsifier.criterion_id,
+                search_concepts=list(source_claim.search_concepts),
+                search_queries=list(source_claim.search_queries),
+                scientific_structure=source_claim.scientific_structure,
+                scientific_structure_reason_codes=list(
+                    source_claim.scientific_structure_reason_codes
+                ),
+            )
 
         rows.append(
             RelationalAtomicProjectionRow(
