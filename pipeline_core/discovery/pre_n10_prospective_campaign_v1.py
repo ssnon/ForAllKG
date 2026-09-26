@@ -1007,6 +1007,9 @@ def execute_pre_n10_prospective_campaign_v1(
     initial_contract = PreN10ScientificContractReportV1.model_validate_json(
         contract_path.read_text(encoding="utf-8")
     )
+    initial_contract_v2 = PreN10ScientificContractReportV2.model_validate_json(
+        contract_v2_path.read_text(encoding="utf-8")
+    )
 
     primary_root = root / "02_primary_router"
     post_query_path = primary_root / "post_primary.claims_queries.json"
@@ -1032,6 +1035,8 @@ def execute_pre_n10_prospective_campaign_v1(
         str(contract_path),
         "--source-binding-bundle",
         str(source_binding_bundle_path),
+        "--authority-contract-v2",
+        str(contract_v2_path),
         "--output-dir",
         str(primary_root),
         "--model",
@@ -1077,18 +1082,32 @@ def execute_pre_n10_prospective_campaign_v1(
         post_contract_v2 = PreN10ScientificContractReportV2.model_validate_json(
             post_contract_v2_path.read_text(encoding="utf-8")
         )
-        if report.source_contract_report_id != initial_contract.report_id:
-            raise ValueError("campaign primary/source contract ID mismatch")
-        if report.source_contract_report_sha256 != initial_contract.report_sha256:
-            raise ValueError("campaign primary/source contract SHA mismatch")
+        if report.source_contract_report_id != initial_contract_v2.report_id:
+            raise ValueError(
+                "campaign primary/source V2 authority contract ID mismatch"
+            )
+        if (
+            report.source_contract_report_sha256
+            != initial_contract_v2.report_sha256
+        ):
+            raise ValueError(
+                "campaign primary/source V2 authority contract SHA mismatch"
+            )
         if report.post_primary_query_plan_id != post_query.plan_id:
             raise ValueError("campaign primary/post query-plan ID mismatch")
         if report.post_primary_query_plan_sha256 != post_query.plan_sha256:
             raise ValueError("campaign primary/post query-plan SHA mismatch")
-        if report.post_contract_report_id != post_contract.report_id:
-            raise ValueError("campaign primary/post contract ID mismatch")
-        if report.post_contract_report_sha256 != post_contract.report_sha256:
-            raise ValueError("campaign primary/post contract SHA mismatch")
+        if report.post_contract_report_id != post_contract_v2.report_id:
+            raise ValueError(
+                "campaign primary/post V2 authority contract ID mismatch"
+            )
+        if (
+            report.post_contract_report_sha256
+            != post_contract_v2.report_sha256
+        ):
+            raise ValueError(
+                "campaign primary/post V2 authority contract SHA mismatch"
+            )
 
         if (
             post_source_binding_bundle.source_query_plan_id

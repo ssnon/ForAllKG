@@ -25,7 +25,11 @@ from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     build_pre_n10_scientific_contract_v1,
 )
 from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    PreN10ScientificContractReportV2,
     build_pre_n10_scientific_contract_v2,
+)
+from pipeline_core.discovery.pre_n10_v2_child_execution_adapter import (
+    build_pre_n10_v2_child_execution_adapter_v1,
 )
 from pipeline_core.discovery.preverifier_contract_gate_v2 import RouterHint
 from pipeline_core.discovery.pre_n10_source_alignment_primary_v1 import (
@@ -372,9 +376,10 @@ def execute_pre_n10_primary_router_v1(
     specification_repair_backend_factory: SpecificationRepairBackendFactory | None = None,
     source_alignment_audit_backend_factory: SourceAlignmentAuditBackendFactory | None = None,
     source_binding_bundle: AtomicScientificSourceBindingBundle | None = None,
+    authority_contract_v2: PreN10ScientificContractReportV2 | None = None,
 ) -> tuple[
     LiteratureQueryPlan,
-    PreN10ScientificContractReportV1,
+    PreN10ScientificContractReportV1 | PreN10ScientificContractReportV2,
     PreN10PrimaryRouterReportV1,
 ]:
     portfolio_file = portfolio_path.expanduser().resolve()
@@ -411,8 +416,43 @@ def execute_pre_n10_primary_router_v1(
                 "source-binding bundle/query-plan SHA mismatch at primary router"
             )
 
+    if authority_contract_v2 is not None:
+        if source_binding_bundle is None:
+            raise ValueError(
+                "V2 primary authority requires canonical source-binding bundle"
+            )
+        if authority_contract_v2.source_portfolio_id != portfolio.portfolio_id:
+            raise ValueError("V2 primary authority/portfolio ID mismatch")
+        if authority_contract_v2.source_portfolio_file_sha256 != _sha256_file(
+            portfolio_file
+        ):
+            raise ValueError("V2 primary authority portfolio file changed")
+        if authority_contract_v2.source_query_plan_id != source_plan.plan_id:
+            raise ValueError("V2 primary authority/query-plan ID mismatch")
+        if authority_contract_v2.source_query_plan_sha256 != source_plan.plan_sha256:
+            raise ValueError(
+                "V2 primary authority/query-plan semantic SHA mismatch"
+            )
+        if authority_contract_v2.source_query_plan_file_sha256 != _sha256_file(
+            query_file
+        ):
+            raise ValueError("V2 primary authority query-plan file changed")
+        if authority_contract_v2.source_binding_bundle_id != (
+            source_binding_bundle.bundle_id
+        ):
+            raise ValueError(
+                "V2 primary authority/source-binding bundle ID mismatch"
+            )
+        if authority_contract_v2.source_binding_bundle_sha256 != (
+            source_binding_bundle.bundle_sha256
+        ):
+            raise ValueError(
+                "V2 primary authority/source-binding bundle SHA mismatch"
+            )
+
+    routing_contract = authority_contract_v2 or contract_report
     contract_by_hypothesis = {
-        row.hypothesis_id: row for row in contract_report.hypotheses
+        row.hypothesis_id: row for row in routing_contract.hypotheses
     }
     portfolio_ids = [row.hypothesis_id for row in portfolio.hypotheses]
     if set(contract_by_hypothesis) != set(portfolio_ids):
@@ -476,12 +516,27 @@ def execute_pre_n10_primary_router_v1(
         subset_plan_path = route_dir / "source.claims_queries.json"
         _write_exact_or_validate(subset_portfolio_path, subset_portfolio)
         _write_exact_or_validate(subset_plan_path, subset_plan)
-        subset_contract = build_pre_n10_scientific_contract_v1(
-            portfolio_path=subset_portfolio_path,
-            query_plan_path=subset_plan_path,
-            claim_decomposition_request_count=0,
-        )
-        _write_exact_or_validate(route_dir / "contract.before_primary.json", subset_contract)
+        if authority_contract_v2 is not None:
+            subset_contract = build_pre_n10_v2_child_execution_adapter_v1(
+                authority_report=authority_contract_v2,
+                hypothesis_id=hypothesis_id,
+                subset_portfolio_path=subset_portfolio_path,
+                subset_query_plan_path=subset_plan_path,
+            )
+            _write_exact_or_validate(
+                route_dir / "contract.before_primary.v2_execution_adapter.json",
+                subset_contract,
+            )
+        else:
+            subset_contract = build_pre_n10_scientific_contract_v1(
+                portfolio_path=subset_portfolio_path,
+                query_plan_path=subset_plan_path,
+                claim_decomposition_request_count=0,
+            )
+            _write_exact_or_validate(
+                route_dir / "contract.before_primary.json",
+                subset_contract,
+            )
 
         if dominant == "SPECIFICATION_REPAIR_REVIEW":
             if specification_repair_backend_factory is None:
@@ -611,6 +666,7 @@ def execute_pre_n10_primary_router_v1(
     post_contract_path = root / "contract.after_primary_router.json"
     _write_exact_or_validate(post_contract_path, post_contract)
 
+    post_contract_v2 = None
     if working_bundle is not None:
         post_bundle_path = (
             root / "atomic_source_binding.after_primary.bundle.json"
@@ -649,8 +705,19 @@ def execute_pre_n10_primary_router_v1(
             post_contract_v2,
         )
 
+    post_authority_contract = (
+        post_contract_v2
+        if authority_contract_v2 is not None
+        else post_contract
+    )
+    if authority_contract_v2 is not None and post_contract_v2 is None:
+        raise ValueError(
+            "V2 primary authority requires post-primary V2 contract"
+        )
+
     post_by_hypothesis = {
-        row.hypothesis_id: row for row in post_contract.hypotheses
+        row.hypothesis_id: row
+        for row in post_authority_contract.hypotheses
     }
 
     rows: list[PreN10PrimaryRouterHypothesisResultV1] = []
@@ -687,16 +754,16 @@ def execute_pre_n10_primary_router_v1(
     route_counts = Counter(row.route for row in rows)
     body = {
         "schema_version": "pre-n10-primary-router-report-v1",
-        "source_contract_report_id": contract_report.report_id,
-        "source_contract_report_sha256": contract_report.report_sha256,
+        "source_contract_report_id": routing_contract.report_id,
+        "source_contract_report_sha256": routing_contract.report_sha256,
         "source_portfolio_id": portfolio.portfolio_id,
         "source_portfolio_sha256": _sha256_file(portfolio_file),
         "source_query_plan_id": source_plan.plan_id,
         "source_query_plan_sha256": source_plan.plan_sha256,
         "post_primary_query_plan_id": working_plan.plan_id,
         "post_primary_query_plan_sha256": working_plan.plan_sha256,
-        "post_contract_report_id": post_contract.report_id,
-        "post_contract_report_sha256": post_contract.report_sha256,
+        "post_contract_report_id": post_authority_contract.report_id,
+        "post_contract_report_sha256": post_authority_contract.report_sha256,
         "hypotheses": [row.model_dump(mode="json") for row in rows],
         "hypothesis_count": len(rows),
         "route_counts": dict(sorted(route_counts.items())),
@@ -730,7 +797,7 @@ def execute_pre_n10_primary_router_v1(
         report_sha256=digest,
     )
     _write_exact_or_validate(root / "primary_router.report.json", report)
-    return working_plan, post_contract, report
+    return working_plan, post_authority_contract, report
 
 
 __all__ = [

@@ -12,6 +12,9 @@ from pipeline_core.discovery.pre_n10_primary_router_v1 import (
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     PreN10ScientificContractReportV1,
 )
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    PreN10ScientificContractReportV2,
+)
 from pipeline_core.discovery.preverifier_specification_repair_executor import (
     InstructorSpecificationRepairBackend,
 )
@@ -28,6 +31,7 @@ def execute_pre_n10_primary_router_runtime_v1(
     output_root: Path,
     model: str,
     source_binding_bundle_path: Path | None = None,
+    authority_contract_v2_path: Path | None = None,
     specification_repair_model: str | None = None,
     specification_audit_model: str | None = None,
     source_alignment_model: str | None = None,
@@ -36,7 +40,11 @@ def execute_pre_n10_primary_router_runtime_v1(
     temperature: float = 0.0,
     parse_retries: int = 1,
     timeout_seconds: float = 180.0,
-) -> tuple[object, PreN10ScientificContractReportV1, PreN10PrimaryRouterReportV1]:
+) -> tuple[
+    object,
+    PreN10ScientificContractReportV1 | PreN10ScientificContractReportV2,
+    PreN10PrimaryRouterReportV1,
+]:
     """Execute the unified pre-N10 primary router with lazy concrete backends.
 
     This adapter changes no routing or scientific policy.  It only gives the
@@ -58,6 +66,11 @@ def execute_pre_n10_primary_router_runtime_v1(
         if source_binding_bundle_path is not None
         else None
     )
+    authority_contract_v2_file = (
+        authority_contract_v2_path.expanduser().resolve()
+        if authority_contract_v2_path is not None
+        else None
+    )
 
     for path, label in (
         (portfolio_file, "portfolio"),
@@ -74,6 +87,14 @@ def execute_pre_n10_primary_router_runtime_v1(
         raise ValueError(
             "missing pre-N10 primary-router source-binding bundle: "
             + str(source_binding_bundle_file)
+        )
+    if (
+        authority_contract_v2_file is not None
+        and not authority_contract_v2_file.is_file()
+    ):
+        raise ValueError(
+            "missing pre-N10 primary-router V2 authority contract: "
+            + str(authority_contract_v2_file)
         )
 
     default_model = str(model).strip()
@@ -102,6 +123,14 @@ def execute_pre_n10_primary_router_runtime_v1(
         if source_binding_bundle_file is not None
         else None
     )
+    authority_contract_v2 = (
+        PreN10ScientificContractReportV2.model_validate_json(
+            authority_contract_v2_file.read_text(encoding="utf-8")
+        )
+        if authority_contract_v2_file is not None
+        else None
+    )
+    routing_authority = authority_contract_v2 or contract
 
     def specification_factory(hypothesis_id: str, lineage_root: Path):
         return InstructorSpecificationRepairBackend(
@@ -119,7 +148,7 @@ def execute_pre_n10_primary_router_runtime_v1(
                 "pipeline": "pre_n10_primary_router_runtime_v1",
                 "route": "SPECIFICATION_REPAIR",
                 "hypothesis_id": hypothesis_id,
-                "source_contract_report_id": contract.report_id,
+                "source_contract_report_id": routing_authority.report_id,
             },
         )
 
@@ -146,7 +175,7 @@ def execute_pre_n10_primary_router_runtime_v1(
                 "pipeline": "pre_n10_primary_router_runtime_v1",
                 "route": "SOURCE_ALIGNMENT",
                 "hypothesis_id": hypothesis_id,
-                "source_contract_report_id": contract.report_id,
+                "source_contract_report_id": routing_authority.report_id,
             },
         )
 
@@ -158,6 +187,7 @@ def execute_pre_n10_primary_router_runtime_v1(
         specification_repair_backend_factory=specification_factory,
         source_alignment_audit_backend_factory=source_alignment_factory,
         source_binding_bundle=source_binding_bundle,
+        authority_contract_v2=authority_contract_v2,
     )
 
 
