@@ -16,6 +16,10 @@ from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, Hypothe
 from pipeline_core.discovery.novelty_specification_source_trace import (
     trace_specification_sources,
 )
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingRecord,
+    build_atomic_scientific_source_binding_record,
+)
 from pipeline_core.discovery.novelty_atomic_semantic_fidelity import (
     assess_atomic_semantic_fidelity,
     compile_atomic_semantic_fidelity_taxonomy_shadow,
@@ -3374,6 +3378,14 @@ class NoveltyClaimDecomposer:
             dict[str, object]
         ] = []
 
+        # Stable scientific source provenance captured before the
+        # novelty/search projection loses prediction/falsifier IDs.
+        # This channel carries no readiness, novelty, or production
+        # authority.
+        self.atomic_source_binding_records: list[
+            AtomicScientificSourceBindingRecord
+        ] = []
+
         if self.max_claims < 1:
             raise ValueError("max_claims_per_hypothesis must be >= 1")
         if self.max_queries < 1:
@@ -3987,32 +3999,70 @@ class NoveltyClaimDecomposer:
         if not (
             self.enable_existing_bridge_scope_alignment_canonical_action
         ):
-            return result
+            # Preserve the explicit default-off guard required by the
+            # canonical-action contract. Stable source provenance is
+            # captured below on both branches.
+            pass
+        else:
+            bounded_noneligibility_messages = {
+                "alignment canonical action requires stable existing exact bridge",
+                "alignment canonical action planner did not produce unique candidate",
+                "alignment canonical action preview is not ready",
+                "alignment canonical action shadow authority denied",
+            }
 
-        bounded_noneligibility_messages = {
-            "alignment canonical action requires stable existing exact bridge",
-            "alignment canonical action planner did not produce unique candidate",
-            "alignment canonical action preview is not ready",
-            "alignment canonical action shadow authority denied",
+            for source_row in draft_rows:
+                claim_id = claim_id_by_local_id[source_row.local_id]
+                try:
+                    result, action_record = (
+                        _apply_existing_bridge_scope_alignment_canonical_action_opt_in(
+                            hypothesis,
+                            result,
+                            source_row,
+                            claim_id=claim_id,
+                        )
+                    )
+                except ValueError as exc:
+                    if str(exc) in bounded_noneligibility_messages:
+                        continue
+                    raise
+
+                self.canonical_action_records.append(action_record)
+
+        final_claims_by_id = {
+            claim.claim_id: claim
+            for claim in result.claims
         }
+        if len(final_claims_by_id) != len(result.claims):
+            raise ValueError(
+                "duplicate final claim IDs during source-binding capture"
+            )
+
+        # Replacing records for the same hypothesis makes repeated
+        # deterministic decomposition on one decomposer instance safe
+        # while preserving accumulation across a portfolio.
+        self.atomic_source_binding_records = [
+            record
+            for record in self.atomic_source_binding_records
+            if record.hypothesis_id != hypothesis.hypothesis_id
+        ]
 
         for source_row in draft_rows:
             claim_id = claim_id_by_local_id[source_row.local_id]
-            try:
-                result, action_record = (
-                    _apply_existing_bridge_scope_alignment_canonical_action_opt_in(
-                        hypothesis,
-                        result,
-                        source_row,
-                        claim_id=claim_id,
-                    )
+            final_claim = final_claims_by_id.get(claim_id)
+            if final_claim is None:
+                raise ValueError(
+                    "final claim population drift during source-binding capture: "
+                    + claim_id
                 )
-            except ValueError as exc:
-                if str(exc) in bounded_noneligibility_messages:
-                    continue
-                raise
-
-            self.canonical_action_records.append(action_record)
+            self.atomic_source_binding_records.append(
+                build_atomic_scientific_source_binding_record(
+                    hypothesis_id=hypothesis.hypothesis_id,
+                    claim_local_id=source_row.local_id,
+                    claim=final_claim,
+                    binding=source_row.semantic_fidelity_binding,
+                )
+            )
 
         return result
 
