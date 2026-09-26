@@ -236,7 +236,23 @@ def main() -> int:
         if row.query_plan_path:
             print("  query plan:", row.query_plan_path)
         if row.contract_report_path:
-            print("  contract:", row.contract_report_path)
+            print("  compatibility V1 contract:", row.contract_report_path)
+        if row.source_binding_bundle_path:
+            print(
+                "  canonical source-binding bundle:",
+                row.source_binding_bundle_path,
+            )
+        if row.canonical_source_reference_path:
+            print(
+                "  canonical source-reference:",
+                row.canonical_source_reference_path,
+            )
+        if row.contract_v2_report_path:
+            print("  stable-ID V2 contract:", row.contract_v2_report_path)
+            print(
+                "  canonical pre-N10 disposition:",
+                row.canonical_pre_n10_disposition,
+            )
 
     print()
     print("Semantic fail blocks pre-N10: true")

@@ -7,6 +7,9 @@ from typing import Callable, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    build_atomic_scientific_source_binding_bundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisContext,
@@ -23,11 +26,17 @@ from pipeline_core.discovery.novelty_claim_decomposition import (
     NoveltyClaimBackend,
     NoveltyClaimDecomposer,
 )
+from pipeline_core.discovery.pre_n10_canonical_source_reference_v1 import (
+    build_pre_n10_canonical_source_reference_report_v1,
+)
 from pipeline_core.discovery.pre_n10_regeneration_v1 import (
     PreN10RegenerationExecutionReportV1,
 )
 from pipeline_core.discovery.pre_n10_scientific_contract_v1 import (
     build_pre_n10_scientific_contract_v1,
+)
+from pipeline_core.discovery.pre_n10_scientific_contract_v2 import (
+    build_pre_n10_scientific_contract_v2,
 )
 
 
@@ -213,6 +222,26 @@ class PreN10RegenerationReentryLineageV2(StrictModel):
     contract_report_path: str | None = None
     contract_report_id: str | None = None
 
+    source_binding_bundle_path: str | None = None
+    source_binding_bundle_id: str | None = None
+    source_binding_bundle_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    canonical_source_reference_path: str | None = None
+    canonical_source_reference_report_id: str | None = None
+    canonical_source_reference_report_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    contract_v2_report_path: str | None = None
+    contract_v2_report_id: str | None = None
+    contract_v2_report_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    canonical_pre_n10_disposition: str | None = None
+
     claim_decomposition_request_count: int = Field(ge=0)
     pre_n10_disposition: str | None = None
     final_status: ReentryStatusV2
@@ -263,6 +292,23 @@ class PreN10RegenerationReentryLineageV2(StrictModel):
                 raise ValueError(
                     "pre-N10 contract re-entry requires query-plan artifacts"
                 )
+            canonical_fields = (
+                self.source_binding_bundle_path,
+                self.source_binding_bundle_id,
+                self.source_binding_bundle_sha256,
+                self.canonical_source_reference_path,
+                self.canonical_source_reference_report_id,
+                self.canonical_source_reference_report_sha256,
+                self.contract_v2_report_path,
+                self.contract_v2_report_id,
+                self.contract_v2_report_sha256,
+                self.canonical_pre_n10_disposition,
+            )
+            if any(value is None for value in canonical_fields):
+                raise ValueError(
+                    "pre-N10 regeneration re-entry requires canonical "
+                    "source provenance and V2 contract artifacts"
+                )
             if self.claim_decomposition_request_count < 1:
                 raise ValueError(
                     "pre-N10 contract re-entry requires fresh decomposition"
@@ -300,6 +346,23 @@ class PreN10RegenerationReentryLineageV2(StrictModel):
         if self.claim_decomposition_request_count != 0:
             raise ValueError(
                 "semantic-terminal lineage cannot decompose claims"
+            )
+        canonical_fields = (
+            self.source_binding_bundle_path,
+            self.source_binding_bundle_id,
+            self.source_binding_bundle_sha256,
+            self.canonical_source_reference_path,
+            self.canonical_source_reference_report_id,
+            self.canonical_source_reference_report_sha256,
+            self.contract_v2_report_path,
+            self.contract_v2_report_id,
+            self.contract_v2_report_sha256,
+            self.canonical_pre_n10_disposition,
+        )
+        if any(value is not None for value in canonical_fields):
+            raise ValueError(
+                "semantic-terminal lineage cannot carry canonical "
+                "pre-N10 contract artifacts"
             )
         if self.semantic_admissible_for_pre_n10:
             raise ValueError(
@@ -606,6 +669,54 @@ def execute_pre_n10_regeneration_reentry_v2(
         contract_path = lineage_dir / "contract.json"
         _write_exact_or_validate(contract_path, contract)
 
+        source_binding_bundle = (
+            build_atomic_scientific_source_binding_bundle(
+                source_portfolio_id=portfolio.portfolio_id,
+                query_plan=query_plan,
+                records=list(
+                    decomposer.atomic_source_binding_records
+                ),
+            )
+        )
+        source_binding_bundle_path = (
+            lineage_dir / "atomic_source_binding.bundle.json"
+        )
+        _write_exact_or_validate(
+            source_binding_bundle_path,
+            source_binding_bundle,
+        )
+
+        canonical_source_reference = (
+            build_pre_n10_canonical_source_reference_report_v1(
+                portfolio_path=portfolio_path,
+                query_plan_path=query_plan_path,
+                source_binding_bundle_path=source_binding_bundle_path,
+            )
+        )
+        canonical_source_reference_path = (
+            lineage_dir / "canonical_source_reference.report.json"
+        )
+        _write_exact_or_validate(
+            canonical_source_reference_path,
+            canonical_source_reference,
+        )
+
+        contract_v2 = build_pre_n10_scientific_contract_v2(
+            portfolio_path=portfolio_path,
+            query_plan_path=query_plan_path,
+            canonical_source_reference_path=(
+                canonical_source_reference_path
+            ),
+            claim_decomposition_request_count=len(
+                portfolio.hypotheses
+            ),
+        )
+        contract_v2_path = lineage_dir / "contract_v2.json"
+        _write_exact_or_validate(
+            contract_v2_path,
+            contract_v2,
+        )
+
         sanitization_audit = (
             _build_decomposition_sanitization_audit_v1(
                 source_hypothesis_id=source.source_hypothesis_id,
@@ -647,6 +758,30 @@ def execute_pre_n10_regeneration_reentry_v2(
                 query_plan_id=query_plan.plan_id,
                 contract_report_path=str(contract_path),
                 contract_report_id=contract.report_id,
+                source_binding_bundle_path=str(
+                    source_binding_bundle_path
+                ),
+                source_binding_bundle_id=(
+                    source_binding_bundle.bundle_id
+                ),
+                source_binding_bundle_sha256=(
+                    source_binding_bundle.bundle_sha256
+                ),
+                canonical_source_reference_path=str(
+                    canonical_source_reference_path
+                ),
+                canonical_source_reference_report_id=(
+                    canonical_source_reference.report_id
+                ),
+                canonical_source_reference_report_sha256=(
+                    canonical_source_reference.report_sha256
+                ),
+                contract_v2_report_path=str(contract_v2_path),
+                contract_v2_report_id=contract_v2.report_id,
+                contract_v2_report_sha256=contract_v2.report_sha256,
+                canonical_pre_n10_disposition=(
+                    contract_v2.disposition
+                ),
                 claim_decomposition_request_count=len(portfolio.hypotheses),
                 pre_n10_disposition=contract.disposition,
                 final_status=(
