@@ -8,6 +8,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+)
+from pipeline_core.discovery.atomic_scientific_specification_bundle import (
+    AtomicScientificSpecificationBundle,
+    build_atomic_scientific_specification_bundle_from_source_bindings,
+)
 from pipeline_core.discovery.external_novelty_contracts import LiteratureQueryPlan
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.pre_n10_downstream_handoff_v1 import (
@@ -156,6 +163,17 @@ class PreN10RelationalBindingBridgeReportV1(StrictModel):
         pattern=r"^[0-9a-f]{64}$"
     )
 
+    canonical_spec_bundle_path: str | None = None
+    canonical_spec_bundle_id: str | None = None
+    canonical_spec_bundle_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    canonical_spec_bundle_file_sha256: str | None = Field(
+        default=None,
+        pattern=r"^[0-9a-f]{64}$",
+    )
+
     lineages: list[PreN10RelationalBindingBridgeLineageV1]
     lineage_count: int = Field(ge=0)
     binding_ready_lineage_count: int = Field(ge=0)
@@ -167,6 +185,8 @@ class PreN10RelationalBindingBridgeReportV1(StrictModel):
     binding_status_counts: dict[str, int]
 
     exact_handoff_population_consumed: Literal[True] = True
+    stable_source_ids_used_for_relational_input: bool = False
+    exact_text_reconstruction_required_for_relational_input: bool = True
     n10_population_consumed_without_survival_filter: Literal[True] = True
     conditional_may_reach_binding_when_contract_ready: Literal[True] = True
     rejected_may_reach_binding_for_diagnostic_verification: Literal[True] = True
@@ -200,6 +220,35 @@ class PreN10RelationalBindingBridgeReportV1(StrictModel):
             for row in self.lineages
         ):
             raise ValueError("novelty-bearing binding-ready claim count mismatch")
+
+        canonical_fields = (
+            self.canonical_spec_bundle_path,
+            self.canonical_spec_bundle_id,
+            self.canonical_spec_bundle_sha256,
+            self.canonical_spec_bundle_file_sha256,
+        )
+        if self.stable_source_ids_used_for_relational_input:
+            if any(value is None for value in canonical_fields):
+                raise ValueError(
+                    "stable-ID relational input requires canonical "
+                    "specification bundle"
+                )
+            if self.exact_text_reconstruction_required_for_relational_input:
+                raise ValueError(
+                    "stable-ID relational input cannot require exact-text "
+                    "reconstruction"
+                )
+        else:
+            if any(value is not None for value in canonical_fields):
+                raise ValueError(
+                    "legacy relational input cannot carry canonical "
+                    "specification bundle"
+                )
+            if not self.exact_text_reconstruction_required_for_relational_input:
+                raise ValueError(
+                    "legacy relational input must declare exact-text "
+                    "reconstruction"
+                )
 
         expected_n10 = Counter(row.n10_certification_status for row in self.lineages)
         if dict(sorted(expected_n10.items())) != dict(
@@ -490,6 +539,99 @@ def build_pre_n10_relational_binding_bridge_v1(
             )
         )
 
+    canonical_count = sum(
+        row.stable_source_ids_used_for_pre_n10_authority
+        for row in handoff.lineages
+    )
+    if canonical_count not in {0, len(handoff.lineages)}:
+        raise ValueError(
+            "binding bridge cannot mix canonical and legacy handoff lineages"
+        )
+
+    canonical_spec_bundle = None
+    canonical_spec_bundle_path = None
+    canonical_spec_bundle_file_sha = None
+    canonical_mode = bool(handoff.lineages) and (
+        canonical_count == len(handoff.lineages)
+    )
+    if canonical_mode:
+        canonical_inputs = []
+        for handoff_row in handoff.lineages:
+            if handoff_row.source_binding_bundle_path is None:
+                raise ValueError(
+                    "canonical handoff lineage lacks source-binding bundle"
+                )
+            portfolio_path = Path(
+                handoff_row.portfolio_path
+            ).expanduser().resolve()
+            query_plan_path = Path(
+                handoff_row.query_plan_path
+            ).expanduser().resolve()
+            source_bundle_path = Path(
+                handoff_row.source_binding_bundle_path
+            ).expanduser().resolve()
+            for path, expected_sha, label in (
+                (
+                    portfolio_path,
+                    handoff_row.portfolio_file_sha256,
+                    "canonical handoff portfolio",
+                ),
+                (
+                    query_plan_path,
+                    handoff_row.query_plan_file_sha256,
+                    "canonical handoff query plan",
+                ),
+                (
+                    source_bundle_path,
+                    handoff_row.source_binding_bundle_file_sha256,
+                    "canonical handoff source-binding bundle",
+                ),
+            ):
+                if not path.is_file():
+                    raise ValueError(
+                        "missing " + label + ": " + str(path)
+                    )
+                if _sha256_file(path) != expected_sha:
+                    raise ValueError(
+                        label + " changed after handoff freeze"
+                    )
+
+            portfolio = HypothesisPortfolio.model_validate_json(
+                portfolio_path.read_text(encoding="utf-8")
+            )
+            query_plan = LiteratureQueryPlan.model_validate_json(
+                query_plan_path.read_text(encoding="utf-8")
+            )
+            source_bundle = (
+                AtomicScientificSourceBindingBundle.model_validate_json(
+                    source_bundle_path.read_text(encoding="utf-8")
+                )
+            )
+            if source_bundle.bundle_id != (
+                handoff_row.source_binding_bundle_id
+            ):
+                raise ValueError(
+                    "handoff/source-binding bundle ID mismatch at bridge"
+                )
+            canonical_inputs.append(
+                (portfolio, query_plan, source_bundle)
+            )
+
+        canonical_spec_bundle = (
+            build_atomic_scientific_specification_bundle_from_source_bindings(
+                source_report_id=handoff.report_id,
+                source_contract=handoff.schema_version,
+                inputs=canonical_inputs,
+            )
+        )
+        canonical_spec_bundle_path = (
+            root / "canonical_atomic_specification.bundle.json"
+        )
+        canonical_spec_bundle_file_sha = _write_exact_or_validate(
+            canonical_spec_bundle_path,
+            canonical_spec_bundle,
+        )
+
     n10_counts = Counter(row.n10_certification_status for row in rows)
     binding_counts = Counter(row.binding_status for row in rows)
     body = {
@@ -500,6 +642,24 @@ def build_pre_n10_relational_binding_bridge_v1(
         "source_external_n10_report_sha256": external.report_sha256,
         "source_external_n10_report_path": str(external_path),
         "source_external_n10_report_file_sha256": _sha256_file(external_path),
+        "canonical_spec_bundle_path": (
+            str(canonical_spec_bundle_path.resolve())
+            if canonical_spec_bundle_path is not None
+            else None
+        ),
+        "canonical_spec_bundle_id": (
+            canonical_spec_bundle.bundle_id
+            if canonical_spec_bundle is not None
+            else None
+        ),
+        "canonical_spec_bundle_sha256": (
+            canonical_spec_bundle.bundle_sha256
+            if canonical_spec_bundle is not None
+            else None
+        ),
+        "canonical_spec_bundle_file_sha256": (
+            canonical_spec_bundle_file_sha
+        ),
         "lineages": [row.model_dump(mode="json") for row in rows],
         "lineage_count": len(rows),
         "binding_ready_lineage_count": sum(
@@ -520,6 +680,10 @@ def build_pre_n10_relational_binding_bridge_v1(
         "n10_certification_status_counts": dict(sorted(n10_counts.items())),
         "binding_status_counts": dict(sorted(binding_counts.items())),
         "exact_handoff_population_consumed": True,
+        "stable_source_ids_used_for_relational_input": canonical_mode,
+        "exact_text_reconstruction_required_for_relational_input": (
+            not canonical_mode
+        ),
         "n10_population_consumed_without_survival_filter": True,
         "conditional_may_reach_binding_when_contract_ready": True,
         "rejected_may_reach_binding_for_diagnostic_verification": True,

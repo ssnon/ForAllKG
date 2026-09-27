@@ -45,6 +45,14 @@ def main() -> int:
     )
     print("N10 statuses:", report.n10_certification_status_counts)
     print("Binding statuses:", report.binding_status_counts)
+    print(
+        "Canonical specification bundle:",
+        report.canonical_spec_bundle_path,
+    )
+    print(
+        "Stable source IDs used for relational input:",
+        report.stable_source_ids_used_for_relational_input,
+    )
     print("Endpoint binding performed: false")
     print("Verifier performed: false")
     return 0

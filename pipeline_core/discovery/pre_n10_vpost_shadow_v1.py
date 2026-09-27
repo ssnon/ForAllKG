@@ -517,11 +517,23 @@ def compile_pre_n10_vpost_shadow_plan_v1(
     if not provider.is_file():
         raise ValueError("missing frozen provider plan: " + str(provider))
 
-    canonical_bundle = (
+    bridge_bundle = (
+        Path(bridge.canonical_spec_bundle_path).expanduser().resolve()
+        if bridge.canonical_spec_bundle_path is not None
+        else None
+    )
+    explicit_bundle = (
         canonical_spec_bundle_path.expanduser().resolve()
         if canonical_spec_bundle_path is not None
         else None
     )
+    if bridge_bundle is not None and explicit_bundle is not None:
+        if bridge_bundle != explicit_bundle:
+            raise ValueError(
+                "explicit V_post canonical bundle differs from bridge bundle"
+            )
+    canonical_bundle = explicit_bundle or bridge_bundle
+
     canonical_bundle_sha = None
     if canonical_bundle is not None:
         if not canonical_bundle.is_file():
@@ -529,10 +541,27 @@ def compile_pre_n10_vpost_shadow_plan_v1(
                 "missing canonical specification bundle: "
                 + str(canonical_bundle)
             )
-        AtomicScientificSpecificationBundle.model_validate_json(
+        bundle = AtomicScientificSpecificationBundle.model_validate_json(
             canonical_bundle.read_text(encoding="utf-8")
         )
         canonical_bundle_sha = sha256_file(canonical_bundle)
+        if bridge_bundle is not None:
+            if bundle.bundle_id != bridge.canonical_spec_bundle_id:
+                raise ValueError(
+                    "V_post bridge/canonical bundle ID mismatch"
+                )
+            if bundle.bundle_sha256 != (
+                bridge.canonical_spec_bundle_sha256
+            ):
+                raise ValueError(
+                    "V_post bridge/canonical bundle SHA mismatch"
+                )
+            if canonical_bundle_sha != (
+                bridge.canonical_spec_bundle_file_sha256
+            ):
+                raise ValueError(
+                    "V_post bridge/canonical bundle file SHA mismatch"
+                )
 
     root = output_root.expanduser().resolve()
     lineages: list[PreN10VPostLineagePlanV1] = []
