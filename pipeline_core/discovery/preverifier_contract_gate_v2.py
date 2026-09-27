@@ -68,6 +68,9 @@ _BINDING_SPECIFICATION_REASON_PREFIXES = (
     "identity_not_literal_in_predicted_observation:",
     "identity_not_literal_in_falsification_condition:",
 )
+_BINDING_DECOMPOSITION_REASON_PREFIXES = (
+    "prior_art_identity_overlaps_relation_endpoint:",
+)
 
 _SOURCE_DECOMPOSITION_REASON_PREFIXES = (
     "unsupported_atomic_claim_kind:",
@@ -270,14 +273,22 @@ def classify_router_hint(
     binding_reason_codes: list[str],
     source_reason_codes: list[str],
 ) -> RouterHint:
+    binding_decomposition = [
+        reason
+        for reason in binding_reason_codes
+        if reason.startswith(_BINDING_DECOMPOSITION_REASON_PREFIXES)
+    ]
     unknown_binding = sorted(
         {
             reason
             for reason in binding_reason_codes
-            if not _reason_known(
-                reason,
-                exact=_BINDING_SPECIFICATION_REASON_CODES,
-                prefixes=_BINDING_SPECIFICATION_REASON_PREFIXES,
+            if not (
+                _reason_known(
+                    reason,
+                    exact=_BINDING_SPECIFICATION_REASON_CODES,
+                    prefixes=_BINDING_SPECIFICATION_REASON_PREFIXES,
+                )
+                or reason in binding_decomposition
             )
         }
     )
@@ -319,7 +330,7 @@ def classify_router_hint(
             + repr(unknown_source)
         )
 
-    if source_decomposition:
+    if source_decomposition or binding_decomposition:
         return "DECOMPOSE_OR_REGENERATE_REVIEW"
 
     if source_alignment:

@@ -90,10 +90,10 @@ def _draft(*, hard_gate_bad: bool = False) -> HypothesisPortfolioDraft:
             HypothesisProposalDraft(
                 local_id="h1",
                 title="X-Y relation",
-                hypothesis_statement="X modulates Y.",
+                hypothesis_statement="Under X, X modulates Y.",
                 hypothesis_type="mechanistic_extension",
                 premise_statement_ids=premise_ids,
-                inferential_bridge="X may modulate Y.",
+                inferential_bridge="Under X, X may modulate Y.",
                 predicted_observations=[
                     PredictedObservationDraft(
                         local_id="p1",
@@ -196,16 +196,17 @@ class _DecompositionBackend:
                     kind="mechanistic_link",
                     importance="core",
                     novelty_selection_role="NOVELTY_BEARING",
-                    text="X modulates Y.",
+                    text="Under X, X modulates Y.",
                     rationale="Bounded relation.",
                     search_concepts=["X", "Y"],
                     search_queries=["X Y modulation"],
-                    prior_art_identity_terms=["Y"],
+                    prior_art_identity_terms=["under X"],
                     relation_nucleus_terms=["X", "Y", "modulates"],
                     semantic_fidelity_binding=(
                         NoveltyClaimSemanticFidelityBindingDraft(
-                            proposition_basis="X modulates Y.",
+                            proposition_basis="Under X, X modulates Y.",
                             relation_endpoint_anchors=["X", "Y"],
+                            scope_qualifier_spans=["Under X"],
                             prediction_observation_id=(
                                 prediction.observation_id
                             ),
@@ -217,7 +218,7 @@ class _DecompositionBackend:
                     required_bridge=(
                         ""
                         if self.malformed
-                        else "X may modulate Y."
+                        else "Under X, X may modulate Y."
                     ),
                     predicted_observation=prediction.observable,
                     falsification_condition=falsifier.falsifying_outcome,

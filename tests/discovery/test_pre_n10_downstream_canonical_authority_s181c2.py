@@ -64,7 +64,10 @@ def _canonical_initial(tmp_path: Path):
     claim = plan.claims[0].claims[0]
     binding = NoveltyClaimSemanticFidelityBindingDraft(
         proposition_basis=claim.text,
-        relation_endpoint_anchors=list(claim.relation_nucleus_terms[:2]),
+        relation_endpoint_anchors=[
+            "disorder",
+            "spatial SERS intensity variance",
+        ],
         prediction_observation_id=(
             card.predicted_observations[0].observation_id
         ),

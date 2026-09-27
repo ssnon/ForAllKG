@@ -287,6 +287,9 @@ def _build_lineage_plan(
     n10_row,
     external_n10_report_path: Path,
     lineage_root: Path,
+    canonical_relation_endpoints_by_claim: (
+        dict[str, list[str]] | None
+    ) = None,
 ) -> RelationalAtomicBindingPlan:
     for path, expected_sha, label in (
         (
@@ -361,6 +364,17 @@ def _build_lineage_plan(
     if len(groups) != 1:
         raise ValueError("binding bridge requires one exact downstream claim group")
 
+    claim_ids = {
+        claim.claim_id
+        for claim in groups[0].claims
+    }
+    if canonical_relation_endpoints_by_claim is not None:
+        if set(canonical_relation_endpoints_by_claim) != claim_ids:
+            raise ValueError(
+                "canonical endpoint population differs from downstream "
+                "claim population"
+            )
+
     production_gate = _load_json_object(n10_row.n10_production_gate_path)
     status, gate_row = classify_pre_n10_n10_production_gate_v1(
         origin=n10_row.origin,
@@ -388,6 +402,11 @@ def _build_lineage_plan(
             claim=claim,
             candidate_hypothesis_id=candidate_id,
             final_hypothesis_id=final_id,
+            relation_endpoint_anchors=(
+                canonical_relation_endpoints_by_claim[claim.claim_id]
+                if canonical_relation_endpoints_by_claim is not None
+                else None
+            ),
         )
         for claim in groups[0].claims
     ]
@@ -493,51 +512,6 @@ def build_pre_n10_relational_binding_bridge_v1(
         )
 
     root = output_root.expanduser().resolve()
-    rows: list[PreN10RelationalBindingBridgeLineageV1] = []
-    for n10_row in external.lineages:
-        handoff_row = handoff_by_id[n10_row.lineage_id]
-        lineage_root = root / "lineage" / _slug(n10_row.lineage_id)
-        plan = _build_lineage_plan(
-            handoff_row=handoff_row,
-            n10_row=n10_row,
-            external_n10_report_path=external_path,
-            lineage_root=lineage_root,
-        )
-        plan_path = lineage_root / "relational_atomic_binding_plan.json"
-        file_sha = _write_exact_or_validate(plan_path, plan)
-        hp = plan.hypotheses[0]
-        rows.append(
-            PreN10RelationalBindingBridgeLineageV1(
-                lineage_id=n10_row.lineage_id,
-                origin=n10_row.origin,
-                source_hypothesis_id=n10_row.source_hypothesis_id,
-                downstream_hypothesis_id=n10_row.downstream_hypothesis_id,
-                n10_certification_status=n10_row.certification_status,
-                n10_selection_class=n10_row.n10_selection_class,
-                source_external_report_path=str(
-                    Path(n10_row.external_report_path).expanduser().resolve()
-                ),
-                source_external_report_file_sha256=(
-                    n10_row.external_report_file_sha256
-                ),
-                source_n10_production_gate_path=str(
-                    Path(n10_row.n10_production_gate_path).expanduser().resolve()
-                ),
-                source_n10_production_gate_file_sha256=(
-                    n10_row.n10_production_gate_file_sha256
-                ),
-                binding_plan_path=str(plan_path.resolve()),
-                binding_plan_id=plan.plan_id,
-                binding_plan_sha256=plan.plan_sha256,
-                binding_plan_file_sha256=file_sha,
-                binding_status=hp.binding_status,
-                claim_count=hp.claim_count,
-                binding_ready_claim_count=hp.binding_ready_claim_count,
-                novelty_bearing_binding_ready_claim_count=(
-                    hp.novelty_bearing_binding_ready_claim_count
-                ),
-            )
-        )
 
     canonical_count = sum(
         row.stable_source_ids_used_for_pre_n10_authority
@@ -551,6 +525,10 @@ def build_pre_n10_relational_binding_bridge_v1(
     canonical_spec_bundle = None
     canonical_spec_bundle_path = None
     canonical_spec_bundle_file_sha = None
+    canonical_relation_endpoints_by_hypothesis: dict[
+        str,
+        dict[str, list[str]],
+    ] = {}
     canonical_mode = bool(handoff.lineages) and (
         canonical_count == len(handoff.lineages)
     )
@@ -630,6 +608,88 @@ def build_pre_n10_relational_binding_bridge_v1(
         canonical_spec_bundle_file_sha = _write_exact_or_validate(
             canonical_spec_bundle_path,
             canonical_spec_bundle,
+        )
+
+        for hypothesis in canonical_spec_bundle.hypotheses:
+            if hypothesis.hypothesis_id in (
+                canonical_relation_endpoints_by_hypothesis
+            ):
+                raise ValueError(
+                    "duplicate canonical hypothesis in relational bridge"
+                )
+            per_claim = {
+                specification.claim_id: list(
+                    specification.relation_endpoint_anchors
+                )
+                for specification in hypothesis.specifications
+            }
+            if len(per_claim) != len(hypothesis.specifications):
+                raise ValueError(
+                    "duplicate canonical claim in relational bridge"
+                )
+            canonical_relation_endpoints_by_hypothesis[
+                hypothesis.hypothesis_id
+            ] = per_claim
+
+    rows: list[PreN10RelationalBindingBridgeLineageV1] = []
+    for n10_row in external.lineages:
+        handoff_row = handoff_by_id[n10_row.lineage_id]
+        lineage_root = root / "lineage" / _slug(n10_row.lineage_id)
+
+        canonical_endpoints = None
+        if canonical_mode:
+            canonical_endpoints = (
+                canonical_relation_endpoints_by_hypothesis.get(
+                    handoff_row.downstream_hypothesis_id
+                )
+            )
+            if canonical_endpoints is None:
+                raise ValueError(
+                    "canonical relational bridge lacks downstream "
+                    "hypothesis specification"
+                )
+
+        plan = _build_lineage_plan(
+            handoff_row=handoff_row,
+            n10_row=n10_row,
+            external_n10_report_path=external_path,
+            lineage_root=lineage_root,
+            canonical_relation_endpoints_by_claim=canonical_endpoints,
+        )
+        plan_path = lineage_root / "relational_atomic_binding_plan.json"
+        file_sha = _write_exact_or_validate(plan_path, plan)
+        hp = plan.hypotheses[0]
+        rows.append(
+            PreN10RelationalBindingBridgeLineageV1(
+                lineage_id=n10_row.lineage_id,
+                origin=n10_row.origin,
+                source_hypothesis_id=n10_row.source_hypothesis_id,
+                downstream_hypothesis_id=n10_row.downstream_hypothesis_id,
+                n10_certification_status=n10_row.certification_status,
+                n10_selection_class=n10_row.n10_selection_class,
+                source_external_report_path=str(
+                    Path(n10_row.external_report_path).expanduser().resolve()
+                ),
+                source_external_report_file_sha256=(
+                    n10_row.external_report_file_sha256
+                ),
+                source_n10_production_gate_path=str(
+                    Path(n10_row.n10_production_gate_path).expanduser().resolve()
+                ),
+                source_n10_production_gate_file_sha256=(
+                    n10_row.n10_production_gate_file_sha256
+                ),
+                binding_plan_path=str(plan_path.resolve()),
+                binding_plan_id=plan.plan_id,
+                binding_plan_sha256=plan.plan_sha256,
+                binding_plan_file_sha256=file_sha,
+                binding_status=hp.binding_status,
+                claim_count=hp.claim_count,
+                binding_ready_claim_count=hp.binding_ready_claim_count,
+                novelty_bearing_binding_ready_claim_count=(
+                    hp.novelty_bearing_binding_ready_claim_count
+                ),
+            )
         )
 
     n10_counts = Counter(row.n10_certification_status for row in rows)

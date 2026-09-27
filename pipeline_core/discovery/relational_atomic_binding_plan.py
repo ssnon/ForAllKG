@@ -290,6 +290,7 @@ def assess_claim_binding_readiness(
     claim: NoveltyClaim,
     candidate_hypothesis_id: str,
     final_hypothesis_id: str,
+    relation_endpoint_anchors: list[str] | None = None,
 ) -> RelationalAtomicBindingClaimPlan:
     reasons: list[str] = []
 
@@ -317,6 +318,33 @@ def assess_claim_binding_readiness(
                 reasons.append(
                     f"identity_not_literal_in_{label}:{index}"
                 )
+
+    # Canonical V_post factor projection treats prior_art_identity_terms as
+    # branch/context identity projected away from the BASE relation.
+    # Therefore a complete identity term cannot simultaneously be one of the
+    # literal relation endpoints. The optional endpoint population is supplied
+    # only by canonical callers that possess source-binding provenance.
+    if relation_endpoint_anchors is not None:
+        for identity_index, identity in enumerate(
+            claim.prior_art_identity_terms
+        ):
+            normalized_identity = _normalize(identity)
+            if not normalized_identity:
+                continue
+            for endpoint_index, endpoint in enumerate(
+                relation_endpoint_anchors
+            ):
+                normalized_endpoint = _normalize(endpoint)
+                if normalized_endpoint and (
+                    normalized_endpoint == normalized_identity
+                    or normalized_identity in normalized_endpoint
+                ):
+                    reasons.append(
+                        "prior_art_identity_overlaps_relation_endpoint:"
+                        + str(identity_index)
+                        + ":"
+                        + str(endpoint_index)
+                    )
 
     reasons = list(dict.fromkeys(reasons))
     status: ClaimBindingStatus = (
