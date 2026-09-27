@@ -1310,6 +1310,8 @@ def collect_prospective_canonical_validation_v10(
                     handoff_legacy_authority_lineage_count=0,
                     bridge_reached=False,
                     vpost_reached=False,
+                    vpost_legacy_flag_count=0,
+                    vpost_completed_count=0,
                     fresh_legacy_authority_violation=False,
                 )
             )
@@ -1413,6 +1415,8 @@ def collect_prospective_canonical_validation_v10(
                     ),
                     bridge_reached=False,
                     vpost_reached=False,
+                    vpost_legacy_flag_count=0,
+                    vpost_completed_count=0,
                     fresh_legacy_authority_violation=(
                         handoff_legacy_count > 0
                     ),

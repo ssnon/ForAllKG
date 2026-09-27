@@ -514,8 +514,10 @@ def main() -> int:
     if args.dry_run_plan:
         return 0
     if not plan.axes:
-        raise SystemExit(
-            "No discovery axis survived alpha4 planner gates. Do not generate a canonical fallback."
+        print(
+            "No discovery axis survived alpha4 planner gates. "
+            "Materializing deterministic empty Alpha4 artifacts; "
+            "no canonical fallback will be generated."
         )
     if not args.model:
         raise SystemExit(
