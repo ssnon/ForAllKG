@@ -75,7 +75,7 @@ def main() -> int:
     print("Cases:", frozen.case_ids)
     print("Full worktree clean: true")
     print("Outputs observed before freeze: false")
-    print("Prior v8 execution outputs consumed: false")
+    print("Prior v9 execution outputs consumed: false")
     print("Output:", output)
     return 0
 

@@ -39,7 +39,7 @@ def main() -> int:
 
     print("P54-P58 canonical validation v10 spec materialized")
     print("Prior scientific outcomes consumed: false")
-    print("Prior v8 execution outputs consumed: false")
+    print("Prior v9 execution outputs consumed: false")
     print("Prospective goal:", spec.prospective_goal)
     for task in spec.tasks:
         print(
