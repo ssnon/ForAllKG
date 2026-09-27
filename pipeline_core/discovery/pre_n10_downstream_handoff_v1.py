@@ -474,9 +474,25 @@ def _materialize_ready_lineage(
             raise ValueError(
                 "downstream source V2/query-plan ID mismatch"
             )
-        if source_contract_v2.disposition != "READY_FOR_N10":
+        source_hypothesis_contracts = [
+            row
+            for row in source_contract_v2.hypotheses
+            if row.hypothesis_id == hypothesis_id
+        ]
+        if len(source_hypothesis_contracts) != 1:
             raise ValueError(
-                "downstream canonical source V2 is not READY_FOR_N10"
+                "downstream canonical source V2 hypothesis must "
+                "resolve exactly once: "
+                + hypothesis_id
+            )
+        if (
+            source_hypothesis_contracts[0].contract_status
+            != "READY_FOR_N10"
+        ):
+            raise ValueError(
+                "downstream canonical source hypothesis V2 is not "
+                "READY_FOR_N10: "
+                + hypothesis_id
             )
 
         subset_bundle = subset_atomic_scientific_source_binding_bundle(
