@@ -219,6 +219,10 @@ class PreN10VPostShadowPlanV1(StrictModel):
         default=None,
         pattern=r"^[0-9a-f]{64}$",
     )
+    source_binding_mode: Literal[
+        "CANONICAL_STABLE_ID",
+        "LEGACY_EXACT_TEXT_COMPATIBILITY",
+    ]
 
     model: str
     base_url: str | None = None
@@ -275,6 +279,9 @@ class PreN10VPostShadowPlanV1(StrictModel):
                 raise ValueError(
                     "V_post verifier canonical bundle argv mismatch"
                 )
+            has_legacy_compatibility = (
+                "--allow-legacy-exact-text-source-binding" in argv
+            )
             if has_bundle:
                 bundle_index = argv.index(
                     "--canonical-spec-bundle"
@@ -294,6 +301,25 @@ class PreN10VPostShadowPlanV1(StrictModel):
                     raise ValueError(
                         "V_post verifier canonical bundle SHA mismatch"
                     )
+                if has_legacy_compatibility:
+                    raise ValueError(
+                        "canonical V_post verifier cannot enable legacy "
+                        "exact-text source binding"
+                    )
+            elif not has_legacy_compatibility:
+                raise ValueError(
+                    "legacy V_post verifier requires explicit exact-text "
+                    "source-binding compatibility"
+                )
+
+        expected_mode = (
+            "CANONICAL_STABLE_ID"
+            if self.canonical_spec_bundle_path is not None
+            else "LEGACY_EXACT_TEXT_COMPATIBILITY"
+        )
+        if self.source_binding_mode != expected_mode:
+            raise ValueError("V_post source-binding mode mismatch")
+
         body = self.model_dump(mode="json")
         observed_id = body.pop("plan_id")
         observed_sha = body.pop("plan_sha256")
@@ -535,6 +561,28 @@ def compile_pre_n10_vpost_shadow_plan_v1(
     canonical_bundle = explicit_bundle or bridge_bundle
 
     canonical_bundle_sha = None
+    source_binding_mode: Literal[
+        "CANONICAL_STABLE_ID",
+        "LEGACY_EXACT_TEXT_COMPATIBILITY",
+    ] = (
+        "CANONICAL_STABLE_ID"
+        if canonical_bundle is not None
+        else "LEGACY_EXACT_TEXT_COMPATIBILITY"
+    )
+    if canonical_bundle is None:
+        if bridge.stable_source_ids_used_for_relational_input:
+            raise ValueError(
+                "stable-ID V_post bridge requires canonical "
+                "specification bundle"
+            )
+        if not (
+            bridge.exact_text_reconstruction_required_for_relational_input
+        ):
+            raise ValueError(
+                "legacy V_post bridge lacks explicit exact-text "
+                "compatibility declaration"
+            )
+
     if canonical_bundle is not None:
         if not canonical_bundle.is_file():
             raise ValueError(
@@ -696,6 +744,10 @@ def compile_pre_n10_vpost_shadow_plan_v1(
                 "--canonical-spec-bundle-sha256",
                 canonical_bundle_sha,
             ]
+        else:
+            verifier_argv += [
+                "--allow-legacy-exact-text-source-binding",
+            ]
         if base_url:
             verifier_argv += ["--base-url", base_url]
         if save_prompts:
@@ -764,6 +816,7 @@ def compile_pre_n10_vpost_shadow_plan_v1(
             else None
         ),
         "canonical_spec_bundle_file_sha256": canonical_bundle_sha,
+        "source_binding_mode": source_binding_mode,
         "model": model,
         "base_url": base_url,
         "api_key_env": api_key_env,

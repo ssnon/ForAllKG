@@ -98,6 +98,15 @@ def _parser() -> argparse.ArgumentParser:
         "--canonical-spec-bundle-sha256",
         default=None,
     )
+    parser.add_argument(
+        "--allow-legacy-exact-text-source-binding",
+        action="store_true",
+        help=(
+            "Historical compatibility only. Allows relation projection to "
+            "reconstruct prediction/falsifier identity from exact text when "
+            "no canonical specification bundle is supplied."
+        ),
+    )
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument(
         "--model",
@@ -185,6 +194,18 @@ def main() -> int:
     ):
         raise ValueError(
             "canonical specification bundle path/SHA must be supplied together"
+        )
+    if canonical_bundle_path is None:
+        if not args.allow_legacy_exact_text_source_binding:
+            raise ValueError(
+                "relational verifier requires canonical specification "
+                "bundle unless legacy exact-text compatibility is "
+                "explicitly enabled"
+            )
+    elif args.allow_legacy_exact_text_source_binding:
+        raise ValueError(
+            "canonical relational verifier cannot enable legacy "
+            "exact-text source binding"
         )
 
     for path in (plan_path, endpoint_path, provider_path, external_path):
@@ -433,6 +454,10 @@ def main() -> int:
         relation_ir_cmd += [
             "--canonical-spec-bundle",
             str(canonical_bundle_path),
+        ]
+    else:
+        relation_ir_cmd += [
+            "--allow-legacy-exact-text-source-binding",
         ]
     factor_projection_cmd = [
         "-m",

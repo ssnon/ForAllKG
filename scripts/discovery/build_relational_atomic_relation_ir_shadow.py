@@ -38,6 +38,14 @@ def main() -> int:
         type=Path,
         default=None,
     )
+    parser.add_argument(
+        "--allow-legacy-exact-text-source-binding",
+        action="store_true",
+        help=(
+            "Historical compatibility only. Allows exact-text reverse "
+            "source binding when no canonical specification bundle exists."
+        ),
+    )
     parser.add_argument("--projection-output", required=True, type=Path)
     parser.add_argument("--relation-ir-output", required=True, type=Path)
     args = parser.parse_args()
@@ -50,6 +58,19 @@ def main() -> int:
             args.endpoint_report.read_text(encoding="utf-8")
         )
     )
+
+    if args.canonical_spec_bundle is None:
+        if not args.allow_legacy_exact_text_source_binding:
+            raise ValueError(
+                "relational projection requires canonical specification "
+                "bundle unless legacy exact-text compatibility is "
+                "explicitly enabled"
+            )
+    elif args.allow_legacy_exact_text_source_binding:
+        raise ValueError(
+            "canonical relational projection cannot enable legacy "
+            "exact-text source binding"
+        )
 
     canonical_specifications = None
     if args.canonical_spec_bundle is not None:
