@@ -82,6 +82,26 @@ class ExplorerPolicy(StrictModel):
     )
 
 
+class RelationPatternEvidence(StrictModel):
+    # Source-explicit atomic semantics for an accepted Bridge RelationPattern.
+    # This is representation/provenance preservation only. Presence of this
+    # payload does not create novelty or hypothesis-selection authority.
+    concept_type: Literal["RelationPattern"] = "RelationPattern"
+    retention_lane: Literal["accepted_pattern"] = "accepted_pattern"
+
+    subject: str
+    relation: str
+    object: str
+
+    relation_strength: str = ""
+    evidence_scope: str = ""
+    pattern_support_mode: str = ""
+
+    paper_id: str = ""
+    chunk_id: str = ""
+    document_id: str = ""
+
+
 class NodeEvidence(StrictModel):
     node_id: str
     node_type: str
@@ -94,6 +114,10 @@ class NodeEvidence(StrictModel):
     source_paper_ids: list[str] = Field(default_factory=list)
     extraction_quality_status: str | None = None
     absence_claims_allowed: bool = False
+
+    # S191: atomic accepted-pattern semantics survive the Explorer boundary.
+    # None for ordinary nodes, frontier concepts, and candidate inspirations.
+    relation_pattern: RelationPatternEvidence | None = None
 
 
 class EdgeEvidence(StrictModel):

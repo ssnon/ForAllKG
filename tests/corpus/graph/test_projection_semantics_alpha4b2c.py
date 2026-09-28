@@ -73,7 +73,7 @@ def test_sers_measurement_chain_lifts_to_substrate_claim():
 
 
 def test_sers_bridge_measurement_anchor_lifts_to_substrate():
-    p, _, rows = build_graphagents_projection(
+    p, node_rows, rows = build_graphagents_projection(
         _sers_graph(),
         bridge_graph=_bridge("m"),
         mode="mechanism",
@@ -86,6 +86,17 @@ def test_sers_bridge_measurement_anchor_lifts_to_substrate():
         and r["derivation_rule"] == "lift_removed_bridge_anchor"
         for r in rows
     )
+
+    pattern_row = next(
+        row
+        for row in node_rows
+        if row["node_id"] == "bridge::b"
+    )
+    assert pattern_row["retention_lane"] == "accepted_pattern"
+    assert pattern_row["concept_type"] == "RelationPattern"
+    assert pattern_row["pattern_subject"] == "SERS enhancement"
+    assert pattern_row["pattern_relation"] == "VARIES_WITH"
+    assert pattern_row["pattern_object"] == "nanogap size"
 
 
 def test_outgoing_measured_for_is_supported():

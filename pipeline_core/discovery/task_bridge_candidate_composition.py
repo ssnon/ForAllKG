@@ -383,6 +383,297 @@ def _relation_role_binding(
     )
 
 
+
+def _endpoint_role_shadow(
+    *,
+    relation: CandidateRelationView,
+    task_endpoint: str,
+) -> dict[str, Any]:
+    """
+    Diagnose how one task endpoint binds to explicit relation argument slots.
+
+    Shadow-only contract:
+    - exact means normalized task tokens equal one complete subject/object slot;
+    - partial means only a non-empty token overlap exists;
+    - no semantic synonymy/equivalence is inferred;
+    - ties between equally strong subject/object bindings fail closed as ambiguous.
+    """
+
+    task_tokens = lexical_tokens(
+        task_endpoint
+    )
+
+    slot_tokens = {
+        "subject": lexical_tokens(
+            relation.proposed_subject
+        ),
+        "object": lexical_tokens(
+            relation.proposed_object
+        ),
+    }
+
+    rows = []
+
+    for slot in (
+        "subject",
+        "object",
+    ):
+        tokens = slot_tokens[slot]
+        overlap = (
+            tokens
+            & task_tokens
+        )
+
+        if (
+            task_tokens
+            and tokens
+            and tokens == task_tokens
+        ):
+            authority = "exact"
+            authority_rank = 2
+        elif overlap:
+            authority = "partial"
+            authority_rank = 1
+        else:
+            authority = "none"
+            authority_rank = 0
+
+        coverage = (
+            len(overlap)
+            / len(task_tokens)
+            if task_tokens
+            else 0.0
+        )
+
+        rows.append(
+            {
+                "slot": slot,
+                "binding_authority": authority,
+                "authority_rank": authority_rank,
+                "task_coverage": float(coverage),
+                "matched_tokens": sorted(
+                    overlap
+                ),
+                "slot_tokens": sorted(
+                    tokens
+                ),
+            }
+        )
+
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            -int(row["authority_rank"]),
+            -float(row["task_coverage"]),
+            -len(row["matched_tokens"]),
+            str(row["slot"]),
+        ),
+    )
+
+    best = ranked[0]
+
+    if int(best["authority_rank"]) == 0:
+        binding_slot = None
+        binding_authority = "none"
+        mediator_slot = None
+        mediator_tokens: list[str] = []
+        ambiguous = False
+    else:
+        tied = [
+            row
+            for row in ranked
+            if (
+                row["authority_rank"]
+                == best["authority_rank"]
+                and row["task_coverage"]
+                == best["task_coverage"]
+                and len(row["matched_tokens"])
+                == len(best["matched_tokens"])
+            )
+        ]
+
+        ambiguous = (
+            len(tied) > 1
+        )
+
+        if ambiguous:
+            binding_slot = None
+            binding_authority = "ambiguous"
+            mediator_slot = None
+            mediator_tokens = []
+        else:
+            binding_slot = str(
+                best["slot"]
+            )
+            binding_authority = str(
+                best["binding_authority"]
+            )
+            mediator_slot = (
+                "object"
+                if binding_slot == "subject"
+                else "subject"
+            )
+            mediator_tokens = sorted(
+                slot_tokens[
+                    mediator_slot
+                ]
+                - task_tokens
+            )
+
+    return {
+        "task_endpoint": str(
+            task_endpoint
+        ),
+        "task_tokens": sorted(
+            task_tokens
+        ),
+        "binding_authority": (
+            binding_authority
+        ),
+        "binding_slot": (
+            binding_slot
+        ),
+        "ambiguous": bool(
+            ambiguous
+        ),
+        "task_coverage": (
+            float(best["task_coverage"])
+            if not ambiguous
+            else 0.0
+        ),
+        "matched_tokens": (
+            list(best["matched_tokens"])
+            if not ambiguous
+            else []
+        ),
+        "mediator_slot": (
+            mediator_slot
+        ),
+        "mediator_tokens": (
+            mediator_tokens
+        ),
+        "slot_diagnostics": [
+            {
+                key: value
+                for key, value in row.items()
+                if key != "authority_rank"
+            }
+            for row in rows
+        ],
+    }
+
+
+def diagnose_task_bridge_candidate(
+    *,
+    composite: TaskBridgeCompositeCandidate,
+    requested_source: str,
+    requested_target: str,
+) -> dict[str, Any]:
+    """
+    Compare the frozen legacy lexical bridge with strict slot-aware endpoint
+    and mediator fidelity without changing composition, ranking, or selection.
+    """
+
+    source = _endpoint_role_shadow(
+        relation=composite.source_relation,
+        task_endpoint=requested_source,
+    )
+    target = _endpoint_role_shadow(
+        relation=composite.target_relation,
+        task_endpoint=requested_target,
+    )
+
+    task_tokens = (
+        lexical_tokens(
+            requested_source
+        )
+        |
+        lexical_tokens(
+            requested_target
+        )
+    )
+
+    source_mediator = (
+        frozenset(
+            source["mediator_tokens"]
+        )
+        - task_tokens
+    )
+    target_mediator = (
+        frozenset(
+            target["mediator_tokens"]
+        )
+        - task_tokens
+    )
+
+    role_shared = (
+        source_mediator
+        & target_mediator
+    )
+
+    exact_endpoint_fidelity = bool(
+        source["binding_authority"]
+        == "exact"
+        and target["binding_authority"]
+        == "exact"
+    )
+
+    strict_materializable = bool(
+        exact_endpoint_fidelity
+        and role_shared
+    )
+
+    return {
+        "schema_version": (
+            "legacy-task-bridge-endpoint-role-shadow-v1"
+        ),
+        "composite_id": (
+            composite.composite_id
+        ),
+        "composition_mode": (
+            composite.composition_mode
+        ),
+        "source_unit_id": (
+            composite.source_unit_id
+        ),
+        "target_unit_id": (
+            composite.target_unit_id
+        ),
+        "legacy_source_overlap_tokens": list(
+            composite.source_overlap_tokens
+        ),
+        "legacy_target_overlap_tokens": list(
+            composite.target_overlap_tokens
+        ),
+        "legacy_shared_mediator_tokens": list(
+            composite.shared_mediator_tokens
+        ),
+        "source_endpoint_binding": source,
+        "target_endpoint_binding": target,
+        "role_aware_source_mediator_tokens": sorted(
+            source_mediator
+        ),
+        "role_aware_target_mediator_tokens": sorted(
+            target_mediator
+        ),
+        "role_aware_shared_mediator_tokens": sorted(
+            role_shared
+        ),
+        "role_aware_mediator_compatible": bool(
+            role_shared
+        ),
+        "exact_endpoint_fidelity": (
+            exact_endpoint_fidelity
+        ),
+        "strict_materializable_without_equivalence_witness": (
+            strict_materializable
+        ),
+        "semantic_equivalence_inferred": False,
+        "shadow_only": True,
+        "production_selection_changed": False,
+    }
+
+
 def _stable_id(
     prefix: str,
     *parts: object,

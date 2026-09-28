@@ -285,6 +285,108 @@ def _external_cards_from_refinement_sidecars(
 
 
 
+def _exploratory_novelty_by_source_hypothesis(
+    run_dir: Path,
+) -> tuple[Path | None, dict[str, dict[str, Any]], dict[str, Any]]:
+    """Load authority-neutral exploratory novelty results for viewer display.
+
+    The exploratory lane is intentionally display-only here. It never replaces
+    strict external-novelty/refinement/certification cards and never grants
+    candidate-survival or novelty-certification authority.
+    """
+    report_path = (
+        run_dir
+        / "canonical_e2e_v1"
+        / "06_exploratory_novelty"
+        / "exploratory_novelty.report.json"
+    )
+    report = _read_json_if_exists(report_path)
+    if report is None:
+        return None, {}, {}
+
+    by_source: dict[str, dict[str, Any]] = {}
+
+    for lineage in _list(report.get("lineages")):
+        if not isinstance(lineage, dict):
+            continue
+
+        source_id = _text(lineage.get("source_hypothesis_id"))
+        regenerated_id = _text(
+            lineage.get("regenerated_hypothesis_id")
+        )
+        if not source_id or not regenerated_id:
+            continue
+
+        external_path_text = _text(
+            lineage.get("external_report_path")
+        )
+        external_report: dict[str, Any] = {}
+        if external_path_text:
+            external_path = Path(external_path_text).expanduser()
+            if not external_path.is_absolute():
+                external_path = run_dir / external_path
+            external_report = (
+                _read_json_if_exists(external_path.resolve())
+                or {}
+            )
+
+        matching_cards = [
+            dict(card)
+            for card in _list(external_report.get("cards"))
+            if isinstance(card, dict)
+            and _text(card.get("hypothesis_id"))
+            == regenerated_id
+        ]
+        card = matching_cards[0] if len(matching_cards) == 1 else {}
+
+        coverage = (
+            dict(card.get("coverage"))
+            if isinstance(card.get("coverage"), dict)
+            else {}
+        )
+        selected_claim_ids = [
+            str(value)
+            for value in _list(lineage.get("selected_claim_ids"))
+            if str(value).strip()
+        ]
+        claim_statuses = (
+            dict(lineage.get("claim_statuses"))
+            if isinstance(lineage.get("claim_statuses"), dict)
+            else {}
+        )
+
+        by_source[source_id] = {
+            "source_hypothesis_id": source_id,
+            "regenerated_hypothesis_id": regenerated_id,
+            "regenerated_title": _text(card.get("title")),
+            "external_status": (
+                _text(lineage.get("external_status"))
+                or _text(card.get("status"))
+            ),
+            "selected_claim_ids": selected_claim_ids,
+            "claim_statuses": claim_statuses,
+            "interpretation": _text(card.get("interpretation")),
+            "reason_codes": [
+                str(value)
+                for value in _list(card.get("reason_codes"))
+            ],
+            "coverage": coverage,
+            "strongest_prior_art_work_ids": [
+                str(value)
+                for value in _list(
+                    card.get("strongest_prior_art_work_ids")
+                )
+            ],
+            "external_report_path": external_path_text,
+            "exploratory_only": True,
+            "novelty_certification_authority": False,
+            "candidate_survival_authority": False,
+            "strict_certification_contract_unchanged": True,
+        }
+
+    return report_path, by_source, report
+
+
 def _viewer_novelty_card(
     *,
     final_hypothesis_id: str,
@@ -486,6 +588,13 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     ) = _external_cards_from_refinement_sidecars(
         run_dir
     )
+    (
+        exploratory_novelty_path,
+        exploratory_novelty_by_source,
+        exploratory_novelty_report,
+    ) = _exploratory_novelty_by_source_hypothesis(
+        run_dir
+    )
     refinement_by_hypothesis = _refinement_attempt_by_final_hypothesis(
         refinement_report
     )
@@ -646,6 +755,12 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
                         {},
                     )
                 ),
+                "exploratory_novelty": dict(
+                    exploratory_novelty_by_source.get(
+                        hypothesis_id,
+                        {},
+                    )
+                ),
             }
         )
 
@@ -684,6 +799,11 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
                 if certified_path
                 else None
             ),
+            "exploratory_novelty": (
+                str(exploratory_novelty_path)
+                if exploratory_novelty_path
+                else None
+            ),
         },
         "semantic_overall_summary": _text(
             semantic_review.get("overall_summary")
@@ -691,6 +811,17 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
         "external_status_counts": (
             external_report.get("status_counts")
             if isinstance(external_report.get("status_counts"), dict)
+            else {}
+        ),
+        "exploratory_novelty_available": bool(
+            exploratory_novelty_by_source
+        ),
+        "exploratory_external_status_counts": (
+            exploratory_novelty_report.get("external_status_counts")
+            if isinstance(
+                exploratory_novelty_report.get("external_status_counts"),
+                dict,
+            )
             else {}
         ),
         "hypotheses": hypotheses,
@@ -1032,12 +1163,12 @@ pre { white-space:pre-wrap; word-break:break-word; font:12px/1.5 ui-monospace,SF
 <script>
 const DATA=JSON.parse(document.getElementById('demo-data').textContent); let selected=0;
 const arr=v=>Array.isArray(v)?v:[]; const text=(v,d='')=>typeof v==='string'?v:d; const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); const human=s=>text(s).replaceAll('_',' ');
-function cls(s){s=text(s).toLowerCase(); if(s==='pass'||s.includes('novel'))return'good'; if(s.includes('fail')||s.includes('conflict')||s.includes('reject'))return'bad'; if(s.includes('warning')||s.includes('insufficient'))return'warn'; return'';} const badge=(v,label=null)=>`<span class="badge ${cls(v)}">${esc(label??human(v||'not assessed'))}</span>`; const list=xs=>arr(xs).length?`<ul>${arr(xs).map(x=>`<li>${esc(typeof x==='string'?x:JSON.stringify(x))}</li>`).join('')}</ul>`:'<span class="muted">None</span>';
-function header(){const hs=arr(DATA.hypotheses); document.getElementById('question').textContent=DATA.question||'Scientific discovery run'; document.getElementById('meta').textContent=`Domain: ${DATA.domain_profile_id||'unknown'} · Corpus: ${DATA.corpus_id||'unknown'} · Portfolio: ${DATA.portfolio_id||'n/a'}`; document.getElementById('metrics').innerHTML=[['Hypotheses',hs.length],['Source papers',arr(DATA.paper_ids).length],['Feasibility','Not configured'],['Viewer mode','Core']].map(([k,v])=>`<div class="metric"><b>${esc(v)}</b><span class="muted">${esc(k)}</span></div>`).join('');}
+function cls(s){s=text(s).toLowerCase(); if(s==='pass'||s.includes('novel'))return'good'; if(s.includes('fail')||s.includes('conflict')||s.includes('reject'))return'bad'; if(s.includes('warning')||s.includes('insufficient')||s.includes('relational_gap')||s.includes('components_only'))return'warn'; return'';} const badge=(v,label=null)=>`<span class="badge ${cls(v)}">${esc(label??human(v||'not assessed'))}</span>`; const list=xs=>arr(xs).length?`<ul>${arr(xs).map(x=>`<li>${esc(typeof x==='string'?x:JSON.stringify(x))}</li>`).join('')}</ul>`:'<span class="muted">None</span>';
+function header(){const hs=arr(DATA.hypotheses); const exploratory=hs.filter(row=>Object.keys(row.exploratory_novelty||{}).length>0).length; document.getElementById('question').textContent=DATA.question||'Scientific discovery run'; document.getElementById('meta').textContent=`Domain: ${DATA.domain_profile_id||'unknown'} · Corpus: ${DATA.corpus_id||'unknown'} · Portfolio: ${DATA.portfolio_id||'n/a'}`; document.getElementById('metrics').innerHTML=[['Hypotheses',hs.length],['Source papers',arr(DATA.paper_ids).length],['Exploratory novelty',exploratory],['Feasibility','Not configured'],['Viewer mode','Core']].map(([k,v])=>`<div class="metric"><b>${esc(v)}</b><span class="muted">${esc(k)}</span></div>`).join('');}
 function sidebar(){document.getElementById('hypList').innerHTML=arr(DATA.hypotheses).map((row,i)=>{const h=row.hypothesis||{}; return `<button class="hyp-btn ${i===selected?'active':''}" data-i="${i}"><div class="muted">H${i+1} · ${esc(h.hypothesis_type||'hypothesis')}</div><b>${esc(h.title||h.hypothesis_id)}</b><div>${badge(h.semantic_gate_status)}${badge(h.novelty_status)}</div></button>`;}).join(''); document.querySelectorAll('.hyp-btn').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.i); render();});}
 function lineage(row){const h=row.hypothesis||{}; const premises=arr(h.premises).map(p=>`<div class="item"><b>${esc(p.claim_kind||'premise')}</b><br>${esc(p.text||'')}<div class="muted">${esc(arr(p.paper_ids).join(', '))}</div></div>`).join('')||'<span class="muted">No premise records</span>'; const preds=arr(h.predictions).map(p=>`<div class="item"><b>${esc(human(p.expected_direction))}</b><br>${esc(p.observable||'')}</div>`).join('')||'<span class="muted">None</span>'; const fals=arr(h.falsifiers).map(f=>`<div class="item">${esc(f.falsifying_outcome||'')}</div>`).join('')||'<span class="muted">None</span>'; document.getElementById('panel-lineage').innerHTML=`<div class="card"><h3>Evidence → hypothesis → falsifiable output → review boundary</h3><div class="flow"><div class="stage"><h4>Evidence</h4>${premises}</div><div class="stage"><h4>Hypothesis</h4><div class="item">${esc(h.statement||'')}</div><div class="muted">${esc(h.inferential_bridge||'')}</div></div><div class="stage"><h4>Predictions</h4>${preds}</div><div class="stage"><h4>Falsifiers</h4>${fals}</div><div class="stage"><h4>Review</h4>${badge(h.semantic_gate_status,'semantic: '+human(h.semantic_gate_status))}${badge(h.novelty_status,'novelty: '+human(h.novelty_status))}<div class="muted" style="margin-top:8px">Feasibility not supported for this domain profile.</div></div></div></div>`;}
 function semantic(row){const rows=arr(row.semantic); const body=rows.map(r=>`<tr><td>${esc(human(r.dimension||''))}</td><td>${badge(r.verdict)}</td><td>${esc(r.rationale||'')}</td></tr>`).join(''); document.getElementById('panel-semantic').innerHTML=`<div class="card"><h3>Semantic critic</h3><div class="muted">${esc(DATA.semantic_overall_summary||'')}</div><table><thead><tr><th>Dimension</th><th>Verdict</th><th>Rationale</th></tr></thead><tbody>${body||'<tr><td colspan="3">No semantic review artifact</td></tr>'}</tbody></table></div>`;}
-function novelty(row){const n=row.novelty||{}, r=row.refinement||{}; const claims=arr(n.claim_reviews).map(x=>`${x.claim_text||x.claim_id||''}: ${x.status||''}`); document.getElementById('panel-novelty').innerHTML=`<div class="card"><h3>External novelty</h3>${badge(n.status||row.hypothesis?.novelty_status)}<p>${esc(n.interpretation||'No direct external-novelty card for this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(n.reason_codes)}<div class="muted">Claim reviews</div>${list(claims)}</div><div class="card"><h3>Targeted refinement</h3>${badge(r.decision||'not_applicable')}<p>${esc(r.interpretation||'No refinement attempt associated with this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(r.reason_codes)}</div>`;}
+function novelty(row){const n=row.novelty||{}, r=row.refinement||{}, x=row.exploratory_novelty||{}; const claims=arr(n.claim_reviews).map(c=>`${c.claim_text||c.claim_id||''}: ${c.status||''}`); const coverage=x.coverage||{}; const xClaims=Object.entries(x.claim_statuses||{}).map(([id,status])=>`${id}: ${status}`); const xCard=Object.keys(x).length?`<div class="card"><h3>Exploratory prior-art search</h3><div class="notice"><b>Exploratory only — not novelty certification.</b><br>This search does not relax the strict certification contract and does not create N9/N10/V_post or candidate-survival authority.</div>${badge(x.external_status||'not_assessed')}<p>${esc(x.interpretation||'')}</p><div class="metrics"><div class="metric"><b>${esc(coverage.unique_work_count??'n/a')}</b><span class="muted">Unique works</span></div><div class="metric"><b>${esc(coverage.abstract_work_count??'n/a')}</b><span class="muted">Abstracts</span></div><div class="metric"><b>${esc(coverage.successful_query_count??'n/a')} / ${esc(coverage.query_count??'n/a')}</b><span class="muted">Successful queries</span></div></div><div class="muted" style="margin-top:10px">Strict-ready novelty-bearing claims searched</div>${list(xClaims)}<div class="muted" style="margin-top:10px">Exploratory search target</div><div><b>${esc(x.regenerated_title||'Regenerated candidate')}</b></div><pre>${esc(x.regenerated_hypothesis_id||'')}</pre><div class="muted" style="margin-top:10px">Source hypothesis</div><pre>${esc(x.source_hypothesis_id||'')}</pre></div>`:''; document.getElementById('panel-novelty').innerHTML=`${xCard}<div class="card"><h3>Strict external novelty</h3>${badge(n.status||row.hypothesis?.novelty_status)}<p>${esc(n.interpretation||'No strict external-novelty card for this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(n.reason_codes)}<div class="muted">Claim reviews</div>${list(claims)}</div><div class="card"><h3>Targeted refinement</h3>${badge(r.decision||'not_applicable')}<p>${esc(r.interpretation||'No refinement attempt associated with this final hypothesis.')}</p><div class="muted">Reason codes</div>${list(r.reason_codes)}</div>`;}
 function provenance(row){const h=row.hypothesis||{}; document.getElementById('panel-provenance').innerHTML=`<div class="card"><h3>Artifact lineage</h3><pre>${esc(JSON.stringify({domain_profile_id:DATA.domain_profile_id,corpus_id:DATA.corpus_id,task_id:DATA.task_id,context_id:DATA.context_id,portfolio_id:DATA.portfolio_id,hypothesis_id:h.hypothesis_id,artifacts:DATA.artifact_paths},null,2))}</pre></div><div class="card"><h3>Hypothesis evidence profile</h3><pre>${esc(JSON.stringify(h.evidence_profile||{},null,2))}</pre><div class="muted">Source papers</div>${list(h.source_paper_ids)}<div class="muted">Assumptions</div>${list(h.assumptions)}</div>`;}
 function main(){const row=arr(DATA.hypotheses)[selected]; if(!row)return; const h=row.hypothesis||{}; document.getElementById('title').textContent=`H${selected+1} · ${h.title||h.hypothesis_id||'Hypothesis'}`; document.getElementById('statement').textContent=h.statement||''; document.getElementById('badges').innerHTML=badge(h.semantic_gate_status)+badge(h.novelty_status)+badge(h.candidate_dependency,'candidate: '+human(h.candidate_dependency)); lineage(row); semantic(row); novelty(row); provenance(row);}
 function tabs(){document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active')); t.classList.add('active'); document.getElementById('panel-'+t.dataset.tab).classList.add('active');});} function render(){sidebar();main();} header();tabs();render();

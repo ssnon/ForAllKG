@@ -1209,6 +1209,26 @@ def build_graphagents_projection(
             "node_text": str(attrs.get("node_text", "")),
             "graph_layer": str(attrs.get("graph_layer", "")),
             "retention_lane": str(attrs.get("retention_lane", "")),
+            # S191: preserve source-explicit accepted RelationPattern
+            # semantics instead of flattening them into label/node_text.
+            # Candidate/frontier rows may also carry pattern_* fields,
+            # but downstream authority is keyed by retention_lane.
+            "concept_type": str(attrs.get("concept_type", "")),
+            "pattern_subject": str(attrs.get("pattern_subject", "")),
+            "pattern_relation": str(attrs.get("pattern_relation", "")),
+            "pattern_object": str(attrs.get("pattern_object", "")),
+            "relation_strength": str(attrs.get("relation_strength", "")),
+            "evidence_scope": str(attrs.get("evidence_scope", "")),
+            "pattern_support_mode": str(
+                attrs.get("pattern_support_mode", "")
+            ),
+            "paper_id": str(attrs.get("paper_id", "")),
+            "chunk_id": str(attrs.get("chunk_id", "")),
+            "document_id": str(attrs.get("document_id", "")),
+            "source_paper_id": str(
+                attrs.get("source_paper_id", "")
+                or attrs.get("paper_id", "")
+            ),
             "policy_lane": str(
                 attrs.get(
                     "policy_lane",

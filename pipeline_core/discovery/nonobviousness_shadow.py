@@ -352,6 +352,9 @@ def reconcile_intake_required_bridge(
     # independently from the authoritative query-plan residue.
     for metadata_field in (
         "importance",
+        "novelty_selection_role",
+        "higher_order_relation_basis",
+        "higher_order_component_claim_ids",
         "specification_sanitization_reason_codes",
     ):
         if (

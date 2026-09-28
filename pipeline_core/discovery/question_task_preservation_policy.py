@@ -87,7 +87,10 @@ def _coarse_task_class(
         return "DIRECT"
 
     if (
-        status == "WARNING"
+        status in {
+            "PASS",
+            "WARNING",
+        }
         and role == "SUBORDINATE_EXTENSION"
     ):
         return "SUBORDINATE"

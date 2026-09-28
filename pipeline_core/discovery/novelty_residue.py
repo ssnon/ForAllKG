@@ -8,6 +8,7 @@ from pipeline_core.discovery.external_novelty_contracts import (
     LiteratureQueryPlan,
     NoveltyClaimImportance,
     NoveltyClaimScientificStructure,
+    NoveltySelectionRole,
 )
 
 
@@ -98,6 +99,15 @@ class NoveltyResidueClaim:
     # explicitly, so a supporting branch remains supporting while a
     # core branch can no longer silently degrade to supporting.
     importance: NoveltyClaimImportance = "core"
+
+    # Preserve explicit decomposition-time higher-order provenance.
+    #
+    # These fields describe claim role/topology only. They do not
+    # establish novelty, scientific truth, readiness, or production
+    # authority.
+    novelty_selection_role: NoveltySelectionRole | None = None
+    higher_order_relation_basis: tuple[str, ...] = ()
+    higher_order_component_claim_ids: tuple[str, ...] = ()
 
     # Alpha4 inference context preserved from the canonical
     # query-plan claim. Diagnostic/provenance only.
@@ -362,6 +372,15 @@ def extract_novelty_residue(
                         components
                     ),
                     importance=claim.importance,
+                    novelty_selection_role=(
+                        claim.novelty_selection_role
+                    ),
+                    higher_order_relation_basis=tuple(
+                        claim.higher_order_relation_basis
+                    ),
+                    higher_order_component_claim_ids=tuple(
+                        claim.higher_order_component_claim_ids
+                    ),
                     inference_provenance=(
                         claim.inference_provenance.model_dump(
                             mode="json"

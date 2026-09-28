@@ -43,6 +43,7 @@ from pipeline_core.discovery.task_bridge_candidate_composition import (
     CandidateRelationView,
     candidate_relation_from_mapping,
     compose_task_bridge_candidates,
+    diagnose_task_bridge_candidate,
 )
 from pipeline_core.discovery.task_bridge_composite_axis import (
     materialize_task_bridge_composite_axis,
@@ -602,6 +603,337 @@ def _quality_eligible(
     )
 
 
+
+
+def _quality_gate_reason_codes(
+    inspiration: DiscoveryInspiration,
+    *,
+    min_candidate_unit_score: float,
+) -> list[str]:
+    reasons = []
+
+    if inspiration.path_type != "CANDIDATE_EXPLORATION":
+        reasons.append(
+            "path_type_not_candidate_exploration"
+        )
+
+    if not inspiration.candidate_unit_id:
+        reasons.append(
+            "missing_candidate_unit_id"
+        )
+
+    if (
+        float(inspiration.candidate_unit_score)
+        < float(min_candidate_unit_score)
+    ):
+        reasons.append(
+            "candidate_unit_score_below_min"
+        )
+
+    if (
+        float(inspiration.exploration_score)
+        < MIN_EXPLORATION_SCORE
+    ):
+        reasons.append(
+            "exploration_score_below_min"
+        )
+
+    if (
+        float(
+            inspiration.semantic_similarity_to_grounding
+        )
+        > MAX_GROUNDING_SEMANTIC_OVERLAP
+    ):
+        reasons.append(
+            "semantic_similarity_to_grounding_above_max"
+        )
+
+    if (
+        float(inspiration.context_switch_penalty)
+        > MAX_CONTEXT_SWITCH_PENALTY
+    ):
+        reasons.append(
+            "context_switch_penalty_above_max"
+        )
+
+    return reasons
+
+
+def _unit_quality_shadow(
+    *,
+    unit_id: str,
+    rows_by_unit: dict[
+        str,
+        list[
+            tuple[
+                DiscoveryInspiration,
+                dict[str, Any],
+            ]
+        ],
+    ],
+    representatives: dict[
+        str,
+        tuple[
+            DiscoveryInspiration,
+            dict[str, Any],
+        ],
+    ],
+    min_candidate_unit_score: float,
+) -> dict[str, Any]:
+    rows = [
+        pair[0]
+        for pair in rows_by_unit.get(
+            unit_id,
+            [],
+        )
+    ]
+
+    eligible_rows = [
+        row
+        for row in rows
+        if not _quality_gate_reason_codes(
+            row,
+            min_candidate_unit_score=(
+                min_candidate_unit_score
+            ),
+        )
+    ]
+
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            -float(
+                row.candidate_unit_score
+            ),
+            -float(
+                row.exploration_score
+            ),
+            str(
+                row.source_path_id
+            ),
+        ),
+    )
+
+    best = (
+        ranked[0]
+        if ranked
+        else None
+    )
+
+    failure_counts: dict[str, int] = {}
+
+    for row in rows:
+        for reason in _quality_gate_reason_codes(
+            row,
+            min_candidate_unit_score=(
+                min_candidate_unit_score
+            ),
+        ):
+            failure_counts[reason] = (
+                failure_counts.get(
+                    reason,
+                    0,
+                )
+                + 1
+            )
+
+    return {
+        "unit_id": unit_id,
+        "materialized_row_count": len(
+            rows
+        ),
+        "quality_eligible_row_count": len(
+            eligible_rows
+        ),
+        "has_quality_representative": (
+            unit_id
+            in representatives
+        ),
+        "failure_reason_counts": (
+            failure_counts
+        ),
+        "best_candidate_unit_score_row": (
+            None
+            if best is None
+            else {
+                "source_path_id": str(
+                    best.source_path_id
+                ),
+                "candidate_unit_score": float(
+                    best.candidate_unit_score
+                ),
+                "exploration_score": float(
+                    best.exploration_score
+                ),
+                "semantic_similarity_to_grounding": float(
+                    best.semantic_similarity_to_grounding
+                ),
+                "context_switch_penalty": float(
+                    best.context_switch_penalty
+                ),
+                "quality_gate_reason_codes": (
+                    _quality_gate_reason_codes(
+                        best,
+                        min_candidate_unit_score=(
+                            min_candidate_unit_score
+                        ),
+                    )
+                ),
+            }
+        ),
+    }
+
+
+def _write_legacy_bridge_fidelity_shadow(
+    *,
+    path: Path | None,
+    status: str,
+    requested_source: str | None,
+    requested_target: str | None,
+    legacy_composites: tuple[Any, ...] = (),
+    rows_by_unit: dict[
+        str,
+        list[
+            tuple[
+                DiscoveryInspiration,
+                dict[str, Any],
+            ]
+        ],
+    ] | None = None,
+    representatives: dict[
+        str,
+        tuple[
+            DiscoveryInspiration,
+            dict[str, Any],
+        ],
+    ] | None = None,
+    selected_composite_ids: set[str] | None = None,
+    min_candidate_unit_score: float = 0.0,
+) -> None:
+    if path is None:
+        return
+
+    rows_by_unit = rows_by_unit or {}
+    representatives = representatives or {}
+    selected_composite_ids = (
+        selected_composite_ids
+        or set()
+    )
+
+    diagnostics = []
+
+    if (
+        requested_source is not None
+        and requested_target is not None
+    ):
+        for composite in legacy_composites:
+            row = diagnose_task_bridge_candidate(
+                composite=composite,
+                requested_source=requested_source,
+                requested_target=requested_target,
+            )
+
+            row["selected_by_frozen_policy"] = (
+                composite.composite_id
+                in selected_composite_ids
+            )
+            row["source_quality"] = (
+                _unit_quality_shadow(
+                    unit_id=(
+                        composite.source_unit_id
+                    ),
+                    rows_by_unit=rows_by_unit,
+                    representatives=representatives,
+                    min_candidate_unit_score=(
+                        min_candidate_unit_score
+                    ),
+                )
+            )
+            row["target_quality"] = (
+                _unit_quality_shadow(
+                    unit_id=(
+                        composite.target_unit_id
+                    ),
+                    rows_by_unit=rows_by_unit,
+                    representatives=representatives,
+                    min_candidate_unit_score=(
+                        min_candidate_unit_score
+                    ),
+                )
+            )
+
+            diagnostics.append(
+                row
+            )
+
+    payload = {
+        "schema_version": (
+            "legacy-task-bridge-fidelity-shadow-v1"
+        ),
+        "status": status,
+        "requested_source": (
+            requested_source
+        ),
+        "requested_target": (
+            requested_target
+        ),
+        "legacy_composite_count": len(
+            diagnostics
+        ),
+        "exact_endpoint_fidelity_count": sum(
+            bool(
+                row[
+                    "exact_endpoint_fidelity"
+                ]
+            )
+            for row in diagnostics
+        ),
+        "role_aware_mediator_compatible_count": sum(
+            bool(
+                row[
+                    "role_aware_mediator_compatible"
+                ]
+            )
+            for row in diagnostics
+        ),
+        "strict_materializable_without_equivalence_witness_count": sum(
+            bool(
+                row[
+                    "strict_materializable_without_equivalence_witness"
+                ]
+            )
+            for row in diagnostics
+        ),
+        "selected_by_frozen_policy_count": sum(
+            bool(
+                row[
+                    "selected_by_frozen_policy"
+                ]
+            )
+            for row in diagnostics
+        ),
+        "rows": diagnostics,
+        "shadow_only": True,
+        "production_selection_changed": False,
+        "generic_bundle_changed": False,
+        "architecture_tuning": False,
+    }
+
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    path.write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _replay_and_capture(
     *,
     final_traversal: Path,
@@ -814,6 +1146,16 @@ def main() -> int:
         required=True,
         type=Path,
     )
+    parser.add_argument(
+        "--output-legacy-bridge-shadow",
+        default=None,
+        type=Path,
+        help=(
+            "Optional diagnostic-only legacy task-bridge endpoint/role "
+            "fidelity artifact. This never changes composition, ranking, "
+            "selection, or production authority."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -917,6 +1259,13 @@ def main() -> int:
             )
             + "\n",
             encoding="utf-8",
+        )
+
+        _write_legacy_bridge_fidelity_shadow(
+            path=args.output_legacy_bridge_shadow,
+            status="GRAMMAR_NOT_APPLICABLE",
+            requested_source=None,
+            requested_target=None,
         )
 
         print(
@@ -1363,6 +1712,33 @@ def main() -> int:
             task_cap
         ):
             break
+
+    _write_legacy_bridge_fidelity_shadow(
+        path=args.output_legacy_bridge_shadow,
+        status=(
+            "TASK_CONDITIONED"
+            if selected_composites
+            else "NO_TASK_COMPOSITE"
+        ),
+        requested_source=requested_source,
+        requested_target=requested_target,
+        legacy_composites=tuple(
+            legacy_composites
+        ),
+        rows_by_unit=rows_by_unit,
+        representatives=representatives,
+        selected_composite_ids={
+            row.composite_id
+            for row in selected_composites
+            if (
+                row.composition_mode
+                == "candidate_lexical_v1"
+            )
+        },
+        min_candidate_unit_score=(
+            args.min_candidate_unit_score
+        ),
+    )
 
     # --------------------------------------------------------------
     # If no task source survives, preserve generic behavior.

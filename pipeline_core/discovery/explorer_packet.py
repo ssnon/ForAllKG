@@ -72,6 +72,49 @@ def _as_float(value: Any) -> float | None:
         return None
 
 
+def _relation_pattern_payload(
+    row: dict[str, Any],
+) -> dict[str, Any] | None:
+    # Recover only source-explicit accepted RelationPattern semantics.
+    # Fail closed: labels are never parsed to manufacture S-R-O, and
+    # semantic candidates/frontier concepts are never promoted.
+    if str(row.get("retention_lane", "")).strip() != "accepted_pattern":
+        return None
+    if str(row.get("concept_type", "")).strip() != "RelationPattern":
+        return None
+
+    subject = str(row.get("pattern_subject", "")).strip()
+    relation = str(row.get("pattern_relation", "")).strip()
+    object_ = str(row.get("pattern_object", "")).strip()
+
+    if not subject or not relation or not object_:
+        return None
+
+    return {
+        "concept_type": "RelationPattern",
+        "retention_lane": "accepted_pattern",
+        "subject": subject,
+        "relation": relation,
+        "object": object_,
+        "relation_strength": str(
+            row.get("relation_strength", "") or ""
+        ).strip(),
+        "evidence_scope": str(
+            row.get("evidence_scope", "") or ""
+        ).strip(),
+        "pattern_support_mode": str(
+            row.get("pattern_support_mode", "") or ""
+        ).strip(),
+        "paper_id": str(
+            row.get("paper_id", "")
+            or row.get("source_paper_id", "")
+            or ""
+        ).strip(),
+        "chunk_id": str(row.get("chunk_id", "") or "").strip(),
+        "document_id": str(row.get("document_id", "") or "").strip(),
+    }
+
+
 def _read_json(path: str | Path) -> dict[str, Any]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -714,6 +757,7 @@ class GraphExplorerPacketBuilder:
                 "source_paper_ids": _jsonish_strings(row.get("source_paper_ids_json")) or ([paper_id] if paper_id else []),
                 "extraction_quality_status": (scope.quality_status if scope else None),
                 "absence_claims_allowed": (scope.absence_claims_allowed if scope else False),
+                "relation_pattern": _relation_pattern_payload(row),
             }
 
         edge_catalog: dict[str, EdgeEvidence] = {}

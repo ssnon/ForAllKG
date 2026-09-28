@@ -3127,6 +3127,11 @@ def run_pipeline(args: argparse.Namespace) -> int:
         / "hypothesis_axis_a4.task_conditioned.report.json"
     )
 
+    task_bridge_fidelity_shadow = (
+        run
+        / "hypothesis_axis_a4.task_bridge_fidelity.shadow.json"
+    )
+
     runner.run_stage(
         "[7.5/13] Task-conditioned discovery-axis plan",
         "scripts.discovery.build_task_conditioned_axis_plan",
@@ -3157,15 +3162,163 @@ def run_pipeline(args: argparse.Namespace) -> int:
             str(task_conditioned_axis_plan),
             "--output-report",
             str(task_conditioned_axis_report),
+            "--output-legacy-bridge-shadow",
+            str(task_bridge_fidelity_shadow),
         ],
         expected=[
             task_conditioned_dual_context,
             task_conditioned_axis_plan,
             task_conditioned_axis_report,
+            task_bridge_fidelity_shadow,
         ],
     )
 
     dual_context = task_conditioned_dual_context
+
+    direct_relationpattern_task_shadow = (
+        run
+        / "hypothesis_axis_a4.direct_relationpattern_task.shadow.json"
+    )
+
+    if args.direct_relationpattern_task_shadow:
+        responsiveness_model = (
+            args.critic_model
+            or args.model
+        )
+        if not responsiveness_model:
+            raise RuntimeError(
+                "--direct-relationpattern-task-shadow requires "
+                "--critic-model or --model."
+            )
+        if int(
+            args.direct_relationpattern_top_k
+        ) < 1:
+            raise RuntimeError(
+                "--direct-relationpattern-top-k must be >= 1"
+            )
+
+        direct_relationpattern_debug = (
+            run
+            / "direct_relationpattern_task_shadow_debug"
+        )
+
+        runner.run_stage(
+            (
+                "[7.52/13] Direct accepted RelationPattern "
+                "task-responsiveness shadow"
+            ),
+            (
+                "scripts.discovery."
+                "run_direct_relationpattern_task_shadow"
+            ),
+            [
+                "--final-traversal",
+                str(final_traversal),
+                "--question",
+                str(args.question),
+                # These are graph-retrieval anchors only.
+                # Full-question responsiveness remains the semantic
+                # authority for task preservation.
+                "--retrieval-source",
+                str(args.source),
+                "--retrieval-target",
+                str(args.target),
+                "--model",
+                str(responsiveness_model),
+                "--retrieval-top-k",
+                str(
+                    args.direct_relationpattern_top_k
+                ),
+                "--debug-dir",
+                str(
+                    direct_relationpattern_debug
+                ),
+                "--output",
+                str(
+                    direct_relationpattern_task_shadow
+                ),
+            ],
+            expected=[
+                direct_relationpattern_task_shadow
+            ],
+        )
+
+        direct_rp_payload = _load_json(
+            direct_relationpattern_task_shadow
+        )
+
+        runner.manifest[
+            "direct_relationpattern_task_shadow"
+        ] = {
+            "enabled": True,
+            "report": str(
+                direct_relationpattern_task_shadow
+            ),
+            "query_contract": (
+                "GRAPH_RETRIEVAL_SOURCE_PLUS_TARGET"
+            ),
+            "retrieval_source": str(
+                args.source
+            ),
+            "retrieval_target": str(
+                args.target
+            ),
+            "full_question_is_task_semantic_authority":
+                True,
+            "retrieval_top_k": int(
+                args.direct_relationpattern_top_k
+            ),
+            "accepted_relationpattern_count":
+                direct_rp_payload.get(
+                    "accepted_relationpattern_count",
+                    0,
+                ),
+            "stable_direct_count":
+                direct_rp_payload.get(
+                    "stable_direct_count",
+                    0,
+                ),
+            "stable_subordinate_count":
+                direct_rp_payload.get(
+                    "stable_subordinate_count",
+                    0,
+                ),
+            "stable_task_replacing_count":
+                direct_rp_payload.get(
+                    "stable_task_replacing_count",
+                    0,
+                ),
+            "unresolved_count":
+                direct_rp_payload.get(
+                    "unresolved_count",
+                    0,
+                ),
+            "responsive_candidate_ids":
+                direct_rp_payload.get(
+                    "responsive_candidate_ids",
+                    [],
+                ),
+            "shadow_only": True,
+            "production_selection_changed": False,
+            "task_conditioned_axis_plan_changed": False,
+            "dual_context_changed_by_shadow": False,
+            "stage8_input_changed_by_shadow": False,
+            "novelty_authority_created": False,
+            "positive_premise_authority_created": False,
+            "canonical_graph_mutated": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "direct_relationpattern_task_shadow"
+        ] = {
+            "enabled": False,
+            "production_selection_changed": False,
+            "task_conditioned_axis_plan_changed": False,
+            "dual_context_changed_by_shadow": False,
+            "stage8_input_changed_by_shadow": False,
+        }
+        runner._save_manifest()
 
     if args.higher_order_shadow:
         if args.accepted_patterns is None:
@@ -5032,6 +5185,27 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--max-axes", type=int, default=5)
+    parser.add_argument(
+        "--direct-relationpattern-task-shadow",
+        action="store_true",
+        help=(
+            "Run a shadow-only direct accepted-RelationPattern retrieval "
+            "lane after Stage 7.5. The query is the graph retrieval "
+            "source+target pair; the full scientific question is evaluated "
+            "by the existing two-pass task-responsiveness critic. The "
+            "artifact has no production-selection, novelty, or positive-"
+            "premise authority."
+        ),
+    )
+    parser.add_argument(
+        "--direct-relationpattern-top-k",
+        type=int,
+        default=20,
+        help=(
+            "Frozen embedding-index top-k for the direct accepted "
+            "RelationPattern shadow lane. Default: 20."
+        ),
+    )
     parser.add_argument(
         "--higher-order-shadow",
         action="store_true",
