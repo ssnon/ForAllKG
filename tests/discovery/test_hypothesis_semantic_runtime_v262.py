@@ -170,3 +170,56 @@ def test_runtime_does_not_call_critic_when_hard_gate_fails():
     assert backend.calls == 0
     assert outcome.run_record.failure_stage == "hard_gate"
     assert outcome.run_record.generated is False
+
+def test_runtime_rejects_unattributed_local_warning():
+    context = make_context()
+    portfolio = make_portfolio(context)
+
+    draft = review_draft(portfolio)
+    rows = []
+    for row in draft.dimensions:
+        if row.dimension == "premise_fidelity":
+            row = row.model_copy(
+                update={
+                    "verdict": "warning",
+                    "hypothesis_ids": [],
+                    "rationale": "Localized warning with missing attribution.",
+                }
+            )
+        rows.append(row)
+
+    backend = FakeBackend(
+        draft.model_copy(update={"dimensions": rows})
+    )
+    outcome = HypothesisSemanticCriticRuntime(backend).run(
+        context,
+        portfolio,
+    )
+
+    assert not outcome.accepted
+    assert outcome.review is None
+    assert outcome.run_record.failure_stage == "review_validation"
+    assert any(
+        "must identify at least one implicated hypothesis_id" in issue
+        for issue in outcome.review_validation_issues
+    )
+
+
+def test_semantic_prompt_defines_verdict_attribution():
+    context = make_context()
+    portfolio = make_portfolio(context)
+    backend = FakeBackend(review_draft(portfolio))
+
+    outcome = HypothesisSemanticCriticRuntime(backend).run(
+        context,
+        portfolio,
+    )
+
+    assert (
+        "hypothesis_ids are the hypotheses TO WHICH THIS ROW'S VERDICT APPLIES"
+        in outcome.prompt.system_prompt
+    )
+    assert (
+        "hypothesis_ids are attribution targets"
+        in outcome.prompt.user_prompt
+    )

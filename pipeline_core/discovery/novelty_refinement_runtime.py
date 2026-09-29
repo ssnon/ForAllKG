@@ -52,6 +52,7 @@ from pipeline_core.discovery.question_hypothesis_responsiveness import (
     HypothesisResponsivenessBackendProtocol,
     evaluate_hypothesis_task_preservation,
 )
+from pipeline_core.discovery.planner_controlled_discovery_routing import structural_sharpen_gap
 from pipeline_core.discovery.novelty_refinement_contracts import (
     NoveltyGapPlan,
     NoveltyRefinementReport,
@@ -1380,6 +1381,7 @@ class TargetedNoveltyRefinementRuntime:
         specification_repair_post_generation_gate: (
             dict[str, Any] | None
         ) = None,
+        controlled_routing_plan: Any | None = None,
     ) -> NoveltyRefinementOutcome:
         scientific_gate_by_id = (
             self._validate_scientific_novelty_gate(
@@ -1391,6 +1393,41 @@ class TargetedNoveltyRefinementRuntime:
         gap_plan = self.gap_analyzer.build(
             portfolio, external_report, external_query_plan
         )
+
+        controlled_route_by_hypothesis: dict[str, Any] = {}
+        if controlled_routing_plan is not None:
+            if not bool(getattr(controlled_routing_plan, "enabled", False)):
+                raise RuntimeError(
+                    "disabled controlled-routing plan must not be supplied "
+                    "to Alpha6 runtime"
+                )
+            if (
+                str(controlled_routing_plan.source_gap_plan_id)
+                != str(gap_plan.plan_id)
+            ):
+                raise RuntimeError(
+                    "controlled-routing source_gap_plan_id mismatch"
+                )
+            if (
+                str(controlled_routing_plan.source_portfolio_id)
+                != str(portfolio.portfolio_id)
+            ):
+                raise RuntimeError(
+                    "controlled-routing source_portfolio_id mismatch"
+                )
+
+            controlled_route_by_hypothesis = {
+                str(row.hypothesis_id): row
+                for row in controlled_routing_plan.directives
+            }
+            if (
+                len(controlled_route_by_hypothesis)
+                != len(controlled_routing_plan.directives)
+            ):
+                raise RuntimeError(
+                    "duplicate hypothesis directive in controlled-routing plan"
+                )
+
         cards = {x.hypothesis_id: x for x in portfolio.hypotheses}
         lineage_by_h = {x.hypothesis_id: x for x in lineage.lineages}
         axis_by_id = {x.axis_id: x for x in axis_plan.axes}
@@ -1448,6 +1485,137 @@ class TargetedNoveltyRefinementRuntime:
                 )
                 else NO_N10_ALPHA6_OVERRIDE
             )
+
+            controlled_directive = controlled_route_by_hypothesis.get(
+                original.hypothesis_id
+            )
+            planner_controlled_force_reaxis = False
+
+            if controlled_directive is not None:
+                if str(controlled_directive.gap_id) != str(gap.gap_id):
+                    raise RuntimeError(
+                        "controlled-routing gap_id mismatch for "
+                        + original.hypothesis_id
+                    )
+
+                controlled_route = str(controlled_directive.runtime_route)
+
+                if (
+                    controlled_route == "KEEP_ORIGINAL"
+                    and not n10_resolution_directive.force_bounded_refinement
+                ):
+                    if self._original_fallback_allowed(
+                        source_external.status,
+                        hypothesis_id=original.hypothesis_id,
+                        scientific_gate_by_id=scientific_gate_by_id,
+                    ):
+                        accepted_proposals.append(
+                            _proposal_from_card(
+                                original,
+                                prefix=f"plannerkeep{index}",
+                            )
+                        )
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                candidate_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="kept_original",
+                                original_external_status=source_external.status,
+                                targeted_external_status=source_external.status,
+                                final_external_status=source_external.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                generation_mode="none",
+                                context_grounding_valid=True,
+                                reason_codes=[
+                                    "planner_controlled_route:keep_original",
+                                    "experimental_routing_authority",
+                                ],
+                                interpretation=(
+                                    "The experimental actionable refinement "
+                                    "plan selected the bounded higher-order "
+                                    "hypothesis for retention without "
+                                    "additional novelty optimization."
+                                ),
+                            )
+                        )
+                    else:
+                        attempts.append(
+                            RefinementAttempt(
+                                original_hypothesis_id=original.hypothesis_id,
+                                gap_id=gap.gap_id,
+                                action=gap.action,
+                                decision="scientific_novelty_rejected",
+                                original_external_status=source_external.status,
+                                targeted_external_status=source_external.status,
+                                grounding_preserved=True,
+                                refinement_generated=False,
+                                generation_mode="none",
+                                context_grounding_valid=True,
+                                reason_codes=[
+                                    "planner_controlled_route:keep_original",
+                                    (
+                                        "scientific_novelty_gate_"
+                                        "blocked_original_fallback"
+                                    ),
+                                ],
+                                interpretation=(
+                                    "The experimental planner requested "
+                                    "retention, but an authoritative "
+                                    "scientific-novelty gate blocked "
+                                    "original fallback."
+                                ),
+                            )
+                        )
+                    continue
+
+                if controlled_route == "HOLD_FOR_EVIDENCE":
+                    attempts.append(
+                        RefinementAttempt(
+                            original_hypothesis_id=original.hypothesis_id,
+                            gap_id=gap.gap_id,
+                            action=gap.action,
+                            decision="held_for_evidence",
+                            original_external_status=source_external.status,
+                            targeted_external_status=source_external.status,
+                            final_external_status=source_external.status,
+                            grounding_preserved=True,
+                            refinement_generated=False,
+                            generation_mode="none",
+                            context_grounding_valid=True,
+                            reason_codes=[
+                                "planner_controlled_route:hold_for_evidence",
+                                (
+                                    "actionable_refinement_action:"
+                                    + str(
+                                        controlled_directive
+                                        .source_actionable_action
+                                    )
+                                ),
+                            ],
+                            interpretation=(
+                                "The experimental planner forbids hypothesis "
+                                "generation until the requested evidence or "
+                                "conflict resolution is available."
+                            ),
+                        )
+                    )
+                    continue
+
+                if controlled_route == "GAP_SHARPEN":
+                    gap = structural_sharpen_gap(
+                        gap,
+                        controlled_directive,
+                    )
+                elif controlled_route == "FRESH_CONTEXT_REAXIS":
+                    planner_controlled_force_reaxis = True
+                elif controlled_route != "KEEP_ORIGINAL":
+                    raise RuntimeError(
+                        "unsupported controlled runtime route: "
+                        + controlled_route
+                    )
 
             if gap.action == "keep":
                 if not (
@@ -1684,6 +1852,7 @@ class TargetedNoveltyRefinementRuntime:
             if (
                 targeted_card.status
                 in self.RESOLVED_CANDIDATE_EXTERNAL
+                and not planner_controlled_force_reaxis
                 and not _s25c_should_bypass_resolved_candidate_exit(
                     gap.action
                 )
@@ -1777,14 +1946,48 @@ class TargetedNoveltyRefinementRuntime:
                 )
             )
 
-            if _s25c_should_attempt_fresh_reaxis(
-                action=gap.action,
-                ordinary_should_attempt=(
-                    self._should_attempt_fresh_reaxis(
-                        targeted_card.status,
-                        unused_reaxis_ids,
+            if (
+                planner_controlled_force_reaxis
+                and not unused_reaxis_ids
+            ):
+                attempts.append(
+                    RefinementAttempt(
+                        original_hypothesis_id=original.hypothesis_id,
+                        gap_id=gap.gap_id,
+                        action=gap.action,
+                        decision="held_for_evidence",
+                        original_external_status=source_external.status,
+                        targeted_external_status=targeted_card.status,
+                        final_external_status=targeted_card.status,
+                        grounding_preserved=True,
+                        refinement_generated=False,
+                        generation_mode="none",
+                        context_grounding_valid=True,
+                        reason_codes=[
+                            "planner_controlled_route:fresh_context_reaxis",
+                            "controlled_reaxis_no_safe_unused_premise",
+                        ],
+                        interpretation=(
+                            "The planner requested an evidence re-axis, but "
+                            "runtime grounding found no safe unused positive "
+                            "premise. The candidate is held rather than "
+                            "silently falling back to same-premise generation."
+                        ),
                     )
-                ),
+                )
+                continue
+
+            if (
+                planner_controlled_force_reaxis
+                or _s25c_should_attempt_fresh_reaxis(
+                    action=gap.action,
+                    ordinary_should_attempt=(
+                        self._should_attempt_fresh_reaxis(
+                            targeted_card.status,
+                            unused_reaxis_ids,
+                        )
+                    ),
+                )
             ):
                 allowed_reaxis_ids = sorted(
                     set(
@@ -2289,6 +2492,9 @@ class TargetedNoveltyRefinementRuntime:
                         ),
                     )
                 )
+
+                if planner_controlled_force_reaxis:
+                    continue
 
             specification_repair_context = (
                 _build_alpha6_specification_repair_context(

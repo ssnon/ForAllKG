@@ -455,6 +455,7 @@ class PriorArtMatchDraft(StrictModel):
     relationship: PriorArtRelationship
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str = Field(min_length=1)
+    evidence_spans: list[str] = Field(default_factory=list)
 
 
 class ClaimPriorArtReviewDraft(StrictModel):
@@ -467,6 +468,7 @@ class PriorArtMatch(StrictModel):
     relationship: PriorArtRelationship
     confidence: float
     rationale: str
+    evidence_spans: list[str] = Field(default_factory=list)
     relevance_score: float
     semantic_similarity: float
     lexical_coverage: float

@@ -35,6 +35,24 @@ from pipeline_core.discovery.prior_art_provider_plan import (
 from pipeline_core.discovery.node_mapping import DEFAULT_EMBED_MODEL, NodeMapper, SentenceTransformerEncoder
 from pipeline_core.discovery.novelty_claim_decomposition import NoveltyClaimDecomposer
 from pipeline_core.discovery.novelty_gap_analysis import NoveltyGapAnalyzer
+from pipeline_core.discovery.negative_space_planner import (
+    build_negative_space_planner_plan,
+    evaluate_negative_space_planner_execution,
+)
+from pipeline_core.discovery.novelty_depth_causal_edge_coverage import (
+    build_novelty_depth_causal_edge_coverage,
+)
+from pipeline_core.discovery.hypothesis_causal_edge_graph_v2 import (
+    build_hypothesis_causal_edge_graph_novelty_depth_v2,
+)
+from pipeline_core.discovery.knownness_depth_action_planning import (
+    build_actionable_refinement_plan,
+    build_knownness_depth_fusion,
+)
+from pipeline_core.discovery.planner_controlled_discovery_routing import (
+    build_planner_controlled_routing_execution,
+    build_planner_controlled_routing_plan,
+)
 from pipeline_core.discovery.novelty_refinement_runtime import TargetedNoveltyRefinementRuntime
 from pipeline_core.discovery.prior_art_matching import ClaimPriorArtCompiler, PriorArtRanker
 from pipeline_core.discovery.targeted_novelty_retrieval import TargetedNoveltyRetriever
@@ -157,6 +175,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--results-per-query", type=int, default=12)
     p.add_argument("--target-claims", type=int, default=2)
     p.add_argument("--target-queries", type=int, default=3)
+    p.add_argument(
+        "--planner-controlled-discovery-routing-experimental",
+        action="store_true",
+        help=(
+            "Opt in to experimental Alpha6 routing authority from the "
+            "Actionable Refinement Plan. Default preserves legacy Alpha6."
+        ),
+    )
     p.add_argument("--output-prefix", required=True, type=Path)
     p.add_argument("--dry-run-gap-plan", action="store_true")
     return p.parse_args()
@@ -253,6 +279,101 @@ def main() -> int:
     )
     gap_plan = gap_analyzer.build(portfolio, external, query_plan)
     _write(Path(str(args.output_prefix) + ".gap_plan.json"), gap_plan)
+
+    novelty_depth_edge_coverage = (
+        build_novelty_depth_causal_edge_coverage(
+            context=dual.grounded_context,
+            portfolio=portfolio,
+            external_report=external,
+        )
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".novelty_depth_edge_coverage.json"
+        ),
+        novelty_depth_edge_coverage,
+    )
+
+    hypothesis_edge_graph_v2 = (
+        build_hypothesis_causal_edge_graph_novelty_depth_v2(
+            context=dual.grounded_context,
+            portfolio=portfolio,
+            external_report=external,
+            v1_report=novelty_depth_edge_coverage,
+            conceptual_knownness=None,
+        )
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".hypothesis_edge_graph_v2.json"
+        ),
+        hypothesis_edge_graph_v2,
+    )
+
+    knownness_depth_fusion = build_knownness_depth_fusion(
+        edge_graph_report=hypothesis_edge_graph_v2,
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".knownness_depth_fusion.json"
+        ),
+        knownness_depth_fusion,
+    )
+
+    actionable_refinement_plan = (
+        build_actionable_refinement_plan(
+            context=dual.grounded_context,
+            portfolio=portfolio,
+            gap_plan=gap_plan,
+            fusion_report=knownness_depth_fusion,
+            edge_graph_report=hypothesis_edge_graph_v2,
+        )
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".actionable_refinement_plan.json"
+        ),
+        actionable_refinement_plan,
+    )
+
+    controlled_routing_plan = (
+        build_planner_controlled_routing_plan(
+            actionable_refinement_plan=actionable_refinement_plan,
+            gap_plan=gap_plan,
+            enabled=(
+                args
+                .planner_controlled_discovery_routing_experimental
+            ),
+        )
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".controlled_routing.plan.json"
+        ),
+        controlled_routing_plan,
+    )
+
+    negative_space_planner = (
+        build_negative_space_planner_plan(
+            context=dual.grounded_context,
+            portfolio=portfolio,
+            gap_plan=gap_plan,
+            novelty_depth_profile=hypothesis_edge_graph_v2,
+            actionable_refinement_plan=actionable_refinement_plan,
+        )
+    )
+    _write(
+        Path(
+            str(args.output_prefix)
+            + ".negative_space_planner.plan.json"
+        ),
+        negative_space_planner,
+    )
     print("NoveltyGapPlan built")
     print("Plan ID:", gap_plan.plan_id)
     for i, gap in enumerate(gap_plan.gaps, 1):
@@ -429,12 +550,52 @@ def main() -> int:
         specification_repair_post_generation_gate=(
             specification_repair_post_generation_gate
         ),
+        controlled_routing_plan=(
+            controlled_routing_plan
+            if (
+                args
+                .planner_controlled_discovery_routing_experimental
+            )
+            else None
+        ),
+    )
+
+    controlled_routing_execution = (
+        build_planner_controlled_routing_execution(
+            routing_plan=controlled_routing_plan,
+            refinement_report=outcome.report,
+            runtime_consumed_plan=(
+                args
+                .planner_controlled_discovery_routing_experimental
+            ),
+        )
+    )
+
+    negative_space_execution = (
+        evaluate_negative_space_planner_execution(
+            plan=negative_space_planner,
+            refinement_report=outcome.report,
+        )
     )
 
     prefix = args.output_prefix
     _write(Path(str(prefix) + ".portfolio.json"), outcome.portfolio)
     _write(Path(str(prefix) + ".report.json"), outcome.report)
     _write(Path(str(prefix) + ".gap_plan.json"), outcome.gap_plan)
+    _write(
+        Path(
+            str(prefix)
+            + ".negative_space_planner.execution.json"
+        ),
+        negative_space_execution,
+    )
+    _write(
+        Path(
+            str(prefix)
+            + ".controlled_routing.execution.json"
+        ),
+        controlled_routing_execution,
+    )
 
     repair_detail_dir = Path(
         str(prefix)
@@ -549,6 +710,89 @@ def main() -> int:
         len(
             outcome.specification_repair_contexts
         ),
+    )
+    print(
+        "Novelty depth classes:",
+        novelty_depth_edge_coverage.novelty_depth_counts,
+    )
+    print(
+        "Novelty depth planner advisory:",
+        novelty_depth_edge_coverage.planner_advisory_counts,
+    )
+    print(
+        "Novelty weak-bridge hypotheses:",
+        novelty_depth_edge_coverage.weak_bridge_hypothesis_count,
+    )
+    print(
+        "Hypothesis edge-graph v2 depth:",
+        hypothesis_edge_graph_v2.novelty_depth_counts,
+    )
+    print(
+        "Hypothesis edge-graph v2 advisory:",
+        hypothesis_edge_graph_v2.planner_advisory_counts,
+    )
+    print(
+        "Hypothesis edge-graph cross-claim backbone:",
+        hypothesis_edge_graph_v2.cross_claim_backbone_hypothesis_count,
+    )
+    print(
+        "Planner-controlled routing enabled:",
+        controlled_routing_plan.enabled,
+    )
+    print(
+        "Planner-controlled routing routes:",
+        controlled_routing_plan.route_counts,
+    )
+    print(
+        "Planner-controlled routing execution:",
+        {
+            "match": controlled_routing_execution.match_count,
+            "diverged": controlled_routing_execution.diverged_count,
+            "not_observed":
+                controlled_routing_execution.not_observed_count,
+            "disabled":
+                controlled_routing_execution.disabled_count,
+        },
+    )
+    print(
+        "Knownness-depth fusion:",
+        knownness_depth_fusion.fusion_state_counts,
+    )
+    print(
+        "Actionable refinement actions:",
+        actionable_refinement_plan.action_counts,
+    )
+    print(
+        "Actionable refinement operators:",
+        actionable_refinement_plan.operator_candidate_counts,
+    )
+    print(
+        "NegativeSpace planner targets:",
+        negative_space_planner.target_count,
+    )
+    print(
+        "Planner retrieve-first:",
+        negative_space_planner.retrieve_first_count,
+    )
+    print(
+        "Planner evidence-reaxis available:",
+        negative_space_planner.evidence_reaxis_available_count,
+    )
+    print(
+        "Planner operator-sharpen available:",
+        negative_space_planner.operator_sharpen_available_count,
+    )
+    print(
+        "Planner execution conformance:",
+        {
+            "match": negative_space_execution.match_count,
+            "match_after_fallback":
+                negative_space_execution.match_after_fallback_count,
+            "diverged":
+                negative_space_execution.diverged_count,
+            "not_comparable":
+                negative_space_execution.not_comparable_count,
+        },
     )
     print("Accepted refinements:", outcome.report.accepted_refinement_count)
     print("Accepted fresh re-axes:", outcome.report.accepted_reaxis_count)

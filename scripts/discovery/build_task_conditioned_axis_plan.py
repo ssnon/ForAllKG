@@ -934,6 +934,51 @@ def _write_legacy_bridge_fidelity_shadow(
     )
 
 
+def _a17f_authoritative_bundle_payload(
+    bundle: DiscoveryBundle,
+) -> dict[str, Any]:
+    # bundle_sha256 covers the full serialized artifact; warnings are
+    # diagnostic metadata. All other fields remain replay-authoritative.
+    return bundle.model_dump(
+        mode="json",
+        exclude={
+            "bundle_sha256",
+            "warnings",
+        },
+    )
+
+
+def _a17f_assert_authoritative_replay_equivalence(
+    *,
+    expected_bundle: DiscoveryBundle,
+    replay_bundle: DiscoveryBundle,
+) -> tuple[list[str], list[str]]:
+    expected_payload = _a17f_authoritative_bundle_payload(
+        expected_bundle
+    )
+    replay_payload = _a17f_authoritative_bundle_payload(
+        replay_bundle
+    )
+
+    if replay_payload != expected_payload:
+        raise RuntimeError(
+            "A17F replay changed the authoritative DiscoveryBundle payload "
+            "after excluding only diagnostic warnings and the artifact SHA. "
+            f"expected_bundle_id={expected_bundle.bundle_id}; "
+            f"replay_bundle_id={replay_bundle.bundle_id}; "
+            f"expected_sha={expected_bundle.bundle_sha256}; "
+            f"replay_sha={replay_bundle.bundle_sha256}"
+        )
+
+    expected_warnings = sorted(set(expected_bundle.warnings))
+    replay_warnings = sorted(set(replay_bundle.warnings))
+
+    removed = sorted(set(expected_warnings) - set(replay_warnings))
+    added = sorted(set(replay_warnings) - set(expected_warnings))
+
+    return removed, added
+
+
 def _replay_and_capture(
     *,
     final_traversal: Path,
@@ -1031,17 +1076,33 @@ def _replay_and_capture(
         )
     )
 
+    (
+        removed_replay_warnings,
+        added_replay_warnings,
+    ) = _a17f_assert_authoritative_replay_equivalence(
+        expected_bundle=expected_bundle,
+        replay_bundle=replay,
+    )
+
     if (
         replay.bundle_sha256
-        !=
-        expected_bundle.bundle_sha256
+        != expected_bundle.bundle_sha256
     ):
-        raise RuntimeError(
-            "A17F replay changed the generic "
-            "DiscoveryBundle SHA: "
-            f"{replay.bundle_sha256} != "
-            f"{expected_bundle.bundle_sha256}"
+        print(
+            "WARNING: A17F replay changed only non-authoritative "
+            "DiscoveryBundle warning metadata; scientific replay payload "
+            "remains identical."
         )
+        if removed_replay_warnings:
+            print(
+                "WARNING: A17F replay warnings removed:",
+                removed_replay_warnings,
+            )
+        if added_replay_warnings:
+            print(
+                "WARNING: A17F replay warnings added:",
+                added_replay_warnings,
+            )
 
     return (
         builders[0],

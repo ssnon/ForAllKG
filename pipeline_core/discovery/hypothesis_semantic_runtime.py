@@ -65,9 +65,34 @@ class HypothesisSemanticReviewCompiler:
         valid_statement_ids = {row.statement_id for row in context.evidence_statements}
         issues: list[str] = []
 
+        hypothesis_localizable_semantic_dimensions = {
+            "premise_fidelity",
+            "gap_discipline",
+            "candidate_calibration",
+            "inferential_proportionality",
+            "causal_strengthening",
+            "directional_specificity",
+            "prediction_linkage",
+            "falsifier_informativeness",
+            "cross_paper_discipline",
+        }
+
         for index, row in enumerate(draft.dimensions):
             unknown_h = sorted(set(row.hypothesis_ids) - valid_hypothesis_ids)
             unknown_s = sorted(set(row.statement_ids) - valid_statement_ids)
+
+            if (
+                portfolio.hypotheses
+                and row.verdict in {"warning", "fail"}
+                and row.dimension in hypothesis_localizable_semantic_dimensions
+                and not row.hypothesis_ids
+            ):
+                issues.append(
+                    f"dimensions[{index}] {row.dimension}={row.verdict} "
+                    "must identify at least one implicated hypothesis_id; "
+                    "empty attribution would be interpreted downstream as "
+                    "portfolio-level."
+                )
             if unknown_h:
                 issues.append(
                     f"dimensions[{index}].hypothesis_ids contains unknown IDs: {unknown_h}"

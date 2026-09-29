@@ -204,7 +204,6 @@ def _witness_from_audit_record(
             modifier_slot,
             anchor_text,
             modifier_text,
-            audit_source,
         ),
         modifier_component_id=component.component_id,
         validated_anchor_role=role,

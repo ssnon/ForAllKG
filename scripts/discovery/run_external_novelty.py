@@ -22,6 +22,9 @@ from pipeline_core.discovery.external_novelty_contracts import (
     NoveltyClaimInferenceProvenance,
     PriorArtPacket,
 )
+from pipeline_core.discovery.independent_evidence_grounded_review import (
+    IndependentEvidenceGroundedClaimReviewBackend,
+)
 from pipeline_core.discovery.external_novelty_llm import (
     InstructorOpenAICompatibleExternalNoveltyBackend,
 )
@@ -29,6 +32,12 @@ from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
 from pipeline_core.discovery.prior_art_retrieval import (
     LiteratureRetriever,
     canonicalize_prior_art_packet,
+)
+from pipeline_core.discovery.prior_art_metadata_resolution_s227 import (
+    PriorArtMetadataResolver,
+)
+from pipeline_core.discovery.prior_art_resolution_targeting import (
+    select_pre_review_resolution_targets,
 )
 from pipeline_core.discovery.prior_art_provider_plan import (
     build_literature_providers,
@@ -109,6 +118,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-claims", type=int, default=4)
     parser.add_argument("--max-queries-per-claim", type=int, default=2)
     parser.add_argument("--max-ranked-works", type=int, default=8)
+    parser.add_argument(
+        "--pre-review-metadata-resolution",
+        action="store_true",
+        help=(
+            "Resolve missing metadata for top-ranked missing-abstract works "
+            "on core claims before external-novelty review. The scientific "
+            "LiteratureQueryPlan is unchanged; targeted metadata lookup "
+            "provenance is written separately."
+        ),
+    )
+    parser.add_argument(
+        "--metadata-resolution-lookup-limit",
+        type=int,
+        default=5,
+    )
+    parser.add_argument(
+        "--metadata-resolution-disable-title-fallback",
+        action="store_true",
+    )
     parser.add_argument("--min-unique-works-for-absence", type=int, default=10)
     parser.add_argument("--min-abstract-works-for-absence", type=int, default=5)
     parser.add_argument("--min-abstract-works-per-core-claim", type=int, default=3)
@@ -170,6 +198,23 @@ def parse_args() -> argparse.Namespace:
             "write a deterministic downstream-authorization gate sidecar. "
             "Requires --pre-review-coverage-shadow. This does not change "
             "production selection or novelty authority."
+        ),
+    )
+    parser.add_argument(
+        "--evidence-grounded-review",
+        action="store_true",
+        help=(
+            "Require exact abstract evidence spans for substantive "
+            "claim-level prior-art relationships. Opt-in validation path."
+        ),
+    )
+    parser.add_argument(
+        "--independent-evidence-review",
+        action="store_true",
+        help=(
+            "Review each ranked claim-work pair independently using "
+            "the evidence-grounded relation decision tree, then use "
+            "the existing deterministic compiler for aggregation."
         ),
     )
     parser.add_argument("--save-prompts", action="store_true")
@@ -501,6 +546,10 @@ def main() -> None:
         api_key_env=args.api_key_env,
         base_url=args.base_url,
         capture_prompts=args.save_prompts,
+        evidence_grounded_review=(
+            args.evidence_grounded_review
+            or args.independent_evidence_review
+        ),
     )
     decomposer = NoveltyClaimDecomposer(
         backend,
@@ -783,6 +832,144 @@ def main() -> None:
         domain_profile=domain_profile,
     )
 
+    metadata_resolution_audit = None
+    metadata_resolution_path = prefix.with_suffix(
+        ".metadata_resolution.json"
+    )
+    resolved_prior_art_path = prefix.with_suffix(
+        ".prior_art.resolved.json"
+    )
+
+    if args.pre_review_metadata_resolution:
+        resolution_selection = (
+            select_pre_review_resolution_targets(
+                plan=plan,
+                packet=packet,
+                ranker=ranker,
+            )
+        )
+
+        if args.reuse_prior_art:
+            if args.provider_plan:
+                resolution_provider_plan = (
+                    load_literature_provider_plan(
+                        args.provider_plan
+                    )
+                )
+            else:
+                provider_arg = str(
+                    args.providers or ""
+                ).strip()
+                if provider_arg.lower() == "auto":
+                    requested = None
+                else:
+                    requested = [
+                        value.strip()
+                        for value in provider_arg.split(",")
+                        if value.strip()
+                    ]
+                resolution_provider_plan = (
+                    resolve_literature_provider_plan(
+                        requested=requested
+                    )
+                )
+            require_standard_or_full_auto_plan(
+                resolution_provider_plan
+            )
+            resolution_providers = (
+                build_literature_providers(
+                    resolution_provider_plan
+                )
+            )
+        else:
+            resolution_provider_plan = provider_plan
+            resolution_providers = providers
+
+        target_ids = set(
+            resolution_selection[
+                "selected_work_ids"
+            ]
+        )
+
+        if target_ids:
+            packet, metadata_resolution_audit = (
+                PriorArtMetadataResolver(
+                    resolution_providers,
+                    lookup_limit=(
+                        args.metadata_resolution_lookup_limit
+                    ),
+                    enable_title_fallback=(
+                        not args
+                        .metadata_resolution_disable_title_fallback
+                    ),
+                ).resolve(
+                    packet,
+                    target_work_ids=target_ids,
+                )
+            )
+        else:
+            metadata_resolution_audit = {
+                "schema_version":
+                    "prior-art-metadata-resolution-s227-v1",
+                "source_packet_id": packet.packet_id,
+                "resolved_packet_id": packet.packet_id,
+                "requested_target_work_count": 0,
+                "matched_target_work_count": 0,
+                "target_abstract_recovered_count": 0,
+                "provider_attempt_count": 0,
+                "provider_failure_count": 0,
+                "authority": {
+                    "posthoc_validation_only": False,
+                    "scientific_query_coverage_changed": False,
+                    "positive_premise_authority": False,
+                    "novelty_authority_created": False,
+                    "production_selection_authority": False,
+                },
+            }
+
+        metadata_resolution_audit.setdefault(
+            "authority",
+            {},
+        )["posthoc_validation_only"] = False
+        metadata_resolution_audit[
+            "authority"
+        ]["scientific_query_coverage_changed"] = False
+        metadata_resolution_audit[
+            "authority"
+        ]["positive_premise_authority"] = False
+        metadata_resolution_audit[
+            "authority"
+        ]["novelty_authority_created"] = False
+        metadata_resolution_audit[
+            "authority"
+        ]["production_selection_authority"] = False
+
+        metadata_resolution_audit[
+            "selector"
+        ] = resolution_selection
+        metadata_resolution_audit[
+            "integration"
+        ] = {
+            "integration_version":
+                "pre-review-metadata-resolution-s229-v1",
+            "enabled": True,
+            "position":
+                "after_initial_ranking_before_pre_review_coverage_and_review",
+            "scientific_query_plan_changed": False,
+            "review_outcome_used_for_targeting": False,
+            "novelty_selection_authority": False,
+            "production_selection_authority": False,
+        }
+
+        _write(
+            metadata_resolution_path,
+            metadata_resolution_audit,
+        )
+        _write(
+            resolved_prior_art_path,
+            packet,
+        )
+
     pre_review_coverage = None
     if (
         args.pre_review_coverage_shadow
@@ -852,12 +1039,23 @@ def main() -> None:
         require_abstract_for_partial_match=policy.require_abstract_for_partial_match,
         min_reaction_domain_for_conflict=policy.min_reaction_domain_for_conflict,
         min_catalyst_scope_for_conflict=policy.min_catalyst_scope_for_conflict,
+        require_grounded_evidence_spans=(
+            args.evidence_grounded_review
+            or args.independent_evidence_review
+        ),
         domain_profile=domain_profile,
+    )
+    claim_review_backend = (
+        IndependentEvidenceGroundedClaimReviewBackend(
+            backend
+        )
+        if args.independent_evidence_review
+        else backend
     )
     assessor = ExternalNoveltyAssessor(
         decomposer=decomposer,
         ranker=ranker,
-        review_backend=backend,
+        review_backend=claim_review_backend,
         policy=policy,
         compiler=compiler,
     )
@@ -1057,6 +1255,31 @@ def main() -> None:
 
     print("Saved query plan:", prefix.with_suffix(".claims_queries.json"))
     print("Saved prior art:", prefix.with_suffix(".prior_art.json"))
+    if metadata_resolution_audit is not None:
+        print(
+            "Pre-review metadata resolution:",
+            "targets=",
+            metadata_resolution_audit.get(
+                "selector",
+                {},
+            ).get("selected_work_count", 0),
+            "recovered=",
+            metadata_resolution_audit.get(
+                "target_abstract_recovered_count",
+                0,
+            ),
+        )
+        print(
+            "Saved metadata-resolution audit:",
+            metadata_resolution_path,
+        )
+        print(
+            "Saved resolved prior art:",
+            resolved_prior_art_path,
+        )
+        print("SCIENTIFIC_QUERY_PLAN_CHANGED=False")
+        print("RESOLUTION_SELECTION_AUTHORITY=False")
+        print("PRODUCTION_SELECTION_CHANGED=False")
     print(
         "Diagnostic queries:",
         len(

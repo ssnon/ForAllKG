@@ -110,6 +110,13 @@ Dimension definitions:
 
 Deterministic diagnostics are review hints, not truth labels. Independently assess the semantic dimension and explain your rationale using exact supplied hypothesis IDs and statement IDs when relevant.
 
+Attribution semantics for hypothesis_ids:
+- hypothesis_ids are the hypotheses TO WHICH THIS ROW'S VERDICT APPLIES, not merely all hypotheses that were reviewed.
+- For warning or fail on a hypothesis-localizable dimension, include ONLY the hypothesis IDs actually implicated by that warning/failure.
+- If two hypotheses pass and one fails, the fail row MUST list only the failing hypothesis. Do not stamp a portfolio-level fail onto unaffected hypotheses.
+- Use an empty hypothesis_ids list for a warning/fail only when the issue is genuinely portfolio-level, not because attribution is uncertain.
+- The rationale must be consistent with hypothesis_ids. If the rationale singles out one hypothesis as problematic, list that hypothesis only.
+
 Return only the requested structured semantic review draft."""
 
 
@@ -195,6 +202,10 @@ class HypothesisSemanticPromptAssembler:
             "evidence statement is directly relevant to the rationale.\n"
             "- hypothesis_ids may be empty for portfolio-level dimensions or abstention.\n"
             "- statement_ids may be empty when no specific context evidence statement is implicated.\n"
+            "- For warning/fail rows, hypothesis_ids are attribution targets, not a list "
+            "of every hypothesis reviewed. Include only hypotheses actually implicated.\n"
+            "- For hypothesis-localizable warning/fail rows, do not leave hypothesis_ids "
+            "empty; empty means portfolio-level downstream attribution.\n"
             "- Do not rewrite, repair, rank, or replace hypotheses.\n"
             "- Do not use external literature knowledge or assess novelty.\n"
         )

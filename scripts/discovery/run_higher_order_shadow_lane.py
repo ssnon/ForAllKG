@@ -95,8 +95,9 @@ def _candidate_modifier_components_from_canonical_root(
     domain_profile: str,
 ) -> tuple[tuple[object, ...], dict[str, Any]]:
     # Reconstruct reserve-quality candidate-unit components from the same
-    # frozen pool used by the canonical DiscoveryBundle. Replay is accepted
-    # only when its bundle SHA matches the canonical bundle exactly.
+    # frozen pool used by the canonical DiscoveryBundle. _replay_and_capture
+    # fail-closes on authoritative payload drift; raw SHA drift caused only
+    # by diagnostic warning metadata remains observable but non-authoritative.
     preferred_bundle = (
         canonical_root
         / ".a17f.generic_bundle.replay.json"
@@ -287,6 +288,11 @@ def _candidate_modifier_components_from_canonical_root(
         "replay_sha_matches_canonical": (
             replay.bundle_sha256
             == expected_bundle.bundle_sha256
+        ),
+        "replay_authoritative_payload_matches_canonical": True,
+        "replay_authority_basis": (
+            "all_discovery_bundle_fields_except_"
+            "bundle_sha256_and_warnings_exact"
         ),
         "stage7_5_replay_candidate_threshold": (
             replay_threshold

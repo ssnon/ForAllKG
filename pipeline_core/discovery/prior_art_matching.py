@@ -6,6 +6,9 @@ from typing import Any, Protocol
 import numpy as np
 
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
+from pipeline_core.discovery.evidence_span_grounding import (
+    ground_evidence_spans,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ClaimPriorArtCandidateSet,
     ClaimPriorArtReview,
@@ -232,6 +235,7 @@ class ClaimPriorArtCompiler:
         require_abstract_for_partial_match: bool = True,
         min_reaction_domain_for_conflict: float = 0.75,
         min_catalyst_scope_for_conflict: float = 0.75,
+        require_grounded_evidence_spans: bool = False,
         domain_profile: ScientificDomainProfile,
     ) -> None:
         self.min_match_confidence = float(min_match_confidence)
@@ -241,6 +245,9 @@ class ClaimPriorArtCompiler:
         self.require_abstract_for_partial = bool(require_abstract_for_partial_match)
         self.min_reaction_for_conflict = float(min_reaction_domain_for_conflict)
         self.min_scope_for_conflict = float(min_catalyst_scope_for_conflict)
+        self.require_grounded_evidence_spans = bool(
+            require_grounded_evidence_spans
+        )
 
     def compile(
         self,
@@ -262,6 +269,7 @@ class ClaimPriorArtCompiler:
 
         matches: list[PriorArtMatch] = []
         reason_codes: list[str] = []
+        grounding_failures: list[str] = []
         if unknown:
             # Never fuzzy-match an unknown model-returned ID to a real paper.
             # The invalid match is unusable evidence, but it should not abort
@@ -276,7 +284,50 @@ class ClaimPriorArtCompiler:
             work = works[row.work_id]
             ranked = ranking[row.work_id]
             relationship: PriorArtRelationship = row.relationship
+            evidence_spans = [
+                str(span)
+                for span in row.evidence_spans
+                if str(span)
+            ]
             document = "\n".join(x for x in [work.title, work.abstract or ""] if x)
+            substantive_relationships = {
+                "DIRECT_PRIOR_ART",
+                "PARTIAL_PRIOR_ART",
+                "COMPONENT_ONLY",
+                "LOWER_ORDER_RELATION_PRIOR_ART",
+                "DIRECTIONAL_COUNTEREVIDENCE",
+                "CONTEXTUAL_CONFLICT",
+                "CONFLICTING_PRIOR_ART",
+            }
+            if (
+                self.require_grounded_evidence_spans
+                and relationship in substantive_relationships
+            ):
+                grounding = ground_evidence_spans(
+                    evidence_spans,
+                    work.abstract or "",
+                )
+                evidence_spans = list(
+                    grounding.grounded_spans
+                )
+                if grounding.invalid_spans:
+                    reason_codes.append(
+                        "invalid_evidence_span_dropped"
+                    )
+                if "NORMALIZED" in grounding.match_kinds:
+                    reason_codes.append(
+                        "normalized_evidence_span_match"
+                    )
+                if "TRUNCATED_PREFIX" in grounding.match_kinds:
+                    reason_codes.append(
+                        "truncated_prompt_evidence_span_match"
+                    )
+                if not evidence_spans:
+                    grounding_failures.append(work.work_id)
+                    relationship = "INSUFFICIENT_METADATA"
+                    reason_codes.append(
+                        "invalid_or_missing_evidence_span"
+                    )
             compatible, reaction, scope, scope_reasons = (
                 self.domain_profile.novelty.strong_scope_compatibility(
                     claim.text,
@@ -311,6 +362,7 @@ class ClaimPriorArtCompiler:
                     relationship=relationship,
                     confidence=row.confidence,
                     rationale=row.rationale,
+                    evidence_spans=evidence_spans,
                     relevance_score=ranked.relevance_score,
                     semantic_similarity=ranked.semantic_similarity,
                     lexical_coverage=ranked.lexical_coverage,
@@ -418,6 +470,11 @@ class ClaimPriorArtCompiler:
         elif title_only:
             status = "TITLE_ONLY_NEIGHBORS"
             reason_codes.append("title_only_neighboring_prior_art")
+        elif grounding_failures:
+            status = "INSUFFICIENT_METADATA"
+            reason_codes.append(
+                "invalid_or_missing_evidence_span_prevents_relation_inference"
+            )
         elif unknown:
             # Because the reviewer produced unusable IDs, absence of a valid
             # match cannot be interpreted as "no direct prior art found".

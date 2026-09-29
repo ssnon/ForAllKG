@@ -375,6 +375,35 @@ Do not infer detailed results from a generic title alone. For CONFLICTING_PRIOR_
 Return work IDs exactly as supplied. You may omit unrelated records. Your interpretation must describe only what the supplied bounded evidence shows."""
 
 
+_EVIDENCE_GROUNDED_REVIEW_APPENDIX = """
+
+EVIDENCE-GROUNDED REVIEW MODE
+For every returned match whose relationship is one of:
+DIRECT_PRIOR_ART, PARTIAL_PRIOR_ART, COMPONENT_ONLY,
+LOWER_ORDER_RELATION_PRIOR_ART, DIRECTIONAL_COUNTEREVIDENCE,
+CONTEXTUAL_CONFLICT, or CONFLICTING_PRIOR_ART,
+populate evidence_spans with 1-3 exact contiguous spans copied verbatim
+from that record's supplied ABSTRACT.
+
+The spans must directly justify the selected relationship.
+Do not paraphrase, normalize, concatenate non-contiguous text, or quote
+text that appears only in the title.
+
+For PARTIAL_PRIOR_ART specifically, at least one evidence span must show
+the substantial relation overlap that preserves the claim's relation nucleus.
+For LOWER_ORDER_RELATION_PRIOR_ART, at least one span must explicitly show
+the lower-order multivariable relation.
+For COMPONENT_ONLY, the span should show the relevant ingredient/component
+evidence while making no unsupported relational inference.
+For DIRECTIONAL_COUNTEREVIDENCE, the span must show the boundary/opposing/
+weak/regime-dependent evidence, not merely mention the variables.
+
+If the abstract cannot supply an exact span supporting the desired
+substantive relationship, use INSUFFICIENT_METADATA or omit the match
+rather than returning an ungrounded strong label.
+"""
+
+
 def _sha256(system: str, user: str) -> str:
     raw = (system + "\n---\n" + user).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
@@ -396,6 +425,7 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         timeout: float | None = 180.0,
         capture_prompts: bool = False,
         max_abstract_chars: int = 1400,
+        evidence_grounded_review: bool = False,
         telemetry_path: str | os.PathLike[str] | None = None,
         telemetry_context: dict[str, Any] | None = None,
     ) -> None:
@@ -409,6 +439,7 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         self.timeout = timeout
         self.capture_prompts = bool(capture_prompts)
         self.max_abstract_chars = int(max_abstract_chars)
+        self.evidence_grounded_review = bool(evidence_grounded_review)
         self.prompt_records: list[ExternalNoveltyPromptRecord] = []
         self.telemetry_path = telemetry_path
         self.telemetry_context = dict(telemetry_context or {})
@@ -575,13 +606,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ]
         )
         user = "\n".join(lines)
-        self._record(f"review_{claim.claim_id}", _REVIEW_SYSTEM, user)
+        review_system = (
+            _REVIEW_SYSTEM + _EVIDENCE_GROUNDED_REVIEW_APPENDIX
+            if self.evidence_grounded_review
+            else _REVIEW_SYSTEM
+        )
+        self._record(f"review_{claim.claim_id}", review_system, user)
         result, _event = run_instructor_structured_call(
             self._get_client().chat.completions,
             model=self.model_name,
             response_model=ClaimPriorArtReviewDraft,
             messages=[
-                {"role": "system", "content": _REVIEW_SYSTEM},
+                {"role": "system", "content": review_system},
                 {"role": "user", "content": user},
             ],
             temperature=self.temperature,
@@ -598,7 +634,7 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         if not isinstance(result, ClaimPriorArtReviewDraft):
             result = ClaimPriorArtReviewDraft.model_validate(result)
         record_prior_art_review_call(
-            system_prompt=_REVIEW_SYSTEM,
+            system_prompt=review_system,
             user_prompt=user,
             response_schema=ClaimPriorArtReviewDraft,
             result=result,

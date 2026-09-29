@@ -164,3 +164,34 @@ def test_topology_has_no_interaction_or_novelty_authority():
     assert row.novelty_authority_created is False
     assert row.positive_premise_authority_created is False
     assert row.production_selection_authority is False
+
+def test_topology_identity_is_independent_of_audit_artifact_path():
+    b = _backbone()
+    m = _modifier()
+
+    left = compose_direct_higher_order_topologies(
+        backbones=[b],
+        modifier_components=[m],
+        eligible_modifier_records=[_record(m)],
+        audit_source="/tmp/run_a/modifier_eligibility_audit.json",
+    )[0]
+
+    right = compose_direct_higher_order_topologies(
+        backbones=[b],
+        modifier_components=[m],
+        eligible_modifier_records=[_record(m)],
+        audit_source="/tmp/run_b/modifier_eligibility_audit.json",
+    )[0]
+
+    assert left.modifier_eligibility.witness_id == right.modifier_eligibility.witness_id
+    assert left.topology_id == right.topology_id
+
+    assert left.modifier_eligibility.provenance_ids != right.modifier_eligibility.provenance_ids
+    assert any(
+        "/tmp/run_a/modifier_eligibility_audit.json" in value
+        for value in left.modifier_eligibility.provenance_ids
+    )
+    assert any(
+        "/tmp/run_b/modifier_eligibility_audit.json" in value
+        for value in right.modifier_eligibility.provenance_ids
+    )

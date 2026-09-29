@@ -3320,6 +3320,330 @@ def run_pipeline(args: argparse.Namespace) -> int:
         }
         runner._save_manifest()
 
+    if args.direct_higher_order_shadow:
+        if not args.direct_relationpattern_task_shadow:
+            raise RuntimeError(
+                "--direct-higher-order-shadow requires "
+                "--direct-relationpattern-task-shadow."
+            )
+        if not args.model:
+            raise RuntimeError(
+                "--direct-higher-order-shadow requires --model."
+            )
+        if int(
+            args.direct_higher_order_max_contexts
+        ) < 1:
+            raise RuntimeError(
+                "--direct-higher-order-max-contexts must be >= 1"
+            )
+
+        direct_higher_order_dir = (
+            run
+            / "direct_higher_order_shadow"
+        )
+        direct_higher_order_report = (
+            direct_higher_order_dir
+            / "generation_report.json"
+        )
+
+        runner.run_stage(
+            (
+                "[7.53/13] Direct higher-order "
+                "continuation shadow"
+            ),
+            (
+                "scripts.discovery."
+                "run_direct_higher_order_shadow_lane"
+            ),
+            [
+                "--context",
+                str(context),
+                "--direct-relationpattern-report",
+                str(
+                    direct_relationpattern_task_shadow
+                ),
+                "--canonical-root",
+                str(run),
+                "--domain-profile",
+                domain_profile.profile_id,
+                "--output-dir",
+                str(
+                    direct_higher_order_dir
+                ),
+                "--max-contexts",
+                str(
+                    args.direct_higher_order_max_contexts
+                ),
+                "--model",
+                str(args.model),
+                *(
+                    [
+                        "--base-url",
+                        str(args.base_url),
+                    ]
+                    if args.base_url
+                    else []
+                ),
+                "--api-key-env",
+                str(args.api_key_env),
+                "--parse-retries",
+                str(
+                    args.hypothesis_parse_retries
+                ),
+                "--max-repairs",
+                "1",
+            ],
+            expected=[
+                direct_higher_order_report
+            ],
+        )
+
+        direct_ho_payload = _load_json(
+            direct_higher_order_report
+        )
+
+        runner.manifest[
+            "direct_higher_order_shadow"
+        ] = {
+            "enabled": True,
+            "report":
+                str(
+                    direct_higher_order_report
+                ),
+            "status":
+                direct_ho_payload.get(
+                    "status"
+                ),
+            "direct_backbone_count":
+                direct_ho_payload.get(
+                    "direct_backbone_count",
+                    0,
+                ),
+            "candidate_modifier_component_count":
+                direct_ho_payload.get(
+                    "candidate_modifier_component_count",
+                    0,
+                ),
+            "eligible_modifier_count":
+                direct_ho_payload.get(
+                    "eligible_modifier_count",
+                    0,
+                ),
+            "topology_count":
+                direct_ho_payload.get(
+                    "topology_count",
+                    0,
+                ),
+            "selected_context_count":
+                direct_ho_payload.get(
+                    "selected_context_count",
+                    0,
+                ),
+            "proposed_count":
+                direct_ho_payload.get(
+                    "proposed_count",
+                    0,
+                ),
+            "shadow_only":
+                True,
+            "production_selection_changed":
+                False,
+            "task_conditioned_axis_plan_changed":
+                False,
+            "dual_context_changed_by_shadow":
+                False,
+            "stage8_input_changed_by_shadow":
+                False,
+            "external_novelty_review_performed":
+                False,
+            "conceptual_knownness_performed":
+                False,
+            "novelty_authority_created":
+                False,
+            "positive_premise_authority_created":
+                False,
+            "canonical_graph_mutated":
+                False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "direct_higher_order_shadow"
+        ] = {
+            "enabled": False,
+            "production_selection_changed":
+                False,
+            "task_conditioned_axis_plan_changed":
+                False,
+            "dual_context_changed_by_shadow":
+                False,
+            "stage8_input_changed_by_shadow":
+                False,
+        }
+        runner._save_manifest()
+
+    if args.direct_higher_order_downstream_shadow:
+        if not args.direct_higher_order_shadow:
+            raise RuntimeError(
+                "--direct-higher-order-downstream-shadow requires "
+                "--direct-higher-order-shadow."
+            )
+
+        direct_higher_order_dir = (
+            run
+            / "direct_higher_order_shadow"
+        )
+        direct_higher_order_report = (
+            direct_higher_order_dir
+            / "generation_report.json"
+        )
+        direct_higher_order_contexts = (
+            direct_higher_order_dir
+            / "synthesis_contexts.json"
+        )
+        direct_higher_order_downstream_dir = (
+            direct_higher_order_dir
+            / "downstream"
+        )
+        direct_higher_order_downstream_report = (
+            direct_higher_order_downstream_dir
+            / "downstream_report.json"
+        )
+
+        runner.run_stage(
+            (
+                "[7.54/13] Direct higher-order "
+                "semantic/novelty downstream shadow"
+            ),
+            (
+                "scripts.discovery."
+                "run_direct_higher_order_downstream_shadow"
+            ),
+            [
+                "--generation-report",
+                str(
+                    direct_higher_order_report
+                ),
+                "--source-context",
+                str(context),
+                "--synthesis-context-report",
+                str(
+                    direct_higher_order_contexts
+                ),
+                "--output-dir",
+                str(
+                    direct_higher_order_downstream_dir
+                ),
+                "--domain-profile",
+                domain_profile.profile_id,
+                "--semantic-model",
+                str(
+                    args.critic_model
+                    or args.model
+                ),
+                "--novelty-model",
+                str(
+                    args.critic_model
+                    or args.model
+                ),
+                *(
+                    [
+                        "--base-url",
+                        str(args.base_url),
+                    ]
+                    if args.base_url
+                    else []
+                ),
+                "--api-key-env",
+                str(args.api_key_env),
+                "--semantic-parse-retries",
+                "1",
+                "--provider-plan",
+                str(
+                    literature_provider_plan_path
+                ),
+                "--results-per-query",
+                str(
+                    args.results_per_query
+                ),
+            ],
+            expected=[
+                direct_higher_order_downstream_report
+            ],
+        )
+
+        direct_ho_downstream_payload = _load_json(
+            direct_higher_order_downstream_report
+        )
+
+        runner.manifest[
+            "direct_higher_order_downstream_shadow"
+        ] = {
+            "enabled":
+                True,
+            "report":
+                str(
+                    direct_higher_order_downstream_report
+                ),
+            "bundle":
+                direct_ho_downstream_payload.get(
+                    "bundle"
+                ),
+            "bundle_id":
+                direct_ho_downstream_payload.get(
+                    "bundle_id"
+                ),
+            "semantic_attempted_count":
+                direct_ho_downstream_payload.get(
+                    "semantic_attempted_count",
+                    0,
+                ),
+            "semantic_accepted_count":
+                direct_ho_downstream_payload.get(
+                    "semantic_accepted_count",
+                    0,
+                ),
+            "external_novelty_completed_count":
+                direct_ho_downstream_payload.get(
+                    "external_novelty_completed_count",
+                    0,
+                ),
+            "structural_view_count":
+                direct_ho_downstream_payload.get(
+                    "structural_view_count",
+                    0,
+                ),
+            "conceptual_knownness_integrated":
+                False,
+            "shadow_only":
+                True,
+            "candidate_survival_authority":
+                False,
+            "semantic_rejection_authority":
+                False,
+            "novelty_authority_created":
+                False,
+            "positive_premise_authority_created":
+                False,
+            "production_selection_changed":
+                False,
+            "stage8_input_changed_by_shadow":
+                False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "direct_higher_order_downstream_shadow"
+        ] = {
+            "enabled":
+                False,
+            "production_selection_changed":
+                False,
+            "stage8_input_changed_by_shadow":
+                False,
+        }
+        runner._save_manifest()
+
     if args.higher_order_shadow:
         if args.accepted_patterns is None:
             raise RuntimeError(
@@ -4385,6 +4709,38 @@ def run_pipeline(args: argparse.Namespace) -> int:
     refinement_prefix = run / "novelty_refinement_a6"
     refined_portfolio = run / "novelty_refinement_a6.portfolio.json"
     refined_report = run / "novelty_refinement_a6.report.json"
+    novelty_depth_edge_coverage = (
+        run
+        / "novelty_refinement_a6.novelty_depth_edge_coverage.json"
+    )
+    hypothesis_edge_graph_v2 = (
+        run
+        / "novelty_refinement_a6.hypothesis_edge_graph_v2.json"
+    )
+    knownness_depth_fusion = (
+        run
+        / "novelty_refinement_a6.knownness_depth_fusion.json"
+    )
+    actionable_refinement_plan = (
+        run
+        / "novelty_refinement_a6.actionable_refinement_plan.json"
+    )
+    controlled_routing_plan = (
+        run
+        / "novelty_refinement_a6.controlled_routing.plan.json"
+    )
+    controlled_routing_execution = (
+        run
+        / "novelty_refinement_a6.controlled_routing.execution.json"
+    )
+    negative_space_planner_plan = (
+        run
+        / "novelty_refinement_a6.negative_space_planner.plan.json"
+    )
+    negative_space_planner_execution = (
+        run
+        / "novelty_refinement_a6.negative_space_planner.execution.json"
+    )
     runner.run_stage(
         "[11/13] Targeted novelty refinement alpha6",
         "scripts.discovery.run_novelty_refinement",
@@ -4426,10 +4782,408 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--api-key-env", args.api_key_env,
             "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),
+            *(
+                [
+                    "--planner-controlled-discovery-routing-experimental"
+                ]
+                if (
+                    args
+                    .planner_controlled_discovery_routing_experimental
+                )
+                else []
+            ),
             "--output-prefix", str(refinement_prefix),
         ],
-        expected=[refined_portfolio, refined_report],
+        expected=[
+            refined_portfolio,
+            refined_report,
+            novelty_depth_edge_coverage,
+            hypothesis_edge_graph_v2,
+            knownness_depth_fusion,
+            actionable_refinement_plan,
+            controlled_routing_plan,
+            controlled_routing_execution,
+            negative_space_planner_plan,
+            negative_space_planner_execution,
+        ],
     )
+
+    novelty_depth_payload = _load_json(
+        novelty_depth_edge_coverage
+    )
+    runner.manifest[
+        "novelty_depth_causal_edge_coverage"
+    ] = {
+        "status": "complete",
+        "artifact": str(novelty_depth_edge_coverage),
+        "hypothesis_count":
+            novelty_depth_payload.get("hypothesis_count", 0),
+        "novelty_depth_counts":
+            novelty_depth_payload.get("novelty_depth_counts", {}),
+        "planner_advisory_counts":
+            novelty_depth_payload.get("planner_advisory_counts", {}),
+        "weak_bridge_hypothesis_count":
+            novelty_depth_payload.get(
+                "weak_bridge_hypothesis_count",
+                0,
+            ),
+        "higher_order_gap_hypothesis_count":
+            novelty_depth_payload.get(
+                "higher_order_gap_hypothesis_count",
+                0,
+            ),
+        "shallow_local_extension_count":
+            novelty_depth_payload.get(
+                "shallow_local_extension_count",
+                0,
+            ),
+        "foundational_knownness_checked": False,
+        "conceptual_l1_l2_l3_integrated": False,
+        "novelty_authority_created": False,
+        "production_selection_changed": False,
+    }
+    runner._save_manifest()
+
+    edge_graph_v2_payload = _load_json(
+        hypothesis_edge_graph_v2
+    )
+    runner.manifest[
+        "hypothesis_causal_edge_graph_v2"
+    ] = {
+        "status": "complete",
+        "artifact": str(hypothesis_edge_graph_v2),
+        "hypothesis_count":
+            edge_graph_v2_payload.get(
+                "hypothesis_count",
+                0,
+            ),
+        "novelty_depth_counts":
+            edge_graph_v2_payload.get(
+                "novelty_depth_counts",
+                {},
+            ),
+        "planner_advisory_counts":
+            edge_graph_v2_payload.get(
+                "planner_advisory_counts",
+                {},
+            ),
+        "cross_claim_backbone_hypothesis_count":
+            edge_graph_v2_payload.get(
+                "cross_claim_backbone_hypothesis_count",
+                0,
+            ),
+        "higher_order_gap_hypothesis_count":
+            edge_graph_v2_payload.get(
+                "higher_order_gap_hypothesis_count",
+                0,
+            ),
+        "shallow_local_extension_count":
+            edge_graph_v2_payload.get(
+                "shallow_local_extension_count",
+                0,
+            ),
+        "weak_bridge_hypothesis_count":
+            edge_graph_v2_payload.get(
+                "weak_bridge_hypothesis_count",
+                0,
+            ),
+        "conceptual_knownness_signal_count":
+            edge_graph_v2_payload.get(
+                "conceptual_knownness_signal_count",
+                0,
+            ),
+        "conceptual_knownness_changed_depth_count":
+            0,
+        "foundational_knownness_checked":
+            False,
+        "planner_input":
+            True,
+        "novelty_authority_created":
+            False,
+        "production_selection_changed":
+            False,
+    }
+    runner._save_manifest()
+
+    fusion_payload = _load_json(
+        knownness_depth_fusion
+    )
+    action_payload = _load_json(
+        actionable_refinement_plan
+    )
+    runner.manifest[
+        "knownness_depth_actionable_refinement"
+    ] = {
+        "status": "complete",
+        "fusion_artifact":
+            str(knownness_depth_fusion),
+        "action_plan_artifact":
+            str(actionable_refinement_plan),
+        "fusion_state_counts":
+            fusion_payload.get(
+                "fusion_state_counts",
+                {},
+            ),
+        "conceptual_signal_counts":
+            fusion_payload.get(
+                "conceptual_signal_counts",
+                {},
+            ),
+        "action_counts":
+            action_payload.get(
+                "action_counts",
+                {},
+            ),
+        "operator_candidate_counts":
+            action_payload.get(
+                "operator_candidate_counts",
+                {},
+            ),
+        "preferred_operator_counts":
+            action_payload.get(
+                "preferred_operator_counts",
+                {},
+            ),
+        "alpha6_runtime_behavior_changed":
+            False,
+        "novelty_authority_created":
+            False,
+        "production_selection_changed":
+            False,
+    }
+    runner._save_manifest()
+
+    controlled_routing_payload = _load_json(
+        controlled_routing_plan
+    )
+    controlled_routing_execution_payload = _load_json(
+        controlled_routing_execution
+    )
+    runner.manifest[
+        "planner_controlled_discovery_routing"
+    ] = {
+        "enabled":
+            bool(
+                args
+                .planner_controlled_discovery_routing_experimental
+            ),
+        "authority_scope":
+            "ALPHA6_EXPERIMENTAL_RUN_ONLY",
+        "plan_artifact":
+            str(controlled_routing_plan),
+        "execution_artifact":
+            str(controlled_routing_execution),
+        "route_counts":
+            controlled_routing_payload.get(
+                "route_counts",
+                {},
+            ),
+        "execution_match_count":
+            controlled_routing_execution_payload.get(
+                "match_count",
+                0,
+            ),
+        "execution_diverged_count":
+            controlled_routing_execution_payload.get(
+                "diverged_count",
+                0,
+            ),
+        "experimental_runtime_selection_changed_possible":
+            bool(
+                args
+                .planner_controlled_discovery_routing_experimental
+            ),
+        "production_default_changed":
+            False,
+        "production_selection_authority":
+            False,
+    }
+    runner._save_manifest()
+
+    planner_payload = _load_json(
+        negative_space_planner_plan
+    )
+    planner_execution_payload = _load_json(
+        negative_space_planner_execution
+    )
+    runner.manifest[
+        "negative_space_discovery_planner"
+    ] = {
+        "status": "complete",
+        "plan_artifact":
+            str(negative_space_planner_plan),
+        "execution_artifact":
+            str(negative_space_planner_execution),
+        "target_count":
+            planner_payload.get(
+                "target_count",
+                0,
+            ),
+        "retrieve_first_count":
+            planner_payload.get(
+                "retrieve_first_count",
+                0,
+            ),
+        "evidence_reaxis_available_count":
+            planner_payload.get(
+                "evidence_reaxis_available_count",
+                0,
+            ),
+        "operator_sharpen_available_count":
+            planner_payload.get(
+                "operator_sharpen_available_count",
+                0,
+            ),
+        "novelty_depth_profile_consumed":
+            planner_payload.get(
+                "novelty_depth_profile_consumed",
+                False,
+            ),
+        "novelty_depth_advisory_counts":
+            planner_payload.get(
+                "novelty_depth_advisory_counts",
+                {},
+            ),
+        "actionable_refinement_plan_consumed":
+            planner_payload.get(
+                "actionable_refinement_plan_consumed",
+                False,
+            ),
+        "actionable_refinement_action_counts":
+            planner_payload.get(
+                "actionable_refinement_action_counts",
+                {},
+            ),
+        "actionable_operator_target_count":
+            planner_payload.get(
+                "actionable_operator_target_count",
+                0,
+            ),
+        "execution_match_count":
+            planner_execution_payload.get(
+                "match_count",
+                0,
+            ),
+        "execution_diverged_count":
+            planner_execution_payload.get(
+                "diverged_count",
+                0,
+            ),
+        "planner_changed_runtime_behavior":
+            False,
+        "production_selection_changed":
+            False,
+    }
+    runner._save_manifest()
+
+    novelty_guided_negative_space = (
+        run / "novelty_guided_discovery.negative_space.json"
+    )
+    novelty_guided_closure = (
+        run / "novelty_guided_discovery.closure.json"
+    )
+
+    if args.novelty_guided_discovery_closure_shadow:
+        novelty_guided_gap_plan = Path(
+            str(refinement_prefix) + ".gap_plan.json"
+        )
+
+        runner.run_stage(
+            "[11ng/13] Novelty-guided discovery closure shadow",
+            "scripts.discovery.run_novelty_guided_discovery_closure",
+            [
+                "--context",
+                str(context),
+                "--portfolio",
+                str(axis_portfolio),
+                "--gap-plan",
+                str(novelty_guided_gap_plan),
+                "--evidence-diversity",
+                str(axis_evidence_diversity),
+                "--refinement-report",
+                str(refined_report),
+                "--plan-output",
+                str(novelty_guided_negative_space),
+                "--output",
+                str(novelty_guided_closure),
+            ],
+            expected=[
+                novelty_guided_negative_space,
+                novelty_guided_closure,
+            ],
+        )
+
+        ng_payload = _load_json(
+            novelty_guided_closure
+        )
+        ng_plan_payload = _load_json(
+            novelty_guided_negative_space
+        )
+
+        runner.manifest[
+            "novelty_guided_discovery_closure"
+        ] = {
+            "enabled": True,
+            "status": "complete",
+            "negative_space_plan":
+                str(novelty_guided_negative_space),
+            "closure_report":
+                str(novelty_guided_closure),
+            "target_count":
+                ng_plan_payload.get("target_count", 0),
+            "regeneration_eligible_count":
+                ng_plan_payload.get(
+                    "regeneration_eligible_count", 0
+                ),
+            "operator_target_count":
+                ng_plan_payload.get(
+                    "operator_target_count", 0
+                ),
+            "operator_opportunity_count":
+                ng_plan_payload.get(
+                    "operator_opportunity_count", 0
+                ),
+            "evidence_alternative_capacity_target_count":
+                ng_plan_payload.get(
+                    "evidence_alternative_capacity_target_count",
+                    0,
+                ),
+            "regeneration_generated_count":
+                ng_payload.get(
+                    "regeneration_generated_count", 0
+                ),
+            "accepted_regeneration_count":
+                ng_payload.get(
+                    "accepted_regeneration_count", 0
+                ),
+            "fresh_external_verification_count":
+                ng_payload.get(
+                    "fresh_external_verification_count", 0
+                ),
+            "closed_loop_observed_count":
+                ng_payload.get(
+                    "closed_loop_observed_count", 0
+                ),
+            "external_prior_art_as_positive_premise":
+                False,
+            "generation_authority_created":
+                False,
+            "novelty_authority_created":
+                False,
+            "candidate_survival_authority_created":
+                False,
+            "production_selection_changed":
+                False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "novelty_guided_discovery_closure"
+        ] = {
+            "enabled": False,
+            "production_selection_changed": False,
+        }
+        runner._save_manifest()
 
     if args.nonobviousness_post_generation_enforce:
         post_n10_portfolio = (
@@ -4906,6 +5660,97 @@ def run_pipeline(args: argparse.Namespace) -> int:
             ),
         )
 
+    research_value_shadow = (
+        run
+        / "research_value.shadow.json"
+    )
+
+    if args.research_value_shadow:
+        if feasibility_adapter is not None:
+            runner.run_stage(
+                "[13rv/13] Research value shadow",
+                "scripts.discovery.run_research_value_shadow",
+                [
+                    "--portfolio",
+                    str(refined_portfolio),
+                    "--feasibility-dir",
+                    str(feasibility_dir),
+                    "--output",
+                    str(research_value_shadow),
+                ],
+                expected=[
+                    research_value_shadow
+                ],
+            )
+
+            rv_payload = _load_json(
+                research_value_shadow
+            )
+
+            runner.manifest[
+                "research_value_shadow"
+            ] = {
+                "enabled":
+                    True,
+                "status":
+                    "complete",
+                "artifact":
+                    str(
+                        research_value_shadow
+                    ),
+                "hypothesis_count":
+                    rv_payload.get(
+                        "hypothesis_count",
+                        0,
+                    ),
+                "assessed_count":
+                    rv_payload.get(
+                        "assessed_count",
+                        0,
+                    ),
+                "novelty_signal_consumed":
+                    False,
+                "research_value_selection_authority":
+                    False,
+                "production_selection_changed":
+                    False,
+            }
+            runner._save_manifest()
+        else:
+            runner.skip_stage(
+                "[13rv/13] Research value shadow",
+                reason=(
+                    "Research-value shadow requires the domain feasibility "
+                    "capability because experimental resolvability/resource "
+                    "burden must not be guessed."
+                ),
+            )
+            runner.manifest[
+                "research_value_shadow"
+            ] = {
+                "enabled":
+                    True,
+                "status":
+                    "not_supported_without_feasibility",
+                "novelty_signal_consumed":
+                    False,
+                "research_value_selection_authority":
+                    False,
+                "production_selection_changed":
+                    False,
+            }
+            runner._save_manifest()
+    else:
+        runner.manifest[
+            "research_value_shadow"
+        ] = {
+            "enabled":
+                False,
+            "production_selection_changed":
+                False,
+        }
+        runner._save_manifest()
+
     viewer_args = [
         "--run-dir", str(run),
         "--title", args.title,
@@ -5204,6 +6049,65 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Frozen embedding-index top-k for the direct accepted "
             "RelationPattern shadow lane. Default: 20."
+        ),
+    )
+    parser.add_argument(
+        "--direct-higher-order-shadow",
+        action="store_true",
+        help=(
+            "Continue the Stage-7.52 direct accepted-RelationPattern shadow "
+            "through direct-task backbone materialization, candidate-modifier "
+            "screening, direct higher-order topology composition, and canonical "
+            "shadow hypothesis generation. Requires "
+            "--direct-relationpattern-task-shadow. Production Stage-8 inputs "
+            "and selection remain unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--direct-higher-order-max-contexts",
+        type=int,
+        default=4,
+        help=(
+            "Maximum deterministic direct higher-order synthesis contexts "
+            "evaluated by the shadow continuation lane. Default: 4."
+        ),
+    )
+    parser.add_argument(
+        "--planner-controlled-discovery-routing-experimental",
+        action="store_true",
+        help=(
+            "Opt-in experimental Alpha6 routing controlled by the "
+            "Actionable Refinement Plan. This may change the portfolio "
+            "inside this run but does not change the production default."
+        ),
+    )
+    parser.add_argument(
+        "--novelty-guided-discovery-closure-shadow",
+        action="store_true",
+        help=(
+            "Materialize a diagnostic NegativeSpace -> evidence/operator "
+            "allocation -> Alpha6 regeneration -> fresh-verification closure "
+            "after Stage 11. This does not change candidate survival or "
+            "production selection."
+        ),
+    )
+    parser.add_argument(
+        "--research-value-shadow",
+        action="store_true",
+        help=(
+            "Run diagnostic-only post-feasibility research-value assessment. "
+            "Uses validation and experimental artifacts but intentionally "
+            "does not consume novelty signals or change production selection."
+        ),
+    )
+    parser.add_argument(
+        "--direct-higher-order-downstream-shadow",
+        action="store_true",
+        help=(
+            "Continue direct-HO shadow generation through non-blocking generic "
+            "semantic review, existing external novelty, and stable structural "
+            "BASE/MODIFIER/FULL views. Requires --direct-higher-order-shadow. "
+            "No candidate-survival or production-selection authority is created."
         ),
     )
     parser.add_argument(
