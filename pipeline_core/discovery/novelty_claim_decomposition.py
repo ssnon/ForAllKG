@@ -16,6 +16,9 @@ from pipeline_core.discovery.hypothesis_contracts import HypothesisCard, Hypothe
 from pipeline_core.discovery.novelty_specification_source_trace import (
     trace_specification_sources,
 )
+from pipeline_core.discovery.source_bound_topology_completion import (
+    complete_explicit_source_bound_topology_shadow,
+)
 from pipeline_core.discovery.atomic_scientific_source_provenance import (
     AtomicScientificSourceBindingRecord,
     build_atomic_scientific_source_binding_record,
@@ -3357,6 +3360,7 @@ class NoveltyClaimDecomposer:
         max_claims_per_hypothesis: int = 4,
         max_queries_per_claim: int = 2,
         enable_existing_bridge_scope_alignment_canonical_action: bool = False,
+        enable_source_bound_topology_completion_shadow: bool = False,
     ) -> None:
         self.backend = backend
         self.max_claims = int(max_claims_per_hypothesis)
@@ -3367,6 +3371,12 @@ class NoveltyClaimDecomposer:
             )
         )
         self.canonical_action_records: list[dict[str, object]] = []
+        self.enable_source_bound_topology_completion_shadow = bool(
+            enable_source_bound_topology_completion_shadow
+        )
+        self.source_bound_topology_completion_records: list[
+            dict[str, object]
+        ] = []
 
         # Diagnostic-only observability channel.
         #
@@ -3394,6 +3404,27 @@ class NoveltyClaimDecomposer:
     def decompose(self, hypothesis: HypothesisCard) -> HypothesisNoveltyClaims:
         self.canonical_action_records = []
         draft = self.backend.decompose(hypothesis, max_claims=self.max_claims)
+
+        if self.enable_source_bound_topology_completion_shadow:
+            draft, topology_records = (
+                complete_explicit_source_bound_topology_shadow(draft)
+            )
+            self.source_bound_topology_completion_records = [
+                record
+                for record in self.source_bound_topology_completion_records
+                if record.get("hypothesis_id") != hypothesis.hypothesis_id
+            ]
+            self.source_bound_topology_completion_records.extend(
+                [
+                    {
+                        **record,
+                        "hypothesis_id": hypothesis.hypothesis_id,
+                        "diagnostic_only": True,
+                        "production_authority": False,
+                    }
+                    for record in topology_records
+                ]
+            )
 
         draft_rows = list(
             draft.claims[: self.max_claims]

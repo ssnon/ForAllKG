@@ -107,6 +107,14 @@ EXPLICIT HIGHER-ORDER RELATION PRESERVATION CONTRACT:
 - When claim budget is limited, preserve an explicitly stated higher-order novelty-bearing relation before generic explanatory or auxiliary material.
 - higher_order_relation_basis is hypothesis provenance only. It is NOT evidence that the relation is correct, established, novel, or non-obvious.
 
+STRICT STRUCTURED-SHAPE INVARIANT:
+- Before returning the structured draft, self-check EVERY claim against these shape rules.
+- If either higher_order_relation_basis OR higher_order_component_local_ids is non-empty, kind MUST be composite.
+- A higher-order distinctive prediction is still kind=composite when it explicitly represents a joint, linked, conditional, composed, or interaction-level proposition. Preserve its prediction role in text, novelty_selection_role, predicted_observation, and falsification_condition rather than mislabeling the claim kind.
+- For EVERY non-composite claim, higher_order_relation_basis=[] AND higher_order_component_local_ids=[].
+- If a claim is kind=distinctive_prediction, moderator_interaction, context_condition, descriptor_interaction, mediator, mechanistic_link, pathway_competition, or any other non-composite kind, it MUST NOT reference higher-order component local IDs.
+- Do not work around this invariant by deleting an explicitly supplied higher-order proposition. When the supplied hypothesis explicitly states that higher-order proposition, represent that proposition as kind=composite and keep separately emitted atomic components as their own claims.
+
 COMPOSITE-COMPONENT TOPOLOGY CONTRACT:
 - If a kind=composite claim is emitted together with separately emitted atomic component claims that actually constitute that explicit higher-order proposition, list those component claims in higher_order_component_local_ids.
 - Copy component local_id values exactly from the claims returned in THIS decomposition.
@@ -262,7 +270,39 @@ Do not decompose generic background facts unless they are necessary to distingui
 
 
 
-_DIAGNOSTIC_REVIEW_SYSTEM = """You review ONE bounded diagnostic prior-art search.
+_DIAGNOSTIC_EXACT_VERIFICATION_REVIEW_SYSTEM = r"""
+You are reviewing prior art for an EXACT-VERIFICATION lower-order scientific
+claim. This is stricter than ordinary novelty-neighbor review.
+
+The goal is to decide whether a retrieved work positively establishes the
+same atomic relation for the same materially relevant structural/scientific
+identity.
+
+Rules:
+- DIRECT_PRIOR_ART requires both:
+  (1) the same materially relevant structural/material/system identity, and
+  (2) the same atomic relation/direction.
+- PARTIAL_PRIOR_ART requires substantial identity overlap and substantial
+  relation overlap, with only a bounded scope/detail mismatch.
+- A generic analogue with the same abstract relation but a different material
+  system or architecture is NOT relation-backed for exact verification.
+  Classify it as COMPONENT_ONLY or UNRELATED as appropriate.
+- Example: an interlayer-coupling paper on a semiconductor bilayer is not
+  PARTIAL_PRIOR_ART for an Au/Al2O3 plasmonic multilayer SERS claim merely
+  because both use the word bilayer or coupling.
+- For material stacks, nanoparticle/film architectures, named descriptors, and
+  composition-specific claims, structural identity is mandatory for DIRECT or
+  PARTIAL status.
+- Do not infer a relation from co-mention alone.
+- Do not infer literature-wide absence from the bounded candidates.
+- Use only ALLOWED_WORK_IDS supplied by the user.
+"""
+
+
+
+_DECOMPOSE_SYSTEM += '\nDECOMPOSITION COMPONENT-BUDGET COMPLETENESS CONTRACT:\n- When an explicitly source-supported higher-order composite is emitted and\n  independently reviewable constituent relations are also explicit in the\n  supplied hypothesis, prioritize emitting those constituent atomic claims\n  over generic auxiliary explanation or duplicated testing-only claims.\n- Under a tight claim budget, prefer one scientifically central composite with\n  enough separately emitted source-supported components to make its\n  higher_order_component_local_ids meaningful over multiple overlapping\n  composite claims that all have empty component topology.\n- Never invent a missing component merely to complete topology. Every emitted\n  component still requires its own proposition-complete contiguous\n  semantic_fidelity_binding.proposition_basis from the supplied hypothesis.\n- If the source does not explicitly support independently reviewable component\n  propositions, keep the composite topology empty rather than manufacturing\n  lower-order relations.\n- This is a representation-completeness rule only. It is not a novelty,\n  truth, evidence, or production-selection judgment.\n'
+
+_REVIEW_SYSTEM = """You review ONE bounded diagnostic prior-art search.
 
 This is NOT the ordinary full-claim novelty review.
 
@@ -313,6 +353,34 @@ If an exact work ID cannot be copied, omit the record.
 
 Your interpretation must describe only what this bounded diagnostic evidence establishes."""
 
+
+_EXACT_VERIFICATION_REVIEW_SYSTEM = r"""
+You are reviewing prior art for an EXACT-VERIFICATION lower-order scientific
+claim. This is stricter than ordinary novelty-neighbor review.
+
+The goal is to decide whether a retrieved work positively establishes the
+same atomic relation for the same materially relevant structural/scientific
+identity.
+
+Rules:
+- DIRECT_PRIOR_ART requires both:
+  (1) the same materially relevant structural/material/system identity, and
+  (2) the same atomic relation/direction.
+- PARTIAL_PRIOR_ART requires substantial identity overlap and substantial
+  relation overlap, with only a bounded scope/detail mismatch.
+- A generic analogue with the same abstract relation but a different material
+  system or architecture is NOT relation-backed for exact verification.
+  Classify it as COMPONENT_ONLY or UNRELATED as appropriate.
+- Example: an interlayer-coupling paper on a semiconductor bilayer is not
+  PARTIAL_PRIOR_ART for an Au/Al2O3 plasmonic multilayer SERS claim merely
+  because both use the word "bilayer" or "coupling".
+- For material stacks, nanoparticle/film architectures, named descriptors, and
+  composition-specific claims, structural identity is mandatory for DIRECT or
+  PARTIAL status.
+- Do not infer a relation from co-mention alone.
+- Do not infer literature-wide absence from the bounded candidates.
+- Use only ALLOWED_WORK_IDS supplied by the user.
+"""
 
 _REVIEW_SYSTEM = """You are a prior-art relationship reviewer in an external-novelty assessment pipeline.
 
@@ -374,6 +442,60 @@ Do not infer detailed results from a generic title alone. For CONFLICTING_PRIOR_
 
 Return work IDs exactly as supplied. You may omit unrelated records. Your interpretation must describe only what the supplied bounded evidence shows."""
 
+
+_DIAGNOSTIC_REVIEW_SYSTEM = """
+You review a bounded DIAGNOSTIC prior-art target. This is not the ordinary full-claim novelty review.
+
+The diagnostic target is either:
+- LOWER_ORDER_RELATION: a deliberately relaxed lower-order multivariable relation, or
+- DIRECTIONAL_BOUNDARY: neutral boundary/counterevidence for an ordered or directional claim.
+
+Do not decide whether the full claim is DIRECT_PRIOR_ART or PARTIAL_PRIOR_ART.
+Do not convert a diagnostic result into an ordinary full-claim novelty verdict.
+Judge each supplied work only against the DIAGNOSTIC TARGET.
+
+Allowed relationships:
+- LOWER_ORDER_RELATION_PRIOR_ART:
+  The title/abstract materially establishes the requested lower-order relation
+  with a scientifically compatible structural/system scope.
+- DIRECTIONAL_COUNTEREVIDENCE:
+  The title/abstract materially establishes a boundary, weak/absent relation,
+  opposing direction, regime dependence, competing determinant, or other
+  counterevidence relevant to the requested directional diagnostic target.
+- COMPONENT_ONLY:
+  Relevant variables/components are present, but the requested diagnostic
+  relation itself is not established.
+- TITLE_ONLY_NEIGHBOR:
+  The title is relevant but abstract evidence is unavailable or insufficient
+  for a stronger diagnostic relationship.
+- UNRELATED:
+  The record does not materially bear on the diagnostic target.
+- INSUFFICIENT_METADATA:
+  Supplied metadata is too limited to classify responsibly.
+
+Scope rules:
+- Shared vocabulary alone is insufficient.
+- A generic analogue from a materially different system is not a strong
+  diagnostic relation merely because it contains the same abstract relation
+  words.
+- LOWER_ORDER_RELATION_PRIOR_ART requires the lower-order multivariable
+  relation itself, not mere co-mention of its variables.
+- DIRECTIONAL_COUNTEREVIDENCE requires evidence bearing on the direction or
+  boundary, not generic component evidence.
+- Do not infer detailed scientific results from a title alone.
+- Do not infer literature-wide absence from the bounded candidate set.
+
+Output rules:
+- Use only exact work IDs from ALLOWED_WORK_IDS.
+- Return at most one match per work ID.
+- Omit unrelated records when appropriate.
+- The interpretation must describe only what the supplied bounded evidence
+  supports.
+
+Diagnostic prior art is prior-art evidence only. It is not a positive premise,
+scientific truth authority, production-selection authority, or full-claim
+novelty authority.
+"""
 
 _EVIDENCE_GROUNDED_REVIEW_APPENDIX = """
 
@@ -649,6 +771,98 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         )
         return result
 
+
+
+    def review_exact_verification_claim(
+        self,
+        claim: NoveltyClaim,
+        works: list[dict[str, Any]],
+    ) -> ClaimPriorArtReviewDraft:
+        lines = [
+            "EXACT-VERIFICATION CLAIM",
+            "========================",
+            f"claim_id: {claim.claim_id}",
+            f"kind: {claim.kind}",
+            f"importance: {claim.importance}",
+            f"text: {claim.text}",
+            f"prior_art_identity_terms: {claim.prior_art_identity_terms!r}",
+            f"diagnostic_structural_terms: {claim.diagnostic_structural_terms!r}",
+            f"relation_nucleus_terms: {claim.relation_nucleus_terms!r}",
+            "",
+            "RETRIEVED CANDIDATES",
+            "====================",
+        ]
+
+        if not works:
+            lines.append("- NONE")
+
+        for index, work in enumerate(works, start=1):
+            abstract = str(work.get("abstract") or "")
+            if len(abstract) > self.max_abstract_chars:
+                abstract = abstract[: self.max_abstract_chars - 1].rstrip() + "…"
+            lines.extend(
+                [
+                    f"[{index}] work_id={work['work_id']}",
+                    f"title: {work.get('title', '')}",
+                    f"year: {work.get('year')}",
+                    f"doi: {work.get('doi')}",
+                    f"semantic_similarity: {float(work.get('semantic_similarity', 0.0)):.4f}",
+                    f"lexical_coverage: {float(work.get('lexical_coverage', 0.0)):.4f}",
+                    f"reaction_domain_relevance: {float(work.get('reaction_domain_relevance', 0.5)):.4f}",
+                    f"catalyst_scope_relevance: {float(work.get('catalyst_scope_relevance', 0.5)):.4f}",
+                    f"abstract: {abstract if abstract else '[NO ABSTRACT AVAILABLE]'}",
+                    "",
+                ]
+            )
+
+        allowed_work_ids = [str(work["work_id"]) for work in works]
+        lines.extend(
+            [
+                "ALLOWED_WORK_IDS",
+                "================",
+                *allowed_work_ids,
+                "",
+                "Return at most one match per work_id.",
+                "Every returned work_id must be copied exactly from ALLOWED_WORK_IDS.",
+                "Omit any work that does not materially bear on the exact-verification claim.",
+            ]
+        )
+
+        user = "\n".join(lines)
+        review_system = (
+            _EXACT_VERIFICATION_REVIEW_SYSTEM
+            + _EVIDENCE_GROUNDED_REVIEW_APPENDIX
+            if self.evidence_grounded_review
+            else _EXACT_VERIFICATION_REVIEW_SYSTEM
+        )
+        self._record(
+            f"exact_verify_{claim.claim_id}",
+            review_system,
+            user,
+        )
+        result, _event = run_instructor_structured_call(
+            self._get_client().chat.completions,
+            model=self.model_name,
+            response_model=ClaimPriorArtReviewDraft,
+            messages=[
+                {"role": "system", "content": review_system},
+                {"role": "user", "content": user},
+            ],
+            temperature=self.temperature,
+            max_retries=self.parse_retries,
+            telemetry_path=self.telemetry_path,
+            telemetry_context={
+                **self.telemetry_context,
+                "pipeline": "external_novelty",
+                "stage": "exact_verification_prior_art_review",
+                "call_kind": "structured",
+                "claim_id": claim.claim_id,
+                "hypothesis_id": claim.hypothesis_id,
+            },
+        )
+        if not isinstance(result, ClaimPriorArtReviewDraft):
+            result = ClaimPriorArtReviewDraft.model_validate(result)
+        return result
 
     def review_diagnostic_claim(
         self,

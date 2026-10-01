@@ -29,6 +29,10 @@ from pipeline_core.discovery.external_novelty_llm import (
     InstructorOpenAICompatibleExternalNoveltyBackend,
 )
 from pipeline_core.discovery.hypothesis_contracts import HypothesisPortfolio
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    build_atomic_scientific_source_binding_bundle,
+    project_atomic_scientific_source_binding_bundle,
+)
 from pipeline_core.discovery.prior_art_retrieval import (
     LiteratureRetriever,
     canonicalize_prior_art_packet,
@@ -115,6 +119,15 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--results-per-query", type=int, default=12)
+    parser.add_argument(
+        "--parse-retries",
+        type=int,
+        default=3,
+        help=(
+            "Structured-output retries for external novelty LLM calls. "
+            "Higher-order decomposition shape invariants remain fail-closed."
+        ),
+    )
     parser.add_argument("--max-claims", type=int, default=4)
     parser.add_argument("--max-queries-per-claim", type=int, default=2)
     parser.add_argument("--max-ranked-works", type=int, default=8)
@@ -146,6 +159,15 @@ def parse_args() -> argparse.Namespace:
         help="Reuse an existing .claims_queries.json for an exact alpha5 -> alpha5.1 A/B rerun.",
     )
     parser.add_argument("--reuse-prior-art", default=None)
+    parser.add_argument(
+        "--reuse-diagnostic-prior-art",
+        default=None,
+        help=(
+            "Reuse an existing diagnostic prior-art packet for the "
+            "diagnostic query plan derived from --reuse-query-plan. "
+            "No diagnostic retrieval is performed."
+        ),
+    )
     parser.add_argument(
         "--pre-review-coverage-shadow",
         action="store_true",
@@ -215,6 +237,15 @@ def parse_args() -> argparse.Namespace:
             "Review each ranked claim-work pair independently using "
             "the evidence-grounded relation decision tree, then use "
             "the existing deterministic compiler for aggregation."
+        ),
+    )
+    parser.add_argument(
+        "--source-bound-topology-shadow",
+        action="store_true",
+        help=(
+            "Complete empty composite topology only when an emitted atomic "
+            "claim's exact proposition_basis is contained in the composite's "
+            "explicit higher_order_relation_basis. Shadow only."
         ),
     )
     parser.add_argument("--save-prompts", action="store_true")
@@ -545,6 +576,7 @@ def main() -> None:
         model=args.model,
         api_key_env=args.api_key_env,
         base_url=args.base_url,
+        parse_retries=args.parse_retries,
         capture_prompts=args.save_prompts,
         evidence_grounded_review=(
             args.evidence_grounded_review
@@ -555,6 +587,9 @@ def main() -> None:
         backend,
         max_claims_per_hypothesis=policy.max_claims_per_hypothesis,
         max_queries_per_claim=policy.max_queries_per_claim,
+        enable_source_bound_topology_completion_shadow=(
+            args.source_bound_topology_shadow
+        ),
     )
     if args.reuse_query_plan:
         plan = LiteratureQueryPlan.model_validate_json(
@@ -567,6 +602,17 @@ def main() -> None:
             decomposer.decompose(row)
             for row in portfolio.hypotheses
         ]
+        source_binding_plan = LiteratureQueryPlanner().build(
+            portfolio,
+            decompositions,
+        )
+        source_binding_bundle = (
+            build_atomic_scientific_source_binding_bundle(
+                source_portfolio_id=portfolio.portfolio_id,
+                query_plan=source_binding_plan,
+                records=list(decomposer.atomic_source_binding_records),
+            )
+        )
 
         if args.inference_audit:
             decompositions = (
@@ -585,8 +631,36 @@ def main() -> None:
             portfolio,
             decompositions,
         )
+        if plan.plan_id != source_binding_plan.plan_id:
+            source_binding_bundle = (
+                project_atomic_scientific_source_binding_bundle(
+                    source_bundle=source_binding_bundle,
+                    source_query_plan=source_binding_plan,
+                    output_query_plan=plan,
+                )
+            )
 
     prefix = Path(args.output_prefix)
+
+    if not args.reuse_query_plan:
+        _write(
+            prefix.with_suffix(".atomic_source_binding.json"),
+            source_binding_bundle,
+        )
+        _write(
+            prefix.with_suffix(".topology_completion_shadow.json"),
+            {
+                "schema_version": (
+                    "source-bound-topology-completion-shadow-v1"
+                ),
+                "diagnostic_only": True,
+                "production_authority": False,
+                "enabled": bool(args.source_bound_topology_shadow),
+                "records": list(
+                    decomposer.source_bound_topology_completion_records
+                ),
+            },
+        )
 
     # Diagnostic-only sidecar containing specification values
     # before and after branch-specific sanitization.
@@ -798,7 +872,44 @@ def main() -> None:
     diagnostic_packet = None
     diagnostic_prior_art_path = None
 
-    if (
+    if args.reuse_diagnostic_prior_art:
+        diagnostic_packet = PriorArtPacket.model_validate_json(
+            Path(
+                args.reuse_diagnostic_prior_art
+            ).read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if (
+            diagnostic_packet.source_portfolio_id
+            != diagnostic_plan.source_portfolio_id
+        ):
+            raise ValueError(
+                "--reuse-diagnostic-prior-art "
+                "source_portfolio_id mismatch"
+            )
+
+        if (
+            diagnostic_packet.source_query_plan_id
+            != diagnostic_plan.plan_id
+        ):
+            raise ValueError(
+                "--reuse-diagnostic-prior-art "
+                "query-plan mismatch"
+            )
+
+        diagnostic_packet = (
+            canonicalize_prior_art_packet(
+                diagnostic_packet
+            )
+        )
+
+        diagnostic_prior_art_path = Path(
+            args.reuse_diagnostic_prior_art
+        )
+
+    elif (
         diagnostic_plan.queries
         and not args.reuse_prior_art
     ):
