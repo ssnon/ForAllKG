@@ -66,6 +66,14 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--provider-plan", type=Path, default=None)
     p.add_argument("--results-per-query", type=int, default=12)
     p.add_argument("--skip-n9-full", action="store_true")
+    p.add_argument(
+        "--production-enforce",
+        action="store_true",
+        help=(
+            "After complete N9, promote the same role-aware N10-v2 decision "
+            "to an authoritative Scientific Portfolio production subset."
+        ),
+    )
     return p
 
 
@@ -103,6 +111,7 @@ def main() -> int:
         "n10_run": False,
         "novelty_certification_authority": False,
         "production_selection_authority": False,
+        "production_binding": {"status": "NOT_RUN"},
         "stage8_input_changed": False,
         "canonical_graph_mutated": False,
     }
@@ -339,6 +348,122 @@ def main() -> int:
         summary["external_novelty"] = {"status": "SKIPPED_SEMANTIC_NOT_ACCEPTED"}
         summary["n9"] = {"status": "SKIPPED_SEMANTIC_NOT_ACCEPTED"}
 
+    if args.production_enforce:
+        if args.skip_n9_full:
+            raise ValueError(
+                "--production-enforce is incompatible with --skip-n9-full"
+            )
+
+        if summary["n9"].get("status") != "COMPLETE":
+            summary["production_binding"] = {
+                "status": "BLOCKED_N9_INCOMPLETE",
+            }
+        else:
+            n10_candidate_gate = out / "n10.production_candidate_gate.json"
+            n10_production_gate = out / "n10.production_gate.json"
+            production_candidate_portfolio = (
+                out / "production.candidate.portfolio.json"
+            )
+            production_certification_report = (
+                out / "n10.certification.json"
+            )
+            production_certified_portfolio = (
+                out / "n10.certified.portfolio.json"
+            )
+
+            candidate_run = _run(
+                "N10 role-aware candidate gate",
+                [
+                    sys.executable,
+                    "-m",
+                    "scripts.discovery.build_nonobviousness_production_gate_v2_candidate",
+                    "--query-plan",
+                    str(Path(summary["external_novelty"]["query_plan"])),
+                    "--intake-shadow",
+                    str(Path(summary["n9"]["intake"])),
+                    "--full-shadow",
+                    str(Path(summary["n9"]["full_shadow"])),
+                    "--output",
+                    str(n10_candidate_gate),
+                ],
+                out,
+            )
+
+            production_gate_run = _run(
+                "N10 role-aware production gate",
+                [
+                    sys.executable,
+                    "-m",
+                    "scripts.discovery.build_nonobviousness_production_gate_v2",
+                    "--candidate-gate",
+                    str(n10_candidate_gate),
+                    "--output",
+                    str(n10_production_gate),
+                ],
+                out,
+            )
+
+            binding_run = _run(
+                "Scientific Portfolio N10 certification",
+                [
+                    sys.executable,
+                    "-m",
+                    "scripts.discovery.bind_scientific_portfolio_production",
+                    "--authority-mode",
+                    "certification_only",
+                    "--portfolio",
+                    str(portfolio_path),
+                    "--n10-production-gate",
+                    str(n10_production_gate),
+                    "--output-candidate-portfolio",
+                    str(production_candidate_portfolio),
+                    "--output-certification-report",
+                    str(production_certification_report),
+                    "--output-certified-portfolio",
+                    str(production_certified_portfolio),
+                ],
+                out,
+            )
+
+            production_complete = (
+                candidate_run.returncode == 0
+                and production_gate_run.returncode == 0
+                and binding_run.returncode == 0
+                and n10_candidate_gate.is_file()
+                and n10_production_gate.is_file()
+                and production_candidate_portfolio.is_file()
+                and production_certification_report.is_file()
+                and production_certified_portfolio.is_file()
+            )
+
+            certification_payload = (
+                _load(production_certification_report)
+                if production_certification_report.is_file()
+                else {}
+            )
+
+            summary["production_binding"] = {
+                "status": "COMPLETE" if production_complete else "FAILED",
+                "mode": "certification_only",
+                "candidate_gate": str(n10_candidate_gate) if n10_candidate_gate.is_file() else None,
+                "production_gate": str(n10_production_gate) if n10_production_gate.is_file() else None,
+                "scientific_candidate_portfolio": str(production_candidate_portfolio) if production_candidate_portfolio.is_file() else None,
+                "certification_report": str(production_certification_report) if production_certification_report.is_file() else None,
+                "certified_novelty_portfolio": str(production_certified_portfolio) if production_certified_portfolio.is_file() else None,
+                "scientific_candidate_count": certification_payload.get("hypothesis_count", 0),
+                "novelty_certified_count": certification_payload.get("certified_count", 0),
+                "conditional_count": certification_payload.get("conditional_count", 0),
+                "ineligible_count": certification_payload.get("ineligible_count", 0),
+                "scientific_candidate_authority": certification_payload.get("scientific_candidate_authority", False),
+                "n10_candidate_survival_authority": certification_payload.get("n10_candidate_survival_authority", True),
+                "conditional_candidates_retained": certification_payload.get("conditional_candidates_retained", False),
+            }
+
+            if production_complete:
+                summary["n10_run"] = True
+                summary["novelty_certification_authority"] = True
+                summary["production_selection_authority"] = True
+
     terminal_statuses = {
         "semantic": summary["semantic"].get("status"),
         "external_novelty": summary["external_novelty"].get("status"),
@@ -351,10 +476,21 @@ def main() -> int:
         "n9": {"COMPLETE", "INTAKE_ONLY"},
         "feasibility": {"COMPLETE", "SKIPPED_UNSUPPORTED_DOMAIN"},
     }
+    base_complete = all(
+        terminal_statuses[k] in expected_ok[k]
+        for k in terminal_statuses
+    )
+    production_complete = (
+        summary.get("production_binding", {}).get("status") == "COMPLETE"
+    )
     summary["status"] = (
-        "COMPLETE_SHADOW_VERIFICATION"
-        if all(terminal_statuses[k] in expected_ok[k] for k in terminal_statuses)
-        else "PARTIAL_SHADOW_VERIFICATION"
+        "COMPLETE_PRODUCTION_VERIFICATION"
+        if args.production_enforce and base_complete and production_complete
+        else (
+            "COMPLETE_SHADOW_VERIFICATION"
+            if (not args.production_enforce) and base_complete
+            else "PARTIAL_SHADOW_VERIFICATION"
+        )
     )
     _write(out / "verification.summary.json", summary)
     print()
@@ -363,9 +499,16 @@ def main() -> int:
     print("external novelty:", summary["external_novelty"]["status"])
     print("N9:", summary["n9"]["status"])
     print("feasibility:", summary["feasibility"]["status"])
-    print("N10_RUN=False")
-    print("PRODUCTION_SELECTION_AUTHORITY=False")
+    print("N10_RUN=", summary["n10_run"])
+    print(
+        "PRODUCTION_SELECTION_AUTHORITY=",
+        summary["production_selection_authority"],
+    )
     print("summary:", out / "verification.summary.json")
+    if args.production_enforce and (
+        summary.get("production_binding", {}).get("status") != "COMPLETE"
+    ):
+        return 1
     return 0
 
 

@@ -4382,6 +4382,14 @@ def run_pipeline(args: argparse.Namespace) -> int:
     scientific_portfolio_verification_summary = (
         scientific_portfolio_verification_dir / "verification.summary.json"
     )
+    scientific_portfolio_production_candidate = (
+        scientific_portfolio_verification_dir
+        / "production.candidate.portfolio.json"
+    )
+    scientific_portfolio_n10_certified = (
+        scientific_portfolio_verification_dir
+        / "n10.certified.portfolio.json"
+    )
 
     if args.scientific_portfolio_verification_shadow:
         if not args.scientific_portfolio_selection_shadow:
@@ -4412,6 +4420,10 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "--results-per-query",
             str(args.results_per_query),
         ]
+        if args.scientific_portfolio_production_enforce:
+            scientific_portfolio_verification_args.append(
+                "--production-enforce"
+            )
         if args.base_url:
             scientific_portfolio_verification_args.extend(
                 ["--base-url", str(args.base_url)]
@@ -4442,9 +4454,22 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "feasibility": scientific_portfolio_verification_payload.get(
                 "feasibility", {}
             ),
-            "n10_run": False,
-            "novelty_certification_authority": False,
-            "production_selection_authority": False,
+            "n10_run": bool(
+                scientific_portfolio_verification_payload.get("n10_run", False)
+            ),
+            "novelty_certification_authority": bool(
+                scientific_portfolio_verification_payload.get(
+                    "novelty_certification_authority", False
+                )
+            ),
+            "production_selection_authority": bool(
+                scientific_portfolio_verification_payload.get(
+                    "production_selection_authority", False
+                )
+            ),
+            "production_binding": scientific_portfolio_verification_payload.get(
+                "production_binding", {}
+            ),
             "stage8_input_changed": False,
             "canonical_graph_mutated": False,
             "shadow_only": True,
@@ -6285,10 +6310,70 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
             runner._save_manifest()
 
+    if args.scientific_portfolio_production_enforce:
+        verification_payload = _load_json(
+            scientific_portfolio_verification_summary
+        )
+        production_binding = verification_payload.get(
+            "production_binding",
+            {},
+        )
+        if (
+            verification_payload.get("n10_run") is not True
+            or verification_payload.get("production_selection_authority")
+            is not True
+            or production_binding.get("status") != "COMPLETE"
+            or production_binding.get("mode") != "certification_only"
+            or production_binding.get("scientific_candidate_authority") is not True
+            or production_binding.get("n10_candidate_survival_authority") is not False
+            or not scientific_portfolio_production_candidate.is_file()
+            or not scientific_portfolio_n10_certified.is_file()
+        ):
+            raise RuntimeError(
+                "Scientific Portfolio production enforcement requested, "
+                "but certification-only N10 integration is incomplete."
+            )
+
+        control_refined_portfolio = refined_portfolio
+        refined_portfolio = scientific_portfolio_production_candidate
+
+        runner.manifest["scientific_portfolio_production_binding"] = {
+            "enabled": True,
+            "mode": "SCIENTIFIC_PORTFOLIO_CANDIDATE_N10_CERTIFICATION",
+            "authority_scope": "SCIENTIFIC_PORTFOLIO_CANDIDATE_SELECTION",
+            "n10_required": True,
+            "n10_run": True,
+            "scientific_candidate_authority": True,
+            "novelty_certification_authority": True,
+            "n10_candidate_survival_authority": False,
+            "conditional_candidates_retained": True,
+            "production_selection_authority": True,
+            "final_portfolio": str(refined_portfolio),
+            "certified_novelty_portfolio": str(scientific_portfolio_n10_certified),
+            "control_refined_portfolio": str(control_refined_portfolio),
+            "stage8_input_changed": False,
+            "legacy_alpha4_alpha6_retained_as_control": True,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["scientific_portfolio_production_binding"] = {
+            "enabled": False,
+            "production_selection_authority": False,
+        }
+        runner._save_manifest()
+
     final_hypotheses = _hypothesis_count(refined_portfolio)
     runner.manifest["final_hypothesis_count"] = final_hypotheses
     runner._save_manifest()
     if final_hypotheses == 0:
+        if args.scientific_portfolio_production_enforce:
+            print(
+                "No hypotheses survived Scientific Portfolio role-aware N10 "
+                "production binding. Final semantic/feasibility stages are skipped."
+            )
+            runner.complete()
+            return 0
+
         alpha6_report_payload = _load_json(refined_report)
         if _alpha6_empty_is_degraded(alpha6_report_payload):
             raise RuntimeError(
@@ -6913,6 +6998,16 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--scientific-portfolio-production-enforce",
+        action="store_true",
+        help=(
+            "Opt-in development production integration. Promote the grounded "
+            "Scientific Portfolio as the final scientific-candidate portfolio; "
+            "run role-aware N10-v2 as novelty certification without deleting candidates. "
+            "Legacy Alpha4/Alpha6 still runs as a control/rollback lane."
+        ),
+    )
+    parser.add_argument(
         "--scientific-portfolio-max-evaluation-candidates",
         type=int,
         default=48,
@@ -7048,6 +7143,14 @@ def parse_args() -> argparse.Namespace:
     )
 
     args = parser.parse_args()
+
+    if args.scientific_portfolio_production_enforce:
+        # Production integration consumes the existing exploration stack.
+        # Optional idea sources (open-world / HO / direct-HO) remain explicit.
+        args.frontier_idea_population_shadow = True
+        args.idea_evolution_shadow = True
+        args.scientific_portfolio_selection_shadow = True
+        args.scientific_portfolio_verification_shadow = True
 
     # Final N10 production mode.
     #

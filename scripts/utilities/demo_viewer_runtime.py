@@ -538,6 +538,8 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     portfolio_path, portfolio = _first_json(
         run_dir,
         (
+            "scientific_portfolio_shadow/downstream_verification/production.candidate.portfolio.json",
+            "scientific_portfolio_shadow/downstream_verification/production.portfolio.json",
             "novelty_refinement_a6.n10.candidate.portfolio.json",
             "novelty_refinement_a6.portfolio.json",
             "hypothesis_axis_a4.portfolio.json",
@@ -553,7 +555,10 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     )
     external_path, external_report = _first_json(
         run_dir,
-        ("external_novelty_a52.report.json",),
+        (
+            "scientific_portfolio_shadow/downstream_verification/external_novelty.report.json",
+            "external_novelty_a52.report.json",
+        ),
     )
     refinement_path, refinement_report = _first_json(
         run_dir,
@@ -561,11 +566,17 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     )
     certification_path, certification_report = _first_json(
         run_dir,
-        ("novelty_refinement_a6.n10.certification.json",),
+        (
+            "scientific_portfolio_shadow/downstream_verification/n10.certification.json",
+            "novelty_refinement_a6.n10.certification.json",
+        ),
     )
     certified_path, _certified_portfolio = _first_json(
         run_dir,
-        ("novelty_refinement_a6.n10.certified.portfolio.json",),
+        (
+            "scientific_portfolio_shadow/downstream_verification/n10.certified.portfolio.json",
+            "novelty_refinement_a6.n10.certified.portfolio.json",
+        ),
     )
     _, runner_manifest = _first_json(
         run_dir,
