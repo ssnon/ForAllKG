@@ -3645,22 +3645,58 @@ def run_pipeline(args: argparse.Namespace) -> int:
         runner._save_manifest()
 
     if args.higher_order_shadow:
-        if args.accepted_patterns is None:
-            raise RuntimeError(
-                "--higher-order-shadow requires --accepted-patterns so "
-                "confirmed-known composition authority is explicit."
-            )
         if int(args.higher_order_max_contexts) < 1:
             raise RuntimeError("--higher-order-max-contexts must be >= 1")
 
         higher_order_dir = run / "higher_order_shadow"
+
+        higher_order_accepted_patterns = args.accepted_patterns
+        higher_order_accepted_patterns_source = "explicit_cli"
+        higher_order_accepted_patterns_audit = None
+
+        if higher_order_accepted_patterns is None:
+            higher_order_accepted_patterns = (
+                higher_order_dir
+                / "accepted_relationpatterns.from_canonical_graph.csv"
+            )
+            higher_order_accepted_patterns_audit = (
+                higher_order_dir
+                / "accepted_relationpatterns.export_audit.json"
+            )
+
+            runner.run_stage(
+                (
+                    "[7.545/13] Canonical accepted RelationPattern "
+                    "export shadow"
+                ),
+                (
+                    "scripts.discovery."
+                    "export_accepted_relationpatterns"
+                ),
+                [
+                    "--traversal",
+                    str(final_traversal),
+                    "--output",
+                    str(higher_order_accepted_patterns),
+                    "--audit-output",
+                    str(higher_order_accepted_patterns_audit),
+                ],
+                expected=[
+                    higher_order_accepted_patterns,
+                    higher_order_accepted_patterns_audit,
+                ],
+            )
+            higher_order_accepted_patterns_source = (
+                "canonical_graph_export"
+            )
+
         higher_order_report = higher_order_dir / "generation_report.json"
         runner.run_stage(
             "[7.55/13] Higher-order composition/generation shadow",
             "scripts.discovery.run_higher_order_shadow_lane",
             [
                 "--context", str(context),
-                "--accepted-patterns", str(args.accepted_patterns),
+                "--accepted-patterns", str(higher_order_accepted_patterns),
                 "--task-axis-report", str(task_conditioned_axis_report),
                 "--output-dir", str(higher_order_dir),
                 "--max-contexts", str(args.higher_order_max_contexts),
@@ -3675,6 +3711,14 @@ def run_pipeline(args: argparse.Namespace) -> int:
         runner.manifest["higher_order_shadow"] = {
             "enabled": True,
             "report": str(higher_order_report),
+            "accepted_patterns_source": higher_order_accepted_patterns_source,
+            "accepted_patterns_artifact": str(higher_order_accepted_patterns),
+            "accepted_patterns_export_audit": (
+                None
+                if higher_order_accepted_patterns_audit is None
+                else str(higher_order_accepted_patterns_audit)
+            ),
+            "stage7_5_accepted_patterns_input_changed_by_auto_export": False,
             "strict_backbone_count": ho_payload.get("strict_backbone_count"),
             "eligible_modifier_count": ho_payload.get("eligible_modifier_count"),
             "higher_order_topology_count": ho_payload.get("higher_order_topology_count"),
@@ -3766,6 +3810,652 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 False,
             "canonical_fallback_authorized":
                 False,
+        }
+        runner._save_manifest()
+
+
+    frontier_population_shadow = (
+        run
+        / "frontier_idea_population.shadow.json"
+    )
+
+    if args.frontier_idea_population_shadow:
+        frontier_stage_args = [
+            "--source-context",
+            str(context),
+            "--question",
+            str(args.question),
+            "--task-source",
+            str(args.source),
+            "--task-target",
+            str(args.target),
+            "--kg-axis-plan",
+            str(task_conditioned_axis_plan),
+            "--output",
+            str(frontier_population_shadow),
+        ]
+
+        if open_world_outputs is not None:
+            frontier_stage_args.extend(
+                [
+                    "--open-world-axis-plan",
+                    str(
+                        open_world_outputs[
+                            "external_axis_plan"
+                        ]
+                    ),
+                    "--open-world-axis-bundle",
+                    str(
+                        open_world_outputs[
+                            "external_axis_bundle"
+                        ]
+                    ),
+                ]
+            )
+
+        higher_order_dir = (
+            run
+            / "higher_order_shadow"
+        )
+        higher_order_topologies = (
+            higher_order_dir
+            / "topologies.json"
+        )
+        if higher_order_topologies.is_file():
+            frontier_stage_args.extend(
+                [
+                    "--higher-order-topologies",
+                    str(
+                        higher_order_topologies
+                    ),
+                ]
+            )
+
+        higher_order_tensions = (
+            higher_order_dir
+            / "higher_order.tension_candidates.json"
+        )
+        if higher_order_tensions.is_file():
+            frontier_stage_args.extend(
+                [
+                    "--tension-candidates",
+                    str(
+                        higher_order_tensions
+                    ),
+                ]
+            )
+
+        higher_order_explanations = (
+            higher_order_dir
+            / "higher_order.competing_explanations.json"
+        )
+        if higher_order_explanations.is_file():
+            frontier_stage_args.extend(
+                [
+                    "--competing-explanations",
+                    str(
+                        higher_order_explanations
+                    ),
+                ]
+            )
+
+        direct_higher_order_topologies = (
+            run
+            / "direct_higher_order_shadow"
+            / "topologies.json"
+        )
+        if direct_higher_order_topologies.is_file():
+            frontier_stage_args.extend(
+                [
+                    "--direct-higher-order-topologies",
+                    str(
+                        direct_higher_order_topologies
+                    ),
+                ]
+            )
+
+        runner.run_stage(
+            (
+                "[7.7/13] Frontier idea population shadow"
+            ),
+            (
+                "scripts.discovery."
+                "run_frontier_idea_population_shadow"
+            ),
+            frontier_stage_args,
+            expected=[
+                frontier_population_shadow
+            ],
+        )
+
+        frontier_payload = _load_json(
+            frontier_population_shadow
+        )
+
+        runner.manifest[
+            "frontier_idea_population_shadow"
+        ] = {
+            "enabled":
+                True,
+            "artifact":
+                str(
+                    frontier_population_shadow
+                ),
+            "population_id":
+                frontier_payload.get(
+                    "population_id"
+                ),
+            "population_sha256":
+                frontier_payload.get(
+                    "population_sha256"
+                ),
+            "total_idea_count":
+                frontier_payload.get(
+                    "total_idea_count",
+                    0,
+                ),
+            "idea_count_by_source_kind":
+                frontier_payload.get(
+                    "idea_count_by_source_kind",
+                    {},
+                ),
+            "idea_count_by_idea_form":
+                frontier_payload.get(
+                    "idea_count_by_idea_form",
+                    {},
+                ),
+            "cross_source_exact_duplicate_group_count":
+                frontier_payload.get(
+                    "cross_source_exact_duplicate_group_count",
+                    0,
+                ),
+            "cross_source_overlap_pair_count":
+                frontier_payload.get(
+                    "cross_source_overlap_pair_count",
+                    0,
+                ),
+            "cross_source_structural_overlap_pair_count":
+                frontier_payload.get(
+                    "cross_source_structural_overlap_pair_count",
+                    0,
+                ),
+            "shadow_only":
+                True,
+            "new_llm_calls":
+                False,
+            "new_retrieval_calls":
+                False,
+            "positive_premise_authority_created":
+                False,
+            "novelty_authority_created":
+                False,
+            "generation_authority_created":
+                False,
+            "production_selection_authority":
+                False,
+            "stage8_input_changed":
+                False,
+            "canonical_graph_mutated":
+                False,
+        }
+        runner._save_manifest()
+
+        frontier_exploration_audit = (
+            run
+            / "frontier_exploration.audit.json"
+        )
+        frontier_audit_args = [
+            "--population",
+            str(frontier_population_shadow),
+            "--output",
+            str(frontier_exploration_audit),
+        ]
+
+        higher_order_contexts = (
+            higher_order_dir
+            / "contexts.json"
+        )
+        higher_order_generation_report = (
+            higher_order_dir
+            / "generation_report.json"
+        )
+
+        if higher_order_contexts.is_file():
+            frontier_audit_args.extend(
+                [
+                    "--higher-order-contexts",
+                    str(higher_order_contexts),
+                ]
+            )
+        if higher_order_generation_report.is_file():
+            frontier_audit_args.extend(
+                [
+                    "--higher-order-generation-report",
+                    str(higher_order_generation_report),
+                ]
+            )
+
+        runner.run_stage(
+            (
+                "[7.71/13] Exploration Frontier factorization shadow"
+            ),
+            (
+                "scripts.discovery."
+                "run_frontier_exploration_audit"
+            ),
+            frontier_audit_args,
+            expected=[
+                frontier_exploration_audit
+            ],
+        )
+
+        frontier_audit_payload = _load_json(
+            frontier_exploration_audit
+        )
+        primitive_payload = (
+            frontier_audit_payload.get(
+                "primitive_layer",
+                {},
+            )
+        )
+        topology_payload = (
+            frontier_audit_payload.get(
+                "topology_layer",
+                {},
+            )
+        )
+        interpretive_payload = (
+            frontier_audit_payload.get(
+                "interpretive_layer",
+                {},
+            )
+        )
+        capacity_payload = (
+            frontier_audit_payload.get(
+                "capacity",
+                {},
+            )
+        )
+
+        runner.manifest[
+            "frontier_idea_population_shadow"
+        ]["exploration_frontier_audit"] = {
+            "artifact": str(frontier_exploration_audit),
+            "audit_id": frontier_audit_payload.get("audit_id"),
+            "audit_sha256": frontier_audit_payload.get("audit_sha256"),
+            "unique_primitive_family_count": primitive_payload.get(
+                "unique_primitive_family_count",
+                0,
+            ),
+            "open_world_exclusive_primitive_family_count": primitive_payload.get(
+                "open_world_exclusive_primitive_family_count",
+                0,
+            ),
+            "open_world_axis_primitive_reused_in_topology_count": primitive_payload.get(
+                "open_world_axis_primitive_reused_in_topology_count",
+                0,
+            ),
+            "unique_backbone_family_count": topology_payload.get(
+                "unique_backbone_family_count",
+                0,
+            ),
+            "unique_modifier_family_count": topology_payload.get(
+                "unique_modifier_family_count",
+                0,
+            ),
+            "largest_backbone_family_share": topology_payload.get(
+                "largest_backbone_family_share",
+                0.0,
+            ),
+            "tension_seed_count": interpretive_payload.get(
+                "tension_seed_count",
+                0,
+            ),
+            "competing_explanation_pair_count": interpretive_payload.get(
+                "competing_explanation_pair_count",
+                0,
+            ),
+            "max_verified_structural_derivation_depth": interpretive_payload.get(
+                "max_verified_structural_derivation_depth",
+                0,
+            ),
+            "higher_order_topology_cap_reached": capacity_payload.get(
+                "higher_order_topology_cap_reached"
+            ),
+            "diagnostic_only": True,
+            "scientific_quality_ranking_performed": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "frontier_idea_population_shadow"
+        ] = {
+            "enabled":
+                False,
+            "stage8_input_changed":
+                False,
+            "production_selection_authority":
+                False,
+        }
+        runner._save_manifest()
+
+
+
+    idea_evolution_plan = run / "idea_evolution.plan.json"
+    idea_evolution_report = run / "idea_evolution.shadow.json"
+    idea_evolution_audit = run / "idea_evolution.audit.json"
+
+    if args.idea_evolution_shadow:
+        if not args.frontier_idea_population_shadow:
+            raise RuntimeError(
+                "--idea-evolution-shadow requires --frontier-idea-population-shadow "
+                "so evolution lineage is anchored to the audited Frontier."
+            )
+
+        idea_evolution_args = [
+            "--population",
+            str(frontier_population_shadow),
+            "--frontier-audit",
+            str(frontier_exploration_audit),
+            "--max-cross-source-outputs",
+            str(args.idea_evolution_max_cross_source_outputs),
+            "--max-backbone-mutation-outputs",
+            str(args.idea_evolution_max_backbone_mutation_outputs),
+            "--max-candidate-interpretation-outputs",
+            str(args.idea_evolution_max_candidate_interpretation_outputs),
+            "--max-candidate-parent-pool",
+            str(args.idea_evolution_max_candidate_parent_pool),
+            "--output-plan",
+            str(idea_evolution_plan),
+            "--output-report",
+            str(idea_evolution_report),
+            "--output-audit",
+            str(idea_evolution_audit),
+            "--save-prompts-dir",
+            str(run / "idea_evolution_prompts"),
+            *_base_model_args(args),
+        ]
+
+        if args.idea_evolution_scientific_reframe_shadow is not None:
+            idea_evolution_args.extend(
+                [
+                    "--scientific-reframe-shadow",
+                    str(args.idea_evolution_scientific_reframe_shadow),
+                ]
+            )
+        if args.idea_evolution_proxy_challenge_shadow is not None:
+            idea_evolution_args.extend(
+                [
+                    "--proxy-challenge-shadow",
+                    str(args.idea_evolution_proxy_challenge_shadow),
+                ]
+            )
+
+        runner.run_stage(
+            "[7.72/13] Idea Evolution shadow",
+            "scripts.discovery.run_idea_evolution_shadow",
+            idea_evolution_args,
+            expected=[
+                idea_evolution_plan,
+                idea_evolution_report,
+                idea_evolution_audit,
+            ],
+        )
+
+        idea_evolution_payload = _load_json(idea_evolution_report)
+        idea_evolution_audit_payload = _load_json(idea_evolution_audit)
+        runner.manifest["idea_evolution_shadow"] = {
+            "enabled": True,
+            "plan": str(idea_evolution_plan),
+            "report": str(idea_evolution_report),
+            "audit": str(idea_evolution_audit),
+            "report_id": idea_evolution_payload.get("report_id"),
+            "report_sha256": idea_evolution_payload.get("report_sha256"),
+            "idea_count": idea_evolution_payload.get("idea_count", 0),
+            "idea_count_by_operator": idea_evolution_payload.get(
+                "idea_count_by_operator", {}
+            ),
+            "native_llm_calls_attempted": idea_evolution_payload.get(
+                "native_llm_calls_attempted", 0
+            ),
+            "native_llm_calls_succeeded": idea_evolution_payload.get(
+                "native_llm_calls_succeeded", 0
+            ),
+            "cross_source_bridge_count": idea_evolution_audit_payload.get(
+                "cross_source_bridge_count", 0
+            ),
+            "new_mutated_backbone_family_count": idea_evolution_audit_payload.get(
+                "new_mutated_backbone_family_count", 0
+            ),
+            "candidate_interpretation_count": idea_evolution_audit_payload.get(
+                "candidate_interpretation_count", 0
+            ),
+            "reframe_idea_count": idea_evolution_audit_payload.get(
+                "reframe_idea_count", 0
+            ),
+            "conceptual_transition_observed": idea_evolution_audit_payload.get(
+                "conceptual_transition_observed", False
+            ),
+            "shadow_only": True,
+            "new_retrieval_calls": False,
+            "positive_premise_authority_created": False,
+            "novelty_authority_created": False,
+            "generation_authority_created": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+            "canonical_graph_mutated": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["idea_evolution_shadow"] = {
+            "enabled": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+        }
+        runner._save_manifest()
+
+
+
+    scientific_portfolio_dir = run / "scientific_portfolio_shadow"
+    scientific_portfolio_pool = scientific_portfolio_dir / "candidate_pool.json"
+    scientific_portfolio_evaluation = scientific_portfolio_dir / "evaluation.json"
+    scientific_portfolio_selection = scientific_portfolio_dir / "selection.json"
+    scientific_portfolio_materialization = (
+        scientific_portfolio_dir / "materialization.report.json"
+    )
+    scientific_portfolio_materialized = (
+        scientific_portfolio_dir / "materialized.shadow.portfolio.json"
+    )
+    scientific_portfolio_audit = scientific_portfolio_dir / "audit.json"
+
+    if args.scientific_portfolio_selection_shadow:
+        if not args.idea_evolution_shadow:
+            raise RuntimeError(
+                "--scientific-portfolio-selection-shadow requires "
+                "--idea-evolution-shadow so portfolio lineage is anchored to "
+                "the audited Frontier + Idea Evolution population."
+            )
+        if int(args.scientific_portfolio_max_evaluation_candidates) < 1:
+            raise RuntimeError(
+                "--scientific-portfolio-max-evaluation-candidates must be >= 1"
+            )
+        if int(args.scientific_portfolio_max_retained) < 1:
+            raise RuntimeError(
+                "--scientific-portfolio-max-retained must be >= 1"
+            )
+        if int(args.scientific_portfolio_max_retained_per_profile) < 1:
+            raise RuntimeError(
+                "--scientific-portfolio-max-retained-per-profile must be >= 1"
+            )
+
+        runner.run_stage(
+            "[7.73/13] Scientific Portfolio Selection shadow",
+            "scripts.discovery.run_scientific_portfolio_selection_shadow",
+            [
+                "--context",
+                str(context),
+                "--population",
+                str(frontier_population_shadow),
+                "--frontier-audit",
+                str(frontier_exploration_audit),
+                "--evolution-report",
+                str(idea_evolution_report),
+                "--task-source",
+                str(args.source),
+                "--task-target",
+                str(args.target),
+                "--max-evaluation-candidates",
+                str(args.scientific_portfolio_max_evaluation_candidates),
+                "--max-retained",
+                str(args.scientific_portfolio_max_retained),
+                "--max-retained-per-profile",
+                str(args.scientific_portfolio_max_retained_per_profile),
+                "--output-dir",
+                str(scientific_portfolio_dir),
+                "--save-prompts",
+                *_base_model_args(args),
+            ],
+            expected=[
+                scientific_portfolio_pool,
+                scientific_portfolio_evaluation,
+                scientific_portfolio_selection,
+                scientific_portfolio_materialization,
+                scientific_portfolio_materialized,
+                scientific_portfolio_audit,
+            ],
+        )
+
+        scientific_portfolio_audit_payload = _load_json(
+            scientific_portfolio_audit
+        )
+        scientific_portfolio_materialization_payload = _load_json(
+            scientific_portfolio_materialization
+        )
+        runner.manifest["scientific_portfolio_selection_shadow"] = {
+            "enabled": True,
+            "candidate_pool": str(scientific_portfolio_pool),
+            "evaluation": str(scientific_portfolio_evaluation),
+            "selection": str(scientific_portfolio_selection),
+            "materialization_report": str(scientific_portfolio_materialization),
+            "materialized_portfolio": str(scientific_portfolio_materialized),
+            "audit": str(scientific_portfolio_audit),
+            "projected_candidate_count": scientific_portfolio_audit_payload.get(
+                "projected_candidate_count", 0
+            ),
+            "retained_candidate_count": scientific_portfolio_audit_payload.get(
+                "retained_candidate_count", 0
+            ),
+            "retained_unique_family_count": scientific_portfolio_audit_payload.get(
+                "retained_unique_family_count", 0
+            ),
+            "materialized_hypothesis_count": scientific_portfolio_audit_payload.get(
+                "materialized_hypothesis_count", 0
+            ),
+            "materialization_status_counts": (
+                scientific_portfolio_materialization_payload.get("status_counts", {})
+            ),
+            "selection_policy": "PROFILE_PARETO_DIVERSITY_RETENTION_V2_NORMALIZED_BLIND",
+            "single_scalar_score_used": False,
+            "overall_winner_selected": False,
+            "idea_inspiration_as_positive_premise": False,
+            "positive_premise_authority_created": False,
+            "novelty_authority_created": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+            "canonical_graph_mutated": False,
+            "shadow_only": True,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["scientific_portfolio_selection_shadow"] = {
+            "enabled": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+        }
+        runner._save_manifest()
+
+    scientific_portfolio_verification_dir = (
+        scientific_portfolio_dir / "downstream_verification"
+    )
+    scientific_portfolio_verification_summary = (
+        scientific_portfolio_verification_dir / "verification.summary.json"
+    )
+
+    if args.scientific_portfolio_verification_shadow:
+        if not args.scientific_portfolio_selection_shadow:
+            raise RuntimeError(
+                "--scientific-portfolio-verification-shadow requires "
+                "--scientific-portfolio-selection-shadow."
+            )
+
+        scientific_portfolio_verification_args = [
+            "--context",
+            str(context),
+            "--materialization-report",
+            str(scientific_portfolio_materialization),
+            "--portfolio",
+            str(scientific_portfolio_materialized),
+            "--domain-profile",
+            str(domain_profile.profile_id),
+            "--output-dir",
+            str(scientific_portfolio_verification_dir),
+            "--model",
+            str(args.critic_model or args.model),
+            "--api-key-env",
+            str(args.api_key_env),
+            "--providers",
+            str(args.providers),
+            "--provider-plan",
+            str(literature_provider_plan_path),
+            "--results-per-query",
+            str(args.results_per_query),
+        ]
+        if args.base_url:
+            scientific_portfolio_verification_args.extend(
+                ["--base-url", str(args.base_url)]
+            )
+
+        runner.run_stage(
+            "[7.74/13] Scientific Portfolio downstream verification shadow",
+            "scripts.discovery.run_scientific_portfolio_verification_shadow",
+            scientific_portfolio_verification_args,
+            expected=[scientific_portfolio_verification_summary],
+        )
+
+        scientific_portfolio_verification_payload = _load_json(
+            scientific_portfolio_verification_summary
+        )
+        runner.manifest["scientific_portfolio_verification_shadow"] = {
+            "enabled": True,
+            "summary": str(scientific_portfolio_verification_summary),
+            "status": scientific_portfolio_verification_payload.get("status"),
+            "hypothesis_count": scientific_portfolio_verification_payload.get(
+                "hypothesis_count", 0
+            ),
+            "semantic": scientific_portfolio_verification_payload.get("semantic", {}),
+            "external_novelty": scientific_portfolio_verification_payload.get(
+                "external_novelty", {}
+            ),
+            "n9": scientific_portfolio_verification_payload.get("n9", {}),
+            "feasibility": scientific_portfolio_verification_payload.get(
+                "feasibility", {}
+            ),
+            "n10_run": False,
+            "novelty_certification_authority": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
+            "canonical_graph_mutated": False,
+            "shadow_only": True,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["scientific_portfolio_verification_shadow"] = {
+            "enabled": False,
+            "n10_run": False,
+            "production_selection_authority": False,
+            "stage8_input_changed": False,
         }
         runner._save_manifest()
 
@@ -6115,8 +6805,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help=(
             "Run the authority-neutral S24 higher-order composition and "
-            "canonical hypothesis-generation lane in parallel. Requires "
-            "--accepted-patterns; legacy production selection is unchanged."
+            "canonical hypothesis-generation lane in parallel. An explicit "
+            "--accepted-patterns table is reused when supplied; otherwise the "
+            "lane receives a validator-approved run-local compatibility export "
+            "from the canonical graph. Automatic export does not alter Stage-7.5 "
+            "inputs or legacy production selection."
         ),
     )
     parser.add_argument(
@@ -6137,6 +6830,104 @@ def parse_args() -> argparse.Namespace:
             "silently reverting to the control plan."
         ),
     )
+
+    parser.add_argument(
+        "--frontier-idea-population-shadow",
+        action="store_true",
+        help=(
+            "Build Frontier Idea Population v1 after the Stage-7 "
+            "exploration lanes. This is a shadow-only union of existing "
+            "KG/open-world/higher-order/direct-HO/tension artifacts. "
+            "It performs no new LLM or retrieval calls and does not alter "
+            "the canonical Stage-8 axis-plan input or production selection."
+        ),
+    )
+
+
+    parser.add_argument(
+        "--idea-evolution-shadow",
+        action="store_true",
+        help=(
+            "Run the shadow-only Idea Evolution milestone after Exploration "
+            "Frontier factorization. Native operators perform cross-source "
+            "bridging, backbone mutation, and candidate interpretation. The "
+            "canonical Stage-8 input remains unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--idea-evolution-max-cross-source-outputs",
+        type=int,
+        default=6,
+    )
+    parser.add_argument(
+        "--idea-evolution-max-backbone-mutation-outputs",
+        type=int,
+        default=6,
+    )
+    parser.add_argument(
+        "--idea-evolution-max-candidate-interpretation-outputs",
+        type=int,
+        default=4,
+    )
+    parser.add_argument(
+        "--idea-evolution-max-candidate-parent-pool",
+        type=int,
+        default=8,
+    )
+    parser.add_argument(
+        "--idea-evolution-scientific-reframe-shadow",
+        type=Path,
+        default=None,
+        help=(
+            "Optional existing scientific_reframing_shadow.json to import into "
+            "the common evolution lineage. This does not rerun reframing."
+        ),
+    )
+    parser.add_argument(
+        "--idea-evolution-proxy-challenge-shadow",
+        type=Path,
+        default=None,
+        help=(
+            "Optional existing PROXY_CHALLENGE shadow report to import into "
+            "the common evolution lineage. This does not rerun proxy analysis."
+        ),
+    )
+
+
+    parser.add_argument(
+        "--scientific-portfolio-selection-shadow",
+        action="store_true",
+        help=(
+            "Run shadow Scientific Portfolio Selection after Idea Evolution: "
+            "structural projection, ordinal profile evaluation, Pareto/diversity "
+            "retention, and grounded hypothesis materialization. Stage 8 remains unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--scientific-portfolio-verification-shadow",
+        action="store_true",
+        help=(
+            "Run existing semantic, external-prior-art, N9, and feasibility machinery "
+            "over the grounded shadow portfolio produced by Scientific Portfolio Selection. "
+            "N10 and production selection are not run."
+        ),
+    )
+    parser.add_argument(
+        "--scientific-portfolio-max-evaluation-candidates",
+        type=int,
+        default=48,
+    )
+    parser.add_argument(
+        "--scientific-portfolio-max-retained",
+        type=int,
+        default=8,
+    )
+    parser.add_argument(
+        "--scientific-portfolio-max-retained-per-profile",
+        type=int,
+        default=2,
+    )
+
     parser.add_argument(
         "--hypothesis-parse-retries",
         type=int,

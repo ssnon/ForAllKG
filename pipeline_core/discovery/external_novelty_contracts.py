@@ -237,6 +237,44 @@ class NoveltyClaimDecompositionDraft(StrictModel):
                 "at least one core claim"
             )
 
+        # STRUCTURED_HIGHER_ORDER_COMPONENT_INVARIANT_V2
+        # Enforce the same explicit higher-order topology contract at
+        # response-model validation time that compilation already enforces.
+        # This lets Instructor retry malformed structured output instead of
+        # failing later inside external-novelty decomposition.
+        claim_ids = set(ids)
+        for row in self.claims:
+            components = [
+                str(value or "").strip()
+                for value in row.higher_order_component_local_ids
+                if str(value or "").strip()
+            ]
+            if len(components) != len(set(components)):
+                raise ValueError(
+                    "duplicate higher-order component local_id"
+                )
+            if row.kind != "composite" and components:
+                raise ValueError(
+                    "non-composite claim cannot declare "
+                    "higher-order components"
+                )
+            if row.kind == "composite":
+                if row.local_id in components:
+                    raise ValueError(
+                        "composite claim cannot reference itself "
+                        "as a component"
+                    )
+                unknown = [
+                    value
+                    for value in components
+                    if value not in claim_ids
+                ]
+                if unknown:
+                    raise ValueError(
+                        "unknown higher-order component local_id: "
+                        + ", ".join(unknown)
+                    )
+
         return self
 
 
