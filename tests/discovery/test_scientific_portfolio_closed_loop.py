@@ -114,3 +114,40 @@ def test_supporting_topology_hold_does_not_block_clean_core_residual():
     row = result["hypotheses"][0]
     assert row["final_epistemic_state"] == "RESIDUAL_AUTHORITY_CANDIDATE_SHADOW"
     assert row["nonblocking_hold_count"] == 1
+
+
+def test_insufficient_search_evidence_blocks_residual_authority():
+    portfolio, query, external = _base()
+
+    external["cards"][0]["status"] = (
+        "INSUFFICIENT_SEARCH_EVIDENCE"
+    )
+
+    result = compile_residual_epistemic_state(
+        portfolio=portfolio,
+        query_plan=query,
+        external_report=external,
+        aggregation={
+            "composites": [
+                {
+                    "hypothesis_id": "h",
+                    "claim_id": "c",
+                    "aggregation_disposition": (
+                        "RESIDUAL_CANDIDATE_SHADOW"
+                    ),
+                }
+            ]
+        },
+    )
+
+    row = result["hypotheses"][0]
+
+    assert (
+        row["final_epistemic_state"]
+        == "UNRESOLVED_EVIDENCE_GAP"
+    )
+    assert (
+        row["state_reason"]
+        == "insufficient_external_search_evidence_for_residual_authority"
+    )
+    assert row["authority_ready_candidate_shadow"] is False

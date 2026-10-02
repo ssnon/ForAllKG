@@ -33,14 +33,30 @@ def test_all_direct_kept_original_paths_are_gate_aware():
         encoding="utf-8"
     )
 
-    # The two previously bypassing direct branches now add two additional
-    # authoritative fallback checks: 8 -> 10.
-    assert (
-        text.count(
-            "scientific_gate_by_id=scientific_gate_by_id"
+    # Every original-fallback authorization call must be explicitly
+    # scientific-gate-aware. Do not freeze the number of call sites:
+    # legitimate new fallback paths may be added over time.
+    tree = ast.parse(text)
+
+    fallback_calls = [
+        node
+        for node in ast.walk(tree)
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "_original_fallback_allowed"
         )
-        == 10
-    )
+    ]
+
+    assert fallback_calls
+
+    for call in fallback_calls:
+        keyword_names = {
+            keyword.arg
+            for keyword in call.keywords
+            if keyword.arg is not None
+        }
+        assert "scientific_gate_by_id" in keyword_names
 
     # This test owns only the two original-fallback bypass closures.
     # Post-generation scientific novelty adds additional legitimate
@@ -52,8 +68,6 @@ def test_all_direct_kept_original_paths_are_gate_aware():
         )
         == 2
     )
-
-    tree = ast.parse(text)
 
     # Sanity: runtime remains syntactically parseable and the two direct
     # branches still exist rather than being removed.

@@ -95,6 +95,7 @@ def lower_order(
     query_plan: Path,
     external_report: Path,
     prefix: Path,
+    results_per_query: int | None = None,
 ):
     run(
         f"{prefix.parent.name} lower-order saturation",
@@ -108,7 +109,12 @@ def lower_order(
             "--provider-plan", str(args.provider_plan),
             "--domain-profile", args.domain_profile,
             *model_args(args),
-            "--results-per-query", str(args.results_per_query),
+            "--results-per-query",
+            str(
+                args.results_per_query
+                if results_per_query is None
+                else results_per_query
+            ),
             "--max-ranked-works", str(args.max_ranked_works),
             "--parse-retries", str(args.parse_retries),
             "--output-prefix", str(prefix),
@@ -405,6 +411,7 @@ def main() -> int:
             "-m",
             "scripts.discovery.run_residual_novelty_cohort_audit_shadow",
             "--aggregation", str(g1_aggregation),
+            "--query-plan", str(gen1_query),
             "--topology-completion", str(gen1_completion),
             "--source-binding", str(gen1_binding),
             "--topology-report", str(g1_topology),

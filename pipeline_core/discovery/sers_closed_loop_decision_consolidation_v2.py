@@ -281,6 +281,21 @@ def consolidate_post_verification_decisions(
                     "novelty_bearing_core_composite_has_incomplete_base_evidence"
                 )
 
+        elif (
+            all(
+                row["aggregation_disposition"]
+                == "RESIDUAL_CANDIDATE_SHADOW"
+                for row in blocking_novelty
+            )
+            and str(ext.get("status") or "")
+            == "INSUFFICIENT_SEARCH_EVIDENCE"
+        ):
+            decision = "HOLD_CORE_EVIDENCE_UNRESOLVED"
+            reasons.append(
+                "insufficient_external_search_evidence_"
+                "for_residual_authority"
+            )
+
         elif all(
             row["aggregation_disposition"]
             == "RESIDUAL_CANDIDATE_SHADOW"

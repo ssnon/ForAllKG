@@ -92,6 +92,10 @@ def compile_residual_epistemic_state(
         raise ValueError("external-report / portfolio lineage mismatch")
 
     claim_index = _claim_index(query_plan)
+    claims_by_h: dict[str, list[dict[str, Any]]] = {
+        str(group.get("hypothesis_id") or ""): list(group.get("claims", []))
+        for group in query_plan.get("claims", [])
+    }
     ext_by_h = _external_index(external_report)
     agg_by_h = _aggregation_index(aggregation)
 
@@ -102,6 +106,12 @@ def compile_residual_epistemic_state(
             continue
         ext = ext_by_h.get(hid, {})
         composites = agg_by_h.get(hid, [])
+        query_claims = claims_by_h.get(hid, [])
+        query_composite_claims = [
+            claim
+            for claim in query_claims
+            if str(claim.get("kind") or "") == "composite"
+        ]
 
         enriched = []
         for comp in composites:
@@ -158,15 +168,29 @@ def compile_residual_epistemic_state(
         elif (
             novelty_rows
             and dispositions == {"RESIDUAL_CANDIDATE_SHADOW"}
+            and str(ext.get("status") or "")
+            == "INSUFFICIENT_SEARCH_EVIDENCE"
+        ):
+            state = "UNRESOLVED_EVIDENCE_GAP"
+            reason = (
+                "insufficient_external_search_evidence_"
+                "for_residual_authority"
+            )
+        elif (
+            novelty_rows
+            and dispositions == {"RESIDUAL_CANDIDATE_SHADOW"}
         ):
             state = "RESIDUAL_AUTHORITY_CANDIDATE_SHADOW"
             reason = "novelty_bearing_residual_survives"
         elif not novelty_rows and str(ext.get("status") or "") in _BACKED_EXTERNAL:
             state = "PRIOR_ART_BACKED_OR_NO_RESIDUAL"
             reason = "known_external_axis_without_residual_composite"
-        elif not novelty_rows:
+        elif not novelty_rows and query_composite_claims:
             state = "UNRESOLVED_TOPOLOGY_GAP"
-            reason = "no_novelty_bearing_composite_available"
+            reason = "composite_claim_present_but_no_novelty_bearing_topology"
+        elif not novelty_rows:
+            state = "UNRESOLVED_EVIDENCE_GAP"
+            reason = "topology_not_applicable_no_composite_claim"
         else:
             state = "UNRESOLVED_EVIDENCE_GAP"
             reason = "mixed_or_incomplete_residual_state"
@@ -179,6 +203,8 @@ def compile_residual_epistemic_state(
                 "state_reason": reason,
                 "fresh_external_status": ext.get("status"),
                 "composite_count": len(enriched),
+                "query_plan_composite_claim_count": len(query_composite_claims),
+                "topology_applicable": bool(query_composite_claims),
                 "novelty_bearing_composite_count": len(novelty_rows),
                 "required_enabling_composite_count": len(enabling_rows),
                 "nonblocking_composite_count": len(nonblocking_rows),

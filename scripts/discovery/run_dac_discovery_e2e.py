@@ -4623,6 +4623,107 @@ def run_pipeline(args: argparse.Namespace) -> int:
         }
         runner._save_manifest()
 
+    scientific_portfolio_adaptive_dir = (
+        scientific_portfolio_dir / "adaptive_controller_shadow"
+    )
+    scientific_portfolio_adaptive_summary = (
+        scientific_portfolio_adaptive_dir
+        / "adaptive_controller.summary.json"
+    )
+    scientific_portfolio_adaptive_effective = (
+        scientific_portfolio_adaptive_dir
+        / "adaptive_effective.portfolio.json"
+    )
+    scientific_portfolio_adaptive_handoff = (
+        scientific_portfolio_adaptive_dir
+        / "graph_retraversal.handoff.json"
+    )
+
+    if args.adaptive_discovery_controller_shadow:
+        if not scientific_portfolio_closed_loop_summary.is_file():
+            raise RuntimeError(
+                "Adaptive Discovery Controller requires completed Stage 7.75."
+            )
+
+        adaptive_args = [
+            "--context",
+            str(context),
+            "--seed-closed-loop-dir",
+            str(scientific_portfolio_closed_loop_dir),
+            "--provider-plan",
+            str(verification_provider_plan),
+            "--domain-profile",
+            str(domain_profile.profile_id),
+            "--model",
+            str(args.model),
+            "--critic-model",
+            str(args.critic_model or args.model),
+            "--controller-model",
+            str(args.critic_model or args.model),
+            "--api-key-env",
+            str(args.api_key_env),
+            "--results-per-query",
+            str(args.results_per_query),
+            "--max-controller-rounds",
+            str(args.adaptive_controller_max_rounds),
+            "--max-local-attempts-per-lineage",
+            str(args.adaptive_controller_max_local_attempts),
+            "--output-dir",
+            str(scientific_portfolio_adaptive_dir),
+        ]
+        if args.adaptive_controller_disable_llm:
+            adaptive_args.append("--disable-controller-llm")
+        if args.base_url:
+            adaptive_args.extend(["--base-url", str(args.base_url)])
+
+        runner.run_stage(
+            "[7.76/13] Adaptive Discovery Controller shadow",
+            "scripts.discovery.run_adaptive_discovery_controller_shadow",
+            adaptive_args,
+            expected=[
+                scientific_portfolio_adaptive_summary,
+                scientific_portfolio_adaptive_effective,
+                scientific_portfolio_adaptive_handoff,
+            ],
+        )
+
+        adaptive_payload = _load_json(
+            scientific_portfolio_adaptive_summary
+        )
+        runner.manifest["adaptive_discovery_controller_shadow"] = {
+            "enabled": True,
+            "summary": str(scientific_portfolio_adaptive_summary),
+            "status": adaptive_payload.get("status"),
+            "adaptive_rounds_completed": adaptive_payload.get(
+                "adaptive_rounds_completed", 0
+            ),
+            "action_counts": adaptive_payload.get(
+                "action_counts", {}
+            ),
+            "final_effective_count": adaptive_payload.get(
+                "final_effective_count", 0
+            ),
+            "final_effective_hypothesis_ids": adaptive_payload.get(
+                "final_effective_hypothesis_ids", []
+            ),
+            "graph_retraversal_request_count": adaptive_payload.get(
+                "graph_retraversal_request_count", 0
+            ),
+            "graph_retraversal_executes_in_v1": False,
+            "n10_research_selection_authority": False,
+            "stage8_input_changed": False,
+            "production_selection_changed": False,
+            "canonical_graph_mutated": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["adaptive_discovery_controller_shadow"] = {
+            "enabled": False,
+            "stage8_input_changed": False,
+            "production_selection_changed": False,
+        }
+        runner._save_manifest()
+
     stage8_axis_plan_input = _stage8_axis_plan_input(
         control_plan=task_conditioned_axis_plan,
         open_world_plan=(
@@ -7151,6 +7252,35 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--adaptive-discovery-controller-shadow",
+        action="store_true",
+        help=(
+            "Continue unresolved/rejected Stage-7.75 Scientific Portfolio "
+            "candidates with bounded failure-aware escalation: retrieve more, "
+            "same-premise sharpen, evidence re-axis, axis mutation, or an "
+            "explicit graph-retraversal handoff. Shadow only."
+        ),
+    )
+    parser.add_argument(
+        "--adaptive-controller-max-rounds",
+        type=int,
+        default=4,
+    )
+    parser.add_argument(
+        "--adaptive-controller-max-local-attempts",
+        type=int,
+        default=4,
+    )
+    parser.add_argument(
+        "--adaptive-controller-disable-llm",
+        action="store_true",
+        help=(
+            "Use deterministic bounded escalation only; skip the optional "
+            "controller LLM advisory."
+        ),
+    )
+
+    parser.add_argument(
         "--scientific-portfolio-production-enforce",
         action="store_true",
         help=(
@@ -7296,6 +7426,11 @@ def parse_args() -> argparse.Namespace:
     )
 
     args = parser.parse_args()
+
+    if args.adaptive_discovery_controller_shadow:
+        # Adaptive Stage 7.76 consumes the frozen Stage-7.75 closed-loop
+        # baseline and therefore enables its complete upstream shadow stack.
+        args.scientific_portfolio_closed_loop_shadow = True
 
     if args.scientific_portfolio_closed_loop_shadow:
         # Closed-loop evaluation consumes the same grounded Scientific Portfolio
