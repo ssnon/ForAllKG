@@ -4484,6 +4484,145 @@ def run_pipeline(args: argparse.Namespace) -> int:
         }
         runner._save_manifest()
 
+    scientific_portfolio_closed_loop_dir = (
+        scientific_portfolio_dir / "closed_loop_shadow"
+    )
+    scientific_portfolio_closed_loop_summary = (
+        scientific_portfolio_closed_loop_dir / "closed_loop.summary.json"
+    )
+    scientific_portfolio_closed_loop_effective = (
+        scientific_portfolio_closed_loop_dir / "effective_gen1.portfolio.json"
+    )
+
+    if args.scientific_portfolio_closed_loop_shadow:
+        if not args.scientific_portfolio_verification_shadow:
+            raise RuntimeError(
+                "--scientific-portfolio-closed-loop-shadow requires "
+                "--scientific-portfolio-verification-shadow"
+            )
+
+        verification_external_prefix = (
+            scientific_portfolio_verification_dir / "external_novelty"
+        )
+        verification_external_plan = Path(
+            str(verification_external_prefix) + ".claims_queries.json"
+        )
+        verification_external_report = Path(
+            str(verification_external_prefix) + ".report.json"
+        )
+        verification_external_prior = Path(
+            str(verification_external_prefix) + ".prior_art.json"
+        )
+        verification_external_binding = Path(
+            str(verification_external_prefix) + ".atomic_source_binding.json"
+        )
+        verification_provider_plan = Path(
+            str(verification_external_prefix) + ".provider_plan.json"
+        )
+
+        for required_path in (
+            verification_external_plan,
+            verification_external_report,
+            verification_external_prior,
+            verification_external_binding,
+            verification_provider_plan,
+        ):
+            if not required_path.is_file():
+                raise RuntimeError(
+                    "Scientific Portfolio closed loop requires completed "
+                    "Stage-7.74 external artifacts; missing "
+                    + str(required_path)
+                )
+
+        closed_loop_args = [
+            "--context",
+            str(context),
+            "--materialization-report",
+            str(scientific_portfolio_materialization),
+            "--portfolio",
+            str(scientific_portfolio_materialized),
+            "--external-query-plan",
+            str(verification_external_plan),
+            "--external-report",
+            str(verification_external_report),
+            "--external-prior-art",
+            str(verification_external_prior),
+            "--external-source-binding",
+            str(verification_external_binding),
+            "--provider-plan",
+            str(verification_provider_plan),
+            "--domain-profile",
+            str(domain_profile.profile_id),
+            "--model",
+            str(args.model),
+            "--critic-model",
+            str(args.critic_model or args.model),
+            "--api-key-env",
+            str(args.api_key_env),
+            "--results-per-query",
+            str(args.results_per_query),
+            "--output-dir",
+            str(scientific_portfolio_closed_loop_dir),
+        ]
+        if args.base_url:
+            closed_loop_args.extend(["--base-url", str(args.base_url)])
+
+        runner.run_stage(
+            "[7.75/13] Scientific Portfolio residual-aware closed loop shadow",
+            "scripts.discovery.run_scientific_portfolio_closed_loop_shadow",
+            closed_loop_args,
+            expected=[
+                scientific_portfolio_closed_loop_summary,
+                scientific_portfolio_closed_loop_effective,
+            ],
+        )
+
+        closed_loop_payload = _load_json(
+            scientific_portfolio_closed_loop_summary
+        )
+        runner.manifest["scientific_portfolio_closed_loop_shadow"] = {
+            "enabled": True,
+            "summary": str(scientific_portfolio_closed_loop_summary),
+            "status": closed_loop_payload.get("status"),
+            "gen0_state_counts": closed_loop_payload.get(
+                "gen0_state_counts", {}
+            ),
+            "feedback_route_counts": closed_loop_payload.get(
+                "feedback_route_counts", {}
+            ),
+            "generation_decision_counts": closed_loop_payload.get(
+                "generation_decision_counts", {}
+            ),
+            "gen1_residual_disposition_counts": closed_loop_payload.get(
+                "gen1_residual_disposition_counts", {}
+            ),
+            "post_verification_decision_counts": closed_loop_payload.get(
+                "post_verification_decision_counts", {}
+            ),
+            "effective_gen1_portfolio": str(
+                scientific_portfolio_closed_loop_effective
+            ),
+            "effective_gen1_hypothesis_count": closed_loop_payload.get(
+                "effective_gen1_hypothesis_count", 0
+            ),
+            "effective_gen1_hypothesis_ids": closed_loop_payload.get(
+                "effective_gen1_hypothesis_ids", []
+            ),
+            "single_feedback_generation_only": True,
+            "n10_research_selection_authority": False,
+            "stage8_input_changed": False,
+            "production_selection_changed": False,
+            "canonical_graph_mutated": False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest["scientific_portfolio_closed_loop_shadow"] = {
+            "enabled": False,
+            "stage8_input_changed": False,
+            "production_selection_changed": False,
+        }
+        runner._save_manifest()
+
     stage8_axis_plan_input = _stage8_axis_plan_input(
         control_plan=task_conditioned_axis_plan,
         open_world_plan=(
@@ -6998,6 +7137,19 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--scientific-portfolio-closed-loop-shadow",
+        action="store_true",
+        help=(
+            "Run one bounded residual-aware novelty feedback generation after "
+            "Scientific Portfolio verification: lower-order prior-art saturation, "
+            "source-bound topology, bounded full-text escalation, residual-state "
+            "compilation, one re-axis/refinement generation, fresh external "
+            "verification, and claim-role-aware consolidation. Shadow only; "
+            "Stage 8 and production selection remain unchanged."
+        ),
+    )
+
+    parser.add_argument(
         "--scientific-portfolio-production-enforce",
         action="store_true",
         help=(
@@ -7143,6 +7295,14 @@ def parse_args() -> argparse.Namespace:
     )
 
     args = parser.parse_args()
+
+    if args.scientific_portfolio_closed_loop_shadow:
+        # Closed-loop evaluation consumes the same grounded Scientific Portfolio
+        # stack but remains authority-neutral and does not alter Stage 8.
+        args.frontier_idea_population_shadow = True
+        args.idea_evolution_shadow = True
+        args.scientific_portfolio_selection_shadow = True
+        args.scientific_portfolio_verification_shadow = True
 
     if args.scientific_portfolio_production_enforce:
         # Production integration consumes the existing exploration stack.

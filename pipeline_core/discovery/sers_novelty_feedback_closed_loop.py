@@ -189,7 +189,7 @@ def build_feedback_plan(
         if state == "RESIDUAL_AUTHORITY_CANDIDATE_SHADOW":
             route = "KEEP_RESIDUAL"
             reason = (
-                "The current higher-order residual survived the SERS "
+                "The current higher-order residual survived the current "
                 "evidence accounting; do not novelty-optimize it further."
             )
         elif state == "UNRESOLVED_EVIDENCE_GAP":
@@ -324,7 +324,7 @@ def _make_gap(
         action=action,
         target_claim_ids=target_ids,
         differentiator=(
-            "Generate a scientifically different, falsifiable SERS relation "
+            "Generate a scientifically different, falsifiable scientific relation "
             "that preserves the original research task while moving beyond "
             "the prior-art-backed formulation. Do not add cosmetic qualifiers."
         ),
@@ -451,7 +451,7 @@ def run_feedback_generation(
         telemetry_path=output_dir / "generation.telemetry.jsonl",
         telemetry_context={
             "pipeline": "closed_loop_novelty_feedback_v1",
-            "scope": "SERS_SHADOW",
+            "scope": "SCIENTIFIC_PORTFOLIO_CLOSED_LOOP_SHADOW",
         },
     )
     task_backend = OpenRouterQuestionAxisResponsivenessBackend(
@@ -461,7 +461,7 @@ def run_feedback_generation(
         telemetry_path=output_dir / "task.telemetry.jsonl",
         telemetry_context={
             "pipeline": "closed_loop_novelty_feedback_v1",
-            "scope": "SERS_SHADOW",
+            "scope": "SCIENTIFIC_PORTFOLIO_CLOSED_LOOP_SHADOW",
         },
     )
 
@@ -751,7 +751,7 @@ def run_feedback_generation(
             "abstention_reason": (
                 None
                 if unique_cards
-                else "No SERS closed-loop feedback candidate survived shadow generation."
+                else "No closed-loop feedback candidate survived shadow generation."
             ),
         }
     )
