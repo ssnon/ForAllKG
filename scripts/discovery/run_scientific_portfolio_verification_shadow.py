@@ -245,6 +245,7 @@ def main() -> int:
             str(args.results_per_query),
             "--output-prefix",
             str(external_prefix),
+            "--pre-review-metadata-resolution",
             "--pre-review-coverage-shadow",
             "--downstream-gate-shadow",
             "--source-bound-topology-shadow",

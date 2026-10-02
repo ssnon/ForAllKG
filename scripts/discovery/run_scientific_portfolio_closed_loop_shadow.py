@@ -344,6 +344,7 @@ def main() -> int:
         "--results-per-query", str(args.results_per_query),
         "--max-ranked-works", str(args.max_ranked_works),
         "--parse-retries", str(args.parse_retries),
+        "--pre-review-metadata-resolution",
         "--pre-review-coverage-shadow",
         "--downstream-gate-shadow",
         "--source-bound-topology-shadow",

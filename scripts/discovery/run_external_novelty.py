@@ -67,6 +67,9 @@ from pipeline_core.discovery.external_novelty_downstream_gate import (
 from pipeline_core.discovery.prior_art_review_audit import (
     prior_art_review_audit_scope,
 )
+from pipeline_core.discovery.prior_art_domain_authority_audit import (
+    build_prior_art_domain_authority_audit,
+)
 from pipeline_core.discovery.prior_art_memory import (
     PriorArtMemoryMatcher,
     augment_prior_art_packet_with_memory,
@@ -1080,6 +1083,13 @@ def main() -> None:
             resolved_prior_art_path,
             packet,
         )
+        # The external report below is assessed against the resolved packet.
+        # Keep the canonical .prior_art.json lineage-aligned with that report
+        # while retaining .prior_art.resolved.json as an explicit audit copy.
+        _write(
+            prefix.with_suffix(".prior_art.json"),
+            packet,
+        )
 
     pre_review_coverage = None
     if (
@@ -1243,6 +1253,16 @@ def main() -> None:
             lineage=lineage,
         )
     _write(report_path, report)
+
+    domain_authority_audit = build_prior_art_domain_authority_audit(
+        domain_profile=domain_profile,
+        packet=packet,
+        report=report,
+    )
+    _write(
+        prefix.with_suffix(".domain_authority_audit.json"),
+        domain_authority_audit,
+    )
 
     downstream_gate = None
     if args.downstream_gate_shadow:

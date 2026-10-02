@@ -5211,6 +5211,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
             *_base_model_args(args, critic=True),
             "--provider-plan", str(literature_provider_plan_path),
             "--results-per-query", str(args.results_per_query),
+            "--pre-review-metadata-resolution",
             *_prior_art_memory_cli_args(args),
             "--output-prefix", str(external_prefix),
             "--save-prompts",
