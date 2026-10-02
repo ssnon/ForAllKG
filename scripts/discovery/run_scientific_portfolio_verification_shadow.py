@@ -247,6 +247,7 @@ def main() -> int:
             str(external_prefix),
             "--pre-review-coverage-shadow",
             "--downstream-gate-shadow",
+            "--source-bound-topology-shadow",
             "--save-prompts",
         ]
         if args.base_url:
