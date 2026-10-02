@@ -526,6 +526,7 @@ class ExternalNoveltyAssessor:
         self,
         reviews: list[ClaimPriorArtReview],
         coverage: HypothesisSearchCoverage,
+        claims_by_id: dict[str, Any] | None = None,
     ) -> tuple[str, list[str], str]:
         core = [row for row in reviews if row.importance == "core"] or reviews
         statuses = [row.status for row in core]
@@ -561,6 +562,29 @@ class ExternalNoveltyAssessor:
                 reasons,
                 "The hypothesis is strongly adjacent to existing prior art: every core claim is directly or partially represented, but the full formulation is not uniformly reconstructed.",
             )
+
+        if claims_by_id:
+            novelty_bearing = [
+                row for row in reviews
+                if getattr(claims_by_id.get(row.claim_id), "novelty_selection_role", None)
+                == "NOVELTY_BEARING"
+            ]
+            testing_predictions = [
+                row for row in reviews
+                if getattr(claims_by_id.get(row.claim_id), "novelty_selection_role", None)
+                == "TESTING_PREDICTION"
+            ]
+            if (
+                len(novelty_bearing) == 1
+                and novelty_bearing[0].status in {"COMPONENTS_ONLY", "NO_DIRECT_MATCH_FOUND"}
+                and any(row.status in {"DIRECT_PRIOR_ART", "PARTIAL_PRIOR_ART"} for row in testing_predictions)
+            ):
+                reasons.append("central_testing_prediction_has_relation_backed_prior_art")
+                return (
+                    "LITERATURE_SUPPORTED_EXTENSION",
+                    reasons,
+                    "The central novelty-bearing relation is not directly reconstructed, but an explicitly role-bound testing prediction already has direct or partial prior-art support; treat the hypothesis as a literature-supported extension rather than a clean relational gap.",
+                )
 
         if "INSUFFICIENT_METADATA" in statuses:
             reasons.append("core_claim_insufficient_metadata")
@@ -1005,7 +1029,11 @@ class ExternalNoveltyAssessor:
             ordered_claim_ids = planned_order_by_hypothesis[hypothesis.hypothesis_id]
             rows = [review_by_id[claim_id] for claim_id in ordered_claim_ids]
             coverage = self._coverage(hypothesis, rows, packet, plan)
-            status, reasons, interpretation = self._status(rows, coverage)
+            status, reasons, interpretation = self._status(
+                rows,
+                coverage,
+                claims_by_id=planned_by_id,
+            )
             novelty_depth_profile = _novelty_depth_profile(
                 hypothesis_id=hypothesis.hypothesis_id,
                 reviews=rows,

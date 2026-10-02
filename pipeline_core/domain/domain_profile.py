@@ -109,6 +109,7 @@ class NoveltySemantics:
     claim_context_patterns: tuple[str, ...] = ()
     document_mismatch_patterns: tuple[str, ...] = ()
     document_compatible_patterns: tuple[str, ...] = ()
+    positive_prior_art_requires_document_compatibility: bool = False
     mismatch_multiplier: float = 1.0
     domain_mismatch_reason: str = 'domain_mismatch'
     low_scope_reason: str = 'low_system_scope_overlap'
@@ -172,6 +173,13 @@ class NoveltySemantics:
             for name, patterns in self.compiled_scope_patterns().items()
             if any(pattern.search(text) for pattern in patterns)
         }
+
+    def document_is_compatible_for_positive_prior_art(self, document: str) -> bool:
+        if not self.positive_prior_art_requires_document_compatibility:
+            return True
+        if not self.document_compatible_patterns:
+            return False
+        return _matches_any(document, self.document_compatible_patterns)
 
     def domain_relevance(self, claim_text: str, document: str) -> float:
         claim_domains = self.domains(claim_text)

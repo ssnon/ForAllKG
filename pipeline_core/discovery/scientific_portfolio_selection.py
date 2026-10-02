@@ -587,21 +587,23 @@ def eligible_profiles(
 ) -> list[PortfolioProfile]:
     r = lambda name: _rank(getattr(draft, name).level)
     profiles: list[PortfolioProfile] = []
-    if r("task_relevance") >= 2 and r("falsifiability") >= 2 and r("operationalizability") >= 2:
+    task_moderate = r("task_relevance") >= 2
+    task_high = r("task_relevance") >= 3
+    if task_high and r("falsifiability") >= 2 and r("operationalizability") >= 2:
         profiles.append("TASK_NEAR_VALIDATION")
-    if r("mechanistic_coherence") >= 3 and r("falsifiability") >= 2:
+    if task_moderate and r("mechanistic_coherence") >= 3 and r("falsifiability") >= 2:
         profiles.append("MECHANISM_FOCUSED")
-    if r("discriminating_power") >= 3 and r("falsifiability") >= 2:
+    if task_moderate and r("discriminating_power") >= 3 and r("falsifiability") >= 2:
         profiles.append("DISCRIMINATING_TEST")
-    if r("information_gain") >= 3 and r("discriminating_power") >= 2:
+    if task_moderate and r("information_gain") >= 3 and r("discriminating_power") >= 2:
         profiles.append("HIGH_INFORMATION")
     if (
         candidate.cross_source_composition
         or candidate.external_literature_lineage
         or candidate.candidate_or_unverified_lineage
-    ) and r("task_relevance") >= 1 and r("falsifiability") >= 1:
+    ) and task_moderate and r("falsifiability") >= 1:
         profiles.append("EXPLORATORY_BRIDGE")
-    if candidate.task_relation_mode == "REFRAME" and r("task_relevance") >= 1:
+    if candidate.task_relation_mode == "REFRAME" and task_moderate:
         profiles.append("REFRAME")
     return profiles
 

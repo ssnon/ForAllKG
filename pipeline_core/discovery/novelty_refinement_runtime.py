@@ -1279,7 +1279,13 @@ class TargetedNoveltyRefinementRuntime:
             )
         )
 
-        plan = LiteratureQueryPlanner().build(portfolio, decompositions)
+        plan = LiteratureQueryPlanner(
+            domain_profile=getattr(
+                getattr(self.external_assessor, "compiler", None),
+                "domain_profile",
+                None,
+            )
+        ).build(portfolio, decompositions)
         packet = self.targeted_retriever.retriever.retrieve(plan).packet
 
         # S26c parity: Alpha6 fresh-final assessment must execute the same

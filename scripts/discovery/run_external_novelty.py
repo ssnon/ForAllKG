@@ -602,7 +602,7 @@ def main() -> None:
             decomposer.decompose(row)
             for row in portfolio.hypotheses
         ]
-        source_binding_plan = LiteratureQueryPlanner().build(
+        source_binding_plan = LiteratureQueryPlanner(domain_profile=domain_profile).build(
             portfolio,
             decompositions,
         )
@@ -627,7 +627,7 @@ def main() -> None:
                 )
             )
 
-        plan = LiteratureQueryPlanner().build(
+        plan = LiteratureQueryPlanner(domain_profile=domain_profile).build(
             portfolio,
             decompositions,
         )

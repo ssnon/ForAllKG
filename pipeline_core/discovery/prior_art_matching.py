@@ -198,6 +198,11 @@ class PriorArtRanker:
                     + 0.08 * scope,
                 ),
             )
+            if (
+                self.domain_profile.novelty.positive_prior_art_requires_document_compatibility
+                and not self.domain_profile.novelty.document_is_compatible_for_positive_prior_art(document)
+            ):
+                score *= 0.20
             ranked.append(
                 RankedPriorArtWork(
                     work_id=work.work_id,
@@ -336,6 +341,9 @@ class ClaimPriorArtCompiler:
                     min_scope=self.min_scope_for_conflict,
                 )
             )
+            positive_domain_compatible = (
+                self.domain_profile.novelty.document_is_compatible_for_positive_prior_art(document)
+            )
 
             if not work.abstract:
                 if relationship in {
@@ -352,6 +360,17 @@ class ClaimPriorArtCompiler:
             elif relationship == "CONFLICTING_PRIOR_ART" and not compatible:
                 relationship = "CONTEXTUAL_CONFLICT"
                 reason_codes.append("conflict_downgraded_for_scope_mismatch")
+            elif (
+                relationship in {
+                    "DIRECT_PRIOR_ART",
+                    "PARTIAL_PRIOR_ART",
+                    "LOWER_ORDER_RELATION_PRIOR_ART",
+                    "DIRECTIONAL_COUNTEREVIDENCE",
+                }
+                and not positive_domain_compatible
+            ):
+                relationship = "COMPONENT_ONLY"
+                reason_codes.append("positive_prior_art_downgraded_for_domain_mismatch")
             elif relationship == "DIRECT_PRIOR_ART" and not compatible:
                 relationship = "PARTIAL_PRIOR_ART"
                 reason_codes.append("direct_match_downgraded_for_scope_mismatch")

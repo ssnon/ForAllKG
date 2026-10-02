@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -546,38 +547,51 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
         ),
         required=True,
     )
-    semantic_path, semantic_review = _first_json(
-        run_dir,
-        (
-            "semantic_final.review.json",
-            "semantic_axis_a4.review.json",
-        ),
+    portfolio_rel = str(portfolio_path.relative_to(run_dir)) if portfolio_path is not None else ""
+    viewer_lane = (
+        "SCIENTIFIC_PORTFOLIO"
+        if portfolio_rel.startswith("scientific_portfolio_shadow/")
+        else "LEGACY_ALPHA"
     )
-    external_path, external_report = _first_json(
-        run_dir,
-        (
-            "scientific_portfolio_shadow/downstream_verification/external_novelty.report.json",
-            "external_novelty_a52.report.json",
-        ),
-    )
-    refinement_path, refinement_report = _first_json(
-        run_dir,
-        ("novelty_refinement_a6.report.json",),
-    )
-    certification_path, certification_report = _first_json(
-        run_dir,
-        (
-            "scientific_portfolio_shadow/downstream_verification/n10.certification.json",
-            "novelty_refinement_a6.n10.certification.json",
-        ),
-    )
-    certified_path, _certified_portfolio = _first_json(
-        run_dir,
-        (
-            "scientific_portfolio_shadow/downstream_verification/n10.certified.portfolio.json",
-            "novelty_refinement_a6.n10.certified.portfolio.json",
-        ),
-    )
+    if viewer_lane == "SCIENTIFIC_PORTFOLIO":
+        semantic_path, semantic_review = _first_json(
+            run_dir,
+            ("scientific_portfolio_shadow/downstream_verification/semantic.review.json",),
+        )
+        external_path, external_report = _first_json(
+            run_dir,
+            ("scientific_portfolio_shadow/downstream_verification/external_novelty.report.json",),
+        )
+        refinement_path, refinement_report = None, {}
+        certification_path, certification_report = _first_json(
+            run_dir,
+            ("scientific_portfolio_shadow/downstream_verification/n10.certification.json",),
+        )
+        certified_path, _certified_portfolio = _first_json(
+            run_dir,
+            ("scientific_portfolio_shadow/downstream_verification/n10.certified.portfolio.json",),
+        )
+    else:
+        semantic_path, semantic_review = _first_json(
+            run_dir,
+            ("semantic_final.review.json", "semantic_axis_a4.review.json"),
+        )
+        external_path, external_report = _first_json(
+            run_dir,
+            ("external_novelty_a52.report.json",),
+        )
+        refinement_path, refinement_report = _first_json(
+            run_dir,
+            ("novelty_refinement_a6.report.json",),
+        )
+        certification_path, certification_report = _first_json(
+            run_dir,
+            ("novelty_refinement_a6.n10.certification.json",),
+        )
+        certified_path, _certified_portfolio = _first_json(
+            run_dir,
+            ("novelty_refinement_a6.n10.certified.portfolio.json",),
+        )
     _, runner_manifest = _first_json(
         run_dir,
         ("e2e_runner.manifest.json", "manifest.json"),
@@ -785,6 +799,8 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
     return {
         "viewer_schema": "graphagents-core-demo-viewer-v1",
         "viewer_mode": "core",
+        "viewer_lane": viewer_lane,
+        "artifact_lane_coherent": True,
         "feasibility_available": False,
         "question": _text(context.get("question"), "GraphAgents scientific discovery"),
         "corpus_id": _text(context.get("corpus_id"), "unknown"),
@@ -819,7 +835,16 @@ def load_core_demo_payload(run_dir: Path) -> dict[str, Any]:
         "semantic_overall_summary": _text(
             semantic_review.get("overall_summary")
         ),
-        "external_status_counts": (
+        "external_status_counts": dict(
+            sorted(
+                Counter(
+                    row["hypothesis"]["novelty_status"]
+                    for row in hypotheses
+                    if row["hypothesis"]["novelty_status"] not in {"", "not_assessed"}
+                ).items()
+            )
+        ),
+        "source_external_status_counts": (
             external_report.get("status_counts")
             if isinstance(external_report.get("status_counts"), dict)
             else {}

@@ -42,7 +42,7 @@ Common scientific-sketch normalization:
 - If the semantic content itself is insufficient for a dimension, use INDETERMINATE for that dimension.
 
 Dimension meanings:
-- task_relevance: how directly the normalized idea addresses or productively extends the requested scientific task.
+- task_relevance: how directly the normalized idea preserves the requested scientific task. Judge intervention/object class, requested source-to-target relation, and primary endpoint separately. A downstream analytical/computational compensation strategy is not a substitute for a requested physical/material/structural intervention unless the question explicitly permits that substitution. Use HIGH only when the requested intervention/object class and primary endpoint are preserved; MODERATE for a genuinely subordinate extension; LOW when the central intervention class or endpoint is replaced.
 - mechanistic_coherence: whether the proposed relations/mechanism form a coherent explanatory structure, without asserting truth.
 - falsifiability: whether the normalized sketch contains a concrete observation that could count against the idea.
 - discriminating_power: whether the normalized sketch distinguishes the idea from a plausible alternative.
@@ -64,6 +64,7 @@ Critical rules:
 - Every materialized hypothesis requires at least one prediction and one falsification criterion.
 - The falsifier observable must correspond to a predicted observable.
 - If a selected idea cannot be responsibly grounded in the supplied positive premises, abstain for that candidate instead of fabricating support.
+- Preserve the research task's intervention/object class and primary endpoint. Do not materialize a downstream analytical/computational compensation strategy as if it were a physical/material/structural solution when the question asks for the latter; abstain unless the question explicitly allows that substitution.
 - Cover every selected candidate exactly once: either one materialization item or one abstention.
 
 The output remains shadow-only and will be passed through the existing HypothesisCompiler and HypothesisValidator before any downstream verification."""

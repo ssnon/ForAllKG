@@ -5,6 +5,7 @@ import json
 import re
 from typing import Protocol
 
+from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from pipeline_core.discovery.external_novelty_contracts import (
     HypothesisNoveltyClaims,
     LiteratureQuery,
@@ -4099,8 +4100,16 @@ class NoveltyClaimDecomposer:
 
 
 class LiteratureQueryPlanner:
-    def __init__(self, *, include_hypothesis_composite: bool = True) -> None:
+    def __init__(
+        self,
+        *,
+        include_hypothesis_composite: bool = True,
+        domain_profile: ScientificDomainProfile | None = None,
+        max_domain_variants_per_claim: int = 1,
+    ) -> None:
         self.include_hypothesis_composite = bool(include_hypothesis_composite)
+        self.domain_profile = domain_profile
+        self.max_domain_variants_per_claim = max(0, int(max_domain_variants_per_claim))
 
     def build(
         self,
@@ -4146,6 +4155,35 @@ class LiteratureQueryPlanner:
                             query_text=cleaned,
                         )
                     )
+                if self.domain_profile is not None and claim.search_queries:
+                    primary = _clean_query(claim.search_queries[0])
+                    added = 0
+                    for variant in self.domain_profile.novelty.targeted_query_variants(primary):
+                        cleaned = _clean_query(variant)
+                        if not cleaned or cleaned.lower() == primary.lower():
+                            continue
+                        key = (hypothesis.hypothesis_id, claim.claim_id, cleaned.lower())
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        queries.append(
+                            LiteratureQuery(
+                                query_id=_stable_id(
+                                    "literature_query",
+                                    hypothesis.hypothesis_id,
+                                    claim.claim_id,
+                                    "claim_domain_variant",
+                                    cleaned,
+                                ),
+                                hypothesis_id=hypothesis.hypothesis_id,
+                                claim_id=claim.claim_id,
+                                query_kind="claim_domain_variant",
+                                query_text=cleaned,
+                            )
+                        )
+                        added += 1
+                        if added >= self.max_domain_variants_per_claim:
+                            break
             if self.include_hypothesis_composite:
                 composite = _clean_query(
                     " ".join(
@@ -4179,7 +4217,7 @@ class LiteratureQueryPlanner:
             "source_portfolio_id": portfolio.portfolio_id,
             "queries": [row.model_dump(mode="json") for row in queries],
             "claims": [row.model_dump(mode="json") for row in decompositions],
-            "policy_version": "external-novelty-query-policy-v1",
+            "policy_version": "external-novelty-query-policy-v2-domain-recall",
         }
         plan_id = _stable_id(
             "literature_query_plan",

@@ -92,7 +92,7 @@ def build_augmented_query_plan(
         "source_portfolio_id": base.source_portfolio_id,
         "queries": [x.model_dump(mode="json") for x in all_queries],
         "claims": [x.model_dump(mode="json") for x in base.claims],
-        "policy_version": "external-novelty-query-policy-v1",
+        "policy_version": base.policy_version,
     }
     full = LiteratureQueryPlan(**full_body, plan_sha256=_sha256_json(full_body))
 
@@ -109,7 +109,7 @@ def build_augmented_query_plan(
         "source_portfolio_id": base.source_portfolio_id,
         "queries": [x.model_dump(mode="json") for x in new_queries],
         "claims": [x.model_dump(mode="json") for x in base.claims],
-        "policy_version": "external-novelty-query-policy-v1",
+        "policy_version": base.policy_version,
     }
     delta = LiteratureQueryPlan(**delta_body, plan_sha256=_sha256_json(delta_body))
     return full, delta

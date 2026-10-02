@@ -79,3 +79,28 @@ def test_build_core_viewer_without_feasibility_artifacts(tmp_path: Path):
     assert "Feasibility not supported for this domain profile" in rendered
     assert "<script src=" not in rendered
     assert "<link rel=" not in rendered
+
+
+
+def test_core_viewer_never_mixes_scientific_portfolio_external_counts_into_legacy_lane(
+    tmp_path: Path,
+):
+    run = _core_fixture(tmp_path)
+    _dump(
+        run / "scientific_portfolio_shadow" / "downstream_verification" / "external_novelty.report.json",
+        {
+            "status_counts": {"NEW_COMBINATION_OF_KNOWN_EFFECTS": 1},
+            "cards": [{
+                "hypothesis_id": "hypothesis:other-lane",
+                "status": "NEW_COMBINATION_OF_KNOWN_EFFECTS",
+            }],
+        },
+    )
+    payload = load_core_demo_payload(run)
+    assert payload["viewer_lane"] == "LEGACY_ALPHA"
+    assert payload["artifact_lane_coherent"] is True
+    assert payload["external_status_counts"] == {"PLAUSIBLY_NOVEL": 1}
+    assert payload["source_external_status_counts"] == {"PLAUSIBLY_NOVEL": 1}
+    assert payload["artifact_paths"]["external_novelty"].endswith(
+        "external_novelty_a52.report.json"
+    )

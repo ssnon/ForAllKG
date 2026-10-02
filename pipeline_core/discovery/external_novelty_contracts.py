@@ -406,6 +406,7 @@ class LiteratureQuery(StrictModel):
     query_kind: Literal[
         "claim_primary",
         "claim_variant",
+        "claim_domain_variant",
         "claim_diagnostic",
         "claim_exact_verification",
         "hypothesis_composite",
@@ -420,9 +421,10 @@ class LiteratureQueryPlan(StrictModel):
     source_portfolio_id: str
     queries: list[LiteratureQuery] = Field(default_factory=list)
     claims: list[HypothesisNoveltyClaims] = Field(default_factory=list)
-    policy_version: Literal["external-novelty-query-policy-v1"] = (
-        "external-novelty-query-policy-v1"
-    )
+    policy_version: Literal[
+        "external-novelty-query-policy-v1",
+        "external-novelty-query-policy-v2-domain-recall",
+    ] = "external-novelty-query-policy-v1"
 
 
 class PriorArtWork(StrictModel):

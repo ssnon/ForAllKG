@@ -68,6 +68,7 @@ CLAIM IMPORTANCE CONTRACT:
 - If the hypothesis contains multiple independent novelty-bearing branches, mark EACH scientifically central branch as core. One apparently stronger branch must not hide another central branch.
 - Use importance=supporting only for genuinely auxiliary claims whose prior-art status does not by itself determine whether the hypothesis remains scientifically distinctive.
 - A distinctive_prediction may be core when that prediction is itself the central higher-order scientific proposition.
+- If the hypothesis title or statement itself asserts that an intervention, design choice, moderator, or processing step improves/reduces a primary scientific outcome, an atomic claim expressing that asserted effect is central and must not be demoted to supporting merely because the same effect also appears in predicted_observations.
 - Generic background relations, already-assumed lower-order components, or explanatory context should normally be supporting or omitted rather than promoted to core.
 - Do not mark every claim supporting merely to avoid committing to which relation carries the hypothesis's distinctiveness.
 - importance is a hypothesis-level selection role. It is NOT a novelty verdict and does not imply that the claim is new.
@@ -79,6 +80,7 @@ NOVELTY SELECTION-ROLE CONTRACT:
 - Set novelty_selection_role=NOVELTY_BEARING only when the hypothesis presents THIS atomic relation as part of the scientific proposition whose saturation or routine reconstruction would remove a claimed source of distinctiveness.
 - Set novelty_selection_role=REQUIRED_ENABLING_RELATION when the relation is a premise, lower-order dependency, or enabling scientific relation needed for the higher-order hypothesis to make sense, but that relation may already be established without by itself eliminating the higher-order distinctiveness.
 - Set novelty_selection_role=TESTING_PREDICTION when the claim primarily operationalizes, measures, discriminates, or falsifies a separately represented novelty-bearing relation rather than adding an independent source of scientific distinctiveness.
+- Do NOT use TESTING_PREDICTION for a directional intervention-to-outcome effect that is itself asserted in the hypothesis title/statement as part of the main scientific proposition, even if a prediction repeats that effect. Such a claim is NOVELTY_BEARING when saturation of that effect would materially remove the claimed distinctiveness.
 - Set novelty_selection_role=AUXILIARY when the claim supplies explanatory, contextual, or secondary scientific content that is not itself part of the hypothesis's novelty-bearing structure.
 - A known-looking or familiar-looking relation must NOT be assigned REQUIRED_ENABLING_RELATION merely because you suspect that it already exists in the literature. The distinction must be justified by its role in the supplied hypothesis.
 - Likewise, an interesting-looking interaction, threshold, reversal, or mechanism must NOT be assigned NOVELTY_BEARING merely because it sounds unusual. The hypothesis itself must make that relation part of its claimed distinctiveness.

@@ -195,6 +195,7 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
         document_compatible_patterns=(
             r"\bsers\b", r"surface[- ]enhanced\s+raman", r"raman",
         ),
+        positive_prior_art_requires_document_compatibility=True,
         mismatch_multiplier=0.35,
         domain_mismatch_reason="sers_domain_mismatch",
         low_scope_reason="low_sers_system_scope_overlap",
