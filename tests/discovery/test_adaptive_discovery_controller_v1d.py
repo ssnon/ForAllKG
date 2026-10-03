@@ -32,17 +32,16 @@ def test_non_retrieval_round_is_not_reuse_mode():
     )
 
 
-def test_mixed_retrieval_batch_fails_closed():
-    with pytest.raises(
-        RuntimeError,
-        match="mixed verification batch",
-    ):
+def test_mixed_retrieval_batch_requires_frozen_reuse_mode():
+    assert (
         _validate_retrieval_batch(
             [
                 "RETRIEVE_MORE",
                 "AXIS_MUTATION",
             ]
         )
+        is True
+    )
 
 
 def test_reused_query_plan_requires_exact_identity():

@@ -4724,6 +4724,244 @@ def run_pipeline(args: argparse.Namespace) -> int:
         }
         runner._save_manifest()
 
+    scientific_portfolio_adaptive_v2_dir = (
+        scientific_portfolio_dir
+        / "adaptive_graph_retraversal_shadow"
+    )
+    scientific_portfolio_adaptive_v2_summary = (
+        scientific_portfolio_adaptive_v2_dir
+        / "adaptive_v2.summary.json"
+    )
+    scientific_portfolio_adaptive_v2_effective_population = (
+        scientific_portfolio_adaptive_v2_dir
+        / "adaptive_v2.effective_population.json"
+    )
+    scientific_portfolio_adaptive_v2_lineage = (
+        scientific_portfolio_adaptive_v2_dir
+        / "context_retraversal.lineage.json"
+    )
+    scientific_portfolio_adaptive_v2_handoff = (
+        scientific_portfolio_adaptive_v2_dir
+        / "graph_retraversal.handoff.json"
+    )
+
+    if args.adaptive_graph_retraversal_shadow:
+        for required_path in (
+            scientific_portfolio_closed_loop_summary,
+            scientific_portfolio_adaptive_summary,
+            scientific_portfolio_adaptive_effective,
+            scientific_portfolio_adaptive_handoff,
+            final_traversal,
+            context,
+            verification_provider_plan,
+        ):
+            if not required_path.is_file():
+                raise RuntimeError(
+                    "Adaptive Graph Retraversal Stage 7.77 requires the "
+                    "completed Stage-7.75/7.76 lineage; missing "
+                    + str(required_path)
+                )
+
+        adaptive_v2_args = [
+            "--context",
+            str(context),
+            "--grounding-traversal",
+            str(final_traversal),
+            "--seed-closed-loop-dir",
+            str(scientific_portfolio_closed_loop_dir),
+            "--initial-local-controller-dir",
+            str(scientific_portfolio_adaptive_dir),
+            "--provider-plan",
+            str(verification_provider_plan),
+            "--domain-profile",
+            str(domain_profile.profile_id),
+            "--model",
+            str(args.model),
+            "--critic-model",
+            str(args.critic_model or args.model),
+            "--controller-model",
+            str(args.critic_model or args.model),
+            "--api-key-env",
+            str(args.api_key_env),
+            "--results-per-query",
+            str(args.results_per_query),
+            "--max-controller-rounds",
+            str(args.adaptive_controller_max_rounds),
+            "--max-local-attempts-per-lineage",
+            str(args.adaptive_controller_max_local_attempts),
+            "--max-graph-retraversals",
+            str(args.adaptive_graph_max_retraversals),
+            "--retraversal-candidate-top-k",
+            str(args.adaptive_graph_candidate_top_k),
+            "--retraversal-selected-top-k",
+            str(args.adaptive_graph_selected_top_k),
+            "--retraversal-paper-expansion-reserve",
+            str(args.adaptive_graph_paper_expansion_reserve),
+            "--retraversal-node-map-k",
+            str(args.adaptive_graph_node_map_k),
+            "--retraversal-endpoint-pair-k",
+            str(args.adaptive_graph_endpoint_pair_k),
+            "--retraversal-max-depth-increment",
+            str(args.adaptive_graph_max_depth_increment),
+            "--retraversal-max-depth-cap",
+            str(args.adaptive_graph_max_depth_cap),
+            "--retraversal-min-new-edge-fraction",
+            str(args.adaptive_graph_min_new_edge_fraction),
+            "--retraversal-min-new-paper-fraction",
+            str(args.adaptive_graph_min_new_paper_fraction),
+            "--retraversal-max-prior-edge-jaccard",
+            str(args.adaptive_graph_max_prior_edge_jaccard),
+            "--retraversal-max-selected-edge-jaccard",
+            str(args.adaptive_graph_max_selected_edge_jaccard),
+            "--output-dir",
+            str(scientific_portfolio_adaptive_v2_dir),
+        ]
+        if args.adaptive_controller_disable_llm:
+            adaptive_v2_args.append(
+                "--disable-controller-llm"
+            )
+        if not args.adaptive_graph_disable_top_n_fallback:
+            adaptive_v2_args.append(
+                "--retraversal-allow-top-n-fallback"
+            )
+        if args.base_url:
+            adaptive_v2_args.extend(
+                ["--base-url", str(args.base_url)]
+            )
+
+        runner.run_stage(
+            "[7.77/13] Adaptive grounded context expansion shadow",
+            "scripts.discovery.run_adaptive_discovery_controller_v2_shadow",
+            adaptive_v2_args,
+            expected=[
+                scientific_portfolio_adaptive_v2_summary,
+                scientific_portfolio_adaptive_v2_effective_population,
+                scientific_portfolio_adaptive_v2_lineage,
+                scientific_portfolio_adaptive_v2_handoff,
+            ],
+        )
+
+        adaptive_v2_payload = _load_json(
+            scientific_portfolio_adaptive_v2_summary
+        )
+
+        if (
+            adaptive_v2_payload.get(
+                "initial_local_controller_reused"
+            )
+            is not True
+        ):
+            raise RuntimeError(
+                "Stage 7.77 must reuse the completed Stage-7.76 local "
+                "controller as context epoch 0."
+            )
+
+        if (
+            adaptive_v2_payload.get(
+                "stage8_input_changed"
+            )
+            is not False
+            or adaptive_v2_payload.get(
+                "production_selection_changed"
+            )
+            is not False
+            or adaptive_v2_payload.get(
+                "canonical_graph_mutated"
+            )
+            is not False
+            or adaptive_v2_payload.get(
+                "external_prior_art_as_positive_premise"
+            )
+            is not False
+        ):
+            raise RuntimeError(
+                "Stage 7.77 authority/provenance contract violated."
+            )
+
+        runner.manifest[
+            "adaptive_graph_retraversal_shadow"
+        ] = {
+            "enabled": True,
+            "implementation_version":
+                adaptive_v2_payload.get(
+                    "implementation_version",
+                    "adaptive-discovery-controller-v2b",
+                ),
+            "summary":
+                str(
+                    scientific_portfolio_adaptive_v2_summary
+                ),
+            "status":
+                adaptive_v2_payload.get("status"),
+            "epoch_count":
+                adaptive_v2_payload.get(
+                    "epoch_count", 0
+                ),
+            "graph_retraversal_execution_count":
+                adaptive_v2_payload.get(
+                    "graph_retraversal_execution_count",
+                    0,
+                ),
+            "graph_retraversal_handoff_count":
+                adaptive_v2_payload.get(
+                    "graph_retraversal_handoff_count",
+                    0,
+                ),
+            "context_lineage_event_count":
+                adaptive_v2_payload.get(
+                    "context_lineage_event_count",
+                    0,
+                ),
+            "final_effective_count":
+                adaptive_v2_payload.get(
+                    "final_effective_count", 0
+                ),
+            "final_effective_hypothesis_ids":
+                adaptive_v2_payload.get(
+                    "final_effective_hypothesis_ids",
+                    [],
+                ),
+            "effective_population":
+                str(
+                    scientific_portfolio_adaptive_v2_effective_population
+                ),
+            "context_lineage":
+                str(
+                    scientific_portfolio_adaptive_v2_lineage
+                ),
+            "remaining_handoff":
+                str(
+                    scientific_portfolio_adaptive_v2_handoff
+                ),
+            "stage_7_76_reused_as_epoch_0":
+                True,
+            "external_prior_art_as_positive_premise":
+                False,
+            "controller_has_novelty_authority":
+                False,
+            "controller_has_generation_authority":
+                False,
+            "n10_research_selection_authority":
+                False,
+            "stage8_input_changed":
+                False,
+            "production_selection_changed":
+                False,
+            "canonical_graph_mutated":
+                False,
+        }
+        runner._save_manifest()
+    else:
+        runner.manifest[
+            "adaptive_graph_retraversal_shadow"
+        ] = {
+            "enabled": False,
+            "stage8_input_changed": False,
+            "production_selection_changed": False,
+            "canonical_graph_mutated": False,
+        }
+        runner._save_manifest()
+
     stage8_axis_plan_input = _stage8_axis_plan_input(
         control_plan=task_conditioned_axis_plan,
         open_world_plan=(
@@ -7281,6 +7519,88 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--adaptive-graph-retraversal-shadow",
+        action="store_true",
+        help=(
+            "Run Stage 7.77 grounded context expansion after Adaptive-v1. "
+            "Stage 7.76 is reused verbatim as context epoch 0; the stage may "
+            "select a different grounded KG neighborhood, rebuild a validated "
+            "HypothesisContext, generate from structurally new premises, and "
+            "restart bounded local search. Shadow only; Stage 8 and production "
+            "selection remain unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--adaptive-graph-max-retraversals",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--adaptive-graph-candidate-top-k",
+        type=int,
+        default=32,
+    )
+    parser.add_argument(
+        "--adaptive-graph-selected-top-k",
+        type=int,
+        default=6,
+    )
+    parser.add_argument(
+        "--adaptive-graph-paper-expansion-reserve",
+        type=int,
+        default=2,
+    )
+    parser.add_argument(
+        "--adaptive-graph-node-map-k",
+        type=int,
+        default=30,
+    )
+    parser.add_argument(
+        "--adaptive-graph-endpoint-pair-k",
+        type=int,
+        default=24,
+    )
+    parser.add_argument(
+        "--adaptive-graph-max-depth-increment",
+        type=int,
+        default=2,
+    )
+    parser.add_argument(
+        "--adaptive-graph-max-depth-cap",
+        type=int,
+        default=16,
+    )
+    parser.add_argument(
+        "--adaptive-graph-min-new-edge-fraction",
+        type=float,
+        default=0.35,
+    )
+    parser.add_argument(
+        "--adaptive-graph-min-new-paper-fraction",
+        type=float,
+        default=0.25,
+    )
+    parser.add_argument(
+        "--adaptive-graph-max-prior-edge-jaccard",
+        type=float,
+        default=0.85,
+    )
+    parser.add_argument(
+        "--adaptive-graph-max-selected-edge-jaccard",
+        type=float,
+        default=0.85,
+    )
+    parser.add_argument(
+        "--adaptive-graph-disable-top-n-fallback",
+        action="store_true",
+        help=(
+            "Disable the Stage-7.77 semantic-stop to top_n fallback. "
+            "Default E2E policy allows the fallback, matching the upstream "
+            "grounding failover philosophy."
+        ),
+    )
+
+    parser.add_argument(
         "--scientific-portfolio-production-enforce",
         action="store_true",
         help=(
@@ -7427,6 +7747,11 @@ def parse_args() -> argparse.Namespace:
 
     args = parser.parse_args()
 
+    if args.adaptive_graph_retraversal_shadow:
+        # Adaptive Stage 7.77 consumes the exact completed Stage-7.76 local
+        # controller as context epoch 0. Never rerun that epoch inside v2.
+        args.adaptive_discovery_controller_shadow = True
+
     if args.adaptive_discovery_controller_shadow:
         # Adaptive Stage 7.76 consumes the frozen Stage-7.75 closed-loop
         # baseline and therefore enables its complete upstream shadow stack.
@@ -7439,6 +7764,55 @@ def parse_args() -> argparse.Namespace:
         args.idea_evolution_shadow = True
         args.scientific_portfolio_selection_shadow = True
         args.scientific_portfolio_verification_shadow = True
+
+    if args.adaptive_graph_max_retraversals < 1:
+        parser.error(
+            "--adaptive-graph-max-retraversals must be >= 1"
+        )
+    if args.adaptive_graph_candidate_top_k < 1:
+        parser.error(
+            "--adaptive-graph-candidate-top-k must be >= 1"
+        )
+    if (
+        args.adaptive_graph_selected_top_k < 1
+        or args.adaptive_graph_selected_top_k
+        > args.adaptive_graph_candidate_top_k
+    ):
+        parser.error(
+            "--adaptive-graph-selected-top-k must be between 1 and "
+            "--adaptive-graph-candidate-top-k"
+        )
+    if (
+        args.adaptive_graph_paper_expansion_reserve < 0
+        or args.adaptive_graph_paper_expansion_reserve
+        > args.adaptive_graph_selected_top_k
+    ):
+        parser.error(
+            "--adaptive-graph-paper-expansion-reserve must be between 0 "
+            "and --adaptive-graph-selected-top-k"
+        )
+    for flag, value in (
+        (
+            "--adaptive-graph-min-new-edge-fraction",
+            args.adaptive_graph_min_new_edge_fraction,
+        ),
+        (
+            "--adaptive-graph-min-new-paper-fraction",
+            args.adaptive_graph_min_new_paper_fraction,
+        ),
+        (
+            "--adaptive-graph-max-prior-edge-jaccard",
+            args.adaptive_graph_max_prior_edge_jaccard,
+        ),
+        (
+            "--adaptive-graph-max-selected-edge-jaccard",
+            args.adaptive_graph_max_selected_edge_jaccard,
+        ),
+    ):
+        if not 0.0 <= float(value) <= 1.0:
+            parser.error(
+                flag + " must be between 0 and 1"
+            )
 
     if args.scientific_portfolio_production_enforce:
         # Production integration consumes the existing exploration stack.

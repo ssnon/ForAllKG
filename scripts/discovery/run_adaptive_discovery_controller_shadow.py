@@ -136,7 +136,7 @@ def _retrieval_only_actions(
     )
 
 
-def _validate_retrieval_batch(
+def _mixed_retrieval_batch(
     actions: list[str],
 ) -> bool:
     normalized = [
@@ -144,31 +144,29 @@ def _validate_retrieval_batch(
         for action in actions
         if str(action or "")
     ]
-
-    has_retrieval = (
-        "RETRIEVE_MORE"
-        in normalized
-    )
-
-    retrieval_only = (
-        _retrieval_only_actions(
-            normalized
+    return (
+        "RETRIEVE_MORE" in normalized
+        and any(
+            action != "RETRIEVE_MORE"
+            for action in normalized
         )
     )
 
-    if (
-        has_retrieval
-        and not retrieval_only
-    ):
-        raise RuntimeError(
-            "Adaptive controller v1d does not "
-            "permit RETRIEVE_MORE in a mixed "
-            "verification batch. Exact frozen "
-            "query-plan reuse is required for "
-            "retrieval-only evidence escalation."
-        )
 
-    return retrieval_only
+def _validate_retrieval_batch(
+    actions: list[str],
+) -> bool:
+    # True means this round must keep the complete hypothesis population
+    # unchanged and reuse the exact frozen query plan. In v1f, a mixed
+    # controller plan is handled by a synchronized evidence barrier:
+    # mutations/terminal actions are deferred and every current hypothesis
+    # receives the same one-time RETRIEVE_MORE evidence escalation.
+    normalized = [
+        str(action or "")
+        for action in actions
+        if str(action or "")
+    ]
+    return "RETRIEVE_MORE" in normalized
 
 
 def _assert_reused_query_plan_identity(
@@ -348,7 +346,10 @@ def _append_history(
                 "round_index": round_index,
                 "source_hypothesis_id": source,
                 "current_hypothesis_id": current,
-                "action": controller.get("action"),
+                "action": (
+                    rec.get("history_action_override")
+                    or controller.get("action")
+                ),
                 "generation_route": rec.get("route"),
                 "generation_decision": rec.get("decision"),
                 "post_verification_decision": (
@@ -848,7 +849,12 @@ def main() -> int:
             str(row.action)
             for row in plan.decisions
         ]
-        retrieval_only_round = (
+        mixed_retrieval_round = (
+            _mixed_retrieval_batch(
+                round_actions
+            )
+        )
+        frozen_retrieval_round = (
             _validate_retrieval_batch(
                 round_actions
             )
@@ -862,6 +868,33 @@ def main() -> int:
             original = current_cards[hid]
             root = decision["root_hypothesis_id"]
             attempt_history = history.get(root, [])
+
+            if (
+                mixed_retrieval_round
+                and action != "RETRIEVE_MORE"
+            ):
+                retrieval_requested = True
+                generated_cards.append(original)
+                generation_records.append(
+                    {
+                        "source_hypothesis_id": hid,
+                        "route": "MIXED_BATCH_EVIDENCE_BARRIER",
+                        "decision": (
+                            "DEFERRED_CONTROLLER_ACTION_FOR_FROZEN_RETRIEVAL"
+                        ),
+                        "generated_hypothesis_id": hid,
+                        "deferred_controller_action": action,
+                        "history_action_override": "RETRIEVE_MORE",
+                        "reason_codes": [
+                            "mixed_batch_contains_retrieve_more",
+                            "exact_query_plan_reuse_requires_unchanged_population",
+                            "controller_action_deferred_until_fresh_evidence",
+                            "batch_wide_retrieval_slot_consumed",
+                            "hypothesis_unchanged",
+                        ],
+                    }
+                )
+                continue
 
             if action == "KEEP":
                 effective_cards[hid] = original
@@ -997,11 +1030,11 @@ def main() -> int:
             cards=generated_cards,
             round_index=round_index,
             preserve_portfolio_id=(
-                retrieval_only_round
+                frozen_retrieval_round
             ),
         )
 
-        if retrieval_only_round:
+        if frozen_retrieval_round:
             previous_ids = sorted(
                 str(card.hypothesis_id)
                 for card
@@ -1064,7 +1097,7 @@ def main() -> int:
                 2 if retrieval_requested else 1
             ),
             reuse_query_plan=(
-                retrieval_only_round
+                frozen_retrieval_round
             ),
         )
 
@@ -1181,7 +1214,16 @@ def main() -> int:
                     2 if retrieval_requested else 1
                 ),
                 "query_plan_reused": (
-                    retrieval_only_round
+                    frozen_retrieval_round
+                ),
+                "mixed_retrieval_evidence_barrier": (
+                    mixed_retrieval_round
+                ),
+                "deferred_controller_action_count": sum(
+                    1
+                    for row in generation_records
+                    if row.get("route")
+                    == "MIXED_BATCH_EVIDENCE_BARRIER"
                 ),
                 "verification_results_per_query": (
                     _verification_results_per_query(
