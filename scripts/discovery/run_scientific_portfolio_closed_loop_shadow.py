@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -208,6 +209,148 @@ def run_aggregation(
     )
 
 
+def _derive_external_topology_completion_path(
+    external_report: Path,
+) -> Path:
+    name = external_report.name
+    suffix = ".report.json"
+    if not name.endswith(suffix):
+        raise ValueError(
+            "cannot derive topology-completion artifact from external report: "
+            + str(external_report)
+        )
+    return external_report.with_name(
+        name[: -len(suffix)] + ".topology_completion_shadow.json"
+    )
+
+
+def _empty_gen1_seed_generation_report(
+    gen0_portfolio: HypothesisPortfolio,
+) -> dict[str, Any]:
+    records = []
+    for card in gen0_portfolio.hypotheses:
+        hid = str(card.hypothesis_id)
+        records.append(
+            {
+                "source_hypothesis_id": hid,
+                "route": "EMPTY_GEN1_ADAPTIVE_SEED",
+                "decision": "CARRIED_UNRESOLVED_GEN0_SEED",
+                "generated_hypothesis_id": None,
+                "reason_codes": [
+                    "stage_775_generated_no_gen1_candidate",
+                    "unresolved_gen0_preserved_for_adaptive_search",
+                    "no_scientific_authority_created",
+                ],
+            }
+        )
+    return {
+        "schema_version": "adaptive-discovery-generation-report-v1",
+        "source_portfolio_id": str(gen0_portfolio.portfolio_id),
+        "output_portfolio_id": str(gen0_portfolio.portfolio_id),
+        "round_index": 1,
+        "records": records,
+        "decision_counts": {
+            "CARRIED_UNRESOLVED_GEN0_SEED": len(records),
+        },
+        "route_counts": {
+            "EMPTY_GEN1_ADAPTIVE_SEED": len(records),
+        },
+        "external_prior_art_as_positive_premise": False,
+        "generation_authority_created": False,
+        "empty_gen1_fallback_seed": True,
+    }
+
+
+def materialize_empty_gen1_adaptive_seed(
+    *,
+    output_dir: Path,
+    gen0_portfolio: HypothesisPortfolio,
+    external_query_plan: Path,
+    external_report: Path,
+    external_prior_art: Path,
+    external_source_binding: Path,
+    gen0_aggregation: Path,
+) -> Path:
+    completion = _derive_external_topology_completion_path(
+        external_report
+    )
+    required = (
+        external_query_plan,
+        external_report,
+        external_prior_art,
+        external_source_binding,
+        completion,
+        gen0_aggregation,
+    )
+    missing = [str(path) for path in required if not path.is_file()]
+    if missing:
+        raise RuntimeError(
+            "cannot materialize empty-Gen1 adaptive seed; missing "
+            + repr(missing)
+        )
+
+    seed = output_dir / "adaptive_seed"
+    gen1 = seed / "gen1"
+    gen1.mkdir(parents=True, exist_ok=True)
+
+    write(seed / "gen1.portfolio.json", gen0_portfolio)
+    write(
+        seed / "generation.report.json",
+        _empty_gen1_seed_generation_report(gen0_portfolio),
+    )
+
+    empty_effective = gen0_portfolio.model_copy(
+        update={
+            "hypotheses": [],
+            "abstention_reason": (
+                "Stage-7.75 produced no effective Gen1 candidate; "
+                "unresolved Gen0 is preserved only as adaptive-search seed."
+            ),
+        }
+    )
+    write(seed / "effective_gen1.portfolio.json", empty_effective)
+    write(
+        seed / "post_verification_decisions.json",
+        {
+            "schema_version": "empty-gen1-adaptive-seed-decisions-v1",
+            "decision_counts": {},
+            "rows": [],
+            "empty_gen1_fallback_seed": True,
+            "production_selection_changed": False,
+        },
+    )
+
+    copies = {
+        external_query_plan: gen1 / "external.claims_queries.json",
+        external_report: gen1 / "external.report.json",
+        external_prior_art: gen1 / "external.prior_art.json",
+        external_source_binding: gen1 / "external.atomic_source_binding.json",
+        completion: gen1 / "external.topology_completion_shadow.json",
+        gen0_aggregation: gen1 / "residual_aggregation.report.json",
+    }
+    for source, target in copies.items():
+        shutil.copy2(source, target)
+
+    write(
+        seed / "adaptive_seed.summary.json",
+        {
+            "schema_version": "empty-gen1-adaptive-seed-v1",
+            "source_stage": "7.75",
+            "source_population": "GEN0_UNRESOLVED",
+            "stage_775_gen1_empty": True,
+            "seed_hypothesis_count": len(gen0_portfolio.hypotheses),
+            "seed_hypothesis_ids": [
+                str(card.hypothesis_id)
+                for card in gen0_portfolio.hypotheses
+            ],
+            "external_prior_art_as_positive_premise": False,
+            "generation_authority_created": False,
+            "production_selection_changed": False,
+        },
+    )
+    return seed
+
+
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser()
     p.add_argument("--context", required=True, type=Path)
@@ -318,6 +461,17 @@ def main() -> int:
     if not gen1_portfolio.hypotheses:
         effective = gen1_portfolio
         write(args.output_dir / "effective_gen1.portfolio.json", effective)
+
+        adaptive_seed = materialize_empty_gen1_adaptive_seed(
+            output_dir=args.output_dir,
+            gen0_portfolio=gen0_portfolio,
+            external_query_plan=args.external_query_plan,
+            external_report=args.external_report,
+            external_prior_art=args.external_prior_art,
+            external_source_binding=args.external_source_binding,
+            gen0_aggregation=gen0_aggregation,
+        )
+
         summary = summarize_closed_loop(
             gen0_state=gen0_state,
             feedback_plan=feedback_plan,
@@ -331,8 +485,12 @@ def main() -> int:
             effective_portfolio=effective,
         )
         summary["status"] = "COMPLETE_EMPTY_GEN1"
+        summary["adaptive_seed_available"] = True
+        summary["adaptive_seed_source"] = "GEN0_UNRESOLVED"
+        summary["adaptive_seed_dir"] = str(adaptive_seed)
         write(args.output_dir / "closed_loop.summary.json", summary)
         print("Closed-loop complete: no Gen1 candidate available.")
+        print("Adaptive seed preserved from unresolved Gen0:", adaptive_seed)
         return 0
 
     gen1 = args.output_dir / "gen1"

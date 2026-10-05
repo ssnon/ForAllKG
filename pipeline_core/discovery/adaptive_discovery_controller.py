@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from pathlib import Path
 from collections import Counter
 from typing import Any, Literal, Mapping, Sequence
 
@@ -33,6 +34,10 @@ from pipeline_core.discovery.question_axis_responsiveness_llm import (
 )
 from pipeline_core.discovery.question_hypothesis_responsiveness import (
     evaluate_hypothesis_task_preservation,
+)
+from pipeline_core.discovery.prospective_identification_materialization_shadow import (
+    compact_shadow_record,
+    run_prospective_identification_shadow,
 )
 from pipeline_core.llm.llm_telemetry import (
     run_instructor_structured_call,
@@ -859,6 +864,19 @@ def generate_axis_mutation(
         ]
         return None, record
 
+    prospective_shadow = run_prospective_identification_shadow(
+        context=context,
+        candidate=candidate,
+        source_stage="adaptive_7_76_axis_mutation",
+        model=critic_model,
+        api_key_env=api_key_env,
+        base_url=base_url,
+        parse_retries=3,
+        output_prefix=Path(
+            output_prefix + ".prospective_identification"
+        ),
+    )
+
     record.update(
         {
             "decision": "ACCEPTED_GENERATION_SHADOW",
@@ -868,8 +886,12 @@ def generate_axis_mutation(
             "task_decision_stable": task.decision_stable,
             "task_source_decision_stable": task.source_decision_stable,
             "task_stability": stability.model_dump(mode="json"),
+            "prospective_identification_shadow": (
+                compact_shadow_record(prospective_shadow)
+            ),
             "reason_codes": [
                 "axis_mutation_compiled_and_validated",
+                "prospective_identification_shadow_observed",
                 "task_preservation_passed",
                 "external_prior_art_used_as_boundary_only",
             ],

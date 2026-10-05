@@ -40,6 +40,10 @@ from pipeline_core.discovery.question_axis_responsiveness_llm import (
 from pipeline_core.discovery.question_hypothesis_responsiveness import (
     evaluate_hypothesis_task_preservation,
 )
+from pipeline_core.discovery.prospective_identification_materialization_shadow import (
+    compact_shadow_record,
+    run_prospective_identification_shadow,
+)
 
 
 OPERATORS = [
@@ -437,6 +441,7 @@ def run_feedback_generation(
     api_key_env: str,
     base_url: str | None,
     output_dir: Path,
+    prospective_identification_stage: str = "closed_loop_7_75_feedback_generation",
 ) -> tuple[dict[str, Any], HypothesisPortfolio]:
     output_dir.mkdir(parents=True, exist_ok=True)
     prompt_dir = output_dir / "prompts"
@@ -702,6 +707,21 @@ def run_feedback_generation(
             )
             continue
 
+        prospective_shadow = run_prospective_identification_shadow(
+            context=context,
+            candidate=candidate,
+            source_stage=prospective_identification_stage,
+            model=critic_model,
+            api_key_env=api_key_env,
+            base_url=base_url,
+            parse_retries=3,
+            output_prefix=(
+                output_dir
+                / "prospective_identification"
+                / f"{index:02d}_{str(candidate.hypothesis_id).split(':')[-1]}"
+            ),
+        )
+
         output_cards.append(candidate)
         records.append(
             {
@@ -720,10 +740,14 @@ def run_feedback_generation(
                     set(map(str, candidate.premise_statement_ids))
                     - set(map(str, original.premise_statement_ids))
                 ),
+                "prospective_identification_shadow": (
+                    compact_shadow_record(prospective_shadow)
+                ),
                 "reason_codes": [
                     "compiled_and_validated",
                     "task_preservation_passed",
                     "external_prior_art_used_as_boundary_only",
+                    "prospective_identification_shadow_observed",
                 ],
             }
         )
@@ -776,6 +800,9 @@ def run_feedback_generation(
         "external_prior_art_as_positive_premise": False,
         "novelty_authority_created": False,
         "generation_authority_created": False,
+        "prospective_identification_shadow_enabled": True,
+        "prospective_identification_has_generation_authority": False,
+        "prospective_identification_has_selection_authority": False,
         "production_selection_changed": False,
     }
     report["report_id"] = stable_id(

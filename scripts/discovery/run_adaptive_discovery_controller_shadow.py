@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -19,8 +20,13 @@ from pipeline_core.discovery.adaptive_discovery_controller import (
     normalize_seed_action,
     stable_id,
 )
+from pipeline_core.discovery.atomic_scientific_source_provenance import (
+    AtomicScientificSourceBindingBundle,
+    subset_atomic_scientific_source_binding_bundle,
+)
 from pipeline_core.discovery.external_novelty_contracts import (
     ExternalNoveltyReport,
+    LiteratureQueryPlan,
 )
 from pipeline_core.discovery.hypothesis_contracts import (
     HypothesisPortfolio,
@@ -397,6 +403,229 @@ def _append_history(
 
 
 
+def _sha256_json(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _query_plan_hypothesis_ids(
+    plan: LiteratureQueryPlan,
+) -> set[str]:
+    return {
+        str(group.hypothesis_id)
+        for group in plan.claims
+    }
+
+
+def _subset_query_plan_for_hypotheses(
+    *,
+    source_plan: LiteratureQueryPlan,
+    active_hypothesis_ids: set[str],
+) -> LiteratureQueryPlan:
+    active = {
+        str(value)
+        for value in active_hypothesis_ids
+        if str(value)
+    }
+    if not active:
+        raise ValueError(
+            "active query-plan projection requires a non-empty population"
+        )
+
+    source_ids = _query_plan_hypothesis_ids(source_plan)
+    missing = sorted(active - source_ids)
+    if missing:
+        raise ValueError(
+            "active hypothesis missing from source query plan: "
+            + repr(missing)
+        )
+
+    claims = [
+        group
+        for group in source_plan.claims
+        if str(group.hypothesis_id) in active
+    ]
+    queries = [
+        row
+        for row in source_plan.queries
+        if str(row.hypothesis_id) in active
+    ]
+
+    projected_group_ids = {
+        str(group.hypothesis_id)
+        for group in claims
+    }
+    if projected_group_ids != active:
+        raise ValueError(
+            "projected query-plan hypothesis groups do not match active set"
+        )
+
+    payload = source_plan.model_dump(mode="json")
+    payload.pop("plan_id", None)
+    payload.pop("plan_sha256", None)
+    payload["claims"] = [
+        row.model_dump(mode="json")
+        for row in claims
+    ]
+    payload["queries"] = [
+        row.model_dump(mode="json")
+        for row in queries
+    ]
+
+    raw_plan_id = "|".join(
+        str(value)
+        for value in (
+            source_plan.source_portfolio_id,
+            *[row.query_id for row in queries],
+        )
+    ).encode("utf-8")
+    plan_id = (
+        "literature_query_plan:"
+        + hashlib.sha256(raw_plan_id).hexdigest()[:20]
+    )
+    body = {
+        **payload,
+        "plan_id": plan_id,
+    }
+    return LiteratureQueryPlan(
+        **body,
+        plan_sha256=_sha256_json(body),
+    )
+
+
+def _subset_topology_completion_payload(
+    *,
+    payload: dict[str, Any],
+    active_hypothesis_ids: set[str],
+) -> dict[str, Any]:
+    active = {
+        str(value)
+        for value in active_hypothesis_ids
+        if str(value)
+    }
+    result = dict(payload)
+    records = result.get("records", [])
+    if not isinstance(records, list):
+        raise ValueError(
+            "topology-completion records must be a list"
+        )
+
+    result["records"] = [
+        dict(row)
+        for row in records
+        if (
+            isinstance(row, dict)
+            and str(row.get("hypothesis_id") or "")
+            in active
+        )
+    ]
+    return result
+
+
+def _materialize_active_verification_projection(
+    *,
+    source_query: Path,
+    source_binding: Path,
+    source_completion: Path,
+    active_hypothesis_ids: set[str],
+    output_dir: Path,
+    label: str,
+) -> tuple[Path, Path, Path, dict[str, Any]]:
+    source_plan = LiteratureQueryPlan.model_validate_json(
+        source_query.read_text(encoding="utf-8")
+    )
+    source_ids = _query_plan_hypothesis_ids(source_plan)
+    active = {
+        str(value)
+        for value in active_hypothesis_ids
+        if str(value)
+    }
+
+    if not active:
+        raise ValueError(
+            "cannot project verification artifacts to an empty active population"
+        )
+    if not active.issubset(source_ids):
+        raise ValueError(
+            "active verification population is not a subset of source query plan"
+        )
+
+    if active == source_ids:
+        return (
+            source_query,
+            source_binding,
+            source_completion,
+            {
+                "label": label,
+                "applied": False,
+                "source_hypothesis_count": len(source_ids),
+                "active_hypothesis_count": len(active),
+                "excluded_hypothesis_ids": [],
+                "source_query_plan_id": source_plan.plan_id,
+                "projected_query_plan_id": source_plan.plan_id,
+                "exact_claim_query_subset": True,
+                "scientific_query_surface_changed": False,
+                "positive_premise_authority_changed": False,
+            },
+        )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    projected_plan = _subset_query_plan_for_hypotheses(
+        source_plan=source_plan,
+        active_hypothesis_ids=active,
+    )
+
+    source_bundle = AtomicScientificSourceBindingBundle.model_validate_json(
+        source_binding.read_text(encoding="utf-8")
+    )
+    projected_bundle = subset_atomic_scientific_source_binding_bundle(
+        source_bundle=source_bundle,
+        source_query_plan=source_plan,
+        output_query_plan=projected_plan,
+    )
+
+    completion_payload = load(source_completion)
+    projected_completion = _subset_topology_completion_payload(
+        payload=completion_payload,
+        active_hypothesis_ids=active,
+    )
+
+    query_path = output_dir / "active.claims_queries.json"
+    binding_path = output_dir / "active.atomic_source_binding.json"
+    completion_path = output_dir / "active.topology_completion_shadow.json"
+
+    write(query_path, projected_plan)
+    write(binding_path, projected_bundle)
+    write(completion_path, projected_completion)
+
+    summary = {
+        "schema_version":
+            "adaptive-active-verification-projection-v1",
+        "label": label,
+        "applied": True,
+        "source_hypothesis_count": len(source_ids),
+        "active_hypothesis_count": len(active),
+        "active_hypothesis_ids": sorted(active),
+        "excluded_hypothesis_ids": sorted(source_ids - active),
+        "source_query_plan_id": source_plan.plan_id,
+        "projected_query_plan_id": projected_plan.plan_id,
+        "source_query_plan_sha256": source_plan.plan_sha256,
+        "projected_query_plan_sha256": projected_plan.plan_sha256,
+        "exact_claim_query_subset": True,
+        "scientific_query_surface_changed": False,
+        "positive_premise_authority_changed": False,
+        "external_prior_art_as_positive_premise": False,
+    }
+    write(output_dir / "projection.summary.json", summary)
+    return query_path, binding_path, completion_path, summary
+
+
 def _verification_results_per_query(
     *,
     base: int,
@@ -442,6 +671,9 @@ def _run_fresh_verification(
     previous_completion: Path,
     retrieval_multiplier: int,
     reuse_query_plan: bool = False,
+    prior_art_memory_query: Path | None = None,
+    prior_art_memory_external: Path | None = None,
+    prior_art_memory_prior: Path | None = None,
 ) -> dict[str, Path]:
     ext_prefix = round_dir / "external"
     results_per_query = (
@@ -450,6 +682,22 @@ def _run_fresh_verification(
             maximum=args.max_results_per_query,
             multiplier=retrieval_multiplier,
         )
+    )
+
+    memory_query = (
+        prior_art_memory_query
+        if prior_art_memory_query is not None
+        else previous_query
+    )
+    memory_external = (
+        prior_art_memory_external
+        if prior_art_memory_external is not None
+        else previous_external
+    )
+    memory_prior = (
+        prior_art_memory_prior
+        if prior_art_memory_prior is not None
+        else previous_prior
     )
 
     cmd = [
@@ -467,9 +715,9 @@ def _run_fresh_verification(
         "--pre-review-coverage-shadow",
         "--downstream-gate-shadow",
         "--source-bound-topology-shadow",
-        "--prior-art-memory-query-plan", str(previous_query),
-        "--prior-art-memory-report", str(previous_external),
-        "--prior-art-memory-packet", str(previous_prior),
+        "--prior-art-memory-query-plan", str(memory_query),
+        "--prior-art-memory-report", str(memory_external),
+        "--prior-art-memory-packet", str(memory_prior),
         "--output-prefix", str(ext_prefix),
         "--save-prompts",
     ]
@@ -699,6 +947,26 @@ def parser() -> argparse.ArgumentParser:
     return p
 
 
+def _resolve_stage775_seed_root(
+    seed_closed_loop_dir: Path,
+) -> tuple[Path, str]:
+    summary_path = seed_closed_loop_dir / "closed_loop.summary.json"
+    if not summary_path.is_file():
+        return seed_closed_loop_dir, "STAGE_775_GEN1"
+
+    summary = load(summary_path)
+    if str(summary.get("status") or "") != "COMPLETE_EMPTY_GEN1":
+        return seed_closed_loop_dir, "STAGE_775_GEN1"
+
+    fallback = seed_closed_loop_dir / "adaptive_seed"
+    if not fallback.is_dir():
+        raise RuntimeError(
+            "Stage-7.75 completed with empty Gen1 but did not preserve "
+            "the unresolved Gen0 adaptive seed: " + str(fallback)
+        )
+    return fallback, "STAGE_775_GEN0_EMPTY_GEN1_FALLBACK"
+
+
 def main() -> int:
     args = parser().parse_args()
     args.output_dir = args.output_dir.expanduser().resolve()
@@ -710,28 +978,20 @@ def main() -> int:
 
     context = load_context_source(args.context)
 
-    seed_portfolio_path = args.seed_closed_loop_dir / "gen1.portfolio.json"
-    seed_generation_path = args.seed_closed_loop_dir / "generation.report.json"
-    seed_effective_path = (
-        args.seed_closed_loop_dir / "effective_gen1.portfolio.json"
-    )
-    seed_decisions_path = (
-        args.seed_closed_loop_dir / "post_verification_decisions.json"
-    )
-    seed_query = args.seed_closed_loop_dir / "gen1/external.claims_queries.json"
-    seed_external = args.seed_closed_loop_dir / "gen1/external.report.json"
-    seed_prior = args.seed_closed_loop_dir / "gen1/external.prior_art.json"
-    seed_binding = (
+    seed_root, seed_source_mode = _resolve_stage775_seed_root(
         args.seed_closed_loop_dir
-        / "gen1/external.atomic_source_binding.json"
     )
-    seed_completion = (
-        args.seed_closed_loop_dir
-        / "gen1/external.topology_completion_shadow.json"
-    )
-    seed_aggregation = (
-        args.seed_closed_loop_dir / "gen1/residual_aggregation.report.json"
-    )
+
+    seed_portfolio_path = seed_root / "gen1.portfolio.json"
+    seed_generation_path = seed_root / "generation.report.json"
+    seed_effective_path = seed_root / "effective_gen1.portfolio.json"
+    seed_decisions_path = seed_root / "post_verification_decisions.json"
+    seed_query = seed_root / "gen1/external.claims_queries.json"
+    seed_external = seed_root / "gen1/external.report.json"
+    seed_prior = seed_root / "gen1/external.prior_art.json"
+    seed_binding = seed_root / "gen1/external.atomic_source_binding.json"
+    seed_completion = seed_root / "gen1/external.topology_completion_shadow.json"
+    seed_aggregation = seed_root / "gen1/residual_aggregation.report.json"
 
     for path in (
         seed_portfolio_path,
@@ -788,6 +1048,7 @@ def main() -> int:
         }
     )
 
+    active_projection_events: list[dict[str, Any]] = []
     current_query = seed_query
     current_external = seed_external
     current_prior = seed_prior
@@ -795,6 +1056,37 @@ def main() -> int:
     current_completion = seed_completion
     current_aggregation = seed_aggregation
     current_state = seed_state
+
+    # Stage 7.75 may already have promoted some Gen1 hypotheses to the
+    # effective set. The adaptive controller intentionally excludes those
+    # hypotheses from its active population. Project the existing frozen
+    # verification surfaces to that exact active subset while keeping the
+    # complete Stage-7.75 prior-art memory available for recall.
+    current_memory_query = seed_query
+    current_memory_external = seed_external
+    current_memory_prior = seed_prior
+
+    if current_portfolio.hypotheses:
+        (
+            current_query,
+            current_binding,
+            current_completion,
+            projection_event,
+        ) = _materialize_active_verification_projection(
+            source_query=seed_query,
+            source_binding=seed_binding,
+            source_completion=seed_completion,
+            active_hypothesis_ids={
+                str(card.hypothesis_id)
+                for card in current_portfolio.hypotheses
+            },
+            output_dir=(
+                args.output_dir
+                / "seed_active_projection"
+            ),
+            label="STAGE_7_75_TO_ADAPTIVE_ACTIVE",
+        )
+        active_projection_events.append(projection_event)
 
     backend = None
     if not args.disable_controller_llm:
@@ -996,6 +1288,9 @@ def main() -> int:
                     api_key_env=args.api_key_env,
                     base_url=args.base_url,
                     output_dir=round_dir / f"generation_{hid.split(':')[-1]}",
+                    prospective_identification_stage=(
+                        "adaptive_7_76_" + str(action).lower()
+                    ),
                 )
                 generated_cards.extend(subportfolio.hypotheses)
                 generation_records.extend(subreport.get("records", []))
@@ -1099,6 +1394,9 @@ def main() -> int:
             reuse_query_plan=(
                 frozen_retrieval_round
             ),
+            prior_art_memory_query=current_memory_query,
+            prior_art_memory_external=current_memory_external,
+            prior_art_memory_prior=current_memory_prior,
         )
 
         cohort_payload = load(artifacts["cohort"])
@@ -1255,6 +1553,15 @@ def main() -> int:
                 ),
             }
         )
+
+        # Keep complete previous-round verification as prior-art memory.
+        # If effective/audit-failed hypotheses leave the active population,
+        # only the frozen query/binding/topology surfaces are subset-projected
+        # for a possible next RETRIEVE_MORE round.
+        current_memory_query = artifacts["query"]
+        current_memory_external = artifacts["external"]
+        current_memory_prior = artifacts["prior"]
+
         current_query = artifacts["query"]
         current_external = artifacts["external"]
         current_prior = artifacts["prior"]
@@ -1262,6 +1569,31 @@ def main() -> int:
         current_completion = artifacts["completion"]
         current_aggregation = artifacts["aggregation"]
         current_state = next_state
+
+        if current_portfolio.hypotheses:
+            (
+                current_query,
+                current_binding,
+                current_completion,
+                projection_event,
+            ) = _materialize_active_verification_projection(
+                source_query=artifacts["query"],
+                source_binding=artifacts["binding"],
+                source_completion=artifacts["completion"],
+                active_hypothesis_ids={
+                    str(card.hypothesis_id)
+                    for card in current_portfolio.hypotheses
+                },
+                output_dir=(
+                    round_dir
+                    / "next_active_projection"
+                ),
+                label=(
+                    "POST_VERIFICATION_TO_NEXT_ACTIVE_"
+                    + round_dir.name.upper()
+                ),
+            )
+            active_projection_events.append(projection_event)
 
     if current_portfolio.hypotheses:
         for card in current_portfolio.hypotheses:
@@ -1352,6 +1684,11 @@ def main() -> int:
         "terminal_stop_count": len(terminal_stops),
         "audit_fail_closed_count": len(audit_failures),
         "audit_fail_closed_events": audit_failures,
+        "active_verification_projection_count": sum(
+            bool(row.get("applied"))
+            for row in active_projection_events
+        ),
+        "active_verification_projection_events": active_projection_events,
         "max_controller_rounds": args.max_controller_rounds,
         "max_local_attempts_per_lineage": (
             args.max_local_attempts_per_lineage
@@ -1382,6 +1719,10 @@ def main() -> int:
     print("rounds:", len(round_summaries))
     print("actions:", summary["action_counts"])
     print("seed effective:", summary["seed_effective_count"])
+    print(
+        "active verification projections:",
+        summary["active_verification_projection_count"],
+    )
     print("final effective:", summary["final_effective_count"])
     print(
         "graph retraversal requests:",

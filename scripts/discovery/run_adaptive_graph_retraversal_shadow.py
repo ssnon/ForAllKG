@@ -39,6 +39,49 @@ def write(path: Path, value: Any) -> None:
     )
 
 
+def build_structural_exhaustion_summary(
+    *,
+    request_id: str | None,
+    source_context_id: str,
+    output_context_id: str,
+    selected_path_count: int,
+    new_eligible_premise_ids: list[str],
+    selected_paper_expansion_count: int,
+    paper_expansion_candidate_count: int,
+    selected_traversal: str,
+    output_context: str,
+    context_delta_audit: str,
+    context_delta_audit_id: str | None,
+) -> dict[str, Any]:
+    return {
+        "schema_version": "adaptive-graph-retraversal-summary-v1",
+        "implementation_version": "adaptive-graph-retraversal-v2b",
+        "status": "NO_STRUCTURALLY_NEW_ELIGIBLE_POSITIVE_PREMISE",
+        "request_id": request_id,
+        "source_context_id": source_context_id,
+        "output_context_id": output_context_id,
+        "selected_path_count": int(selected_path_count),
+        "new_eligible_premise_ids": list(new_eligible_premise_ids),
+        "new_eligible_premise_count": len(new_eligible_premise_ids),
+        "structurally_new_eligible_premise_ids": [],
+        "structurally_new_eligible_premise_count": 0,
+        "selected_paper_expansion_count": int(selected_paper_expansion_count),
+        "paper_expansion_candidate_count": int(paper_expansion_candidate_count),
+        "selected_traversal": selected_traversal,
+        "output_context": output_context,
+        "context_delta_audit": context_delta_audit,
+        "context_delta_audit_id": context_delta_audit_id,
+        "reason": (
+            "Retraversal produced a new context but no structurally new "
+            "eligible positive premise. New paths/statements alone do not "
+            "create positive-premise authority."
+        ),
+        "external_prior_art_as_positive_premise": False,
+        "external_boundary_used_for_positive_path_selection": False,
+        "canonical_graph_mutated": False,
+    }
+
+
 def run(label: str, cmd: list[str], output_dir: Path) -> None:
     print()
     print("=" * 88)
@@ -392,10 +435,42 @@ def main() -> int:
         )
     )
     if not structural_new:
-        raise RuntimeError(
-            "Retraversal context added no structurally new eligible "
-            "positive premise; new statement IDs alone are insufficient."
+        summary = build_structural_exhaustion_summary(
+            request_id=request.get("request_id"),
+            source_context_id=str(context.context_id),
+            output_context_id=str(new_context.context_id),
+            selected_path_count=len(selected),
+            new_eligible_premise_ids=new_only,
+            selected_paper_expansion_count=selection.get(
+                "selected_paper_expansion_count", 0
+            ),
+            paper_expansion_candidate_count=selection.get(
+                "paper_expansion_candidate_count", 0
+            ),
+            selected_traversal=str(selected_path),
+            output_context=str(new_context_path),
+            context_delta_audit=str(context_delta_path),
+            context_delta_audit_id=context_delta.get("audit_id"),
         )
+        write(
+            args.output_dir / "retraversal.summary.json",
+            summary,
+        )
+
+        print()
+        print("===== ADAPTIVE GRAPH RETRAVERSAL V2B =====")
+        print("source context:", context.context_id)
+        print("output context:", new_context.context_id)
+        print("selected paths:", len(selected))
+        print("new eligible premises:", len(new_only))
+        print("structurally new eligible premises: 0")
+        print(
+            "status:",
+            "NO_STRUCTURALLY_NEW_ELIGIBLE_POSITIVE_PREMISE",
+        )
+        print("EXTERNAL_PRIOR_ART_AS_POSITIVE_PREMISE=False")
+        print("CANONICAL_GRAPH_MUTATED=False")
+        return 0
 
     lineage = {
         "schema_version": "adaptive-context-retraversal-lineage-v1",

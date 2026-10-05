@@ -26,6 +26,7 @@ from pipeline_core.discovery.sers_closed_loop_decision_consolidation_v2 import (
 )
 from scripts.discovery.run_adaptive_discovery_controller_shadow import (
     _generation_report,
+    _resolve_stage775_seed_root,
     _run_fresh_verification,
 )
 from scripts.discovery.run_scientific_portfolio_closed_loop_shadow import (
@@ -210,6 +211,65 @@ def _find_card_with_portfolio_id(
     return None
 
 
+
+def _materialized_hypothesis_ids(
+    *,
+    seed_dir: Path,
+    local_dir: Path,
+) -> set[str]:
+    ids: set[str] = set()
+
+    candidates = sorted(
+        local_dir.glob("round_*/candidate.portfolio.json"),
+        reverse=True,
+    )
+    candidates.append(seed_dir / "gen1.portfolio.json")
+
+    for path in candidates:
+        if not path.is_file():
+            continue
+        portfolio = _portfolio(path)
+        ids.update(
+            str(card.hypothesis_id)
+            for card in portfolio.hypotheses
+        )
+
+    return ids
+
+
+def _latest_materialized_history_head(
+    *,
+    rows: list[dict[str, Any]],
+    materialized_hypothesis_ids: set[str],
+) -> tuple[str | None, int | None, list[str]]:
+    # Generation records may retain generated_hypothesis_id for candidates
+    # rejected by grounding/task-preservation checks. Those IDs are useful
+    # diagnostics but are not valid lineage heads for graph retraversal.
+    materialized = {
+        str(value)
+        for value in materialized_hypothesis_ids
+        if str(value)
+    }
+
+    stale_tail: list[str] = []
+
+    for index in range(len(rows) - 1, -1, -1):
+        row = rows[index]
+        current = str(
+            row.get("current_hypothesis_id") or ""
+        )
+        if not current:
+            continue
+
+        if current in materialized:
+            return current, index, list(reversed(stale_tail))
+
+        if current not in stale_tail:
+            stale_tail.append(current)
+
+    return None, None, list(reversed(stale_tail))
+
+
 def _verification_artifacts(
     *,
     seed_dir: Path,
@@ -281,6 +341,7 @@ def _eligible_request(
     *,
     local_dir: Path,
     effective_ids: set[str],
+    seed_dir: Path | None = None,
 ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
     """Resolve one v2 graph request from explicit v1 handoff or exhaustion.
 
@@ -312,6 +373,19 @@ def _eligible_request(
 
     synthesized: list[dict[str, Any]] = []
 
+    # Backward-compatible helper contract:
+    # production/v2 main always supplies seed_dir, so materialized-lineage
+    # validation is enabled. Direct unit callers may omit it.
+    materialization_guard_enabled = seed_dir is not None
+    materialized_ids = (
+        _materialized_hypothesis_ids(
+            seed_dir=seed_dir,
+            local_dir=local_dir,
+        )
+        if seed_dir is not None
+        else set()
+    )
+
     for root, rows in (history.get("history_by_root", {}) or {}).items():
         if not isinstance(rows, list):
             continue
@@ -319,9 +393,30 @@ def _eligible_request(
         if not current_rows:
             continue
 
-        current_id = str(
-            current_rows[-1].get("current_hypothesis_id") or ""
-        )
+        if materialization_guard_enabled:
+            (
+                current_id,
+                materialized_row_index,
+                stale_tail_ids,
+            ) = _latest_materialized_history_head(
+                rows=current_rows,
+                materialized_hypothesis_ids=materialized_ids,
+            )
+
+            # Fail closed in production: a lineage with only rejected /
+            # non-materialized generated identities cannot seed graph
+            # retraversal.
+            if current_id is None:
+                continue
+        else:
+            # Compatibility mode is only for direct helper/unit callers.
+            # The production main path always passes seed_dir.
+            current_id = str(
+                current_rows[-1].get("current_hypothesis_id") or ""
+            )
+            materialized_row_index = len(current_rows) - 1
+            stale_tail_ids = []
+
         if current_id in effective_ids:
             continue
 
@@ -372,6 +467,10 @@ def _eligible_request(
                 "attempt_history": current_rows,
                 "handoff_state": "SYNTHESIZED_FROM_V1_EXHAUSTION",
                 "v2_request_reason": reason,
+                "materialized_lineage_head_recovered": True,
+                "materialized_history_row_index": materialized_row_index,
+                "stale_history_tail_count": len(stale_tail_ids),
+                "stale_history_tail_hypothesis_ids": stale_tail_ids,
             }
         )
 
@@ -430,7 +529,12 @@ def main() -> int:
             initial_local_controller_dir
         )
     current_context_path = args.context.expanduser().resolve()
-    current_seed_dir = args.seed_closed_loop_dir.expanduser().resolve()
+    raw_initial_seed_dir = args.seed_closed_loop_dir.expanduser().resolve()
+    (
+        resolved_initial_seed_dir,
+        initial_seed_source_mode,
+    ) = _resolve_stage775_seed_root(raw_initial_seed_dir)
+    current_seed_dir = resolved_initial_seed_dir
     prior_traversals = [args.grounding_traversal.expanduser().resolve()]
 
     global_effective: dict[str, dict[str, Any]] = {}
@@ -480,6 +584,7 @@ def main() -> int:
 
         effective_ids = set(global_effective)
         request, deferred = _eligible_request(
+            seed_dir=current_seed_dir,
             local_dir=local_dir,
             effective_ids=effective_ids,
         )
@@ -897,6 +1002,8 @@ def main() -> int:
             if initial_local_controller_dir is not None
             else None
         ),
+        "initial_seed_source_mode": initial_seed_source_mode,
+        "initial_seed_root": str(resolved_initial_seed_dir),
         "external_prior_art_as_positive_premise": False,
         "controller_has_novelty_authority": False,
         "controller_has_generation_authority": False,

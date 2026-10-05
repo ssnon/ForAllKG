@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from pipeline_core.discovery.adaptive_discovery_controller import (
@@ -31,6 +32,10 @@ from pipeline_core.discovery.question_axis_responsiveness_llm import (
 )
 from pipeline_core.discovery.question_hypothesis_responsiveness import (
     evaluate_hypothesis_task_preservation,
+)
+from pipeline_core.discovery.prospective_identification_materialization_shadow import (
+    compact_shadow_record,
+    run_prospective_identification_shadow,
 )
 
 
@@ -376,6 +381,19 @@ def generate_retraversal_hypothesis(
         ]
         return None, record
 
+    prospective_shadow = run_prospective_identification_shadow(
+        context=new_context,
+        candidate=candidate,
+        source_stage="adaptive_7_77_graph_context_reset",
+        model=critic_model,
+        api_key_env=api_key_env,
+        base_url=base_url,
+        parse_retries=3,
+        output_prefix=Path(
+            output_prefix + ".prospective_identification"
+        ),
+    )
+
     record.update(
         {
             "decision": "ACCEPTED_GENERATION_SHADOW",
@@ -387,8 +405,12 @@ def generate_retraversal_hypothesis(
             "task_preservation": task.task_class,
             "task_decision_stable": task.decision_stable,
             "task_stability": stability.model_dump(mode="json"),
+            "prospective_identification_shadow": (
+                compact_shadow_record(prospective_shadow)
+            ),
             "reason_codes": [
                 "new_grounded_context_used",
+                "prospective_identification_shadow_observed",
                 "new_positive_premise_used",
                 "task_preservation_passed",
                 "external_prior_art_used_as_boundary_only",

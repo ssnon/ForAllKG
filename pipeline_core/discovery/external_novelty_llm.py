@@ -564,6 +564,16 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
         self.capture_prompts = bool(capture_prompts)
         self.max_abstract_chars = int(max_abstract_chars)
         self.evidence_grounded_review = bool(evidence_grounded_review)
+        self.max_structured_output_tokens = int(
+            os.getenv(
+                "EXTERNAL_NOVELTY_MAX_COMPLETION_TOKENS",
+                "8192",
+            )
+        )
+        if self.max_structured_output_tokens < 1024:
+            raise ValueError(
+                "EXTERNAL_NOVELTY_MAX_COMPLETION_TOKENS must be >= 1024"
+            )
         self.prompt_records: list[ExternalNoveltyPromptRecord] = []
         self.telemetry_path = telemetry_path
         self.telemetry_context = dict(telemetry_context or {})
@@ -655,12 +665,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            request_kwargs={
+                "max_tokens": self.max_structured_output_tokens,
+            },
             telemetry_path=self.telemetry_path,
             telemetry_context={
                 **self.telemetry_context,
                 "pipeline": "external_novelty",
                 "stage": "decompose",
                 "call_kind": "structured",
+                "max_structured_output_tokens": (
+                    self.max_structured_output_tokens
+                ),
                 "hypothesis_id": hypothesis.hypothesis_id,
             },
         )
@@ -746,12 +762,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            request_kwargs={
+                "max_tokens": self.max_structured_output_tokens,
+            },
             telemetry_path=self.telemetry_path,
             telemetry_context={
                 **self.telemetry_context,
                 "pipeline": "external_novelty",
                 "stage": "prior_art_review",
                 "call_kind": "structured",
+                "max_structured_output_tokens": (
+                    self.max_structured_output_tokens
+                ),
                 "claim_id": claim.claim_id,
             },
         )
@@ -852,12 +874,18 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
             ],
             temperature=self.temperature,
             max_retries=self.parse_retries,
+            request_kwargs={
+                "max_tokens": self.max_structured_output_tokens,
+            },
             telemetry_path=self.telemetry_path,
             telemetry_context={
                 **self.telemetry_context,
                 "pipeline": "external_novelty",
                 "stage": "exact_verification_prior_art_review",
                 "call_kind": "structured",
+                "max_structured_output_tokens": (
+                    self.max_structured_output_tokens
+                ),
                 "claim_id": claim.claim_id,
                 "hypothesis_id": claim.hypothesis_id,
             },
@@ -1073,6 +1101,11 @@ class InstructorOpenAICompatibleExternalNoveltyBackend:
                 max_retries=(
                     self.parse_retries
                 ),
+                request_kwargs={
+                    "max_tokens": (
+                        self.max_structured_output_tokens
+                    ),
+                },
                 telemetry_path=(
                     self.telemetry_path
                 ),
