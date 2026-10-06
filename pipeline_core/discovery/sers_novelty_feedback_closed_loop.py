@@ -442,6 +442,7 @@ def run_feedback_generation(
     base_url: str | None,
     output_dir: Path,
     prospective_identification_stage: str = "closed_loop_7_75_feedback_generation",
+    generation_temperature: float = 0.0,
 ) -> tuple[dict[str, Any], HypothesisPortfolio]:
     output_dir.mkdir(parents=True, exist_ok=True)
     prompt_dir = output_dir / "prompts"
@@ -451,7 +452,7 @@ def run_feedback_generation(
         model=model,
         api_key_env=api_key_env,
         base_url=base_url,
-        temperature=0.0,
+        temperature=float(generation_temperature),
         parse_retries=2,
         telemetry_path=output_dir / "generation.telemetry.jsonl",
         telemetry_context={

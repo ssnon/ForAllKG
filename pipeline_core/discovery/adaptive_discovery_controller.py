@@ -737,6 +737,7 @@ def generate_axis_mutation(
     api_key_env: str,
     base_url: str | None,
     output_prefix: str,
+    generation_temperature: float = 0.0,
 ) -> tuple[Any | None, dict[str, Any]]:
     allowed = safe_premise_ids(context)
     assembler = AdaptiveAxisMutationPromptAssembler(
@@ -751,6 +752,7 @@ def generate_axis_mutation(
         model=model,
         api_key_env=api_key_env,
         base_url=base_url,
+        temperature=float(generation_temperature),
         parse_retries=3,
         telemetry_path=output_prefix + ".telemetry.jsonl",
         telemetry_context={
