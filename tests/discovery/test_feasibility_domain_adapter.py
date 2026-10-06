@@ -12,6 +12,7 @@ from domains.feasibility_registry import (
     resolve_feasibility_adapter,
 )
 from domains.dac_her.feasibility import DacHerFeasibilityAdapter
+from domains.sers.feasibility import SERSFeasibilityAdapter
 
 
 def _minimal_profile(
@@ -49,7 +50,14 @@ def test_builtin_dac_her_profile_resolves_dac_her_adapter():
     assert isinstance(adapter, DacHerFeasibilityAdapter)
     assert adapter.adapter_id == "dac_her"
     assert adapter.domain_profile_id == "dac_her"
-    assert available_feasibility_adapters() == ("dac_her",)
+    assert available_feasibility_adapters() == ("dac_her", "sers_au_ag")
+
+
+def test_builtin_sers_profile_resolves_sers_adapter():
+    adapter = get_feasibility_adapter("sers_au_ag")
+    assert isinstance(adapter, SERSFeasibilityAdapter)
+    assert adapter.adapter_id == "sers_au_ag"
+    assert adapter.domain_profile_id == "sers_au_ag"
 
 
 def test_profile_without_feasibility_adapter_fails_closed():

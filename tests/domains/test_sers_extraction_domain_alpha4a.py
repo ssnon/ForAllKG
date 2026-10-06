@@ -22,9 +22,11 @@ def test_sers_profile_and_extraction_adapter_are_registered():
     assert adapter.default_data_root == "data_sers"
 
 
-def test_sers_feasibility_still_fails_closed_in_alpha4a():
-    with pytest.raises(ValueError, match="has no feasibility adapter"):
-        get_feasibility_adapter("sers_au_ag")
+def test_sers_feasibility_adapter_is_registered():
+    profile = get_domain_profile("sers_au_ag")
+    adapter = get_feasibility_adapter("sers_au_ag")
+    assert profile.feasibility_adapter_id == "sers_au_ag"
+    assert adapter.domain_profile_id == "sers_au_ag"
 
 
 def test_shared_schema_accepts_sers_entity_identifier():

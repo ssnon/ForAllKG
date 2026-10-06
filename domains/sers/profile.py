@@ -215,5 +215,5 @@ SERS_AU_AG_PROFILE = ScientificDomainProfile(
     reproducibility_adapter_id="sers_au_ag",
     metric_definition_adapter_id="sers_au_ag",
     trend_adapter_id="sers_au_ag",
-    feasibility_adapter_id=None,
+    feasibility_adapter_id="sers_au_ag",
 )

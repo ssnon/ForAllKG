@@ -16,10 +16,12 @@ def test_dac_her_declares_and_resolves_feasibility_capability():
     assert adapter.domain_profile_id == profile.profile_id
 
 
-def test_sers_without_feasibility_adapter_is_valid_core_pipeline_capability_state():
+def test_sers_declares_and_resolves_feasibility_capability():
     profile = get_domain_profile("sers_au_ag")
-    assert profile.feasibility_adapter_id is None
-    assert _resolve_feasibility_capability(profile) is None
+    adapter = _resolve_feasibility_capability(profile)
+    assert adapter is not None
+    assert adapter.adapter_id == "sers_au_ag"
+    assert adapter.domain_profile_id == profile.profile_id
 
 
 def test_explicit_but_unknown_feasibility_adapter_remains_fail_closed():

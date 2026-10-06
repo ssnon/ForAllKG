@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from pipeline_core.domain.domain_profile import ScientificDomainProfile
 from domains.dac_her.feasibility import DAC_HER_FEASIBILITY_ADAPTER
+from domains.sers.feasibility import SERS_FEASIBILITY_ADAPTER
 from domains.registry import get_domain_profile
 from pipeline_core.domain.feasibility_domain import FeasibilityDomainAdapter
 
 
 _ADAPTERS: dict[str, FeasibilityDomainAdapter] = {
     DAC_HER_FEASIBILITY_ADAPTER.adapter_id: DAC_HER_FEASIBILITY_ADAPTER,
+    SERS_FEASIBILITY_ADAPTER.adapter_id: SERS_FEASIBILITY_ADAPTER,
 }
 
 

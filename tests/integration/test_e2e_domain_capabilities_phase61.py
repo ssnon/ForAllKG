@@ -21,7 +21,7 @@ def test_capability_resolver_uses_the_supplied_profile_object():
 
 
 def test_none_capability_still_skips_cleanly():
-    profile = get_domain_profile("sers_au_ag")
+    profile = get_domain_profile("catalysis_mechanism")
     assert profile.feasibility_adapter_id is None
     assert _resolve_feasibility_capability(profile) is None
 
