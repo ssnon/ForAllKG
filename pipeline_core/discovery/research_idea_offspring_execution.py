@@ -1141,7 +1141,7 @@ def select_offspring_for_realization(
                 if row.idea_id in selected:
                     continue
                 node = node_by_id[row.idea_id]
-                primary_parent = node.parent_idea_ids[0]
+                primary_parent = row.parent_idea_ids[0]
                 if per_parent[primary_parent] >= max_per_parent:
                     continue
                 if node.kernel_sha256 in selected_kernels and row.channel != "EXPLOIT":
@@ -1152,7 +1152,7 @@ def select_offspring_for_realization(
                 continue
             node = node_by_id[choice.idea_id]
             selected.append(choice.idea_id)
-            per_parent[node.parent_idea_ids[0]] += 1
+            per_parent[choice.parent_idea_ids[0]] += 1
             selected_kernels.add(node.kernel_sha256)
             progress = True
             if len(selected) >= max_realizations:

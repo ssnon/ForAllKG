@@ -219,6 +219,18 @@ def test_openalex_transport_strips_terminal_question_mark(
     )
 
 
+def test_openalex_transport_strips_internal_question_mark(
+    monkeypatch,
+):
+    assert (
+        _captured_search_text(
+            monkeypatch,
+            "When does orientation fail? Identify competing mechanisms.",
+        )
+        == "When does orientation fail Identify competing mechanisms."
+    )
+
+
 def test_openalex_transport_normalizes_hstar_notation(
     monkeypatch,
 ):

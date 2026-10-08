@@ -377,8 +377,17 @@ class OpenAlexProvider:
         limit: int,
     ) -> list[PriorArtWork]:
         transport_query_text = str(query.query_text)
-        if transport_query_text.endswith("?"):
-            transport_query_text = transport_query_text[:-1].rstrip()
+
+        # OpenAlex interprets "?" as a single-character wildcard.
+        # This provider uses the default stemmed `search=` endpoint,
+        # where wildcard syntax is rejected with HTTP 400. Scientific
+        # LiteratureQuery values may be ordinary natural-language
+        # questions, so normalize question-mark punctuation only in the
+        # OpenAlex transport representation. The canonical query text
+        # and cross-provider provenance remain unchanged.
+        transport_query_text = re.sub(r"\?+", " ", transport_query_text)
+        transport_query_text = " ".join(transport_query_text.split())
+
         if "*" in transport_query_text:
             if transport_query_text.count("*") != transport_query_text.count("H*"):
                 raise OpenAlexProviderError(
