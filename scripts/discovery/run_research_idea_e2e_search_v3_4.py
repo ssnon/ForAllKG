@@ -100,6 +100,10 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--novelty-results-per-query", type=int, default=6)
     p.add_argument("--provider-plan", type=Path, default=None)
     p.add_argument("--save-prompts", action="store_true")
+    p.add_argument("--feedback-cache-dir", type=Path, default=None)
+    p.add_argument("--incremental-program-family", action="store_true")
+    p.add_argument("--exact-prior-art-cache", action="store_true")
+    p.add_argument("--prior-art-cache-max-age-hours", type=float, default=24.0)
     return p
 
 
@@ -179,6 +183,13 @@ def _cycle_cmd(
         cmd += ["--provider-plan", str(args.provider_plan.expanduser().resolve())]
     if args.save_prompts:
         cmd.append("--save-prompts")
+    if args.feedback_cache_dir is not None:
+        cmd += ["--feedback-cache-dir", str(args.feedback_cache_dir.expanduser().resolve())]
+    if args.incremental_program_family:
+        cmd.append("--incremental-program-family")
+    if args.exact_prior_art_cache:
+        cmd.append("--exact-prior-art-cache")
+    cmd += ["--prior-art-cache-max-age-hours", str(args.prior_art_cache_max_age_hours)]
     return cmd
 
 

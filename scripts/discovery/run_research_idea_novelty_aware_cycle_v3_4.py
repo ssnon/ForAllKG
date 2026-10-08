@@ -31,6 +31,12 @@ from pipeline_core.discovery.research_idea_epistemic_generational_evolution impo
     build_epistemic_generation_plan,
     execute_epistemic_generation,
 )
+from pipeline_core.discovery.research_idea_feedback_cache_m2d import (
+    incremental_program_pairs,
+    load_prior_art_cache,
+    prior_art_cache_key,
+    save_prior_art_cache,
+)
 from pipeline_core.discovery.research_idea_novelty_aware_reproduction_v3_4 import (
     NoveltyAwareOffspringBackendAdapter,
     adapt_fertility_report_v3_4,
@@ -165,6 +171,98 @@ def _program_pairs(
     return batch
 
 
+def _incremental_program_pairs(
+    *,
+    nodes: list[ResearchIdeaNode],
+    output_dir: Path,
+    model: str,
+    api_key_env: str,
+    base_url: str | None,
+    parse_retries: int,
+    cache_dir: Path,
+) -> ScientificProgramPairBatch:
+    """Optional pair-local semantics, evaluated only for changed/unseen pairs."""
+    if len(nodes) < 2:
+        return ScientificProgramPairBatch(pairs=[])
+    payload = program_family_prompt_payload(nodes)
+    scoped_prompt = PROGRAM_FAMILY_SYSTEM_PROMPT.replace(
+        "Assess EVERY unordered pair exactly once.",
+        "Assess ONLY target_pairs given in the user message, exactly once each. "
+        "Do not produce any other pairs.",
+    )
+    scoped_prompt += (
+        "\nAssess each pair using ONLY its two idea records, independent of the other "
+        "ideas in the batch. Contextual population membership must not determine "
+        "the pair's relation.\n"
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    def infer_missing(missing: list[tuple[str, str]]) -> list[dict[str, Any]]:
+        api_key = os.getenv(api_key_env)
+        if not api_key:
+            raise RuntimeError(f"No API key available. Set {api_key_env}.")
+        try:
+            import instructor
+            from openai import OpenAI
+        except ImportError as exc:
+            raise RuntimeError("program-family audit requires openai and instructor") from exc
+        kwargs: dict[str, Any] = {"api_key": api_key}
+        if base_url:
+            kwargs["base_url"] = base_url
+        client = instructor.from_openai(OpenAI(**kwargs), mode=instructor.Mode.JSON)
+        task = {**payload, "target_pairs": [list(pair) for pair in missing]}
+        user_text = (
+            "Evaluate ONLY target_pairs. Each unordered target pair must appear once. "
+            "Return no other pairs. Preserve IDs verbatim.\n\n"
+            + json.dumps(task, ensure_ascii=False, indent=2)
+        )
+        (output_dir / "program_family.incremental.prompt.txt").write_text(
+            "SYSTEM\n======\n" + scoped_prompt + "\n\nUSER\n====\n" + user_text + "\n",
+            encoding="utf-8",
+        )
+        batch, _ = run_instructor_structured_call(
+            client.chat.completions,
+            model=model,
+            response_model=ScientificProgramPairBatch,
+            messages=[
+                {"role": "system", "content": scoped_prompt},
+                {"role": "user", "content": user_text},
+            ],
+            temperature=0.0,
+            max_retries=parse_retries,
+            telemetry_path=output_dir / "program_family.telemetry.jsonl",
+            telemetry_context={
+                "pipeline": "sis_m2d_incremental_program_pairs",
+                "stage": "semantic_scientific_program_family",
+            },
+            semantic_components={
+                "authority": "SEARCH_PROGRAM_FAMILY_ONLY",
+                "truth_authority": False,
+                "novelty_authority": False,
+            },
+        )
+        if not isinstance(batch, ScientificProgramPairBatch):
+            batch = ScientificProgramPairBatch.model_validate(batch)
+        return [row.model_dump(mode="json") for row in batch.pairs]
+
+    rows, cache_stats = incremental_program_pairs(
+        idea_payloads=payload["ideas"],
+        source_contexts={
+            row.idea_id: row.source_context_sha256 for row in nodes
+        },
+        model=model,
+        base_url=base_url,
+        system_prompt=scoped_prompt,
+        cache_dir=cache_dir,
+        infer_missing=infer_missing,
+    )
+    batch = ScientificProgramPairBatch.model_validate({"pairs": rows})
+    validate_program_pair_batch(idea_ids=[row.idea_id for row in nodes], batch=batch)
+    _write(output_dir / "program_family.semantic_pairs.json", batch)
+    _write(output_dir / "program_family.cache_stats.json", cache_stats)
+    return batch
+
+
 def _run_prior_art_probe(
     *,
     portfolio_path: Path,
@@ -176,8 +274,50 @@ def _run_prior_art_probe(
     providers: str,
     results_per_query: int,
     provider_plan: Path | None,
+    cache_dir: Path | None = None,
+    cache_max_age_hours: float = 24.0,
 ) -> tuple[LiteratureQueryPlan, ExternalNoveltyReport]:
     prefix = output_dir / "contemporaneous_prior_art"
+    plan_path = Path(str(prefix) + ".claims_queries.json")
+    report_path = Path(str(prefix) + ".report.json")
+    cache_fingerprint = None
+    source_portfolio_id = None
+    if cache_dir is not None:
+        source_portfolio_id = _load(portfolio_path, HypothesisPortfolio).portfolio_id
+        cache_fingerprint = prior_art_cache_key(
+            portfolio_bytes=portfolio_path.read_bytes(),
+            context_id=context.context_id,
+            context_sha256=context.context_sha256,
+            model=model,
+            base_url=base_url,
+            providers=providers,
+            results_per_query=results_per_query,
+            provider_plan_bytes=provider_plan.read_bytes() if provider_plan is not None else None,
+            runner_bytes=Path(__file__).with_name("run_external_novelty.py").read_bytes(),
+        )
+        cached = load_prior_art_cache(
+            cache_dir=cache_dir,
+            fingerprint=cache_fingerprint,
+            max_age_hours=cache_max_age_hours,
+            source_portfolio_id=source_portfolio_id,
+        )
+        if cached is not None:
+            try:
+                cached_plan = LiteratureQueryPlan.model_validate(cached[0])
+                cached_report = ExternalNoveltyReport.model_validate(cached[1])
+            except Exception:
+                pass  # Invalid structured report => fresh prior-art probe.
+            else:
+                _write(plan_path, cached_plan)
+                _write(report_path, cached_report)
+                _write(output_dir / "prior_art.cache_stats.json", {
+                    "status": "EXACT_INPUT_CACHE_HIT",
+                    "freshness_hours_max": cache_max_age_hours,
+                    "fingerprint": cache_fingerprint,
+                    "source_portfolio_id": source_portfolio_id,
+                    "truth_authority": False,
+                })
+                return cached_plan, cached_report
     cmd = [
         sys.executable,
         "-m",
@@ -210,9 +350,25 @@ def _run_prior_art_probe(
         raise RuntimeError(
             f"contemporaneous prior-art probe failed with return code {result.returncode}"
         )
-    plan_path = Path(str(prefix) + ".claims_queries.json")
-    report_path = Path(str(prefix) + ".report.json")
-    return _load(plan_path, LiteratureQueryPlan), _load(report_path, ExternalNoveltyReport)
+    plan = _load(plan_path, LiteratureQueryPlan)
+    report = _load(report_path, ExternalNoveltyReport)
+    if cache_dir is not None:
+        if report.source_portfolio_id != source_portfolio_id:
+            raise ValueError("External novelty report does not match exact source portfolio")
+        save_prior_art_cache(
+            cache_dir=cache_dir,
+            fingerprint=cache_fingerprint,
+            plan=plan.model_dump(mode="json"),
+            report=report.model_dump(mode="json"),
+        )
+        _write(output_dir / "prior_art.cache_stats.json", {
+            "status": "FRESH_PROBE_CACHE_STORED",
+            "freshness_hours_max": cache_max_age_hours,
+            "fingerprint": cache_fingerprint,
+            "source_portfolio_id": source_portfolio_id,
+            "truth_authority": False,
+        })
+    return plan, report
 
 
 def _write_augmented_prompts(path: Path, backend: NoveltyAwareOffspringBackendAdapter) -> None:
@@ -271,6 +427,13 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--novelty-results-per-query", type=int, default=6)
     p.add_argument("--provider-plan", type=Path, default=None)
     p.add_argument("--save-prompts", action="store_true")
+    p.add_argument("--feedback-cache-dir", type=Path, default=None,
+                   help="Opt-in M2-D cache root; default unchanged v3.4 behavior")
+    p.add_argument("--incremental-program-family", action="store_true",
+                   help="Opt-in pair-local semantic family evaluation with reuse")
+    p.add_argument("--exact-prior-art-cache", action="store_true",
+                   help="Opt-in exact same portfolio/query cache, freshness <=24 hours")
+    p.add_argument("--prior-art-cache-max-age-hours", type=float, default=24.0)
     return p
 
 
@@ -284,6 +447,11 @@ def main() -> int:
         raise ValueError("--max-selected-per-same-program must be >= 1")
     if args.population_growth_budget < 0:
         raise ValueError("--population-growth-budget must be >= 0")
+    if (args.incremental_program_family or args.exact_prior_art_cache) and args.feedback_cache_dir is None:
+        raise ValueError("M2-D caching requires --feedback-cache-dir")
+    if args.exact_prior_art_cache and not 0 < args.prior_art_cache_max_age_hours <= 24:
+        raise ValueError("prior-art cache age must be (0, 24] hours")
+    feedback_cache = args.feedback_cache_dir.expanduser().resolve() if args.feedback_cache_dir else None
 
     case_root = args.case_root.expanduser().resolve()
     sp = case_root / "scientific_portfolio_shadow"
@@ -390,6 +558,8 @@ def main() -> int:
                 if args.provider_plan is not None
                 else None
             ),
+            cache_dir=feedback_cache if args.exact_prior_art_cache else None,
+            cache_max_age_hours=args.prior_art_cache_max_age_hours,
         )
         novelty_signals = build_terminal_novelty_signals_by_idea(
             terminal_parallel_report=parallel,
@@ -410,7 +580,7 @@ def main() -> int:
     )
     _write(sp / f"{tag}_search_assessment.json", assessment)
 
-    pair_batch = _program_pairs(
+    program_args = dict(
         nodes=nodes,
         output_dir=work / "program_family",
         model=args.program_family_model or args.model,
@@ -418,7 +588,21 @@ def main() -> int:
         base_url=args.base_url,
         parse_retries=args.parse_retries,
     )
+    if args.incremental_program_family:
+        pair_batch = _incremental_program_pairs(**program_args, cache_dir=feedback_cache)
+    else:
+        pair_batch = _program_pairs(**program_args)
     family = build_scientific_program_family_report(nodes=nodes, pair_batch=pair_batch)
+    program_cache_stats_path = work / "program_family" / "program_family.cache_stats.json"
+    if program_cache_stats_path.is_file() and args.incremental_program_family:
+        summary["m2d_program_family_cache"] = json.loads(
+            program_cache_stats_path.read_text(encoding="utf-8")
+        )
+    prior_cache_stats_path = prior_art_dir / "prior_art.cache_stats.json"
+    if prior_cache_stats_path.is_file() and args.exact_prior_art_cache:
+        summary["m2d_prior_art_cache"] = json.loads(
+            prior_cache_stats_path.read_text(encoding="utf-8")
+        )
     _write(sp / f"{tag}_scientific_program_family.json", family)
 
     pressure = build_research_idea_search_pressure_report(
@@ -563,6 +747,9 @@ def main() -> int:
             "status": "NOVELTY_AWARE_REPRODUCTION_COMPLETE",
             "prior_art_probe_executed": bool(portfolio.hypotheses),
             "program_count": family.program_count,
+            "m2d_feedback_cache_enabled": feedback_cache is not None,
+            "m2d_pair_local_semantics_enabled": bool(args.incremental_program_family),
+            "m2d_exact_prior_art_cache_enabled": bool(args.exact_prior_art_cache),
             "search_priority_counts": pressure.search_priority_counts,
             "preferred_action_counts": pressure.preferred_action_counts,
             "selected_parent_idea_ids": list(next_plan.selected_parent_idea_ids),
