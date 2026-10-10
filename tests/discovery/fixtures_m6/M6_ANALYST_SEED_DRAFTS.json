@@ -1,0 +1,193 @@
+{
+  "schema_version": "m6-scientific-development-shadow-v1",
+  "proposals": [
+    {
+      "parent_idea_id": "research_idea:75adde25c68026f3465e",
+      "local_id": "seed_01",
+      "research_question": "When does Ag capping thickness make a SERS band ratio unreliable as a proxy of molecular orientation?",
+      "mechanistic_hypothesis": "The selected population in near-field hot spots differs from the total adsorbed molecular population under capping-thickness interventions.",
+      "restricted_null": "At fixed orientation distribution and mode response, orientation-only ratio is unchanged by capping thickness.",
+      "known_physics_envelope": "Conventional site-weighted Raman tensor plus electromagnetic excitation/Stokes enhancement allows the same result without new physics.",
+      "independent_variables": [
+        "Ag capping thickness d",
+        "independently measured access/coverage q_s"
+      ],
+      "observable": "Heldout vector of polarization-resolved band ratios R_kj(d).",
+      "quantitative_or_ordinal_prediction": "The heldout prediction residual of orientation-only M0 increases when access-weighted local-field population differs from the bulk molecular orientation distribution; magnitude not yet fixed.",
+      "assumptions": [
+        "Capping perturbation has measurable, independently constrained near-field profile",
+        "Molecular chemistry/state characterized"
+      ],
+      "controls": [
+        "independent orientation distribution probe",
+        "substrate morphology and surface chemistry",
+        "near-field spectral response at excitation/Stokes wavelengths"
+      ],
+      "intervention": "Vary d, and where possible manipulate adsorption/coverage at fixed d.",
+      "heldout_test": "Fit a restricted site-weighted model on subset of thickness d and test unfit polarization/mode vectors on withheld thicknesses.",
+      "local_falsifier": "No out-of-sample benefit beyond independently characterized fixed orientation baseline in the predeclared thickness/coverage range disfavors this specified access-proxy model only.",
+      "surviving_uncertainty": "Access and field enhancement remain multiplicatively non-identifiable without an independent accessibility proxy.",
+      "development_value": "Calibrates limits of an orientation band-ratio proxy within known SERS physics.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    },
+    {
+      "parent_idea_id": "research_idea:d1d976f8f7f1c223700a",
+      "local_id": "seed_01",
+      "research_question": "Can independently calibrated field-weighted orientation better predict Au/Ag SERS spectral shape than ensemble mean orientation?",
+      "mechanistic_hypothesis": "Mode responses are weighted by correlation of site occupancy, molecular orientation and local-field polarization.",
+      "restricted_null": "Mean orientation and mean enhancement are sufficient predictors independent of hotspot occupancy distribution.",
+      "known_physics_envelope": "Weighted Raman-tensor ensemble with local field/chemistry contains this covariance by construction.",
+      "independent_variables": [
+        "hotspot occupancy proxy",
+        "local polarization/site distribution"
+      ],
+      "observable": "Out-of-sample mode ratio spectra R_kj and prediction error between matched-complexity models.",
+      "quantitative_or_ordinal_prediction": "An independently calibrated weighted-orientation model should reduce out-of-sample predictive loss relative to ensemble mean-only baseline only where occupancy–orientation correlations vary.",
+      "assumptions": [
+        "Independent calibration of mediator to avoid using test SERS ratios",
+        "Equal effective model complexity in comparison"
+      ],
+      "controls": [
+        "SERS-independent surface occupancy",
+        "independent orientation distribution",
+        "chemical enhancement state"
+      ],
+      "intervention": "Perturb molecular coverage while mapping hotspot field distribution.",
+      "heldout_test": "Hold out one Au/Ag wavelength and coverage combination, fitting latent mediator only on independent calibration data.",
+      "local_falsifier": "No reproducible heldout gain under verified occupancy variation disfavors the specific predictor, not orientation-field coupling generally.",
+      "surviving_uncertainty": "Whether a genuinely SERS-independent site-specific mediator can be measured remains an experimental obstacle.",
+      "development_value": "Quantifies confounding and tests usefulness of weighted ensemble orientation as a predictive proxy.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    },
+    {
+      "parent_idea_id": "research_idea:f9e742548784c6e45a97",
+      "local_id": "seed_01",
+      "research_question": "What independent perturbation separates access-to-field from optical enhancement and orientation?",
+      "mechanistic_hypothesis": "Adsorption-site occupancy is a separable mediator that changes the population contributing to enhanced Raman signals.",
+      "restricted_null": "At fixed orientation and field, access perturbation makes no selective change to the contributing molecular population.",
+      "known_physics_envelope": "Established surface adsorption/site occupancy plus spatial field weighting predicts possible relative SERS ratio changes.",
+      "independent_variables": [
+        "independent access fraction",
+        "field-heterogeneity regime"
+      ],
+      "observable": "Mode-resolved polarization band-ratio vector under matched field geometry and altered access.",
+      "quantitative_or_ordinal_prediction": "Selectively moving accessible adsorbates between sites with nonproportional Raman response changes the band ratio; for proportional site spectra the ratio stays invariant.",
+      "assumptions": [
+        "Independent measurement of site response ratios",
+        "Perturbation avoids morphology changes or directly characterizes changes"
+      ],
+      "controls": [
+        "SERS-independent accessibility/coverage",
+        "independent excitation/Stokes field map",
+        "chemical adsorption state"
+      ],
+      "intervention": "Modulate site occupancy at fixed nanostructure and verify substrate optical response.",
+      "heldout_test": "Calibrate two-site ratios and occupancy on part of perturbation series, predict withheld access levels with fixed site spectra.",
+      "local_falsifier": "Failure at fixed, independently measured occupancy and field parameters disproves this particular mixture parameterization only.",
+      "surviving_uncertainty": "Site-specific chemistry may change with occupancy; an independent access probe may still correlate with optical changes.",
+      "development_value": "Builds a controlled decomposition study within established SERS mechanism.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    },
+    {
+      "parent_idea_id": "research_idea:9cd359cab890711bf761",
+      "local_id": "seed_01",
+      "research_question": "Can the failure of an orientation-only SERS proxy be predicted quantitatively from an independently calibrated spectral-selectivity index?",
+      "mechanistic_hypothesis": "Spectrally selective excitation/Stokes near-fields and spatial hotspot sampling cause systematic departures from an orientation-only response model.",
+      "restricted_null": "Once orientation distribution and geometry are held fixed, relative band ratios need no wavelength-selective weighting correction.",
+      "known_physics_envelope": "Standard frequency-resolved EM enhancement and tensor response already explain such corrections; this is quantitative regime calibration, not a new law.",
+      "independent_variables": [
+        "excitation wavelength λ",
+        "dimensionless spectral-selectivity index χ from independent optical mapping"
+      ],
+      "observable": "Normalized prediction error on vector of polarization-resolved log band ratios.",
+      "quantitative_or_ordinal_prediction": "Within a predeclared test domain, an EM-corrected model should outperform orientation-only M0 where independently estimated χ exceeds its uncertainty; nonmonotone behavior remains possible near resonances.",
+      "assumptions": [
+        "Raman tensor orientation distribution separately characterized",
+        "Field spectra calibrated without fitting test band ratio"
+      ],
+      "controls": [
+        "independent near-field excitation and Stokes transfer function",
+        "surface molecular orientation/population",
+        "same-sample polarization and capping geometry"
+      ],
+      "intervention": "Vary λ and capping thickness while holding or tracking orientation/chemistry.",
+      "heldout_test": "Fit model and error tolerance on training λ,d; freeze χ and response parameters, test new λ,d combinations with predictive uncertainty bands.",
+      "local_falsifier": "Predeclared χ-dependent accuracy trend does not hold on out-of-sample λ,d within matched chemistry and orientation; rejects only that calibration claim.",
+      "surviving_uncertainty": "No universal transition threshold or new physics is implied by a smooth predictive crossover.",
+      "development_value": "Develops a falsifiable quantitative map of the reliability domain of orientation proxies.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    },
+    {
+      "parent_idea_id": "research_idea:aa130d09589841568e76",
+      "local_id": "seed_01",
+      "research_question": "Does independently measured SERS-active orientation distribution improve prediction over bulk ensemble orientation?",
+      "mechanistic_hypothesis": "Hotspot-dependent weighting makes SERS-active molecular orientation distribution differ from ensemble-average distribution.",
+      "restricted_null": "Ensemble orientation adequately represents the distribution of molecules contributing to SERS.",
+      "known_physics_envelope": "Conventional weighted Raman tensor/site ensemble naturally creates a difference between unweighted and enhanced signal populations.",
+      "independent_variables": [
+        "hotspot field heterogeneity",
+        "site-specific orientation–occupancy covariance"
+      ],
+      "observable": "Heldout excitation/polarization mode-ratio spectral vector.",
+      "quantitative_or_ordinal_prediction": "A separately calibrated SERS-active orientation distribution improves heldout ratio prediction where local-field orientation/site covariance is appreciable.",
+      "assumptions": [
+        "Hotspot-sensitive orientation measurement does not reuse target SERS ratios",
+        "Mode-tensor responses separately estimated"
+      ],
+      "controls": [
+        "bulk orientation distribution independent of SERS",
+        "local-field weighted population measurement",
+        "surface chemistry and adsorption coverage"
+      ],
+      "intervention": "Vary optical hotspot spatial structure while tracking adsorption.",
+      "heldout_test": "Estimate hotspot-weighted population on independent structural measurements and predict unseen excitation and polarization ratios.",
+      "local_falsifier": "No prospective predictive gain from independently measured weighted orientation over bulk distribution in the specified matched regime disfavors this proxy only.",
+      "surviving_uncertainty": "The independent hotspot orientation assay may not be practically feasible; inversion from SERS would be circular.",
+      "development_value": "Calibrates when bulk orientation measurements are misleading for near-field spectroscopy.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    },
+    {
+      "parent_idea_id": "research_idea:b1c161e528f01392084b",
+      "local_id": "seed_01",
+      "research_question": "At fixed stationary site occupancy, how does exchange-rate scaling affect time-window SERS statistics?",
+      "mechanistic_hypothesis": "Site exchange kinetics alter temporal covariance even when stationary pooled mean intensities remain unchanged.",
+      "restricted_null": "Stationary 2-state CTMC with rates α,β, emissions A_k,s, and fixed π; scaling both rates c preserves pooled mean but changes covariance decay.",
+      "known_physics_envelope": "Known Markov spectral diffusion/adsorption kinetics predict rate-dependent correlation and finite-window variance; novelty requires residual effect beyond a calibrated kinetics null.",
+      "independent_variables": [
+        "acquisition window T",
+        "exchange relaxation rate λ=α+β measured independently"
+      ],
+      "observable": "Intensity autocovariance C_kl(u), finite-window variance Var(Ibar_k,T), pooled band ratio and per-window ratio distribution kept distinct.",
+      "quantitative_or_ordinal_prediction": "For stationary two-state CTMC, C_kl(u)=π1π2 ΔA_kΔA_l exp(-λ|u|) and Var(Ibar_k,T)=2σ²[Tτ−τ²(1−exp(−T/τ))]/T² with τ=1/λ; pooled mean ratio is unchanged under common rate scaling.",
+      "assumptions": [
+        "Markov stationary 2-state kinetics approximates system",
+        "State-specific emissions and π are fixed under kinetic perturbation"
+      ],
+      "controls": [
+        "independent adsorption/exchange rate assay",
+        "state occupancy and emission calibration",
+        "shot noise and detector response removal",
+        "surface drift/photophysics"
+      ],
+      "intervention": "Change exchange kinetics at fixed π using independently verified perturbation; measure multiple T.",
+      "heldout_test": "Estimate α,β and emission amplitudes on training trajectories and independently; freeze and predict withheld window lengths and cross-band covariance.",
+      "local_falsifier": "Observed cross-band covariance vs T outside preregistered uncertainty after rate and detector calibration disfavors this fixed-parameter 2-state Markov model, not exchange in general.",
+      "surviving_uncertainty": "Per-window ratio mean may change even when pooled ratio does not; complex multistate memory can violate the two-state null.",
+      "development_value": "Identifies a tractable, quantitative temporal measurement program within known stochastic SERS physics.",
+      "novelty_certified": false,
+      "scientific_truth_authority": false,
+      "source_of_proposal": "ANALYST_SEED"
+    }
+  ],
+  "provenance": "Analyst-designed development seeds, NOT model output or empirical discovery"
+}

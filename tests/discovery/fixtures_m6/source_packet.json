@@ -1,0 +1,217 @@
+{
+  "status": "NATIVE_SOURCE_EXCERPTS_UNREVIEWED",
+  "source_shas": {
+    "G3": "50399d0837dafd7919ce0e2e1247f6d0bbfffdfa807527cfffd3478d1b53123b",
+    "G4": "f84740d112c20a9372142075fa5ba6e5dc6a50cf7f15ae83624f9eab962ca0ea"
+  },
+  "idea_count": 6,
+  "records": [
+    {
+      "generation": 3,
+      "idea_id": "research_idea:75adde25c68026f3465e",
+      "parent_idea_ids": [
+        "research_idea:033ba3a092e3f10c029a"
+      ],
+      "operator_id": "PROXY_CHALLENGE",
+      "conceptual_change_summary": "Recast relative SERS band intensities as a potentially biased proxy for molecular orientation by introducing a thickness-dependent accessibility and local-field sampling kernel. The child tests whether apparent orientation signatures persist after separating Raman-tensor orientation from which molecules contribute to the measured signal.",
+      "kernel": {
+        "canonical_intent": "Determine when relative SERS band intensities provide a reliable proxy for molecular orientation on Au versus Ag surfaces by jointly modeling Raman-tensor orientation and thickness-dependent molecular accessibility to local electromagnetic fields.",
+        "contrastive_commitments": [
+          "If band ratios primarily report molecular orientation, they should remain quantitatively linked to independent orientation metrics across capping thicknesses after accounting for overall enhancement",
+          "If band ratios are substantially proxy-biased by accessibility, thickness-dependent changes in band ratios should occur without commensurate changes in independent orientation metrics and should covary with spatial or depth-sensitive enhancement measures"
+        ],
+        "core_scientific_commitments": [
+          "Relative SERS band intensities depend on both Raman-tensor orientation and the subset of molecules that effectively samples the local electromagnetic field",
+          "Ag capping thickness may alter the sampling of contributing molecules without requiring a corresponding change in their mean orientation",
+          "Orientation inference from band ratios should be tested against independent orientation-sensitive measurements rather than treated as a direct readout",
+          "The relative influence of orientation and accessibility can differ between Au and Ag surfaces"
+        ],
+        "question_commitment": "Under what combinations of surface composition, Ag capping thickness, and local-field accessibility do relative SERS band intensities cease to be a reliable proxy for molecular orientation?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare Au and Ag-containing surfaces",
+          "Vary Ag capping thickness while measuring independent orientation-sensitive observables",
+          "Treat local-field accessibility as a latent mediator between surface structure and observed band ratios"
+        ]
+      },
+      "differential_prediction": "An orientation-dominant model predicts that independently measured orientation and polarization-sensitive band ratios co-vary across Ag capping thicknesses, whereas an accessibility-biased model predicts thickness-dependent band-ratio changes that track depth or hotspot sampling while independent orientation remains comparatively stable.",
+      "discriminating_observation": "Measure polarization- or orientation-sensitive observables, total enhancement, and spatial or depth-sensitive SERS signals on matched Au and Ag substrates spanning controlled Ag capping thicknesses, then test whether thickness predicts residual band-ratio variation after independent orientation is included.",
+      "falsification_condition": "The proxy-challenge model is disfavored if relative band ratios remain consistently explained by independent orientation measurements across a substantial range of Ag capping thicknesses and local-field heterogeneity, with no residual association between thickness and band ratios after orientation is accounted for.",
+      "source_sha256": "50399d0837dafd7919ce0e2e1247f6d0bbfffdfa807527cfffd3478d1b53123b"
+    },
+    {
+      "generation": 3,
+      "idea_id": "research_idea:d1d976f8f7f1c223700a",
+      "parent_idea_ids": [
+        "research_idea:04b64a65f83be329da57"
+      ],
+      "operator_id": "LATENT_VARIABLE",
+      "conceptual_change_summary": "Introduces an effective sampling-weighted orientation–field coupling as a latent mediator between molecular orientation and measured relative SERS band intensities. The child shifts the contrast from field heterogeneity alone to whether Au and Ag differ in how hotspot occupancy, molecular access, and orientation jointly weight the observed Raman signal.",
+      "kernel": {
+        "canonical_intent": "Determine whether apparent orientation-dependent SERS band ratios on Au and Ag are governed by a latent sampling-weighted coupling between molecular orientation, local-field polarization, hotspot occupancy, and molecular access.",
+        "contrastive_commitments": [
+          "If orientation is the dominant direct determinant, band ratios should track independent orientation measures after controlling for average enhancement and substrate material",
+          "If sampling-weighted coupling is dominant, band ratios should depend on hotspot occupancy, molecular access, and field polarization even at similar average orientation and average enhancement",
+          "If substrate-specific chemistry is dominant, Au–Ag differences should persist after accounting for orientation, field heterogeneity, hotspot occupancy, and molecular access"
+        ],
+        "core_scientific_commitments": [
+          "Measured relative SERS band intensity reflects both Raman-tensor orientation and the distribution of molecular sampling across local electromagnetic fields",
+          "Hotspot occupancy and molecular access can mediate or obscure the apparent relationship between orientation and band ratios",
+          "The effective orientation–field coupling may differ between Au and Ag even when average enhancement is matched",
+          "A latent mediator model can be tested by jointly measuring orientation-sensitive observables, polarization-resolved band ratios, spatial enhancement, and molecular-access proxies"
+        ],
+        "question_commitment": "Does a sampling-weighted orientation–field coupling explain when molecular orientation predicts relative SERS band intensities on Au versus Ag, and can it distinguish electromagnetic heterogeneity from substrate-specific chemical effects?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare Au and Ag substrates under matched or independently characterized average enhancement",
+          "Vary or characterize hotspot heterogeneity and molecular-access conditions",
+          "Treat the effective orientation–field coupling as an experimentally inferred mediator rather than a directly observed primitive"
+        ]
+      },
+      "differential_prediction": "At matched average enhancement and comparable mean molecular orientation, changes in hotspot occupancy or molecular access should produce larger and more variable band-ratio shifts when the sampling-weighted orientation–field coupling is important. A model using only mean orientation should not account for these shifts, while a model including the mediator should reduce the apparent Au–Ag difference if it is primarily sampling-related.",
+      "discriminating_observation": "Perform matched Au–Ag measurements combining polarization-resolved SERS, an independent orientation probe, spatially resolved enhancement mapping, and a molecular-access or surface-coverage perturbation. Test whether band-ratio variation is better predicted by mean orientation alone or by a model incorporating the inferred sampling-weighted orientation–field coupling.",
+      "falsification_condition": "The latent-mediator interpretation is weakened if relative band ratios remain predicted equally well by independent orientation measurements alone across Au and Ag substrates, despite controlled changes in hotspot occupancy, field heterogeneity, and molecular-access conditions, or if adding these variables provides no reproducible improvement in cross-condition prediction.",
+      "source_sha256": "50399d0837dafd7919ce0e2e1247f6d0bbfffdfa807527cfffd3478d1b53123b"
+    },
+    {
+      "generation": 3,
+      "idea_id": "research_idea:f9e742548784c6e45a97",
+      "parent_idea_ids": [
+        "research_idea:ddff9a5d05957ddfc117"
+      ],
+      "operator_id": "LATENT_VARIABLE",
+      "conceptual_change_summary": "Recast molecular access to the local electromagnetic field as an explicit latent mediator that can vary independently of the measured average molecular orientation, so that adsorption geometry and site occupancy become competing explanations for relative band intensities rather than treating orientation as the sole molecular structural variable.",
+      "kernel": {
+        "canonical_intent": "Determine whether relative SERS band intensities on Au versus Ag are governed by molecular orientation itself or by a distinct adsorption-access state that controls how molecules sample heterogeneous local fields.",
+        "contrastive_commitments": [
+          "If orientation is the dominant mediator, band-ratio changes should track orientation-sensitive measurements after accounting for enhancement geometry",
+          "If molecular access is a distinct mediator, band-ratio changes should occur with stable average orientation when access or site occupancy changes",
+          "If both variables contribute, their effects should be separable through matched-orientation comparisons across substrates or adsorption conditions"
+        ],
+        "core_scientific_commitments": [
+          "Molecular access to spatially varying local fields can mediate relative SERS band intensities",
+          "Average orientation-sensitive measurements may remain stable while adsorption geometry or site occupancy changes",
+          "The contribution of molecular orientation should be compared against an independently varied or inferred access-to-field variable",
+          "Au and Ag surfaces may differ in how surface chemistry and morphology couple orientation to local-field access"
+        ],
+        "question_commitment": "Can changes in molecular access to heterogeneous local fields explain relative SERS band intensities independently of changes in average molecular orientation?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare Au and Ag substrates under controlled exposure and adsorption conditions",
+          "Measure polarization-resolved relative band intensities together with orientation-sensitive and access-sensitive observables",
+          "Treat local-field heterogeneity and molecular site occupancy as relevant experimental regimes"
+        ]
+      },
+      "differential_prediction": "Matched samples with similar average orientation but different adsorption-site occupancy or molecular access should show different polarization-resolved band ratios when local-field heterogeneity is substantial; under more uniform fields, the access-dependent contrast should weaken.",
+      "discriminating_observation": "Identify conditions in which an access-sensitive observable or controlled adsorption perturbation changes while the orientation-sensitive observable remains approximately stable, then test whether relative SERS band ratios change selectively on Au or Ag.",
+      "falsification_condition": "The proposed access-mediated distinction is disfavored if relative band ratios remain fully predicted by independent orientation measurements across controlled changes in adsorption-site occupancy, molecular access, substrate composition, and estimated field heterogeneity.",
+      "source_sha256": "50399d0837dafd7919ce0e2e1247f6d0bbfffdfa807527cfffd3478d1b53123b"
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:9cd359cab890711bf761",
+      "parent_idea_ids": [
+        "research_idea:b853c7ccae81ff783f9d"
+      ],
+      "operator_id": "REGIME_BOUNDARY",
+      "conceptual_change_summary": "Recast the orientation-versus-field explanation as a regime-boundary problem in which orientation-based interpretation is expected to fail when wavelength-dependent local-field spectral selectivity and spatial hot-spot sampling become sufficiently strong relative to the Raman-tensor projection effect.",
+      "kernel": {
+        "canonical_intent": "Identify the experimental regime in which relative SERS band intensities on Au and Ag cease to be reliably interpretable from molecular orientation and adsorption geometry alone because spectral and spatial local-field selectivity dominate the measured band ratios.",
+        "contrastive_commitments": [
+          "In an orientation-dominated regime, normalized band ratios should track independently measured orientation and polarization across modest changes in wavelength, thickness, and field heterogeneity",
+          "In a field-selective regime, band ratios should change systematically with excitation wavelength or capping thickness even when orientation remains comparable and overall field amplitude is normalized",
+          "If both mechanisms contribute, the residual orientation prediction error should increase with independently measured spectral selectivity or spatial hot-spot heterogeneity"
+        ],
+        "core_scientific_commitments": [
+          "Relative SERS band ratios can depend jointly on Raman-tensor orientation projection, wavelength-dependent local-field spectral selectivity, and spatial sampling of heterogeneous hot spots",
+          "The adequacy of an orientation-and-adsorption explanation should vary with substrate, Ag-capping thickness, excitation wavelength, and local-field heterogeneity",
+          "A regime boundary can be tested by comparing orientation-predicted ratios with ratios measured under independently characterized spectral and spatial enhancement conditions",
+          "Field-amplitude normalization alone may not remove mode- or band-selective enhancement effects"
+        ],
+        "question_commitment": "At what combinations of substrate structure, Ag-capping thickness, excitation wavelength, and local-field heterogeneity does the orientation-and-adsorption interpretation of relative SERS band intensities break down?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare Au and Ag surfaces and Au substrates with controlled Ag-capping thickness",
+          "Vary excitation wavelength and characterize spatial or near-field enhancement distributions",
+          "Independently measure molecular orientation or adsorption geometry while retaining polarization-resolved relative band intensities as the target observable",
+          "Treat the proposed boundary as an experimentally testable transition rather than as an assumed universal threshold"
+        ]
+      },
+      "differential_prediction": "When orientation distributions are matched, samples with increasing spectral selectivity or spatial hot-spot heterogeneity should show progressively larger deviations between orientation-predicted and measured relative band ratios, with the deviation potentially differing between Au and Ag; under comparatively spectrally uniform and spatially homogeneous enhancement, normalized ratios should remain more closely associated with orientation.",
+      "discriminating_observation": "Construct matched orientation populations across Au, Ag, and Ag-capped Au thicknesses; measure polarization-resolved band ratios at multiple excitation wavelengths together with orientation observables, overall enhancement, and spatial or spectral field-selectivity metrics. Test whether the residual from the orientation model changes systematically with those field-selectivity metrics.",
+      "falsification_condition": "The regime-boundary proposal is disfavored if relative band ratios remain quantitatively predicted by independently measured orientation and adsorption geometry across controlled changes in excitation wavelength, Ag-capping thickness, spectral enhancement selectivity, and spatial hot-spot heterogeneity, including after appropriate field-amplitude normalization.",
+      "source_sha256": "f84740d112c20a9372142075fa5ba6e5dc6a50cf7f15ae83624f9eab962ca0ea"
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:aa130d09589841568e76",
+      "parent_idea_ids": [
+        "research_idea:c87510278dbb6b96129b"
+      ],
+      "operator_id": "PROXY_CHALLENGE",
+      "conceptual_change_summary": "Replace the assumption that ensemble-averaged orientation measurements represent the molecules dominating the SERS signal with a field-weighted, site-specific orientation-access variable. The child tests whether apparent breakdown of the orientation–intensity relationship arises because hot-spot molecules have a different orientation distribution from the optically sampled ensemble, rather than because orientation is irrelevant.",
+      "kernel": {
+        "canonical_intent": "Determine whether relative SERS band intensities on Au versus Ag are controlled by the orientation distribution of molecules weighted by their local-field contribution, rather than by the ensemble-averaged molecular orientation measured independently.",
+        "contrastive_commitments": [
+          "If ensemble orientation is an adequate proxy, relative band ratios should remain predictable after accounting for excitation wavelength and overall field amplitude",
+          "If field-weighted orientation is distinct, band ratios should correlate with a site- or hot-spot-sensitive orientation estimate even when ensemble-average orientation is stable",
+          "If wavelength-dependent enhancement alone dominates, correcting for the field-weighted molecular subpopulation should not substantially improve prediction of relative band ratios"
+        ],
+        "core_scientific_commitments": [
+          "The molecules contributing most strongly to SERS may have an orientation distribution that differs from the ensemble-average orientation distribution",
+          "Local-field weighting can couple molecular orientation, adsorption-site occupancy, and molecular access to the measured relative band intensities",
+          "Au and Ag surfaces may differ in the degree to which hot-spot sampling decouples the SERS-active orientation distribution from the ensemble-average orientation",
+          "A comparison between ensemble orientation and field-weighted or site-resolved orientation is required before attributing relative band-intensity changes to wavelength-dependent enhancement alone"
+        ],
+        "question_commitment": "When does the orientation distribution of SERS-dominant molecules diverge from the independently measured ensemble orientation, and can that divergence explain substrate- and wavelength-dependent relative band intensities?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare matched Au and Ag substrates across excitation wavelengths and controlled adsorption conditions",
+          "Measure ensemble orientation together with spatially or chemically resolved observables that estimate which molecular subpopulations contribute to enhanced scattering",
+          "Examine regimes with heterogeneous versus comparatively uniform local fields and with controlled changes in adsorption-site occupancy or molecular access"
+        ]
+      },
+      "differential_prediction": "At comparable ensemble-average orientation, substrates or excitation conditions with stronger local-field heterogeneity should show larger deviations between ensemble-based orientation predictions and measured relative band ratios. A field-weighted orientation or access-sensitive measure should reduce this deviation more effectively than normalization by total enhancement alone.",
+      "discriminating_observation": "Prepare matched Au and Ag samples spanning low- and high-heterogeneity regimes, hold ensemble-average orientation approximately comparable, and acquire polarization-resolved SERS together with spatially resolved enhancement or site-selective orientation/access measurements. Test whether relative band ratios track the field-weighted subpopulation rather than the ensemble-average orientation.",
+      "falsification_condition": "The field-weighted proxy explanation is disfavored if relative band ratios are equally well predicted by ensemble-average orientation across controlled changes in hot-spot heterogeneity, adsorption-site occupancy, molecular access, substrate composition, and excitation wavelength, with no improvement from site- or hot-spot-sensitive orientation measurements.",
+      "source_sha256": "f84740d112c20a9372142075fa5ba6e5dc6a50cf7f15ae83624f9eab962ca0ea"
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:b1c161e528f01392084b",
+      "parent_idea_ids": [
+        "research_idea:f9e742548784c6e45a97"
+      ],
+      "operator_id": "LATENT_VARIABLE",
+      "conceptual_change_summary": "Introduce molecular residence-time distribution as a distinct latent mediator: relative SERS band ratios may depend not only on which adsorption sites molecules occupy, but also on how long molecules remain in different local-field environments relative to molecular motion, adsorption exchange, and spectral acquisition timescales.",
+      "kernel": {
+        "canonical_intent": "Determine whether dynamic molecular residence times and exchange between adsorption environments explain breakdowns in orientation-based interpretations of relative SERS band intensities on Au versus Ag surfaces.",
+        "contrastive_commitments": [
+          "If static orientation or access dominates, relative band ratios should be determined primarily by instantaneous orientation and site occupancy and should show limited dependence on adsorption-exchange timescale after these variables are matched",
+          "If dynamic field sampling dominates, matched samples with similar average orientation and occupancy should exhibit residence-time-dependent band ratios, especially under strongly heterogeneous fields",
+          "If dynamic sampling is negligible in a near-uniform field regime, changing residence time should produce substantially weaker band-ratio changes than in a heterogeneous-field regime"
+        ],
+        "core_scientific_commitments": [
+          "Relative SERS band intensities may reflect time-weighted sampling of heterogeneous local electromagnetic fields",
+          "Molecular residence time and exchange dynamics can differ from average molecular orientation and static adsorption-site occupancy",
+          "The influence of dynamic field sampling should depend on the relationship between residence, exchange, molecular reorientation, and spectral acquisition timescales",
+          "Au and Ag surfaces may produce different couplings among adsorption dynamics, molecular orientation, and local-field heterogeneity"
+        ],
+        "question_commitment": "Can residence-time-weighted sampling of heterogeneous local fields explain relative SERS band intensities independently of average molecular orientation and static adsorption access?",
+        "schema_version": "research-idea-kernel-v1",
+        "scope_commitments": [
+          "Compare Au and Ag surfaces across controlled conditions that alter adsorption exchange or molecular residence time",
+          "Combine polarization-resolved relative band intensities with independent orientation-sensitive and adsorption-dynamics observables",
+          "Examine surfaces or nanostructures with contrasting degrees of local-field heterogeneity",
+          "Treat static access and dynamic residence-time distributions as separable experimental variables where possible"
+        ]
+      },
+      "differential_prediction": "At matched average orientation and approximate site occupancy, perturbations that change molecular residence or exchange times should alter relative band ratios more strongly on substrates or nanostructures with heterogeneous local fields than on more spatially uniform field distributions; a purely static orientation-access explanation predicts substantially weaker timescale dependence after those variables are controlled.",
+      "discriminating_observation": "Measure time-resolved or exchange-sensitive SERS from matched Au and Ag samples while independently characterizing molecular orientation and adsorption occupancy, and compare band-ratio responses to controlled changes in residence or exchange times across substrates with different local-field heterogeneity.",
+      "falsification_condition": "The dynamic residence-time mechanism is disfavored if controlled changes in adsorption residence or exchange rates produce no reproducible relative-band-ratio changes under strongly heterogeneous fields, or if all such changes are quantitatively accounted for by independently measured orientation, occupancy, and instantaneous field-amplitude distributions.",
+      "source_sha256": "f84740d112c20a9372142075fa5ba6e5dc6a50cf7f15ae83624f9eab962ca0ea"
+    }
+  ],
+  "scientific_truth_authority": false,
+  "novelty_certified": false
+}

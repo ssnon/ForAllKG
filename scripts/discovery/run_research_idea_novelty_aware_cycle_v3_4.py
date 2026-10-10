@@ -42,6 +42,10 @@ from pipeline_core.discovery.research_idea_novelty_aware_reproduction_v3_4 impor
     adapt_fertility_report_v3_4,
     build_mutation_search_contexts,
 )
+from pipeline_core.discovery.research_idea_m61_feedback_bridge import (
+    M61FeedbackPromptAdapter,
+    load_m61_feedback_bundle,
+)
 from pipeline_core.discovery.research_idea_offspring_execution import (
     InstructorOpenAICompatibleOffspringBackend,
 )
@@ -398,6 +402,10 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--context", required=True, type=Path)
     p.add_argument("--output", required=True, type=Path)
     p.add_argument("--generate-next", action="store_true")
+    p.add_argument("--m61-feedback-hints", type=Path, default=None,
+                   help="Opt-in M6.1 speculative search hints; requires --m61-feedback-population")
+    p.add_argument("--m61-feedback-population", type=Path, default=None,
+                   help="Exact linked M6.1 population used to validate hint provenance")
 
     p.add_argument("--max-ideas", type=int, default=8)
     p.add_argument("--max-realizations-per-idea", type=int, default=2)
@@ -452,6 +460,13 @@ def main() -> int:
     if args.exact_prior_art_cache and not 0 < args.prior_art_cache_max_age_hours <= 24:
         raise ValueError("prior-art cache age must be (0, 24] hours")
     feedback_cache = args.feedback_cache_dir.expanduser().resolve() if args.feedback_cache_dir else None
+    if (args.m61_feedback_hints is None) != (args.m61_feedback_population is None):
+        raise ValueError("Both --m61-feedback-hints and --m61-feedback-population are required together")
+    m61_bundle = (
+        load_m61_feedback_bundle(args.m61_feedback_hints.expanduser().resolve(),
+                                 args.m61_feedback_population.expanduser().resolve())
+        if args.m61_feedback_hints is not None else None
+    )
 
     case_root = args.case_root.expanduser().resolve()
     sp = case_root / "scientific_portfolio_shadow"
@@ -651,6 +666,9 @@ def main() -> int:
             "v3.4 generation plan did not preserve the bounded scheduler parent set"
         )
     _write(sp / f"sis_v3_4.g{generation + 1}_generation_plan.json", next_plan)
+    if m61_bundle is not None:
+        _write(sp / f"{tag}_m61_feedback_optin_consumption.json",
+               m61_bundle.selection_report(next_plan.selected_parent_idea_ids))
 
     mutation_contexts = {}
     if query_plan is not None and external_report is not None:
@@ -700,6 +718,15 @@ def main() -> int:
                 task.task_id: task.primary_parent_idea_id for task in next_plan.tasks
             },
         )
+        prompt_capture_adapter = adapter
+        if m61_bundle is not None:
+            adapter = M61FeedbackPromptAdapter(
+                backend=adapter,
+                bundle=m61_bundle,
+                task_to_idea={
+                    task.task_id: task.primary_parent_idea_id for task in next_plan.tasks
+                },
+            )
         raw_next, prompts = execute_epistemic_generation(
             plan=next_plan,
             parallel_report=generation_parallel,
@@ -710,7 +737,7 @@ def main() -> int:
         )
         _write(sp / f"sis_v3_4.g{generation + 1}_raw_generation_execution.json", raw_next)
         if args.save_prompts:
-            _write_augmented_prompts(work / "augmented_generation_prompts", adapter)
+            _write_augmented_prompts(work / "augmented_generation_prompts", prompt_capture_adapter)
 
     next_execution, persistence = compose_persistent_population_execution(
         current_execution=execution,

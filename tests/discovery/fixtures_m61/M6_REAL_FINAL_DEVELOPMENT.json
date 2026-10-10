@@ -1,0 +1,259 @@
+{
+  "authority": {
+    "ResearchIdea_population_modified": false,
+    "may_deprioritize_parent": false,
+    "novelty_certified": false,
+    "production_selection_authority": false,
+    "scientific_truth_authority": false
+  },
+  "branch_count": 2,
+  "development_branches": [
+    {
+      "branch_id": "m6_shadow_branch:a18ebe7970c6e119708c",
+      "generation_kind": "SPECULATIVE_SHADOW_PROPOSAL_NOT_RESEARCH_IDEA_NODE",
+      "initial_critique": {
+        "known_physics_counterexample": "전체 세기에 동일한 상수 c를 곱하거나 나누는 정규화는 R=I_i/I_j를 바꾸지 못한다; 넓은 M1을 배제하는 normalization이 아니다.",
+        "known_physics_null_not_rejected": true,
+        "local_id": "generated_01",
+        "manual_scientific_review_required": true,
+        "parent_idea_id": "research_idea:9cd359cab890711bf761",
+        "review_status": "STRUCTURALLY_SPECIFIED_SCIENCE_UNREVIEWED",
+        "revision_request": "Make conditional null, observable, independent controls and heldout test more decisive without inventing evidence. Preserve parent. ",
+        "scientific_novelty_certified": false,
+        "specification_defects": []
+      },
+      "initial_proposal": {
+        "assumptions": [
+          "Orientation distributions and adsorption geometry can be measured with uncertainty smaller than the expected field-selectivity effect in at least part of the design space.",
+          "Excitation wavelength, Stokes wavelength, polarization, substrate structure, and Ag-capping thickness can be varied without uncontrolled changes in molecular coverage dominating the result.",
+          "Spectral selectivity and spatial hot-spot heterogeneity can be estimated using independent optical or near-field measurements rather than inferred solely from Raman band ratios."
+        ],
+        "controls": [
+          "Use matched molecular coverage, preparation history, and orientation distributions across Au, Ag, and controlled Ag-capped Au samples.",
+          "Measure polarization-resolved Raman spectra at multiple excitation wavelengths and record both excitation and Stokes-frequency local-field transfer functions where feasible.",
+          "Include spatially resolved enhancement maps, independent orientation observables, and total enhancement estimates for the same or statistically matched samples.",
+          "Randomize measurement order, replicate across independently prepared substrates, and predefine uncertainty propagation for orientation-model predictions and residuals."
+        ],
+        "development_value": "This descendant converts a qualitative orientation-versus-field dispute into a regime-specific, falsifiable comparison while preserving the possibility that both mechanisms contribute. It identifies measurable covariates for testing when orientation-only interpretation becomes inadequate without asserting a universal threshold or disproving broader electrodynamic Raman models.",
+        "heldout_test": "Fit the orientation-only prediction and any field-selectivity residual model using a prespecified subset of wavelengths, cap thicknesses, and spatial regions. Hold out at least one excitation wavelength and one substrate or Ag-capping condition, then test whether the preregistered residual metric and its association with independently measured spectral or spatial selectivity predict the held-out relative band ratios. A successful held-out result requires calibration-consistent prediction intervals and replication on independently prepared samples.",
+        "independent_variables": [
+          "Substrate composition: Au, Ag, and Au with controlled Ag-capping thickness.",
+          "Ag-capping thickness and associated morphology or continuity state.",
+          "Excitation wavelength and corresponding Stokes wavelengths.",
+          "Incident and analyzed polarization configuration.",
+          "Independently measured spectral local-field selectivity across excitation and Stokes frequencies.",
+          "Spatial hot-spot heterogeneity and molecular-coverage-weighted sampling distribution.",
+          "Measured molecular orientation and adsorption-geometry descriptors.",
+          "Overall enhancement amplitude, treated separately from band-selective enhancement."
+        ],
+        "intervention": "Prepare matched samples with controlled Au/Ag structure and Ag-capping thickness, adjust excitation wavelength and polarization across a prespecified grid, and measure orientation, adsorption geometry, spatial enhancement maps, spectral transfer functions, and polarization-resolved relative Raman band ratios. Analyze the same target bands after amplitude normalization while retaining mode-specific excitation and Stokes-frequency factors.",
+        "known_physics_envelope": "Standard Raman and electromagnetic descriptions permit band ratios to depend on Raman-tensor projections, local polarization, excitation-frequency enhancement, Stokes-frequency enhancement, molecular position, and spatial sampling of heterogeneous hot spots. Multiplying all bands by a common field-amplitude factor cannot change a ratio, whereas mode- or frequency-dependent transfer functions can. These mechanisms do not by themselves require a sharp physical phase transition, monotonic residual growth, or a unique universal threshold.",
+        "local_falsifier": "Within a prespecified range of wavelengths, cap thicknesses, and heterogeneity values, the proposal is locally falsified if independently measured orientation and adsorption geometry predict relative band ratios within the preregistered tolerance, and the residual metric shows no reproducible association or interaction with spectral selectivity or spatial hot-spot heterogeneity in both training and held-out conditions. This would weaken the proposed regime-specific breakdown, not broad models that already include mode-selective electromagnetic enhancement.",
+        "local_id": "generated_01",
+        "mechanistic_hypothesis": "Relative Raman band ratios depart from an orientation-only prediction when band-specific excitation and Stokes-frequency local-field selectivity, combined with spatially heterogeneous molecular sampling, become comparable to or larger than the Raman-tensor projection effect. The transition is expected to be a crossover that may be nonmonotonic near resonances and may differ between Au, Ag, and Ag-capped Au structures.",
+        "novelty_certified": false,
+        "observable": "For each sample, wavelength, polarization, and spatial region, measure the vector of normalized relative Raman band ratios, the orientation-model prediction with propagated uncertainty, the residual vector, total enhancement, spectral selectivity metrics, spatial heterogeneity metrics, and independent orientation or adsorption-geometry observables.",
+        "parent_idea_id": "research_idea:9cd359cab890711bf761",
+        "quantitative_or_ordinal_prediction": "Define a dimensionless residual index χ as the uncertainty-weighted distance between measured relative-band-ratio vectors and the orientation-only prediction, divided by the combined measurement and orientation-model uncertainty. Define a field-selectivity index S from independently measured mode-relevant spectral transfer-function variation and spatial sampling heterogeneity. Conditional prediction: in a low-S regime, median χ should remain near the orientation-model error distribution; in a high-S regime, χ should exceed that distribution more often and show a reproducible positive association or interaction with S, with an effect direction that may vary near resonances. A preregistered ordinal discriminator can classify conditions as orientation-consistent when χ≤1, ambiguous when 1<χ≤2, and field-selective-inconsistent when χ>2, subject to calibration and multiple-comparison control. These thresholds are operational, not universal physical boundaries.",
+        "research_question": "Under what combinations of substrate composition, Ag-capping thickness, excitation wavelength, and independently measured spectral or spatial field selectivity do relative SERS band ratios cease to be quantitatively predictable from molecular orientation and adsorption geometry alone?",
+        "restricted_null": "For matched orientation distributions and adsorption geometries, relative SERS band ratios remain within a prespecified orientation-model tolerance across the tested wavelength, substrate, cap-thickness, and heterogeneity conditions after accounting for measurement uncertainty and common enhancement amplitude. This null is restricted to an orientation-only interpretation and does not represent all known electromagnetic or chemical SERS models.",
+        "scientific_truth_authority": false,
+        "source_of_proposal": "MODEL_GENERATED",
+        "surviving_uncertainty": "Orientation and field-selectivity effects may be statistically confounded by morphology, molecular coverage, chemical enhancement, heating, photobleaching, and wavelength-dependent detection response. Near-field maps may not resolve the molecularly sampled field, and an observed residual association may remain compatible with omitted Raman-tensor, adsorption-state, or chemical-resonance variables. Failure of the restricted null in one tested regime would not establish a universal boundary or exclude broader known models."
+      },
+      "novelty_certified": false,
+      "parent_idea_id": "research_idea:9cd359cab890711bf761",
+      "parent_intact": true,
+      "production_selection_authority": false,
+      "revision": {
+        "assumptions": [
+          "The measured Raman bands have sufficiently stable assignments that band-specific Raman-tensor projections and linewidths can be estimated or bounded.",
+          "Molecular orientation, adsorption geometry, coverage, and chemical state can be measured or constrained independently enough to propagate their uncertainty into an orientation-only prediction.",
+          "Excitation wavelength, Stokes wavelength, polarization, substrate structure, and Ag-capping thickness can be varied while monitoring coverage, morphology, heating, photobleaching, and chemical-state changes.",
+          "Mode-relevant excitation and Stokes-frequency electromagnetic transfer functions, local polarization, and spatial sampling can be estimated independently; unresolved molecular-scale fields are represented by uncertainty rather than treated as directly measured.",
+          "The comparison is restricted to the tested bands, wavelengths, substrates, cap thicknesses, and preparation conditions and is not interpreted as a universal physical threshold."
+        ],
+        "controls": [
+          "Use independently prepared Au, Ag, and Ag-capped-Au substrates spanning a preregistered cap-thickness grid, with morphology, roughness, continuity, and optical spectra characterized before molecular adsorption.",
+          "Prepare matched molecular samples using randomized or blocked preparation, and quantify coverage, adsorption state, orientation, and chemical state with methods not based solely on the target Raman band ratios, such as calibrated polarization observables and complementary vibrational or surface characterization where available.",
+          "Measure Raman response at multiple excitation wavelengths and polarization configurations in randomized order, recording the corresponding Stokes wavelengths and instrument-response calibration.",
+          "Characterize spectral transfer functions with calibrated optical measurements and characterize spatial enhancement and sampling with spatially resolved measurements; use a Raman reporter or other calibration procedure to estimate the molecularly weighted rather than only geometrically averaged enhancement where feasible.",
+          "Include nonresonant or comparatively spectrally uniform reference conditions, common-substrate repeated measurements, and replicate preparations to separate wavelength-dependent transfer functions from drift and morphology.",
+          "Monitor temperature, laser dose, photobleaching, molecular desorption, and instrumental sensitivity; exclude or model conditions showing uncontrolled state changes.",
+          "Fit both an orientation-only model and a broader known-physics forward model containing Raman-tensor projection, local polarization, excitation/Stokes transfer factors, spatial sampling, and measured nuisance covariates. Do not infer field selectivity from the Raman residual used as the outcome."
+        ],
+        "development_value": "This proposal does not establish a novel physical mechanism or a universal regime boundary. Its useful development is a calibrated measurement and model-comparison protocol for determining when an orientation-only interpretation is inadequate relative to a broader, known-electromagnetic Raman description. It preserves the possibility that residuals arise from omitted orientation, adsorption, chemical-enhancement, morphology, or instrumental variables, and therefore treats field selectivity as a conditional explanatory covariate rather than proof of new physics.",
+        "heldout_test": "Preregister a condition-level split before fitting: use a subset of wavelengths, cap thicknesses, spatial regions, and independent preparations for calibration, and hold out at least one wavelength and one substrate or cap-thickness condition. Fit the orientation-only model using independently measured orientation, adsorption geometry, coverage, and Raman-tensor information. Fit the broader known-physics model only with independently measured or calibration-derived transfer-function, polarization, spatial-sampling, and nuisance covariates. Predict held-out band-ratio vectors and uncertainty intervals without refitting condition-specific scale factors. The decisive comparison is prospective predictive performance: calibration-consistent held-out coverage, uncertainty-weighted error, and whether the broader model improves prediction beyond orientation-only after accounting for model complexity. Replicate the split on independently prepared samples; a training-only residual association is insufficient.",
+        "independent_variables": [
+          "Substrate composition: Au, Ag, and Au with controlled Ag-capping thickness.",
+          "Ag-capping thickness, continuity state, roughness, and morphology descriptors.",
+          "Excitation wavelength and corresponding Stokes wavelengths.",
+          "Incident and analyzed polarization configurations.",
+          "Independently calibrated excitation-frequency and Stokes-frequency transfer-function metrics, including their mode-relevant spectral variation.",
+          "Local polarization and spatial enhancement heterogeneity, preferably weighted by measured molecular coverage or sampling probability.",
+          "Molecular orientation distribution, adsorption geometry, coverage, and chemical-state descriptors measured independently of the target ratio.",
+          "Overall enhancement amplitude, analyzed separately from band- and frequency-selective enhancement.",
+          "Laser dose, temperature, acquisition order, instrument response, and photochemical or desorption indicators."
+        ],
+        "intervention": "Fabricate and characterize matched Au, Ag, and Ag-capped-Au substrates over a prespecified cap-thickness and morphology range. Adsorb the same molecular system using blocked, randomized preparations while measuring coverage, orientation, adsorption geometry, and chemical state independently. For each condition, acquire polarization-resolved Raman spectra at multiple excitation wavelengths and spatial positions, with randomized order and dose controls. In parallel, measure calibrated optical spectra, local polarization or near-field proxies, spatial enhancement distributions, and molecularly relevant sampling weights. Analyze relative band-ratio vectors with propagated uncertainties using an orientation-only forward model and a nested broader known-physics model that retains mode-specific excitation and Stokes-frequency transfer factors; do not treat common amplitude normalization as removal of band-selective effects.",
+        "known_physics_envelope": "Standard Raman and electromagnetic descriptions allow a measured band intensity to depend on Raman-tensor projection, local incident and scattered polarization, molecular position and orientation, excitation-frequency and Stokes-frequency local-field factors, chemical or adsorption state, detection response, and spatial sampling. A common multiplicative enhancement factor cancels from a ratio, but mode- or frequency-dependent transfer functions generally do not. Consequently, wavelength, cap thickness, morphology, and hot-spot sampling can change relative ratios within known physics. These effects may be nonmonotonic near resonances, can covary with coverage and chemistry, and do not imply a sharp phase transition, monotonic residual increase, or unique universal threshold.",
+        "local_falsifier": "For the preregistered tested domain, the regime-specific breakdown claim is locally weakened or falsified if the orientation-only model, with independently measured orientation, adsorption geometry, coverage, chemical-state bounds, instrument response, and propagated uncertainty, achieves calibration-consistent held-out prediction of the relative band-ratio vectors across changes in wavelength, cap thickness, substrate, and spatial heterogeneity; if the broader known-physics model provides no reproducible out-of-sample improvement; and if residuals show no reproducible association with independently measured spectral selectivity or molecularly weighted spatial sampling in independent preparations. This result would not falsify broader electromagnetic or chemical-enhancement models outside the tested domain.",
+        "local_id": "generated_01",
+        "mechanistic_hypothesis": "Within the tested conditions, relative Raman band ratios may depart from an orientation-and-adsorption-only prediction when band-specific excitation and Stokes-frequency transfer factors, local polarization, and molecularly weighted spatial sampling contribute an uncertainty-resolved effect comparable to the Raman-tensor projection effect. The expected relationship is a conditional crossover that may be nonmonotonic near resonances and may differ among Au, Ag, and Ag-capped-Au structures; it is not a claim of a singular physical boundary or new mechanism.",
+        "novelty_certified": false,
+        "observable": "For every sample, wavelength, polarization, and spatial region, measure the relative Raman band-ratio vector with calibrated uncertainty; independently measured orientation and adsorption-geometry distributions; coverage and chemical-state indicators; total enhancement; excitation- and Stokes-frequency transfer-function estimates; local polarization; molecularly weighted spatial heterogeneity; nuisance variables such as temperature and dose; and out-of-sample predictions and residuals from the orientation-only and broader known-physics models.",
+        "parent_idea_id": "research_idea:9cd359cab890711bf761",
+        "quantitative_or_ordinal_prediction": "Let y be the log relative-band-ratio vector, let y_O be the orientation-only prediction, and let C be the combined measurement and model covariance. Define χ²_O=(y−y_O)^T C^{-1}(y−y_O), with effective degrees of freedom reported rather than assigning universal cutoffs. Define S independently from preregistered, mode-relevant variation in excitation/Stokes transfer functions, local polarization, and molecularly weighted spatial sampling; estimate uncertainty in S. Conditional prediction: in low-S conditions, the distribution of χ²_O should be compatible with its calibrated error distribution; in high-S conditions, orientation-only misfit should increase relative to that calibration and the broader known-physics model should improve held-out predictive score. The association may be nonmonotonic with wavelength or cap thickness, so the preregistered test should use an uncertainty-weighted interaction or prespecified smooth function rather than require monotonic growth. Operational labels such as orientation-consistent, ambiguous, and field-selective-inconsistent may be reported only as descriptive classifications, not physical thresholds.",
+        "research_question": "Across the tested Au, Ag, and Ag-capped-Au structures, wavelengths, cap thicknesses, and molecularly weighted spatial-field conditions, when does an orientation-and-adsorption-only model lose calibrated predictive accuracy for relative SERS band ratios compared with a broader known-physics model containing independently measured spectral, polarization, and spatial transfer factors?",
+        "restricted_null": "Conditional null: after accounting for independently measured orientation, adsorption geometry, coverage, chemical state, Raman-tensor uncertainty, instrument response, temperature, dose, and preparation effects, the orientation-only model remains calibrated and predicts held-out relative band-ratio vectors across the tested wavelength, substrate, cap-thickness, and heterogeneity conditions. Under this null, any residual association with independently measured spectral selectivity or spatial sampling is attributable to sampling variation or modeled nuisance uncertainty. This is a restricted predictive null, not a claim that all known electromagnetic or chemical SERS effects are absent.",
+        "scientific_truth_authority": false,
+        "source_of_proposal": "MODEL_REVISED",
+        "surviving_uncertainty": "Residual associations can remain confounded by morphology, coverage, adsorption-state mixtures, chemical enhancement, heating, photobleaching, detector response, Raman-tensor uncertainty, and imperfect molecular-scale field sampling. Near-field or optical maps may not resolve the fields experienced by the molecules. A broader-model improvement can indicate omitted known-physics structure without uniquely identifying spectral selectivity as its cause, while failure to improve can reflect inadequate measurement precision or model misspecification. Results from one molecular system, band set, substrate range, or wavelength range cannot establish a universal regime boundary."
+      },
+      "revision_critique": {
+        "known_physics_counterexample": "전체 세기에 동일한 상수 c를 곱하거나 나누는 정규화는 R=I_i/I_j를 바꾸지 못한다; 넓은 M1을 배제하는 normalization이 아니다.",
+        "known_physics_null_not_rejected": true,
+        "local_id": "generated_01",
+        "manual_scientific_review_required": true,
+        "parent_idea_id": "research_idea:9cd359cab890711bf761",
+        "review_status": "STRUCTURALLY_SPECIFIED_SCIENCE_UNREVIEWED",
+        "revision_request": "Make conditional null, observable, independent controls and heldout test more decisive without inventing evidence. Preserve parent. ",
+        "scientific_novelty_certified": false,
+        "specification_defects": []
+      },
+      "scientific_truth_authority": false,
+      "source_generation": 4,
+      "source_idea_excerpt_sha256": "fb43c917642db7b3682c8612bcc8145650b35860845f4e11a5343962da0e32ab",
+      "task_id": "m6_task:9e19ed339b449daa4778"
+    },
+    {
+      "branch_id": "m6_shadow_branch:e9735e5f9826006054b3",
+      "generation_kind": "SPECULATIVE_SHADOW_PROPOSAL_NOT_RESEARCH_IDEA_NODE",
+      "initial_critique": {
+        "known_physics_counterexample": "교환속도만 가속하고 상태 점유율·상태별 emission을 고정한 정지 Markov 예에서 pooled mean band ratio는 변하지 않는다. 따라서 “residence time 변화 ⇒ 평균 band ratio 변화”는 일반적으로 성립하지 않음.",
+        "known_physics_null_not_rejected": true,
+        "local_id": "generated_01",
+        "manual_scientific_review_required": true,
+        "parent_idea_id": "research_idea:b1c161e528f01392084b",
+        "review_status": "STRUCTURALLY_SPECIFIED_SCIENCE_UNREVIEWED",
+        "revision_request": "Make conditional null, observable, independent controls and heldout test more decisive without inventing evidence. Preserve parent. ",
+        "scientific_novelty_certified": false,
+        "specification_defects": []
+      },
+      "initial_proposal": {
+        "assumptions": [
+          "Adsorption states can be represented over the tested interval by a stationary or locally stationary finite-state exchange process.",
+          "State-specific molecular orientation, occupancy, Raman emission, and local-field statistics can be estimated independently enough to constrain the kinetic model.",
+          "Residence-time changes can be induced without an unmeasured compensating change in molecular concentration, chemical enhancement, photochemistry, or substrate morphology.",
+          "Detector response, photon-counting noise, laser-induced drift, and photobleaching can be measured and incorporated into the observation model."
+        ],
+        "controls": [
+          "Use Au and Ag substrates or nanostructures with matched analyte concentration, illumination history, and independently characterized morphology but contrasting local-field heterogeneity.",
+          "Estimate adsorption and exchange rates using SERS-independent or cross-validated methods such as surface-sensitive kinetics, interferometry, fluorescence exchange, or concentration-jump recovery.",
+          "Measure polarization-resolved orientation proxies, adsorption occupancy, state-specific spectra, and local-field proxies independently of the target temporal statistic.",
+          "Randomize measurement order and include dark, blank, stable-reference, and repeated-substrate controls to quantify drift, contamination, and instrumental memory.",
+          "Acquire time-resolved band-vector trajectories at several prespecified integration windows, including windows shorter and longer than the estimated exchange correlation time."
+        ],
+        "development_value": "This descendant converts a qualitative residence-time explanation into a constrained kinetic observation model. It preserves the parent idea while avoiding the overstrong claim that changing exchange rates must change the pooled mean band ratio; instead, it tests rate-dependent temporal covariance, windowed ratio distributions, and their interaction with local-field heterogeneity.",
+        "heldout_test": "Fit the kinetic and observation parameters using a preregistered training subset of integration windows and substrate conditions, then predict the band-vector autocorrelation, window-mean covariance, and per-window ratio distribution at a held-out integration time and at least one held-out substrate heterogeneity level. A successful conditional prediction must use independently measured rates and state emissions rather than refitting the held-out data.",
+        "independent_variables": [
+          "Exchange-rate scale factor or independently estimated residence-time distribution",
+          "Adsorption-state occupancy and transition-rate asymmetry",
+          "Integration or acquisition window T",
+          "Substrate material and nanostructure geometry",
+          "Local-field heterogeneity quantified by an independently calibrated field-distribution proxy",
+          "Molecular orientation distribution and polarization geometry",
+          "Analyte concentration, illumination intensity, and temperature"
+        ],
+        "intervention": "At matched or statistically adjusted occupancy and average orientation, perturb adsorption exchange or residence times by controlled temperature, solvent, ligand, concentration-jump, or surface-chemistry changes, while preserving substrate morphology and optical acquisition settings. Compare heterogeneous and approximately uniform-field regimes, and collect time-resolved polarization-resolved SERS trajectories rather than only pooled spectra.",
+        "known_physics_envelope": "The proposal is conditional on standard Raman/SERS observation physics, including linear spectral accumulation over an exposure, photon-counting and detector noise, possible electromagnetic field enhancement, and adsorption-state kinetics. In a stationary two-state continuous-time Markov model with rates alpha and beta, stationary occupancy p is beta/(alpha+beta), the correlation time is tau_corr=1/(alpha+beta), and the covariance of a time average contains a factor proportional to 2[tau_corr/T-(tau_corr/T)^2(1-exp(-T/tau_corr))]. Scaling alpha and beta together can therefore change temporal covariance and per-window ratio distributions while leaving stationary occupancy and pooled mean band ratios unchanged. Deviations may indicate model inadequacy, nonstationarity, chemical enhancement, photochemistry, or unmeasured confounding; they do not by themselves establish a new physical mechanism.",
+        "local_falsifier": "Under a preregistered range of exchange-rate perturbations spanning at least an order of magnitude, if independently measured rates, occupancies, state-specific emissions, detector noise, and drift predict neither the observed autocorrelation nor the integration-window dependence of band-vector covariance or ratio distributions in the heterogeneous-field condition, while the same model also fails in the uniform-field control, this specific residence-time-weighted kinetic model is locally falsified. A null effect in the pooled mean band ratio alone is not a falsifier.",
+        "local_id": "generated_01",
+        "mechanistic_hypothesis": "Relative SERS bands are generated by time-weighted sampling of adsorption environments whose molecular orientation, emission response, and local electromagnetic field differ. When residence and exchange times are comparable to the acquisition window or molecular reorientation time, heterogeneous fields should produce rate-dependent temporal covariance and per-window band-ratio distributions even when average orientation and stationary occupancy are matched. The effect should be weaker in a near-uniform field regime. Stationary rate scaling need not change the pooled mean ratio.",
+        "novelty_certified": false,
+        "observable": "For each acquisition window, the vector of integrated Raman band intensities and polarization-resolved ratios, together with temporal autocovariance, cross-band covariance, variance as a function of window length, and the distribution of per-window ratios. Primary contrasts are the heterogeneous-minus-uniform difference in these statistics after adjustment for independently measured orientation, occupancy, state emissions, photon noise, and drift.",
+        "parent_idea_id": "research_idea:b1c161e528f01392084b",
+        "quantitative_or_ordinal_prediction": "For a stationary two-state exchange process with rates alpha and beta, scaling both rates by lambda while holding stationary occupancy fixed predicts tau_corr(lambda)=1/[lambda(alpha+beta)] and a decreasing variance of time-averaged band intensity as T/tau_corr increases according to the integrated-exponential covariance formula. Conditional on matched occupancy and state emissions, the heterogeneous-field regime should show a larger absolute change in temporal covariance and per-window ratio dispersion across lambda than the near-uniform-field regime: heterogeneity interaction > 0 in ordinal terms. The pooled ratio of time-integrated expected band intensities is predicted to remain approximately invariant under pure stationary rate scaling; any mean-ratio change requires nonstationarity, state-dependent emission changes, finite-window ratio bias, or an additional mechanism.",
+        "research_question": "Can independently measured residence-time and exchange kinetics explain rate- and acquisition-window-dependent temporal statistics of relative SERS bands, beyond average molecular orientation and static adsorption occupancy, particularly when molecules sample heterogeneous local fields?",
+        "restricted_null": "A restricted static orientation-access model in which relative band statistics are determined only by instantaneous orientation, occupancy, and fixed field distributions, with no residence-time-mediated temporal sampling. It predicts no residual exchange-rate dependence in time-resolved covariance or ratio distributions after these variables and measurement noise are controlled. This null does not encompass all established dynamic adsorption, photophysical, or chemical-enhancement models.",
+        "scientific_truth_authority": false,
+        "source_of_proposal": "MODEL_GENERATED",
+        "surviving_uncertainty": "Residence time, molecular reorientation, charge transfer, chemical enhancement, photobleaching, local heating, and field heterogeneity may be correlated and difficult to identify separately. A fitted Markov model may be an effective description rather than a microscopic mechanism. Finite-window ratios are nonlinear, and identical temporal statistics can arise from different hidden-state models; independent rate and orientation measurements therefore constrain but may not fully identify causality."
+      },
+      "novelty_certified": false,
+      "parent_idea_id": "research_idea:b1c161e528f01392084b",
+      "parent_intact": true,
+      "production_selection_authority": false,
+      "revision": {
+        "assumptions": [
+          "Over each preregistered analysis interval, adsorption and exchange can be approximated by a stationary or locally stationary finite-state process, while allowing explicit tests for nonstationarity.",
+          "State occupancies, transition rates or residence-time distributions, orientation-sensitive observables, state-dependent spectra, and relevant field proxies can be measured independently or cross-validated sufficiently to constrain—not necessarily uniquely identify—the observation model.",
+          "The selected intervention changes exchange kinetics within a characterized range without an unmeasured compensating change in substrate morphology, analyte amount, chemical enhancement, charge transfer, photochemistry, local heating, or illumination history; residual changes are modeled rather than assumed absent.",
+          "Detector response, photon-counting noise, spectral bleed-through, drift, blinking, photobleaching, and exposure-induced perturbations are measured with controls and included in the observation model.",
+          "The approximately uniform-field comparison is operationally defined by an independently calibrated lower dispersion of the relevant field proxy, not inferred from the SERS data being tested."
+        ],
+        "controls": [
+          "Use Au and Ag samples, or geometrically matched nanostructures, only after independently characterizing morphology, roughness, optical response, analyte loading, and thermal response; compare field-heterogeneity strata rather than treating material identity as the causal variable.",
+          "Estimate exchange or residence kinetics using at least one SERS-independent or cross-validated method, such as concentration-jump recovery, interferometric adsorption kinetics, fluorescence exchange, or surface-sensitive relaxation measurements, and report uncertainty and possible method-specific bias.",
+          "Measure orientation and adsorption occupancy with independent polarization, vibrational, fluorescence, or surface-sensitive observables; measure state-specific spectra and intensity distributions rather than relying on pooled SERS ratios to define the states.",
+          "Use stable spectral references, dark and blank controls, repeated substrates, randomized measurement order, interleaved low-power measurements, and intensity-dependent controls to quantify drift, contamination, photobleaching, charge transfer, and local heating.",
+          "Acquire band-vector trajectories at several preregistered integration windows spanning both shorter and longer than the independently estimated correlation time, with detector timing and photon-count statistics calibrated separately.",
+          "Include known-physics nuisance models for static orientation/access, adsorption exchange, spectral diffusion or blinking, chemical-enhancement fluctuations, photochemistry, and instrumental drift; compare their posterior-predictive performance rather than testing only an orientation-only null."
+        ],
+        "development_value": "This revision is a known-physics measurement and model-development proposal, not a claim of novel physics. It replaces the unsupported implication that changing residence time must change the mean band ratio with a testable prediction about temporal covariance, window dependence, and ratio-distribution bias. It also makes the broad null explicit: observed rate dependence can arise from ordinary adsorption kinetics, photophysics, chemical enhancement, or instrument effects and is not by itself evidence for residence-time-mediated electromagnetic sampling. The useful outcome is a calibrated protocol for determining which time-resolved SERS statistics are predictable from independently measured kinetics and observation physics.",
+        "heldout_test": "Preregister a generative observation model using only the training subset of integration windows, perturbation levels, and field-heterogeneity strata. Parameterize it with independently measured rates or residence-time distributions, occupancies, orientation observables, state spectra, field-proxy distributions, detector response, photon noise, drift, and photophysical nuisance terms. Without refitting, predict held-out band-vector autocovariance and cross-covariance, variance versus integration time, and the full per-window ratio distribution at at least one held-out integration window and one held-out heterogeneity stratum. Score predictions with preregistered likelihood or calibration metrics and compare them with static, exchange-only, blinking/photophysics, and drift-inclusive alternatives. A result is informative only if the kinetic model improves out-of-sample prediction after these alternatives and independent covariates are included; parameter non-identifiability or equivalent predictive performance should be reported as unresolved rather than interpreted mechanistically.",
+        "independent_variables": [
+          "Independently estimated exchange-rate scale or residence-time distribution, including transition-rate asymmetry",
+          "Integration window and acquisition cadence",
+          "Adsorption-state occupancy and independently measured orientation distribution",
+          "State-specific Raman emission and polarization response",
+          "Substrate material and nanostructure geometry",
+          "Independently calibrated local-field heterogeneity proxy",
+          "Analyte concentration, temperature, solvent, ligand or surface chemistry, and illumination intensity",
+          "Photon-count level, detector timing, spectral resolution, and measurement order"
+        ],
+        "intervention": "Use a within-sample, randomized intervention that changes adsorption exchange or residence kinetics while monitoring morphology and optical response before and after the intervention. Candidate interventions include a controlled temperature or solvent perturbation, a concentration-jump recovery, or a characterized ligand/surface-chemistry change; retain only perturbations for which independent kinetics, analyte loading, thermal state, and optical response are measured. Match or statistically adjust occupancy and average orientation, and measure rather than assume that state-specific emission and chemical-enhancement factors remain fixed. Compare the resulting temporal statistics across independently defined high- and low-field-heterogeneity samples, while holding acquisition settings fixed and repeating the intervention in both directions when feasible.",
+        "known_physics_envelope": "The proposal is restricted to established Raman/SERS, adsorption-kinetic, photophysical, and measurement physics: linear or calibrated nonlinear spectral accumulation, electromagnetic enhancement, chemical enhancement and charge transfer, adsorption/desorption and site exchange, molecular reorientation, blinking or spectral diffusion, photobleaching, local heating, concentration fluctuations, detector response, photon-counting noise, and instrumental drift. For a stationary two-state continuous-time Markov component with rates alpha and beta, stationary occupancy is beta/(alpha+beta), the correlation time is 1/(alpha+beta), and the variance of a time average follows the integrated-exponential covariance expression. Scaling both rates by a common factor while preserving state emissions and stationary occupancy changes temporal covariance and finite-window ratio distributions but leaves the stationary pooled mean intensity ratio unchanged. Heterogeneous fields can alter the mapping from hidden-state trajectories to band vectors, but a larger rate effect in that regime is a conditional model prediction, not a general law. Deviations may reflect nonstationarity, chemical enhancement, photochemistry, blinking, heating, morphology changes, or model misspecification; they do not establish new physics.",
+        "local_falsifier": "For the prespecified intervention range, if independently measured kinetics, occupancies, orientations, state emissions, field proxies, detector noise, drift, and broad known-physics nuisance terms produce calibrated out-of-sample predictions of the held-out temporal covariance, window dependence, and ratio distributions in both heterogeneous and low-heterogeneity conditions, then the proposed residence-time-weighted sampling model has no demonstrated explanatory value beyond those established models. Conversely, it is locally falsified as a quantitative kinetic model if its independently parameterized predictions fail reproducibly in the held-out data while a preregistered alternative model accounts for the same statistics. A null change in the pooled mean ratio alone is not a falsifier, and a residual rate effect alone is not proof of a distinct mechanism.",
+        "local_id": "generated_01",
+        "mechanistic_hypothesis": "A molecule's observed SERS band vector may be a time-weighted result of visits to adsorption environments with different orientations, emission responses, and electromagnetic enhancement. When exchange or residence times are comparable to the acquisition window or molecular reorientation time, this can produce rate-dependent autocovariance, cross-band covariance, and finite-window ratio distributions even when stationary occupancy and mean orientation are matched. The effect is expected to depend on field heterogeneity only through the specified observation model and must be distinguished from established dynamic adsorption, blinking, chemical-enhancement, photochemical, thermal, and instrumental processes.",
+        "novelty_certified": false,
+        "observable": "For each acquisition window, record the calibrated vector of integrated Raman band intensities and polarization-resolved channels. Derive temporal autocovariance and cross-band covariance, variance as a function of integration time, inter-window dependence, and the distribution of per-window ratios with uncertainty propagated from photon counting and spectral fitting. The primary estimand is the out-of-sample change in these statistics under an independently measured kinetic perturbation, conditional on occupancy, orientation, state emission, field-heterogeneity proxy, illumination, and nuisance controls. The pooled mean ratio is a secondary observable and is not expected to change under pure stationary common-rate scaling.",
+        "parent_idea_id": "research_idea:b1c161e528f01392084b",
+        "quantitative_or_ordinal_prediction": "In a stationary two-state component, multiplying alpha and beta by lambda while holding beta/(alpha+beta), state emissions, and field statistics fixed predicts tau_corr(lambda)=1/[lambda(alpha+beta)]. The variance of a time-averaged band vector should decrease with T/tau_corr according to the integrated-exponential covariance formula, and finite-window ratio dispersion should generally depend on T/tau_corr because ratios are nonlinear. Under the specified heterogeneous-field observation model, the absolute rate-dependent change in covariance or ratio dispersion may exceed that in the low-heterogeneity control; this is an ordinal, model-conditional interaction prediction rather than a universal expectation. The stationary pooled ratio of time-integrated expected intensities should remain approximately invariant under pure common-rate scaling. Any mean-ratio change requires finite-window nonlinear bias, nonstationarity, state-emission changes, photophysics, chemical enhancement, or another modeled confound.",
+        "research_question": "Can independently measured residence and exchange kinetics improve held-out prediction of time-resolved SERS band-vector statistics beyond a broad known-physics model containing static orientation/access, adsorption dynamics, photophysics, chemical enhancement, and instrumental effects, and is any improvement conditional on independently calibrated local-field heterogeneity?",
+        "restricted_null": "The primary null is not merely orientation-only. It is a broad established-physics observation model in which relative SERS statistics are generated by independently measured or fitted static orientation and occupancy, adsorption exchange, state-dependent emission, electromagnetic and chemical enhancement, blinking or spectral diffusion, photochemistry, local heating, photon noise, detector response, and drift, without requiring a separate residence-time-weighted field-sampling contribution. A simpler static orientation/access submodel is a secondary nested null. Under the broad null, exchange-rate changes may affect temporal statistics through ordinary adsorption or photophysical processes, so residual rate dependence alone is not discriminating; discrimination requires independent kinetic constraints and superior held-out prediction.",
+        "scientific_truth_authority": false,
+        "source_of_proposal": "MODEL_REVISED",
+        "surviving_uncertainty": "Residence time, reorientation, charge transfer, chemical enhancement, photobleaching, blinking, local heating, morphology, and field heterogeneity can remain correlated even after independent measurement. Different hidden-state models may produce indistinguishable second-order temporal statistics, and finite-window ratios are nonlinear and noise-sensitive. A fitted Markov process may therefore be an effective description rather than a microscopic mechanism. Failure of a particular model can reflect incorrect state structure or observation physics rather than absence of dynamic sampling, while success in prediction does not establish a novel mechanism."
+      },
+      "revision_critique": {
+        "known_physics_counterexample": "교환속도만 가속하고 상태 점유율·상태별 emission을 고정한 정지 Markov 예에서 pooled mean band ratio는 변하지 않는다. 따라서 “residence time 변화 ⇒ 평균 band ratio 변화”는 일반적으로 성립하지 않음.",
+        "known_physics_null_not_rejected": true,
+        "local_id": "generated_01",
+        "manual_scientific_review_required": true,
+        "parent_idea_id": "research_idea:b1c161e528f01392084b",
+        "review_status": "STRUCTURALLY_SPECIFIED_SCIENCE_UNREVIEWED",
+        "revision_request": "Make conditional null, observable, independent controls and heldout test more decisive without inventing evidence. Preserve parent. ",
+        "scientific_novelty_certified": false,
+        "specification_defects": []
+      },
+      "scientific_truth_authority": false,
+      "source_generation": 4,
+      "source_idea_excerpt_sha256": "95dda630ac7dffb93f9994a9438fa9f43ab6ea9b523dd313c1e5ecd830c2659e",
+      "task_id": "m6_task:74b0fab7c419c3b42cc0"
+    }
+  ],
+  "drafts_sha256": "88582f33d77820b83bdad249fc15534559c611bbaa1c28c5f8111d1ea539ad08",
+  "metrics_non_scientific": {
+    "baseline_science_capability": "NOT_MEASURED",
+    "initial_structurally_specified": 2,
+    "revised_structurally_specified": 2,
+    "scientific_gain": "NOT_DEMONSTRATED"
+  },
+  "revisions_sha256": "18c6c4452b80b279d2af96f418c2e24915e4b1bc125f0ae9d4299fba712bfef1",
+  "schema_version": "m6-scientific-development-shadow-v1",
+  "selected_parent_count": 2,
+  "source_prepared_sha256": "ecb25abf3a8cad1d944c0ddadd46490812490a7cacfb875e4c52a22083156409",
+  "status": "M6_DEVELOPMENT_SHADOW_COMPLETED_SCIENCE_UNREVIEWED"
+}

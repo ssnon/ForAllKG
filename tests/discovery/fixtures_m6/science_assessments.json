@@ -1,0 +1,308 @@
+{
+  "schema_version": "m5f-native-six-science-audit-v1",
+  "status": "SOURCE_EXCERPTS_ASSESSED_UNCERTIFIED",
+  "source_packet_sha256": "ed0d822d87b31f6b61645221ea27ed9e9f62927264c384a42ab14370376c4df5",
+  "archive_parent_snapshot_sha256": "7747709331852cbadb0a0fbcd27d3971162ff5b961bf7f198221d3e15dac63c3",
+  "source_raw_generation_sha256_claimed_in_packet_NOT_LOCALLY_REVERIFIED": {
+    "G3": "50399d0837dafd7919ce0e2e1247f6d0bbfffdfa807527cfffd3478d1b53123b",
+    "G4": "f84740d112c20a9372142075fa5ba6e5dc6a50cf7f15ae83624f9eab962ca0ea"
+  },
+  "authority": {
+    "generated_ideas_modified": false,
+    "scientific_truth_authority": false,
+    "scientific_novelty_certified": false,
+    "experiment_data_available": false,
+    "may_delete_ideas": false,
+    "production_selection_authority": false
+  },
+  "counts": {
+    "reviewed_ideas": 6,
+    "parent_archive_lookup": 5,
+    "parent_packet_lookup": 1,
+    "analyst_program_families": 3,
+    "M1_discriminator_supported_by_new_measurements": 0,
+    "scientific_novelty_certified": 0
+  },
+  "records": [
+    {
+      "generation": 3,
+      "idea_id": "research_idea:75adde25c68026f3465e",
+      "parent_idea_id": "research_idea:033ba3a092e3f10c029a",
+      "operator_id": "PROXY_CHALLENGE",
+      "parent_canonical_intent": "molecular orientation -> Raman intensity with Ag capping thickness attached to target; backbone: vibrational-mode SERS intensity --VARIES_WITH--> Raman-tensor orientation relative to the local electric field",
+      "parent_bound_from": "SCIENTIFIC_PROGRAM_ARCHIVE",
+      "source_conceptual_change_summary": "Recast relative SERS band intensities as a potentially biased proxy for molecular orientation by introducing a thickness-dependent accessibility and local-field sampling kernel. The child tests whether apparent orientation signatures persist after separating Raman-tensor orientation from which molecules contribute to the measured signal.",
+      "source_differential_prediction": "An orientation-dominant model predicts that independently measured orientation and polarization-sensitive band ratios co-vary across Ag capping thicknesses, whereas an accessibility-biased model predicts thickness-dependent band-ratio changes that track depth or hotspot sampling while independent orientation remains comparatively stable.",
+      "source_discriminating_observation": "Measure polarization- or orientation-sensitive observables, total enhancement, and spatial or depth-sensitive SERS signals on matched Au and Ag substrates spanning controlled Ag capping thicknesses, then test whether thickness predicts residual band-ratio variation after independent orientation is included.",
+      "source_falsification_condition": "The proxy-challenge model is disfavored if relative band ratios remain consistently explained by independent orientation measurements across a substantial range of Ag capping thicknesses and local-field heterogeneity, with no residual association between thickness and band ratios after orientation is accounted for.",
+      "scientific_program_family_analyst_cluster": "ACCESS_FIELD_SAMPLING",
+      "value_within_existing_physics": "PROXY_CALIBRATION",
+      "parent_relative_change_analyst": "부모의 단순 orientation–intensity/Ag cap 관계를, 접근성·국소장에 의해 편향된 orientation proxy의 신뢰도 문제로 바꾸었다. 부모 원문의 정량 예측은 비어 있다.",
+      "restricted_orientation_only_null_M0": "배향과 site/mode 응답 및 기여 집단이 고정되었다고 가정하는 제한된 orientation-only null. 배향이 같으면 band ratio도 같다는 대조 예측.",
+      "known_physics_compatibility_envelope_M1": "I_k(d)=Σ_s n_s(d) a_s(d) G_s(ω_exc,d) G_{s,k}(ω_sc,d) A_{k,s}(θ_s,chem_s). site 기여도, 국소장 분광 응답, chemistry만 달라도 평균 배향이 같은 상태에서 ratio가 바뀔 수 있다.",
+      "mathematical_or_causal_counterexample": "배향이 고정된 두 site에 서로 다른 band-specific response가 있으면 가중치 변화만으로 ratio 변화; 접근성 a_s와 local enhancement G_s의 곱은 총 intensity만으로 식별 불가.",
+      "missing_independent_controls": [
+        "독립 측정한 배향 분포(평균뿐 아니라 분산/사이트별 분포)",
+        "캡 두께별 site 점유/접근성의 SERS-독립 지표",
+        "여기·Stokes 각 주파수의 국소장 분포 및 편광",
+        "표면 화학상태/coverage 동일성"
+      ],
+      "minimum_conditionally_discriminating_bridge": "사전 고정된 독립 site population과 광학 응답을 가진 제한된 M1의 홀드아웃 두께에 대해 band vector 및 불확실성 구간 예측; 잔차의 재현 여부를 비교.",
+      "falsifier_validity_scope": "특정 표면·두께·분자 집단의 proxy bias 설명만 약화. 접근성 일반 메커니즘의 부재나 새로운 물리의 부재를 증명하지 않음.",
+      "scientific_caution": "두께의 잔차 상관은 접근성에 대한 인과 증명이 아니다.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    },
+    {
+      "generation": 3,
+      "idea_id": "research_idea:d1d976f8f7f1c223700a",
+      "parent_idea_id": "research_idea:04b64a65f83be329da57",
+      "operator_id": "LATENT_VARIABLE",
+      "parent_canonical_intent": "Identify whether the orientation-to-intensity relationship changes sign or loses reliability when molecules sample strongly heterogeneous local fields on Au or Ag surfaces.",
+      "parent_bound_from": "SCIENTIFIC_PROGRAM_ARCHIVE",
+      "source_conceptual_change_summary": "Introduces an effective sampling-weighted orientation–field coupling as a latent mediator between molecular orientation and measured relative SERS band intensities. The child shifts the contrast from field heterogeneity alone to whether Au and Ag differ in how hotspot occupancy, molecular access, and orientation jointly weight the observed Raman signal.",
+      "source_differential_prediction": "At matched average enhancement and comparable mean molecular orientation, changes in hotspot occupancy or molecular access should produce larger and more variable band-ratio shifts when the sampling-weighted orientation–field coupling is important. A model using only mean orientation should not account for these shifts, while a model including the mediator should reduce the apparent Au–Ag difference if it is primarily sampling-related.",
+      "source_discriminating_observation": "Perform matched Au–Ag measurements combining polarization-resolved SERS, an independent orientation probe, spatially resolved enhancement mapping, and a molecular-access or surface-coverage perturbation. Test whether band-ratio variation is better predicted by mean orientation alone or by a model incorporating the inferred sampling-weighted orientation–field coupling.",
+      "source_falsification_condition": "The latent-mediator interpretation is weakened if relative band ratios remain predicted equally well by independent orientation measurements alone across Au and Ag substrates, despite controlled changes in hotspot occupancy, field heterogeneity, and molecular-access conditions, or if adding these variables provides no reproducible improvement in cross-condition prediction.",
+      "scientific_program_family_analyst_cluster": "ACCESS_FIELD_SAMPLING",
+      "value_within_existing_physics": "MEASUREMENT_IDENTIFIABILITY",
+      "parent_relative_change_analyst": "부모의 field heterogeneity/occupancy에 따른 orientation prediction 붕괴를 잠재 sampling-weighted orientation–field coupling의 모델 비교 문제로 재구성. 새로운 역학 법칙보다는 변수 매개화.",
+      "restricted_orientation_only_null_M0": "평균 배향과 평균 enhancement를 조건화하면 ratio가 결정된다는 매우 제한적인 평균-변수 null.",
+      "known_physics_compatibility_envelope_M1": "SERS 가중 평균 E[w(θ,s,λ) A_k(θ,s)]/E[w A_j]에는 hotspot occupancy–orientation covariance, 광학 tensor, chemical enhancement가 이미 포함될 수 있다.",
+      "mathematical_or_causal_counterexample": "잠재 매개자 값을 목표 SERS band ratio 자체에서 역추정한 후 동일 자료의 ratio를 예측하면 outcome leakage/순환 적합; 다른 매개자 매개화로 동일 관측 분포 재현 가능.",
+      "missing_independent_controls": [
+        "SERS band ratio와 독립된 hotspot site occupancy",
+        "orientation 분포와 local polarization mapping",
+        "surface chemistry/charge transfer 상태",
+        "사전에 추정하고 홀드아웃에서 고정한 잠재 매개자 모델"
+      ],
+      "minimum_conditionally_discriminating_bridge": "독립 데이터로 매개변수와 구조를 추정한 후 새로운 Au/Ag/coverage/λ 조합에 예측분포를 고정해 평가. 근접한 대안 M1과 같은 파라미터 수/복잡도 통제.",
+      "falsifier_validity_scope": "해당 특정 latent-mediator 추정기의 외부 예측력이 없음을 국소적으로 약화할 뿐, 복합 가중 물리 전체를 배척하지 못함.",
+      "scientific_caution": "평균 enhancement를 맞추는 것만으로 field distribution, polarization, chemistry를 맞췄다고 주장할 수 없다.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    },
+    {
+      "generation": 3,
+      "idea_id": "research_idea:f9e742548784c6e45a97",
+      "parent_idea_id": "research_idea:ddff9a5d05957ddfc117",
+      "operator_id": "LATENT_VARIABLE",
+      "parent_canonical_intent": "Test whether air-exposure-dependent changes in SERS band intensities on Au and Ag arise from molecular reorientation or from time-dependent changes in the surface and enhancement environment.",
+      "parent_bound_from": "SCIENTIFIC_PROGRAM_ARCHIVE",
+      "source_conceptual_change_summary": "Recast molecular access to the local electromagnetic field as an explicit latent mediator that can vary independently of the measured average molecular orientation, so that adsorption geometry and site occupancy become competing explanations for relative band intensities rather than treating orientation as the sole molecular structural variable.",
+      "source_differential_prediction": "Matched samples with similar average orientation but different adsorption-site occupancy or molecular access should show different polarization-resolved band ratios when local-field heterogeneity is substantial; under more uniform fields, the access-dependent contrast should weaken.",
+      "source_discriminating_observation": "Identify conditions in which an access-sensitive observable or controlled adsorption perturbation changes while the orientation-sensitive observable remains approximately stable, then test whether relative SERS band ratios change selectively on Au or Ag.",
+      "source_falsification_condition": "The proposed access-mediated distinction is disfavored if relative band ratios remain fully predicted by independent orientation measurements across controlled changes in adsorption-site occupancy, molecular access, substrate composition, and estimated field heterogeneity.",
+      "scientific_program_family_analyst_cluster": "ACCESS_FIELD_SAMPLING",
+      "value_within_existing_physics": "MECHANISTIC_DECOMPOSITION",
+      "parent_relative_change_analyst": "부모의 air-exposure vs surface-state evolution 문제를, orientation과 분리된 site-access latent variable로 이동. 과학적 질문은 바뀌었지만 기존 adsorption/access family에 있음.",
+      "restricted_orientation_only_null_M0": "평균 배향 지표만으로 relative SERS band ratio를 설명하는 제한된 orientation-only 모형.",
+      "known_physics_compatibility_envelope_M1": "표면 점유율/화학흡착·접근성·국소장과의 공간 공변량을 가진 기존 혼합 모델은 일정 평균 배향하의 band ratio 변화도 예측.",
+      "mathematical_or_causal_counterexample": "접근성의 직접 조작이 동시에 morphology 또는 site-specific chemistry를 바꾸면 접근성만의 인과 효과를 분리할 수 없음.",
+      "missing_independent_controls": [
+        "독립적인 adsorption-site occupancy 및 surface coverage",
+        "평균과 분포를 구분한 orientation 측정",
+        "field heterogeneity 및 주파수별 polarization map",
+        "표면 산화/흡착 결합형태/광열 영향"
+      ],
+      "minimum_conditionally_discriminating_bridge": "흡착 상태 개입과 광학 구조 개입을 가능한 한 직교화한 실험에서 site-weighted M1의 홀드아웃 ratio vector를 예측.",
+      "falsifier_validity_scope": "접근성 매개 설명의 특정 개입·세기 범위에서만 반증 가능. uniform field에서 무효과가 heterogenous field의 부재 증거는 아님.",
+      "scientific_caution": "Au–Ag 차이는 adsorbate chemistry를 동반하므로 material 자체를 배제 변수로 취급하면 안 됨.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:9cd359cab890711bf761",
+      "parent_idea_id": "research_idea:b853c7ccae81ff783f9d",
+      "operator_id": "REGIME_BOUNDARY",
+      "parent_canonical_intent": "Determine whether Ag capping thickness changes relative SERS band intensities mainly by reshaping the local electromagnetic field or by changing how a fixed molecular orientation projects onto that field.",
+      "parent_bound_from": "SCIENTIFIC_PROGRAM_ARCHIVE",
+      "source_conceptual_change_summary": "Recast the orientation-versus-field explanation as a regime-boundary problem in which orientation-based interpretation is expected to fail when wavelength-dependent local-field spectral selectivity and spatial hot-spot sampling become sufficiently strong relative to the Raman-tensor projection effect.",
+      "source_differential_prediction": "When orientation distributions are matched, samples with increasing spectral selectivity or spatial hot-spot heterogeneity should show progressively larger deviations between orientation-predicted and measured relative band ratios, with the deviation potentially differing between Au and Ag; under comparatively spectrally uniform and spatially homogeneous enhancement, normalized ratios should remain more closely associated with orientation.",
+      "source_discriminating_observation": "Construct matched orientation populations across Au, Ag, and Ag-capped Au thicknesses; measure polarization-resolved band ratios at multiple excitation wavelengths together with orientation observables, overall enhancement, and spatial or spectral field-selectivity metrics. Test whether the residual from the orientation model changes systematically with those field-selectivity metrics.",
+      "source_falsification_condition": "The regime-boundary proposal is disfavored if relative band ratios remain quantitatively predicted by independently measured orientation and adsorption geometry across controlled changes in excitation wavelength, Ag-capping thickness, spectral enhancement selectivity, and spatial hot-spot heterogeneity, including after appropriate field-amplitude normalization.",
+      "scientific_program_family_analyst_cluster": "SPECTRAL_SPATIAL_FIELD_REGIME",
+      "value_within_existing_physics": "CONDITIONAL_REGIME_TEST",
+      "parent_relative_change_analyst": "부모의 orientation vs field redistribution fork를, spectral/spatial selectivity가 커질 때 orientation proxy의 설명력이 저하되는 조건부 regime boundary 문제로 바꿈. 전이 척도/경계 수치는 아직 정의되지 않음.",
+      "restricted_orientation_only_null_M0": "배향과 흡착 상태가 유지되면 band ratio는 λ/두께 변화에도 거의 불변이라는 매우 제한된 orientation-only 모델.",
+      "known_physics_compatibility_envelope_M1": "G_s(ω_exc,λ)G_{s,k}(ω_sc,k,λ)의 mode별 분광 의존성과 local polarization, spatial sampling은 표준 EM/Raman 모형에서 ratio 변화를 만든다.",
+      "mathematical_or_causal_counterexample": "전체 세기에 동일한 상수 c를 곱하거나 나누는 정규화는 R=I_i/I_j를 바꾸지 못한다; 넓은 M1을 배제하는 normalization이 아니다.",
+      "missing_independent_controls": [
+        "excitation/Stokes 파장별 국소장 transfer function",
+        "개별 모드의 Raman tensor와 배향 분포",
+        "hotspot 공간 분포와 분자 coverage",
+        "동일 시료/구조에 대한 복수 λ 및 polarization"
+      ],
+      "minimum_conditionally_discriminating_bridge": "사전등록 χ=예측된 field-induced ratio residual / orientation-only 허용오차 등의 무차원 척도와 오류 구간·경계 기준 정의; 다른 λ/두께에서 holdout. 연속 crossover를 물리적 singular threshold로 표현하지 않음.",
+      "falsifier_validity_scope": "정의된 χ 영역의 방향성과 residual slope가 재현되지 않을 때 그 regime-특정 주장만 약화. universal threshold를 시험했다고 주장하지 않음.",
+      "scientific_caution": "원문의 “progressively larger”는 강제적 단조성 예측이 아니다. 공진 조건에 따라 비단조 가능.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:aa130d09589841568e76",
+      "parent_idea_id": "research_idea:c87510278dbb6b96129b",
+      "operator_id": "PROXY_CHALLENGE",
+      "parent_canonical_intent": "Test whether differences in relative SERS band intensities on Au and Ag at different excitation wavelengths are primarily explained by the Raman-tensor orientation relative to the local electric field or by wavelength-dependent changes in the local enhancement spectrum.",
+      "parent_bound_from": "SCIENTIFIC_PROGRAM_ARCHIVE",
+      "source_conceptual_change_summary": "Replace the assumption that ensemble-averaged orientation measurements represent the molecules dominating the SERS signal with a field-weighted, site-specific orientation-access variable. The child tests whether apparent breakdown of the orientation–intensity relationship arises because hot-spot molecules have a different orientation distribution from the optically sampled ensemble, rather than because orientation is irrelevant.",
+      "source_differential_prediction": "At comparable ensemble-average orientation, substrates or excitation conditions with stronger local-field heterogeneity should show larger deviations between ensemble-based orientation predictions and measured relative band ratios. A field-weighted orientation or access-sensitive measure should reduce this deviation more effectively than normalization by total enhancement alone.",
+      "source_discriminating_observation": "Prepare matched Au and Ag samples spanning low- and high-heterogeneity regimes, hold ensemble-average orientation approximately comparable, and acquire polarization-resolved SERS together with spatially resolved enhancement or site-selective orientation/access measurements. Test whether relative band ratios track the field-weighted subpopulation rather than the ensemble-average orientation.",
+      "source_falsification_condition": "The field-weighted proxy explanation is disfavored if relative band ratios are equally well predicted by ensemble-average orientation across controlled changes in hot-spot heterogeneity, adsorption-site occupancy, molecular access, substrate composition, and excitation wavelength, with no improvement from site- or hot-spot-sensitive orientation measurements.",
+      "scientific_program_family_analyst_cluster": "ACCESS_FIELD_SAMPLING",
+      "value_within_existing_physics": "PROXY_CALIBRATION",
+      "parent_relative_change_analyst": "부모의 wavelength-dependent field-vs-orientation 대조를, ensemble-average orientation과 SERS-active hotspot 분자 하위집단의 field-weighted orientation 불일치로 재구성. 측정대상 population을 명확히 바꿈.",
+      "restricted_orientation_only_null_M0": "ensemble orientation distribution(또는 그 평균)이 SERS 가중 orientation과 같다고 가정한 proxy null.",
+      "known_physics_compatibility_envelope_M1": "E[w(θ,s,λ) f_k(θ,s)]/E[w f_j]와 f_k(E[θ])는 일반적으로 다름. site–orientation covariance 및 local polarization은 기존 SERS 응답의 한 부분.",
+      "mathematical_or_causal_counterexample": "동일 ensemble mean이라도 다른 분포 또는 다른 w–θ covariance에서 서로 다른 ratio. SERS-derived weighted orientation을 SERS ratio로 검증하면 tautology.",
+      "missing_independent_controls": [
+        "분포까지 포함하는 SERS-독립 ensemble orientation",
+        "가능하다면 hotspot/site-specific orientation과 점유율의 교차 측정",
+        "발광/산란 기반 공간·주파수 field proxy의 독립 보정",
+        "chemical enhancement 및 molecular population 변동"
+      ],
+      "minimum_conditionally_discriminating_bridge": "외부 측정으로 고정한 SERS-active orientation distribution을 이용해, 미사용 파장/모드의 ratio vector를 사전 예측; ensemble proxy와 복잡도 맞춘 baseline 비교.",
+      "falsifier_validity_scope": "SERS-active subpopulation proxy가 특정 설계에서 추가 예측력을 제공하지 못할 때 한정된 주장 약화. 전체 분자의 배향 영향 자체를 부정하지 않음.",
+      "scientific_caution": "hotspot-sensitive orientation을 실제로 독립적이며 site-specific하게 측정할 수 있는지 실험 타당성을 우선 점검.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    },
+    {
+      "generation": 4,
+      "idea_id": "research_idea:b1c161e528f01392084b",
+      "parent_idea_id": "research_idea:f9e742548784c6e45a97",
+      "operator_id": "LATENT_VARIABLE",
+      "parent_canonical_intent": "Determine whether relative SERS band intensities on Au versus Ag are governed by molecular orientation itself or by a distinct adsorption-access state that controls how molecules sample heterogeneous local fields.",
+      "parent_bound_from": "SUBMITTED_G3_PACKET",
+      "source_conceptual_change_summary": "Introduce molecular residence-time distribution as a distinct latent mediator: relative SERS band ratios may depend not only on which adsorption sites molecules occupy, but also on how long molecules remain in different local-field environments relative to molecular motion, adsorption exchange, and spectral acquisition timescales.",
+      "source_differential_prediction": "At matched average orientation and approximate site occupancy, perturbations that change molecular residence or exchange times should alter relative band ratios more strongly on substrates or nanostructures with heterogeneous local fields than on more spatially uniform field distributions; a purely static orientation-access explanation predicts substantially weaker timescale dependence after those variables are controlled.",
+      "source_discriminating_observation": "Measure time-resolved or exchange-sensitive SERS from matched Au and Ag samples while independently characterizing molecular orientation and adsorption occupancy, and compare band-ratio responses to controlled changes in residence or exchange times across substrates with different local-field heterogeneity.",
+      "source_falsification_condition": "The dynamic residence-time mechanism is disfavored if controlled changes in adsorption residence or exchange rates produce no reproducible relative-band-ratio changes under strongly heterogeneous fields, or if all such changes are quantitatively accounted for by independently measured orientation, occupancy, and instantaneous field-amplitude distributions.",
+      "scientific_program_family_analyst_cluster": "DYNAMIC_RESIDENCE_TIMES",
+      "value_within_existing_physics": "CONDITIONAL_REGIME_TEST",
+      "parent_relative_change_analyst": "정적 access·site occupancy 부모에 residence/exchange rates와 acquisition time T라는 동역학 축을 도입. 6개 중 가장 뚜렷한 추가 상태 변수이지만 평균 ratio의 변화 예측은 물리적 수정이 필요.",
+      "restricted_orientation_only_null_M0": "정적 orientation/occupancy/field와 교환 시간을 명시하지 않는 제한적 정적 모형. 측정창의 시간통계에 대한 구체 예측 없음.",
+      "known_physics_compatibility_envelope_M1": "정지 2-state continuous-time Markov site exchange에서 α,β를 같은 인자로 배율하면 stationary p는 고정; E[I_k(T)/T]과 pooled ratio E[I1]/E[I2]는 속도 배율에 불변. 반면 프레임별 variance/autocorrelation 및 E[per-window ratio]는 T×(α+β)에 따라 바뀔 수 있다.",
+      "mathematical_or_causal_counterexample": "교환속도만 가속하고 상태 점유율·상태별 emission을 고정한 정지 Markov 예에서 pooled mean band ratio는 변하지 않는다. 따라서 “residence time 변화 ⇒ 평균 band ratio 변화”는 일반적으로 성립하지 않음.",
+      "missing_independent_controls": [
+        "흡착/이탈/교환율의 SERS-independent 또는 교차검증된 estimate",
+        "각 사이트의 occupancy/mean orientation 및 emission spectrum",
+        "검출기 시간응답·광자수/shot noise·표면 drift",
+        "T를 전향적으로 다르게 설정한 시간해상 band-vector trajectories"
+      ],
+      "minimum_conditionally_discriminating_bridge": "정지 Markov baseline의 τ_corr=1/(α+β)와 Var(mean intensity over T)라는 수치 예측을 사전등록. 같은 occupancy에서 rates만 변화시키고 holdout T로 temporal covariance와 ratio distribution을 예측; 알려진 Markov/photophysics와 먼저 대조.",
+      "falsifier_validity_scope": "평균 band ratio의 무효과만으로 dynamic exchange 부재를 반증할 수 없다. 독립 측정된 rate·occupancy·emission으로 계산한 autocorrelation/variance 예측 실패는 특정 kinetic model만 약화.",
+      "scientific_caution": "단일 window의 E[I1/I2]는 ratio-of-expectations와 같지 않을 수 있으며 noise floor, exposure-induced charge transfer, slow drift를 별도 대조해야 함.",
+      "restricted_M0_empirically_rejected": false,
+      "known_M1_empirically_rejected": false,
+      "M1_conditional_discriminator_demonstrated": false,
+      "experimental_measurements_observed": false,
+      "analysis_status": "SCIENTIFICALLY_UNCERTIFIED_ANALYST_INTERPRETATION",
+      "idea_preserved": true,
+      "scientific_novelty_certified": false
+    }
+  ],
+  "math_calibration": {
+    "scope": "TOY_MATHEMATICS_NOT_EXPERIMENTAL_VALIDATION",
+    "status": "PASS",
+    "tests": [
+      {
+        "id": "site_weight_change_without_new_physics",
+        "passed": true
+      },
+      {
+        "id": "scalar_ratio_cancel",
+        "passed": true
+      },
+      {
+        "id": "separable_sites_invariance",
+        "passed": true
+      },
+      {
+        "id": "same_stationary_occupancy_mean_rate_scaling",
+        "passed": true
+      },
+      {
+        "id": "same_stationary_pooled_ratio_rate_scaling",
+        "passed": true
+      },
+      {
+        "id": "temporal_variance_decreases_rate",
+        "passed": true
+      },
+      {
+        "id": "temporal_variance_decreases_window",
+        "passed": true
+      },
+      {
+        "id": "autocorrelation_decay_rate_increases",
+        "passed": true
+      },
+      {
+        "id": "access_field_product_reparam",
+        "passed": true
+      },
+      {
+        "id": "local_falsifier_not_global",
+        "passed": true
+      }
+    ],
+    "examples": {
+      "two_site_ratio_w08": 2.928571428571428,
+      "two_site_ratio_w02": 0.5384615384615383,
+      "markov_stationary_pooled_ratio": 1.375,
+      "markov_variance_factor_x02": 0.9365376538990886,
+      "markov_variance_factor_x2": 0.5676676416183064,
+      "markov_variance_factor_x20": 0.09500000001030577
+    }
+  },
+  "source_literature": [
+    {
+      "doi": "10.1039/B603725A",
+      "purpose": "local polarization and polarization selection confounds"
+    },
+    {
+      "doi": "10.1039/D0SC00809E",
+      "purpose": "established EM/chemical/tensor SERS mechanisms"
+    },
+    {
+      "doi": "10.1021/acs.analchem.0c02936",
+      "purpose": "dynamic SERS dwell times and adsorption/desorption existing context"
+    },
+    {
+      "doi": "10.1039/B706008D",
+      "purpose": "known SERS temporal intensity correlations and mode-dependent fluctuations"
+    },
+    {
+      "doi": "10.1146/annurev-physchem-082720-033751",
+      "purpose": "quantitative SERS and accessibility constraints"
+    }
+  ]
+}

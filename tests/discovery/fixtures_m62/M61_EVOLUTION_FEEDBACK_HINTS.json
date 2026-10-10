@@ -1,0 +1,288 @@
+{
+  "authority": {
+    "ResearchIdea_population_modified": false,
+    "SIS_generation_executed": false,
+    "novelty_certified": false,
+    "production_selection_authority": false,
+    "scientific_truth_authority": false
+  },
+  "evolution_hints": [
+    {
+      "conditional_prediction": "Treat S as a model-conditional covariate rather than a compulsory predictor. Test a preregistered uncertainty-weighted, possibly nonmonotonic association between S and calibrated orientation-only residuals, while including chemical-state terms and hierarchical covariance uncertainty. Report effective degrees of freedom, interval calibration, and held-out predictive improvement without universal residual cutoffs.",
+      "decisive_holdout": "Use preregistered condition-level splits with at least one wavelength, one substrate or cap-thickness condition, and one independent preparation held out. Freeze orientation, transfer-function, nuisance, and covariance calibrations before prediction; prohibit condition-specific refitting. Require calibration-consistent interval coverage and complexity-adjusted error for both models, and repeat the split after hierarchical covariance re-estimation.",
+      "exploration_operator_hint": "REPAIR_PREDICTION",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Substrate composition: Au, Ag, and Au with controlled Ag-capping thickness.",
+        "Ag-capping thickness, continuity state, roughness, and morphology descriptors.",
+        "Excitation wavelength and corresponding Stokes wavelengths.",
+        "Incident and analyzed polarization configurations.",
+        "Independently calibrated excitation-frequency and Stokes-frequency transfer-function metrics, including their mode-relevant spectral variation.",
+        "Local polarization and spatial enhancement heterogeneity, preferably weighted by measured molecular coverage or sampling probability.",
+        "Molecular orientation distribution, adsorption geometry, coverage, and chemical-state descriptors measured independently of the target ratio.",
+        "Overall enhancement amplitude, analyzed separately from band- and frequency-selective enhancement.",
+        "Laser dose, temperature, acquisition order, instrument response, and photochemical or desorption indicators.",
+        "Hierarchical covariance components for preparation, position, acquisition order, dose, and cross-band dependence.",
+        "Orthogonal chemical-state and adsorption-state measurements.",
+        "A preregistered indicator for null-cancellation configurations."
+      ],
+      "local_falsifier": "The conditional prediction is weakened if the orientation-only model remains calibrated on independent preparations after covariance validation, or if any apparent S association disappears after accounting for measured chemical state, adsorption state, and condition-dependent cross-band, spatial, preparation, and temporal covariance.",
+      "novelty_certified": false,
+      "possible_mechanism": "Within the tested conditions, relative Raman band ratios may depart from an orientation-and-adsorption-only prediction when band-specific excitation and Stokes-frequency transfer factors, local polarization, and molecularly weighted spatial sampling contribute an uncertainty-resolved effect comparable to the Raman-tensor projection effect. The expected relationship is a conditional crossover that may be nonmonotonic near resonances and may differ among Au, Ag, and Ag-capped-Au structures; it is not a claim of a singular physical boundary or new mechanism.",
+      "production_selection_authority": false,
+      "research_question": "Across the tested Au, Ag, and Ag-capped-Au structures, wavelengths, cap thicknesses, and molecularly weighted spatial-field conditions, when does an orientation-and-adsorption-only model lose calibrated predictive accuracy for relative SERS band ratios compared with a broader known-physics model containing independently measured spectral, polarization, and spatial transfer factors?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:a18ebe7970c6e119708c",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:2947b0f1a7df50ca806e",
+      "suggested_parent_idea_id": "research_idea:9cd359cab890711bf761",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:9206de7fffd75da1ff4c",
+          "countermodel": "Two emitting sites have band vectors (4,1) and (1,2); site weights 1.5 and 1.0. Their weighted band ratio equals an independent orientation-only prediction of 2.",
+          "independent_discriminator": "Site-resolved spectral-response differences and independently characterized sampling weights; include null-cancellation cases in holdout."
+        },
+        {
+          "attack_id": "m61_attack:fc6bc3293b9ea665afd0",
+          "countermodel": "Broader known-physics model with mode-dependent transfer and hidden chemical-state contributions; near-field measurements alone may not isolate molecularly sampled transfer.",
+          "independent_discriminator": "Independent transfer-function calibrant, molecular coverage, chemical-state probe, blinded substrate/wavelength holdout."
+        },
+        {
+          "attack_id": "m61_model_attack:8e341cbafe4734eb95d1",
+          "countermodel": "Let an unmeasured adsorption-state mixture U vary with cap thickness, morphology, and wavelength. U changes the relative Raman band ratios through mode-specific chemical polarizability and also changes coverage, molecular sampling location, and the optical observables used to construct S. The measured S can therefore be statistically associated with χ²_O even when the true electromagnetic transfer factors make no additional contribution beyond the orientation-only model. A broader forward model can improve held-out prediction by using S-correlated nuisance structure without identifying field-selective transfer as the cause.",
+          "independent_discriminator": "Use an orthogonal chemical-state and adsorption-state panel, such as calibrated vibrational, XPS, or isotope-sensitive measurements where applicable; perform a substrate or wavelength swap while preserving the same prepared molecular state; and compare models in which chemical-state covariates are fitted before versus after electromagnetic transfer covariates."
+        },
+        {
+          "attack_id": "m61_model_attack:01e72bb4cabe7a512a6d",
+          "countermodel": "Suppose repeated spectra contain condition-dependent covariance not captured by C: laser-history effects, spatially correlated hot-spot sampling, multiplicative detector drift, and shared uncertainty in the orientation and Raman-tensor estimates. Let these errors be larger in precisely the rougher or more optically selective conditions used to define high S. The nominal χ²_O then rises with S solely because C is underestimated or misspecified, while a flexible broader model appears to improve held-out score by absorbing systematic error rather than by describing real mode-selective transfer.",
+          "independent_discriminator": "Acquire independent preparations with randomized wavelength, position, polarization, and dose order; estimate full replicate covariance; use blinded calibration standards and a held-out instrument-response check; compare the S interaction before and after covariance re-estimation."
+        }
+      ]
+    },
+    {
+      "conditional_prediction": "Let y be the log relative-band-ratio vector, let y_O be the orientation-only prediction, and let C be the combined measurement and model covariance. Define χ²_O=(y−y_O)^T C^{-1}(y−y_O), with effective degrees of freedom reported rather than assigning universal cutoffs. Define S independently from preregistered, mode-relevant variation in excitation/Stokes transfer functions, local polarization, and molecularly weighted spatial sampling; estimate uncertainty in S. Conditional prediction: in low-S conditions, the distribution of χ²_O should be compatible with its calibrated error distribution; in high-S conditions, orientation-only misfit should increase relative to that calibration and the broader known-physics model should improve held-out predictive score. The association may be nonmonotonic with wavelength or cap thickness, so the preregistered test should use an uncertainty-weighted interaction or prespecified smooth function rather than require monotonic growth. Operational labels such as orientation-consistent, ambiguous, and field-selective-inconsistent may be reported only as descriptive classifications, not physical thresholds.",
+      "decisive_holdout": "Predefine a blocked, blinded factorial comparison in which chemical state is perturbed independently of optical transfer and optical transfer is perturbed independently of chemical state. Hold out one wavelength, one substrate or cap-thickness condition, and one independent preparation. Fit chemical-state terms before electromagnetic transfer terms, then compare nested models on held-out band-ratio vectors, interval coverage, and uncertainty-weighted error without refitting condition-specific scales.",
+      "exploration_operator_hint": "DESIGN_DECISIVE_EXPERIMENT",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Substrate composition: Au, Ag, and Au with controlled Ag-capping thickness.",
+        "Ag-capping thickness, continuity state, roughness, and morphology descriptors.",
+        "Excitation wavelength and corresponding Stokes wavelengths.",
+        "Incident and analyzed polarization configurations.",
+        "Independently calibrated excitation-frequency and Stokes-frequency transfer-function metrics, including their mode-relevant spectral variation.",
+        "Local polarization and spatial enhancement heterogeneity, preferably weighted by measured molecular coverage or sampling probability.",
+        "Molecular orientation distribution, adsorption geometry, coverage, and chemical-state descriptors measured independently of the target ratio.",
+        "Overall enhancement amplitude, analyzed separately from band- and frequency-selective enhancement.",
+        "Laser dose, temperature, acquisition order, instrument response, and photochemical or desorption indicators.",
+        "Orthogonal adsorption-state or charge-transfer perturbation.",
+        "Chemical-state marker panel from vibrational, surface, or isotope-sensitive measurements where applicable.",
+        "Reporter-system identity and independently measured chemical sensitivity.",
+        "Optical-transfer perturbation status under chemically matched conditions."
+      ],
+      "local_falsifier": "The proposed incremental transfer contribution is locally unsupported if chemical-state terms account for the held-out ratio changes and adding transfer factors does not improve calibrated prediction, or if optical-transfer perturbation produces no residual change after chemical-state adjustment while the chemical perturbation does.",
+      "novelty_certified": false,
+      "possible_mechanism": "Within the tested conditions, relative Raman band ratios may depart from an orientation-and-adsorption-only prediction when band-specific excitation and Stokes-frequency transfer factors, local polarization, and molecularly weighted spatial sampling contribute an uncertainty-resolved effect comparable to the Raman-tensor projection effect. The expected relationship is a conditional crossover that may be nonmonotonic near resonances and may differ among Au, Ag, and Ag-capped-Au structures; it is not a claim of a singular physical boundary or new mechanism.",
+      "production_selection_authority": false,
+      "research_question": "Across the tested Au, Ag, and Ag-capped-Au structures, wavelengths, cap thicknesses, and molecularly weighted spatial-field conditions, when does an orientation-and-adsorption-only model lose calibrated predictive accuracy for relative SERS band ratios compared with a broader known-physics model containing independently measured spectral, polarization, and spatial transfer factors?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:a18ebe7970c6e119708c",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:585e43f59d492a1d9b65",
+      "suggested_parent_idea_id": "research_idea:9cd359cab890711bf761",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:b896d37956903ef8abd7",
+          "countermodel": "Resonance/charge-transfer-dependent changes in state-resolved Raman tensors compete with local EM mode selectivity.",
+          "independent_discriminator": "Independent adsorption/oxidation-state spectroscopy and two reporter systems with contrasting chemical sensitivity."
+        },
+        {
+          "attack_id": "m61_model_attack:b31aab20671bd73ef445",
+          "countermodel": "At fixed molecular orientation and nominal optical transfer, wavelength- and substrate-dependent charge-transfer or adsorption-state changes alter the Raman polarizability tensors of individual modes. These changes can be nonmonotonic near electronic resonances, differ among Au, Ag, and Ag-capped-Au, and covary with cap thickness and local polarization. Because the broader known-physics model contains flexible mode-dependent transfer and nuisance terms, it can reproduce the same band-ratio crossover without the electromagnetic transfer contribution being comparable to the Raman-tensor projection effect.",
+          "independent_discriminator": "Combine independent adsorption, oxidation-state, and charge-transfer spectroscopy with a chemical perturbation that leaves substrate optical response approximately unchanged; use two reporter molecules with contrasting chemical sensitivity and compare their residual transfer-factor dependence."
+        },
+        {
+          "attack_id": "m61_model_attack:8e341cbafe4734eb95d1",
+          "countermodel": "Let an unmeasured adsorption-state mixture U vary with cap thickness, morphology, and wavelength. U changes the relative Raman band ratios through mode-specific chemical polarizability and also changes coverage, molecular sampling location, and the optical observables used to construct S. The measured S can therefore be statistically associated with χ²_O even when the true electromagnetic transfer factors make no additional contribution beyond the orientation-only model. A broader forward model can improve held-out prediction by using S-correlated nuisance structure without identifying field-selective transfer as the cause.",
+          "independent_discriminator": "Use an orthogonal chemical-state and adsorption-state panel, such as calibrated vibrational, XPS, or isotope-sensitive measurements where applicable; perform a substrate or wavelength swap while preserving the same prepared molecular state; and compare models in which chemical-state covariates are fitted before versus after electromagnetic transfer covariates."
+        },
+        {
+          "attack_id": "m61_attack:fc6bc3293b9ea665afd0",
+          "countermodel": "Broader known-physics model with mode-dependent transfer and hidden chemical-state contributions; near-field measurements alone may not isolate molecularly sampled transfer.",
+          "independent_discriminator": "Independent transfer-function calibrant, molecular coverage, chemical-state probe, blinded substrate/wavelength holdout."
+        }
+      ]
+    },
+    {
+      "conditional_prediction": "Predict that chemical-state markers and chemical perturbation magnitude will explain held-out band-ratio residuals after orientation and adsorption geometry are accounted for. The incremental contribution of independently calibrated transfer factors should be tested conditionally after chemical-state terms, with uncertainty-weighted, potentially nonmonotonic interactions and no universal threshold.",
+      "decisive_holdout": "Hold out chemical perturbation levels, reporter systems, wavelengths, substrates, and independent preparations. Fit a chemical-state-dependent Raman-polarizability model using measurements obtained before outcome evaluation, then test whether electromagnetic transfer terms add calibrated held-out predictive value without condition-specific refitting.",
+      "exploration_operator_hint": "OPEN_ALTERNATE_BRANCH",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Substrate composition: Au, Ag, and Au with controlled Ag-capping thickness.",
+        "Ag-capping thickness, continuity state, roughness, and morphology descriptors.",
+        "Excitation wavelength and corresponding Stokes wavelengths.",
+        "Incident and analyzed polarization configurations.",
+        "Independently calibrated excitation-frequency and Stokes-frequency transfer-function metrics, including their mode-relevant spectral variation.",
+        "Local polarization and spatial enhancement heterogeneity, preferably weighted by measured molecular coverage or sampling probability.",
+        "Molecular orientation distribution, adsorption geometry, coverage, and chemical-state descriptors measured independently of the target ratio.",
+        "Overall enhancement amplitude, analyzed separately from band- and frequency-selective enhancement.",
+        "Laser dose, temperature, acquisition order, instrument response, and photochemical or desorption indicators.",
+        "Adsorption, oxidation, or charge-transfer state.",
+        "Chemical perturbation magnitude and reporter-system identity.",
+        "Independently measured chemical-state-sensitive Raman-tensor covariates.",
+        "Optical-transfer perturbation under chemically matched conditions."
+      ],
+      "local_falsifier": "For the preregistered tested domain, the regime-specific breakdown claim is locally weakened or falsified if the orientation-only model, with independently measured orientation, adsorption geometry, coverage, chemical-state bounds, instrument response, and propagated uncertainty, achieves calibration-consistent held-out prediction of the relative band-ratio vectors across changes in wavelength, cap thickness, substrate, and spatial heterogeneity; if the broader known-physics model provides no reproducible out-of-sample improvement; and if residuals show no reproducible association with independently measured spectral selectivity or molecularly weighted spatial sampling in independent preparations. This result would not falsify broader electromagnetic or chemical-enhancement models outside the tested domain.",
+      "novelty_certified": false,
+      "possible_mechanism": "Within the tested domain, relative Raman band ratios may be primarily shifted by adsorption-state, charge-transfer, or oxidation-state-dependent mode polarizabilities, with optical transfer acting as a conditional modifier rather than the default source of the residual. Chemical and optical contributions may cross over nonmonotonically near resonances and can differ among substrates and reporter systems.",
+      "production_selection_authority": false,
+      "research_question": "Across the tested molecular reporters, substrates, wavelengths, and adsorption or charge-transfer states, when do chemical-state-dependent Raman polarizability changes explain departures from orientation-and-adsorption-only band-ratio predictions, and what incremental predictive value remains for independently measured electromagnetic transfer?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:a18ebe7970c6e119708c",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:672230a1696378492e2b",
+      "suggested_parent_idea_id": "research_idea:9cd359cab890711bf761",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:b896d37956903ef8abd7",
+          "countermodel": "Resonance/charge-transfer-dependent changes in state-resolved Raman tensors compete with local EM mode selectivity.",
+          "independent_discriminator": "Independent adsorption/oxidation-state spectroscopy and two reporter systems with contrasting chemical sensitivity."
+        },
+        {
+          "attack_id": "m61_model_attack:b31aab20671bd73ef445",
+          "countermodel": "At fixed molecular orientation and nominal optical transfer, wavelength- and substrate-dependent charge-transfer or adsorption-state changes alter the Raman polarizability tensors of individual modes. These changes can be nonmonotonic near electronic resonances, differ among Au, Ag, and Ag-capped-Au, and covary with cap thickness and local polarization. Because the broader known-physics model contains flexible mode-dependent transfer and nuisance terms, it can reproduce the same band-ratio crossover without the electromagnetic transfer contribution being comparable to the Raman-tensor projection effect.",
+          "independent_discriminator": "Combine independent adsorption, oxidation-state, and charge-transfer spectroscopy with a chemical perturbation that leaves substrate optical response approximately unchanged; use two reporter molecules with contrasting chemical sensitivity and compare their residual transfer-factor dependence."
+        },
+        {
+          "attack_id": "m61_model_attack:8e341cbafe4734eb95d1",
+          "countermodel": "Let an unmeasured adsorption-state mixture U vary with cap thickness, morphology, and wavelength. U changes the relative Raman band ratios through mode-specific chemical polarizability and also changes coverage, molecular sampling location, and the optical observables used to construct S. The measured S can therefore be statistically associated with χ²_O even when the true electromagnetic transfer factors make no additional contribution beyond the orientation-only model. A broader forward model can improve held-out prediction by using S-correlated nuisance structure without identifying field-selective transfer as the cause.",
+          "independent_discriminator": "Use an orthogonal chemical-state and adsorption-state panel, such as calibrated vibrational, XPS, or isotope-sensitive measurements where applicable; perform a substrate or wavelength swap while preserving the same prepared molecular state; and compare models in which chemical-state covariates are fitted before versus after electromagnetic transfer covariates."
+        }
+      ]
+    },
+    {
+      "conditional_prediction": "Common scaling of transition rates predicts a shorter temporal correlation time and reduced time-averaged intensity covariance, but no intrinsic kinetic change in band-ratio dispersion when state-emission vectors are proportional. A rate-dependent ratio effect and any stronger heterogeneous-field interaction are conditional on independently verified nonproportional, field-dependent spectral directions. The stationary pooled mean ratio remains invariant under pure common-rate scaling.",
+      "decisive_holdout": "Train models only on prespecified training windows and compare held-out predictions for total-intensity covariance, cross-band covariance, variance versus integration time, and ratio distributions. Require state-resolved emission vectors to be independently measured and nonproportional before treating ratio-dispersion changes as a kinetic prediction; if the vectors are proportional, evaluate covariance and ratio statistics as separate estimands. Report equivalent predictive performance as unresolved mechanism identification.",
+      "exploration_operator_hint": "REPAIR_PREDICTION",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Independently estimated exchange-rate scale or residence-time distribution, including transition-rate asymmetry",
+        "Integration window and acquisition cadence",
+        "Adsorption-state occupancy and independently measured orientation distribution",
+        "State-specific Raman emission and polarization response",
+        "Substrate material and nanostructure geometry",
+        "Independently calibrated local-field heterogeneity proxy",
+        "Analyte concentration, temperature, solvent, ligand or surface chemistry, and illumination intensity",
+        "Photon-count level, detector timing, spectral resolution, and measurement order",
+        "State-emission vector proportionality or spectral-direction contrast",
+        "Field-stratum-specific spectral-direction change",
+        "Noise-calibrated total intensity and ratio statistics"
+      ],
+      "local_falsifier": "The ratio-dispersion component is locally falsified if independently measured proportional state-emission vectors predict invariant noiseless band ratios while observed dispersion is explained by calibrated noise, fitting error, drift, or other nuisance terms. The broader kinetic model is locally falsified if its independently parameterized held-out covariance and window-dependence predictions fail against a preregistered alternative. A residual covariance effect without nonproportional state spectra does not establish a ratio interaction.",
+      "novelty_certified": false,
+      "possible_mechanism": "A molecule's observed SERS band vector may be a time-weighted result of visits to adsorption environments with different orientations, emission responses, and electromagnetic enhancement. When exchange or residence times are comparable to the acquisition window or molecular reorientation time, this can produce rate-dependent autocovariance, cross-band covariance, and finite-window ratio distributions even when stationary occupancy and mean orientation are matched. The effect is expected to depend on field heterogeneity only through the specified observation model and must be distinguished from established dynamic adsorption, blinking, chemical-enhancement, photochemical, thermal, and instrumental processes.",
+      "production_selection_authority": false,
+      "research_question": "Can independently measured residence and exchange kinetics improve held-out prediction of time-resolved SERS band-vector statistics beyond a broad known-physics model containing static orientation/access, adsorption dynamics, photophysics, chemical enhancement, and instrumental effects, and is any improvement conditional on independently calibrated local-field heterogeneity?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:e9735e5f9826006054b3",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:946ca456793ae295353e",
+      "suggested_parent_idea_id": "research_idea:b1c161e528f01392084b",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:4d1d0ae29673cf914940",
+          "countermodel": "Two adsorption states have band vectors (10,5) and (20,10). Both are proportional, so any nonnegative time-weighted mixture has ratio 2.",
+          "independent_discriminator": "Independent state-specific emission ratio and band-resolved covariance, plus held-out integration-window statistics."
+        },
+        {
+          "attack_id": "m61_model_attack:d2d4458eae54b1b286b4",
+          "countermodel": "Let the two stationary states have band-emission vectors e1=(10,5) and e2=(20,10), with arbitrary common-rate-scaled transition kinetics and any stationary occupancy. Every state vector is proportional to (2,1), so the integrated signal from any trajectory is also proportional to (2,1), apart from additive measurement noise. Kinetic acceleration can therefore change total-intensity covariance and variance while producing no intrinsic finite-window ratio dispersion or high-versus-low-field interaction in the noiseless band ratio.",
+          "independent_discriminator": "Measure state-specific band vectors and polarization responses independently of pooled ratios, then test whether their vectors are nonproportional across field-heterogeneity strata. Separately compare rate effects on total-intensity covariance with rate effects on ratio dispersion using noise-calibrated data."
+        }
+      ]
+    },
+    {
+      "conditional_prediction": "In a stationary two-state component, multiplying alpha and beta by lambda while holding beta/(alpha+beta), state emissions, and field statistics fixed predicts tau_corr(lambda)=1/[lambda(alpha+beta)]. The variance of a time-averaged band vector should decrease with T/tau_corr according to the integrated-exponential covariance formula, and finite-window ratio dispersion should generally depend on T/tau_corr because ratios are nonlinear. Under the specified heterogeneous-field observation model, the absolute rate-dependent change in covariance or ratio dispersion may exceed that in the low-heterogeneity control; this is an ordinal, model-conditional interaction prediction rather than a universal expectation. The stationary pooled ratio of time-integrated expected intensities should remain approximately invariant under pure common-rate scaling. Any mean-ratio change requires finite-window nonlinear bias, nonstationarity, state-emission changes, photophysics, chemical enhancement, or another modeled confound.",
+      "decisive_holdout": "Jointly preregister predictions for SERS band-vector statistics and an independent adsorption/occupancy trajectory, including held-out kinetics, illumination histories, integration windows, and heterogeneity strata. Require the exchange model to predict both channels without refitting and compare against an observationally matched blinking model.",
+      "exploration_operator_hint": "DESIGN_DECISIVE_EXPERIMENT",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Independently estimated exchange-rate scale or residence-time distribution, including transition-rate asymmetry",
+        "Integration window and acquisition cadence",
+        "Adsorption-state occupancy and independently measured orientation distribution",
+        "State-specific Raman emission and polarization response",
+        "Substrate material and nanostructure geometry",
+        "Independently calibrated local-field heterogeneity proxy",
+        "Analyte concentration, temperature, solvent, ligand or surface chemistry, and illumination intensity",
+        "Photon-count level, detector timing, spectral resolution, and measurement order",
+        "illumination history",
+        "independent occupancy trajectory"
+      ],
+      "local_falsifier": "The exchange interpretation is locally falsified if the independent occupancy channel does not covary with SERS temporal changes while the matched blinking model predicts both channels at least as well out of sample. Equivalent predictive performance leaves mechanism unresolved; SERS-only success is insufficient.",
+      "novelty_certified": false,
+      "possible_mechanism": "A molecule's observed SERS band vector may be a time-weighted result of visits to adsorption environments with different orientations, emission responses, and electromagnetic enhancement. When exchange or residence times are comparable to the acquisition window or molecular reorientation time, this can produce rate-dependent autocovariance, cross-band covariance, and finite-window ratio distributions even when stationary occupancy and mean orientation are matched. The effect is expected to depend on field heterogeneity only through the specified observation model and must be distinguished from established dynamic adsorption, blinking, chemical-enhancement, photochemical, thermal, and instrumental processes.",
+      "production_selection_authority": false,
+      "research_question": "Can independently measured residence and exchange kinetics improve held-out prediction of time-resolved SERS band-vector statistics beyond a broad known-physics model containing static orientation/access, adsorption dynamics, photophysics, chemical enhancement, and instrumental effects, and is any improvement conditional on independently calibrated local-field heterogeneity?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:e9735e5f9826006054b3",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:fec89a0d2225314d9323",
+      "suggested_parent_idea_id": "research_idea:b1c161e528f01392084b",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:5cb7b7e6794aab467c36",
+          "countermodel": "A two-state blinking process with the same transition generator and state emission vectors as a two-state exchange process is observationally equivalent for the measured band-vector trajectory.",
+          "independent_discriminator": "SERS-independent adsorption occupancy/kinetics channel and illumination-dependent blinking control with matched sampling."
+        },
+        {
+          "attack_id": "m61_model_attack:f292f193d29ab10ad52d",
+          "countermodel": "Construct a two-state photophysical blinking process with the same transition generator and the same band-emission map as the proposed adsorption-exchange process. Let the hidden states represent emissive and dim or spectrally distinct photophysical states rather than adsorption environments. The resulting band-vector trajectory, including all finite-window means, autocovariances, cross-covariances, and ratio distributions under the observation model, is identical to that of the adsorption-exchange model.",
+          "independent_discriminator": "Combine the SERS trajectory with an independent adsorption or occupancy channel, such as concentration-jump recovery, interferometric adsorption kinetics, fluorescence exchange, or surface-sensitive relaxation, and repeat the perturbation under matched illumination histories and a blinking control."
+        }
+      ]
+    },
+    {
+      "conditional_prediction": "Semi-Markov or multi-state models may match sampled covariance yet predict different survival tails, higher-order lag dependence, and integration-time scaling. Independent occupancy kinetics should select among these possibilities conditionally, not establish new physics.",
+      "decisive_holdout": "Preregister discrimination among exponential two-state, semi-Markov, and multi-state mixture models using held-out long/short windows, dwell-time survival, higher-order lag statistics, and independent occupancy measurements. Compare predictive calibration without refitting.",
+      "exploration_operator_hint": "OPEN_ALTERNATE_BRANCH",
+      "idea_identity_verified": false,
+      "independent_measurements": [
+        "Independently estimated exchange-rate scale or residence-time distribution, including transition-rate asymmetry",
+        "Integration window and acquisition cadence",
+        "Adsorption-state occupancy and independently measured orientation distribution",
+        "State-specific Raman emission and polarization response",
+        "Substrate material and nanostructure geometry",
+        "Independently calibrated local-field heterogeneity proxy",
+        "Analyte concentration, temperature, solvent, ligand or surface chemistry, and illumination intensity",
+        "Photon-count level, detector timing, spectral resolution, and measurement order"
+      ],
+      "local_falsifier": "For the prespecified intervention range, if independently measured kinetics, occupancies, orientations, state emissions, field proxies, detector noise, drift, and broad known-physics nuisance terms produce calibrated out-of-sample predictions of the held-out temporal covariance, window dependence, and ratio distributions in both heterogeneous and low-heterogeneity conditions, then the proposed residence-time-weighted sampling model has no demonstrated explanatory value beyond those established models. Conversely, it is locally falsified as a quantitative kinetic model if its independently parameterized predictions fail reproducibly in the held-out data while a preregistered alternative model accounts for the same statistics. A null change in the pooled mean ratio alone is not a falsifier, and a residual rate effect alone is not proof of a distinct mechanism.",
+      "novelty_certified": false,
+      "possible_mechanism": "The alternative mechanism is non-Markovian temporal memory: broad dwell-time distributions or unresolved state mixtures, rather than residence-weighted exchange alone, generate the observed SERS statistics. This mechanism predicts history-dependent fluctuations despite matched second-order covariance.",
+      "production_selection_authority": false,
+      "research_question": "Do non-exponential dwell times or unresolved state mixtures improve held-out prediction of time-resolved SERS statistics beyond the original exchange and broad known-physics models?",
+      "scientific_truth_authority": false,
+      "source_m6_branch_id": "m6_shadow_branch:e9735e5f9826006054b3",
+      "source_of_proposal": "MODEL_GENERATED",
+      "speculative_fork_id": "m61_fork:8d0d42fbbed083a66dfc",
+      "suggested_parent_idea_id": "research_idea:b1c161e528f01392084b",
+      "unresolved_attacks": [
+        {
+          "attack_id": "m61_attack:bc9e89a048d28a2e12ce",
+          "countermodel": "Semi-Markov state dwell distributions and multi-state mixtures may agree on limited second-order statistics while differing in higher-order lag dependence.",
+          "independent_discriminator": "Held-out long/short integration windows, dwell-time survival curve, multi-lag cross-band temporal tests."
+        },
+        {
+          "attack_id": "m61_model_attack:ae2cfe32894a4d1555fd",
+          "countermodel": "Use a semi-Markov two-state process with non-exponential dwell-time distributions and choose its dwell-time survival function, emission amplitudes, and observation noise so that its covariance and cross-covariance at the sampled lags match those of a fitted continuous-time Markov model. Alternatively, use a multi-state Markov mixture whose aggregated second-order statistics match the two-state model while differing in higher-order temporal structure and microscopic residence distributions.",
+          "independent_discriminator": "Acquire substantially finer and longer trajectories, test the dwell-time survival curve and higher-order lag statistics on held-out data, and compare them with an independent residence or occupancy measurement rather than relying solely on SERS covariance and ratio distributions."
+        }
+      ]
+    }
+  ],
+  "hint_count": 6,
+  "schema_version": "m6.1-adversarial-development-shadow-v1",
+  "source_cases_sha256": "4dc5dade428578e477a8d5860c847c64647cc67637f12d2097587f71c92866cd",
+  "source_population_sha256": "7cd23a9e47802a6a9d71ca1227146f017aa777dda43074706559449c46f0a6c2",
+  "status": "M61_SPECULATIVE_EVOLUTION_CONTEXT_NOT_IMPORTED_INTO_SIS"
+}
