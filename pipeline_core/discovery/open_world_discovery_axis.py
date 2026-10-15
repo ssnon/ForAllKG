@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -23,6 +24,11 @@ from pipeline_core.discovery.external_novelty_contracts import (
 from pipeline_core.discovery.prior_art_retrieval import (
     LiteratureSearchProvider,
     canonicalize_prior_art_works,
+)
+from pipeline_core.discovery.open_world_search_repair import (
+    compact_query,
+    relevance_score,
+    is_relevant,
 )
 
 
@@ -48,6 +54,7 @@ class OpenWorldRetrievalExecution(StrictModel):
     result_count: int = 0
     elapsed_seconds: float = 0.0
     error: str | None = None
+    executed_query_text: str | None = None
 
 
 class OpenWorldRankedWork(StrictModel):
@@ -60,6 +67,7 @@ class OpenWorldRankedWork(StrictModel):
     query_ids: list[str] = Field(default_factory=list)
     providers: list[str] = Field(default_factory=list)
     abstract_available: bool
+    topic_relevance_score: int = 0
 
 
 class OpenWorldRetrievalResult(StrictModel):
@@ -73,6 +81,8 @@ class OpenWorldRetrievalResult(StrictModel):
     supplementary_records_collapsed: int
     ranked_works: list[OpenWorldRankedWork]
     complete: bool
+    # Metadata-only: these DO NOT enter scientific axis synthesis.
+    title_only_review: list[OpenWorldRankedWork] = Field(default_factory=list)
 
 
 class ExternalAxisDraft(StrictModel):
@@ -278,17 +288,30 @@ def retrieve_open_world_sources(
     if results_per_query <= 0:
         raise ValueError("results_per_query must be positive")
 
+    repair_enabled = os.getenv("FAKG_OPEN_WORLD_QUERY_REPAIR") == "1"
+    research_question = next(
+        (seed.query_text for seed in seeds
+         if seed.source_kind == "FROZEN_RESEARCH_QUESTION"),
+        seeds[0].query_text,
+    )
     raw_works: list[PriorArtWork] = []
     rank_rows: list[dict[str, Any]] = []
     executions: list[OpenWorldRetrievalExecution] = []
 
     for seed_index, seed in enumerate(seeds, start=1):
+        executed_text = (
+            compact_query(
+                seed.query_text,
+                research_question,
+                question_seed=(seed.source_kind == "FROZEN_RESEARCH_QUESTION"),
+            ) if repair_enabled else seed.query_text
+        )
         query = LiteratureQuery(
             query_id=f"open_world_query:{seed_index}",
             hypothesis_id="open_world_discovery_axis",
             claim_id=None,
             query_kind="hypothesis_composite",
-            query_text=seed.query_text,
+            query_text=executed_text,
         )
 
         for provider in providers:
@@ -302,6 +325,7 @@ def retrieve_open_world_sources(
                     OpenWorldRetrievalExecution(
                         query_id=query.query_id,
                         seed_id=seed.seed_id,
+                        executed_query_text=executed_text,
                         provider=provider.provider_name,
                         success=True,
                         result_count=len(works),
@@ -332,6 +356,7 @@ def retrieve_open_world_sources(
                     OpenWorldRetrievalExecution(
                         query_id=query.query_id,
                         seed_id=seed.seed_id,
+                        executed_query_text=executed_text,
                         provider=provider.provider_name,
                         success=False,
                         result_count=0,
@@ -385,11 +410,16 @@ def retrieve_open_world_sources(
                 query_ids=query_ids,
                 providers=provider_names,
                 abstract_available=abstract_available,
+                topic_relevance_score=(
+                    relevance_score(work.title, work.abstract, research_question)
+                    if repair_enabled else 0
+                ),
             )
         )
 
     ranked.sort(
         key=lambda row: (
+            -row.topic_relevance_score if repair_enabled else 0,
             -row.distinct_seed_count,
             -row.distinct_provider_count,
             row.best_provider_rank,
@@ -407,6 +437,12 @@ def retrieve_open_world_sources(
         supplementary_records_collapsed=supplementary_collapsed,
         ranked_works=ranked,
         complete=all(row.success for row in executions),
+        title_only_review=(
+            [row for row in ranked
+             if (not row.abstract_available)
+             and is_relevant(row.topic_relevance_score, research_question)][:20]
+            if repair_enabled else []
+        ),
     )
 
 
@@ -421,10 +457,16 @@ def select_open_world_abstracts(
         )
     if max_selected <= 0:
         raise ValueError("max_selected must be positive")
+    repaired = os.getenv("FAKG_OPEN_WORLD_QUERY_REPAIR") == "1"
     return [
         row
         for row in result.ranked_works
-        if row.abstract_available
+        if row.abstract_available and (
+            not repaired or is_relevant(
+                row.topic_relevance_score,
+                result.seeds[0].query_text,
+            )
+        )
     ][:max_selected]
 
 

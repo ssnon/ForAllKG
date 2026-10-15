@@ -1,0 +1,33 @@
+{
+  "schema_version": "fakg-open-problem-v1",
+  "case_id": "SERS_CASE_B_EM_CHEM_IDENTIFIABILITY",
+  "title": "Identifiability of electromagnetic and chemical contributions to SERS",
+  "research_question": "Under which independently testable assumptions and measurements can electromagnetic field enhancement and molecule-surface chemical enhancement be separated for mode-resolved SERS when geometry, orientation, charge-transfer states and optical response may be coupled? Can an unexplored physical dependency or experimental contrast overcome an identifiable limitation of existing methods?",
+  "success_definition": "Propose a physically viable mechanistic or identifiability advance, derive a nontrivial quantitative prediction that a strong established null cannot reproduce under stated controls, and specify independent falsification. It is acceptable to abstain; novelty and correctness require independent assessment.",
+  "epistemic_scope": "This is an open research problem definition, NOT a claim that no existing separation method exists. Reported reference statements below are summaries of abstract/review statements and must not be treated as complete full-text audits.",
+  "known_physics": [
+    "A working intensity factorization for a mode k may involve molecular number, incident and emitted near-field factors, orientation-dependent Raman tensor and molecule-surface electronic interactions. Its independent-factor interpretation is an approximation, not a universal theorem.",
+    "A single scalar Raman intensity does not uniquely identify two independent latent multiplicative enhancement factors without calibrated constraints or additional observables.",
+    "Chemical and electromagnetic enhancement are not always operationally independent: adsorbates change dielectric response and local fields, and the local field interacts with molecular orientation and chemical polarizability.",
+    "DFT/TDDFT-based schemes that isolate a calculated EM contribution from chemical enhancement have already been published. Merely repeating this separation is not a novelty claim."
+  ],
+  "open_gaps": [
+    "In a specified molecular and plasmonic geometry, what *observable combinations* make the decomposition structurally identifiable rather than underdetermined?",
+    "Which independent perturbation removes the ambiguity between orientation/coverage change and interfacial electronic-state change?",
+    "When would an interaction/cross term invalidate a naive product EM × CHEM decomposition?",
+    "Can a proposed mechanism predict an observable scaling, sign, threshold or regime boundary not obtained from an explicit best conventional countermodel?"
+  ],
+  "measurement_limits": [
+    "No new experimental measurements, calibrations or molecule-specific first-principles simulations are present in this packet.",
+    "References do not imply that their experimental systems, analyte identities, geometries or quantitative conclusions transfer to all SERS substrates.",
+    "Any proposed parameter magnitude, gradient, dimensionless number, or new state variable must be checked against feasible physical bounds before advancing a discovery claim."
+  ],
+  "references": [
+    {"id":"B-R01","doi":"10.1021/ar800249y","year":2009,"title":"A Unified View of Surface-Enhanced Raman Scattering","source_type":"peer_reviewed_review_abstract","url":"https://pubmed.ncbi.nlm.nih.gov/19361212/","supported_summary":"Describes plasmon-resonance, metal-molecule charge-transfer and molecular resonances as distinct contributing mechanisms; it does not establish a universally unique empirical decomposition."},
+    {"id":"B-R02","doi":"10.1016/0009-2614(88)87076-3","year":1988,"title":"On the relative magnitudes of the electromagnetic and chemical enhancements to the SERS effect","source_type":"peer_reviewed_paper_abstract","url":"https://www.sciencedirect.com/science/article/pii/0009261488870763","supported_summary":"Reports an experimental comparison using external reflection and attenuated total reflection for an electrochemically activated Ag/KCl/pyridine system; applicability is system-specific."},
+    {"id":"B-R03","doi":"10.1021/acs.jpcc.4c03491","year":2024,"title":"Theoretical Procedure for Precise Evaluation of Chemical Enhancement in Molecular Surface-Enhanced Raman Scattering","source_type":"peer_reviewed_fulltext_reviewed","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC11533722/","supported_summary":"Presents an atomistic DFT/TDDFT procedure to separate EM and chemical contributions in BPDT sandwiched between small Au clusters; this is established prior art for decomposition methods, not a generic validation for every real substrate."},
+    {"id":"B-R04","doi":"10.1021/acs.nano.4c02670","year":2024,"title":"Surface-Enhanced Raman Spectroscopy: Current Understanding, Challenges, and Opportunities","source_type":"peer_reviewed_perspective_abstract","url":"https://doi.org/10.1021/acs.nano.4c02670","supported_summary":"Surveys electromagnetic enhancement, charge-transfer-related mechanisms and the importance of spectrum-structure correlation. No claim of an unsolved unique decomposition in all regimes is made here."},
+    {"id":"B-R05","doi":"10.3390/bios9020057","year":2019,"title":"A Review on Surface-Enhanced Raman Scattering","source_type":"peer_reviewed_review_fulltext","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC6627380/","supported_summary":"Reviews near-field incident/emitted wavelength factors, molecular chemical changes and orientation dependence; notes the EM/CHEM separation is not always clear-cut."}
+  ],
+  "forbidden_leakage": ["Ye Case 01 candidate answers", "B04 mechanism proposals", "ChatGPT-generated preferred mechanism", "prior blinded candidate scores"]
+}
