@@ -1,0 +1,17 @@
+{
+  "package": "M19_E2_JSON_COMPAT_V2_20261015",
+  "description": "add-only E2 v2 provider JSON mode preflight repair; do not rerun old UNKNOWN_BILLING episode",
+  "required_existing_source_sha256": {
+    "pipeline_core/discovery/scientific_research_control/m19_e2_paired_probe.py": "ae69034b450811ce692ca08bad208b6984334fc63c1a10190860027aac98dadc",
+    "pipeline_core/discovery/scientific_research_control/m19_e2_ctmc.py": "440bae0bcea344cd377ecd0fa8c5974cf1eda1266e0f4d236ca237f50043505f",
+    "scripts/discovery/run_m19_e2.py": "ca869ff63686b7f084f82c481bd8a5d87b0b5b4012fb9c74a54ce49cd710175e"
+  },
+  "add_only_files_sha256": {
+    "pipeline_core/discovery/scientific_research_control/m19_e2_json_v2.py": "ef7f4557de6c7e7813f4f6ca0f2276e8e213751f08e07e101389be773b4cb191",
+    "scripts/discovery/run_m19_e2_json_v2.py": "6005d84fed95efbfe77e7e9a10a75b94bd3f1fe575ff7b5bbb27112b2b803538",
+    "tests/discovery/test_m19_e2_json_v2.py": "3ab54d11819733e6c20ba158f5968e7a7a74cace0f153cd0b8f2bfc2ff944e73",
+    "experiments/m19_e2/README_JSON_V2_KO.md": "387d6a9fab3bc62f1cae52b800ebfc37c89a0708ae26795cd366f947f0e81ffe"
+  },
+  "writes_to_active_episode": false,
+  "paid_calls_in_install": 0
+}

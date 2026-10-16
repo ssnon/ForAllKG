@@ -1,0 +1,19 @@
+{
+  "schema": "m19-mechanism-science-only-add-only-v1",
+  "source_snapshot_reference_sha256": "b15b2e69430b90aa618dc5fd46aed7f03ee5414273a4b283cd48cfba51c876e2",
+  "files": {
+    "pipeline_core/discovery/scientific_research_control/m19_mechanism_sprint.py": "7563c0cb6f5933e96d71a737eac5bd0fb997ee6614bc3d962771ba0a3ebc0429",
+    "scripts/discovery/run_m19_mechanism_sprint.py": "b21567a28b298242fc170d47a49cc743af6c005668eb85b11a0df3d2a7d7f28a",
+    "tests/discovery/test_m19_mechanism_sprint.py": "61f47912c9752fd13192b40f2b89314b20ac0984255272027bc5b1109898a759",
+    "experiments/m19_mechanism_sprint/frozen_packet.json": "a85d3f6cbaaffad3cfe2edeba918bf81779b9df090b9460f7af32c6d442d63c9",
+    "experiments/m19_mechanism_sprint/README_KO.md": "aa0e55a2e31dafbf5e3112a40cf71cb64ab52b8d7cb2462ef76e2232ca6ecc89",
+    "experiments/m19_mechanism_sprint/runs/.gitignore": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  "requires": [
+    "existing v1.8 stable Research Work base runner",
+    "pydantic v2",
+    "openai package for actual paid calls"
+  ],
+  "no_paid_install": true,
+  "original_episodes_unchanged": true
+}

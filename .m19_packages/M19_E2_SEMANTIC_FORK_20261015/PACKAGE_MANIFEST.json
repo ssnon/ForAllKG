@@ -1,0 +1,17 @@
+{
+  "add_only_files_sha256": {
+    "experiments/m19_e2/README_SEMANTIC_FORK_KO.md": "5cf166cb4a5837fed266002e8d3e30f8f325e3ae5577d93dc62ab946c5f34425",
+    "pipeline_core/discovery/scientific_research_control/m19_e2_semantic_fork.py": "b5fcd54d5521e9c7a0fab6b8e7ec34c18739116b473c11974420cd45aa2645c8",
+    "scripts/discovery/run_m19_e2_semantic_fork.py": "e00f23a7b1055a7ecd7c792b5e56dfdbb440ce5fc11b7dd2a7daa841a75a2ef7",
+    "tests/discovery/test_m19_e2_semantic_fork.py": "10a23642982c69f8cc34b4b47fc050c50878cd2158852571116b12635d55fbf9"
+  },
+  "no_paid_calls_at_install": true,
+  "original_e2_tool_check_must_remain_unsupported": true,
+  "package": "M19_E2_SEMANTIC_FORK_20261015",
+  "required_existing_source_sha256": {
+    "pipeline_core/discovery/scientific_research_control/m19_e2_ctmc.py": "440bae0bcea344cd377ecd0fa8c5974cf1eda1266e0f4d236ca237f50043505f",
+    "pipeline_core/discovery/scientific_research_control/m19_e2_json_v2.py": "ef7f4557de6c7e7813f4f6ca0f2276e8e213751f08e07e101389be773b4cb191",
+    "pipeline_core/discovery/scientific_research_control/research_work_v12_stable_runner.py": "ba84c510570ceb3b44ac38f275197456957f7b6a0d1aa9693e1a6781415bc113",
+    "scripts/discovery/run_m19_e2_json_v2.py": "6005d84fed95efbfe77e7e9a10a75b94bd3f1fe575ff7b5bbb27112b2b803538"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "expected_existing_shas": {
+    "pipeline_core/discovery/scientific_research_control/research_work_v12_stable_runner.py": "ba84c510570ceb3b44ac38f275197456957f7b6a0d1aa9693e1a6781415bc113",
+    "pipeline_core/discovery/scientific_research_control/research_work_v18_feedback_policy.py": "bbd9a74420646234cec2ae02fd57a94b29111cfea758deffcb500e169c1c32f7",
+    "pipeline_core/discovery/scientific_research_control/research_work_v18_feedback_runner.py": "4a26674230c44a2a803be54ee10b65bc90a8f2e92f9a1fad87627e8f920bf573"
+  },
+  "kind": "ADD_ONLY_NO_LEGACY_REWRITE",
+  "new_paths": [
+    "pipeline_core/discovery/scientific_research_control/m19_e3_autonomy.py",
+    "scripts/discovery/run_m19_e3_autonomy.py",
+    "tests/discovery/test_m19_e3_autonomy.py",
+    "experiments/m19_e3/README_KO.md",
+    "experiments/m19_e3/runs/.gitignore"
+  ],
+  "package": "M19_E3_NATIVE_CHOICE_ENTRY_20261016",
+  "paid_calls_during_install": 0,
+  "results_inside_repo_only": true,
+  "scientific_validation": false,
+  "source_shas": {
+    "experiments/m19_e3/README_KO.md": "7fdbc86246a781d0e0d92b539dab3991a518eee497eac7e2788062e0f12cb742",
+    "experiments/m19_e3/runs/.gitignore": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d",
+    "pipeline_core/discovery/scientific_research_control/m19_e3_autonomy.py": "7d080ce51ed5925c8e3ff89bf5c0aec164abfd2dae0ea213d8f17641149391e8",
+    "scripts/discovery/run_m19_e3_autonomy.py": "38947e4cbf23ce0e145f5c5c5c98f827a5e6354f594619032dee1aaf0b11515b",
+    "tests/discovery/test_m19_e3_autonomy.py": "2171abd24e8c3b1bac9d01bd7ca88a98234660bf34a02c8b28a9193eea80d09d"
+  }
+}

@@ -7,7 +7,7 @@ data_sers/
 __pycache__/
 *.py[cod]
 runs/
-
+experiments/
 figures/
 data_broad/*.bak
 *.bak

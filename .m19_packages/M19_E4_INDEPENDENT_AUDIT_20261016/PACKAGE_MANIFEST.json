@@ -1,0 +1,33 @@
+{
+  "e3_d4_sha256": "217556c19507121aca52655e0af59e5e101e68a6d173c408ad825d65cbcc184a",
+  "expected_existing_sha256": {
+    "pipeline_core/discovery/scientific_research_control/m19_e3_autonomy.py": "7d080ce51ed5925c8e3ff89bf5c0aec164abfd2dae0ea213d8f17641149391e8",
+    "pipeline_core/discovery/scientific_research_control/m19_e3_deep_work.py": "88ef644f33ac4c59b155f83af73d8f209471f45deab510ad6aea47bb3668ec19",
+    "pipeline_core/discovery/scientific_research_control/research_work_v12_contracts.py": "289ff0579b25cd428c1f24d645f2f40bd48a062a75bae330d738682e07ffbdee",
+    "pipeline_core/discovery/scientific_research_control/research_work_v12_stable_runner.py": "ba84c510570ceb3b44ac38f275197456957f7b6a0d1aa9693e1a6781415bc113",
+    "pipeline_core/discovery/scientific_research_control/research_work_v18_feedback_runner.py": "4a26674230c44a2a803be54ee10b65bc90a8f2e92f9a1fad87627e8f920bf573"
+  },
+  "installed_path_root": "/home/rldnr7959/FAKG/ForAllKG",
+  "max_new_paid_attempts": 2,
+  "modifies_existing_files": false,
+  "native_work_commit": false,
+  "never_recall_on_unknown_billing": true,
+  "new_files_sha256": {
+    "experiments/m19_e4/README_KO.md": "3f5dc713c733a9db23ceb1f1361be876093ed4d7bf7faa59b9f482fec61001c2",
+    "experiments/m19_e4/runs/.gitignore": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d",
+    "pipeline_core/discovery/scientific_research_control/m19_e4_independent_audit.py": "bff6f594867d8073176986ae33e042abb25da1ab1bdea2a37066aaec11ce959d",
+    "scripts/discovery/run_m19_e4_audit.py": "a191c2b85ff8ba710ca9d4590748aeeeabfb85da485ba10e00d7721f14f216f8",
+    "tests/discovery/test_m19_e4_audit.py": "2c41b573a2c957eddee1ee7620c6326076fdd3d8b1c203f7b46da43746158b6c"
+  },
+  "new_paths": [
+    "pipeline_core/discovery/scientific_research_control/m19_e4_independent_audit.py",
+    "scripts/discovery/run_m19_e4_audit.py",
+    "tests/discovery/test_m19_e4_audit.py",
+    "experiments/m19_e4/README_KO.md",
+    "experiments/m19_e4/runs/.gitignore"
+  ],
+  "package": "M19_E4_INDEPENDENT_AUDIT_20261016",
+  "scientific_validation": false,
+  "type": "ADD_ONLY_POST_RETURN_EXTERNAL_AUDIT_AND_PARALLEL_FEEDBACK",
+  "w08_original_sha256": "e85eb24b89864401a36b27bd5a659afcf81c5239db65a4bce3c5b678dae29a3b"
+}
